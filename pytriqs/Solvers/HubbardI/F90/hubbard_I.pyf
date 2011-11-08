@@ -1,0 +1,36 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module hubbard_I ! in 
+    interface  ! in :hubbard_I
+        subroutine gf_hi_fullu(gf,tail,e0f,ur,umn,ujmn,zmsb,nlm,iwmax,nmom,ns,atocc,atmag,temp,verbosity) ! in :hubbard_I:hubbard_I.f90
+            complex(kind=8) dimension(nlm*ns,nlm*ns,iwmax),intent(out),depend(nlm,ns,nlm,ns,iwmax) :: gf
+            complex(kind=8) dimension(nmom,nlm*ns,nlm*ns),intent(out),depend(nmom,nlm,ns,nlm,ns) :: tail
+            complex(kind=8) dimension(nlm*ns,nlm*ns),intent(in),depend(nlm,ns,nlm,ns) :: e0f
+            real(kind=8) dimension(nlm,nlm,nlm,nlm),intent(in) :: ur
+            real(kind=8) dimension(nlm,nlm),intent(in),depend(nlm,nlm) :: umn
+            real(kind=8) dimension(nlm,nlm),intent(in),depend(nlm,nlm) :: ujmn
+            complex(kind=8) dimension(iwmax),intent(in) :: zmsb
+            integer optional,intent(in),check(shape(ur,0)==nlm),depend(ur) :: nlm=shape(ur,0)
+            integer optional,intent(in),check(len(zmsb)>=iwmax),depend(zmsb) :: iwmax=len(zmsb)
+            integer intent(in) :: nmom
+            integer intent(in) :: ns
+            integer intent(in) :: verbosity
+            real(kind=8) intent(out) :: atocc
+            real(kind=8) intent(out) :: atmag
+            real(kind=8) intent(in) :: temp
+        end subroutine gf_hi_fullu
+        subroutine sigma_atomic_fullu(gf,sigma_mat,e0f,zmsb,nlm,iwmax,ns) ! in :hubbard_I:hubbard_I.f90
+            complex(kind=8) dimension(nlm*ns,nlm*ns,iwmax),intent(in),depend(nlm,ns,nlm,ns) :: gf
+            complex(kind=8) dimension(nlm*ns,nlm*ns,iwmax),intent(out),depend(nlm,ns,nlm,ns,iwmax) :: sigma_mat
+            complex(kind=8) dimension(nlm*ns,nlm*ns),intent(in),depend(nlm,ns,nlm,ns) :: e0f
+            complex(kind=8) dimension(iwmax),intent(in),depend(iwmax) :: zmsb
+            integer intent(in) :: nlm
+            integer optional,intent(in),check(shape(gf,2)==iwmax),depend(gf) :: iwmax=shape(gf,2)
+            integer intent(in) :: ns
+        end subroutine sigma_atomic_fullu
+    end interface 
+end python module hubbard_I
+
+! This file was auto-generated with f2py (version:2_5237).
+! See http://cens.ioc.ee/projects/f2py2e/

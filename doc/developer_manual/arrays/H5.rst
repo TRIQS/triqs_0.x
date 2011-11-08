@@ -1,0 +1,135 @@
+.. highlight:: c
+
+HDF5 interface 
+################
+
+The array classes (`array`, `matrix`, `vector`) have a simple interface to the HDF5 files.
+
+* The first section is devoted to the simplest operation : write and read a complete array from a file.
+* The second section is devoted to a more complex proxy of an array, allowing to write/read the arrays by part.
+* The third section is devoted to a simple `stack` object, where array of a given size can be stack in an unlimited 
+  array of one more dimension in the HDF5 file. This is typically used in storing a large set of similar arrays, like e.g. 
+  at set of measure in a Monte Carlo program.
+
+You can also get the :arrays_doxy:`full C++ documentation<triqs::arrays::h5>` for these classes and functions.
+
+
+Simple read and write of an array/matrix/vector or a corresponding view 
+============================================================================
+
+Given an array (or an array_view), the functions `h5::write` and `h5::read` write and read it to/from the file
+or any subgroup thereof. For example ::
+
+ #include <triqs/arrays/h5/simple_read_write.hpp>
+ using namespace triqs::arrays;
+
+ h5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+ h5::write(file,"A",A);
+
+ file.createGroup("G");
+ h5::write(file,"G/A",A);
+
+ h5::Group G = file.openGroup("G");
+ h5::write(G, "A2",A);
+
+ h5::read (file, "A",B); 
+
+.. warning::
+    
+   * The data in the hdf5 file are stored in C order.
+
+   * The data is reordered in Fortran (or custom) order if necessary when reading/writing.
+
+
+
+h5::array_proxy : a simple proxy to the array in file
+===========================================================
+
+The principle is that `array_proxy` is a proxy to an array, possibly big, in the h5 file.
+It has a domain, and can be assigned from/to an array and sliced.
+This allows to read/write only parts of a large array using the same slicing syntax 
+as for the array class itself (which is then translated into the hyperslab technique of the HDF5 library).
+
+
+Tutorial
+-----------
+
+* Write a "big" array in the h5 file and write it slice by slice::
+
+   #include <triqs/arrays/h5/array_proxy.hpp>
+   using namespace triqs::arrays;
+
+   h5::H5File file( "ess.h5",  H5F_ACC_TRUNC );
+
+   // first create a 'big' array in the file (no temporary is made in memory, it uses directly the HDF5 API).
+   const size_t N = 100;
+   h5::array_proxy<T,3,3> Pn( file, "Z", make_shape(N,2,2) );
+
+   // a slice...
+   array<double,2> the_slice (2,2); the_slice() = 1;
+
+   // write the large array slice by slice 
+   for (int u = 0; u<N; ++u)  P (u,range(), range())  = u* the_slice; // or any array expression 
+
+* Read a "big" array slice by slice::
+
+   #include <triqs/arrays/h5/array_proxy.hpp>
+   using namespace triqs::arrays;
+
+   h5::H5File file ("ess.h5", H5F_ACC_RDONLY );
+   h5::array_proxy<T,3,3> P(file, "A");
+
+   array<T,2> a_slice ;
+   for (int u = 0; u<N; ++u)  a_slice =  P (u,range(), range()) ;
+
+Reference 
+------------
+
+You can also get the :arrays_doxy:`full C++ documentation<triqs::arrays::h5::array_proxy>` for this class.
+
+h5::array_stack : a simple stack of arrays in hdf5
+================================================================
+
+.. warning::
+   This is experimental, API may change.
+
+The principle is to have a stack of arrays of the same size, unlimited in the stacking direction in the h5 file.
+
+* The syntax is simple : 
+
+ * The ++ operator advances by one slice in the stack.
+ * The () operator returns a view on the current slice of the stack.
+ * The << operator piles up an array on the current slice and advances.
+
+* NB : the stack is bufferized in memory (`bufsize` parameter), so that the file access does not happen too often.
+
+
+Tutorial
+-----------
+
+A simple example::
+
+  #include <triqs/arrays/h5/array_stack.hpp>
+  using namespace triqs::arrays;
+
+  h5::H5File file( "ess.h5" , H5F_ACC_TRUNC );
+  const size_t N = 12, bufsize = 5;
+  array<double,2> A(3,2);
+
+  // declare a stack
+  h5::array_stack<double,2> S ( file, "S", A.shape() , bufsize);
+
+  // fill the stack for a while...
+  for (int u = 0; u<N; ++u)  {
+   A() = double(u+1)* init; 
+   S() =  A; ++S; // S << A; // would do the same job 
+  }
+  S.flush();
+
+
+Reference 
+------------
+
+You can also get the :arrays_doxy:`full C++ documentation<triqs::arrays::h5::array_stack>` for this class.
+
+

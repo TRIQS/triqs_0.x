@@ -1,0 +1,257 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2011 by O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+
+#ifndef TRIQS_ARRAYS_HDF5_INTERFACE_H
+#define TRIQS_ARRAYS_HDF5_INTERFACE_H
+
+#include <H5Cpp.h>
+#include "./impl/cache.hpp"
+#include <boost/type_traits/is_complex.hpp>
+#include <boost/utility/enable_if.hpp>
+//#include <boost/mpl/if.hpp>
+
+namespace triqs { namespace arrays { namespace h5 { 
+
+ using namespace H5;
+
+ // conversion of C type to HDF5 native
+ inline PredType native_type_from_C(char)               { return PredType::NATIVE_CHAR; }
+ inline PredType native_type_from_C(signed char)        { return PredType::NATIVE_SCHAR; }
+ inline PredType native_type_from_C(unsigned char)      { return PredType::NATIVE_UCHAR; }
+ inline PredType native_type_from_C(short)              { return PredType::NATIVE_SHORT; }
+ inline PredType native_type_from_C(unsigned short)     { return PredType::NATIVE_USHORT; }
+ inline PredType native_type_from_C(int)                { return PredType::NATIVE_INT; }
+ inline PredType native_type_from_C(unsigned)           { return PredType::NATIVE_UINT; }
+ inline PredType native_type_from_C(long)               { return PredType::NATIVE_LONG; }
+ inline PredType native_type_from_C(unsigned long)      { return PredType::NATIVE_ULONG; }
+ inline PredType native_type_from_C(long long)          { return PredType::NATIVE_LLONG; }
+ inline PredType native_type_from_C(unsigned long long) { return PredType::NATIVE_ULLONG; }
+ inline PredType native_type_from_C(float)              { return PredType::NATIVE_FLOAT; }
+ inline PredType native_type_from_C(double)             { return PredType::NATIVE_DOUBLE; }
+ inline PredType native_type_from_C(long double)        { return PredType::NATIVE_LDOUBLE; }
+ inline PredType native_type_from_C(bool)               { return PredType::NATIVE_SCHAR; }
+ inline PredType native_type_from_C(std::string)        { return PredType::C_S1; }
+
+ // conversion of C type to HDF5 native
+ // NEED TO CHANGE THIS ? It is not standard... We should fix a standard or have a trait 
+ inline PredType h5_type_from_C(char)               { return PredType::NATIVE_CHAR; }
+ inline PredType h5_type_from_C(signed char)        { return PredType::NATIVE_SCHAR; }
+ inline PredType h5_type_from_C(unsigned char)      { return PredType::NATIVE_UCHAR; }
+ inline PredType h5_type_from_C(short)              { return PredType::NATIVE_SHORT; }
+ inline PredType h5_type_from_C(unsigned short)     { return PredType::NATIVE_USHORT; }
+ inline PredType h5_type_from_C(int)                { return PredType::NATIVE_INT; }
+ inline PredType h5_type_from_C(unsigned)           { return PredType::NATIVE_UINT; }
+ inline PredType h5_type_from_C(long)               { return PredType::NATIVE_LONG; }
+ inline PredType h5_type_from_C(unsigned long)      { return PredType::NATIVE_ULONG; }
+ inline PredType h5_type_from_C(long long)          { return PredType::NATIVE_LLONG; }
+ inline PredType h5_type_from_C(unsigned long long) { return PredType::NATIVE_ULLONG; }
+ inline PredType h5_type_from_C(float)              { return PredType::NATIVE_FLOAT; }
+ inline PredType h5_type_from_C(double)             { return PredType::NATIVE_DOUBLE; }
+ inline PredType h5_type_from_C(long double)        { return PredType::NATIVE_LDOUBLE; }
+ inline PredType h5_type_from_C(bool)               { return PredType::NATIVE_SCHAR; }
+ inline PredType h5_type_from_C(std::string)        { return PredType::C_S1; }
+
+ // If it is complex<T> return T else T
+ //template<typename T> struct remove_complex: boost::mpl::if_<boost::is_complex<T>, typename T::value_type, T > {};
+ template<typename T> struct remove_complex { typedef T type;};
+ template<typename T> struct remove_complex<std::complex<T> > { typedef T type;};
+
+ // the type of data in the array
+ template <typename ArrayType >
+  typename boost::disable_if<boost::is_complex<typename ArrayType::value_type>, PredType >::type
+  data_type ( ArrayType const & A) { return native_type_from_C(typename ArrayType::value_type());}
+
+ template <typename ArrayType >
+  typename boost::enable_if<boost::is_complex<typename ArrayType::value_type>, PredType >::type
+  data_type ( ArrayType const & A) { return native_type_from_C(typename ArrayType::value_type::value_type());}
+
+ // the type of data to put in the file_or_group
+ // To be fixed. What if I only have the type .. as in stack ?
+ template <typename ArrayType >
+  typename boost::disable_if<boost::is_complex<typename ArrayType::value_type>, PredType >::type
+  data_type_file ( ArrayType const & A) { return h5_type_from_C(typename ArrayType::value_type());}
+
+ template <typename ArrayType >
+  typename boost::enable_if<boost::is_complex<typename ArrayType::value_type>, PredType >::type
+  data_type_file ( ArrayType const & A) { return h5_type_from_C(typename ArrayType::value_type::value_type());}
+
+
+ // the pointer on the start of data
+ template <typename ArrayType > 
+  typename boost::disable_if<boost::is_complex<typename ArrayType::value_type>, void * >::type
+  data ( ArrayType const & A) { return &(A.storage()[0]);}
+
+ template <typename ArrayType > 
+  typename boost::enable_if<boost::is_complex<typename ArrayType::value_type>, void * >::type
+  data ( ArrayType const & A) {
+   typedef typename ArrayType::value_type::value_type T; 
+   std::complex<T> * p =  &(A.storage()[0]);
+   return reinterpret_cast<T*>(p);
+  }
+
+ // the dataspace corresponding to the array
+ // A MUST be in C order 
+ template <typename ArrayType >
+  H5::DataSpace data_space ( ArrayType const & A, bool compact = false) { 
+   static const unsigned int rank0 = ArrayType::rank;
+   static const unsigned int rank = rank0 + (boost::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
+   hsize_t dimsf [rank], stridesf[rank], offset[rank];  // dataset dimensions
+   mini_vector<std::size_t,rank0> dims = A.indexmap().domain().lengths();
+   mini_vector<std::ptrdiff_t,rank0> strides = A.indexmap().strides();
+   //hsize_t fact = (boost::is_complex<typename ArrayType::value_type>::value ? 2 :1);
+   offset[rank-1]=0; dimsf[rank-1]=2; strides[rank-1]=1; // will be overrule for non complex
+   size_t s = 1;
+   for (unsigned int u=0; u<rank0 ; ++u) {
+    offset[u] = 0; // need to correct this...
+    dimsf[u] = dims[u];
+    stridesf[u] = strides[u]/s; 
+    // incorrect we need to divide
+    //std::cerr << "u =  " << u << ", strides[u] =  " << strides[u]<<std::endl;
+   }
+   DataSpace ds ( rank, dimsf );
+   ds.selectHyperslab (H5S_SELECT_SET , dimsf, offset);//, stridesf);
+   // ds.selectHyperslab (H5S_SELECT_SET , const hsize_t *count, const hsize_t *start, const hsize_t *stride=NULL, const hsize_t *block=NULL) 
+   return ds;
+  }
+
+ template <typename V, int Rank, typename Opt >
+  void resize_or_check ( triqs::arrays::array<V,Rank,Opt> & A, const hsize_t * dimsf ) { 
+   mini_vector<std::size_t,Rank> dims; 
+   for (unsigned int u=0; u<Rank ; ++u) dims[u] = dimsf[u];
+   A.resize( IndexMaps::cuboid_domain<Rank>(dims));
+  }
+
+ template <typename V, int Rank, typename Opt >
+  void resize_or_check ( triqs::arrays::array_view<V,Rank,Opt> const & A, const hsize_t  * dimsf  ) { 
+   mini_vector<std::size_t,Rank> dims = A.indexmap().domain().lengths();
+   for (unsigned int u=0; u<Rank ; ++u) 
+    if (dims[u] != dimsf[u]) 
+     TRIQS_RUNTIME_ERROR<<"Dimension error : the view can not be resized : " <<u<< " dim in file "<< dimsf[u] << " dim in view "<<dims[u];
+  }
+
+ /************************************************************************
+   exists 
+  **************************************************************************/
+
+ template < typename FileGroupType >
+  bool exists (FileGroupType file_or_group, std::string name) { 
+   return (H5Lexists(file_or_group.getId(), name.c_str(), NULL));
+  } 
+
+
+ /************************************************************************
+   WRITE attribute 
+  **************************************************************************/
+
+ inline void write_attribute ( DataSet & dataset, std::string name, std::string value ) { 
+  DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
+  // Create new string datatype for attribute
+  StrType strdatatype(PredType::C_S1, 25); // of length 256 characters
+  // Set up write buffer for attribute
+  const H5std_string strwritebuf (value);
+  // Create attribute and write to it
+  Attribute myatt_in = dataset.createAttribute(name, strdatatype, attr_dataspace);
+  myatt_in.write(strdatatype, strwritebuf); 
+ } 
+
+ /************************************************************************
+   WRITE array 
+  **************************************************************************/
+
+ template <typename ArrayType, typename FileGroupType >
+  int write (FileGroupType file_or_group, std::string name, ArrayType const & A, bool C_reorder = true) { 
+
+   try { 
+    if (h5::exists(file_or_group, name.c_str())) file_or_group.unlink( name.c_str());  // put some option here ?
+
+    if (C_reorder) { 
+     typename result_of::cache<false,Tag::C, ArrayType >::type C(A);
+     DataSet dataset = file_or_group.createDataSet( name.c_str(), data_type_file(A), data_space(C.view(),true) );
+     dataset.write( data(C.view()), data_type(A), data_space(C.view()) ); 
+     // if complex, to be python compatible, we add the __complex__ attribute
+     if (boost::is_complex<typename ArrayType::value_type>::value)  write_attribute(dataset,"__complex__","1");
+    }
+    else { 
+     DataSet dataset = file_or_group.createDataSet( name.c_str(), data_type_file(A), data_space(A,true) );
+     dataset.write( data(A), data_type(A), data_space(A) ); 
+     if (boost::is_complex<typename ArrayType::value_type>::value)  write_attribute(dataset,"__complex__","1");
+    } 
+
+   }
+
+   // catch failure caused by the CommonFG operations
+   catch( FileIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSet operations
+   catch( DataSetIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSpace operations
+   catch( DataSpaceIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSpace operations
+   catch( DataTypeIException error ) { error.printError(); return -1; }
+   return 0;
+
+  }
+
+ /************************************************************************
+   READ 
+  **************************************************************************/
+
+ template <typename ArrayType, typename FileGroupType >
+  int read (FileGroupType file_or_group, std::string name,  ArrayType & A, bool C_reorder = true) { 
+
+   typedef typename ArrayType::value_type V;
+   if (!H5Lexists(file_or_group.getId(), name.c_str(), NULL)) throw "no such dataset";
+
+   try { 
+    DataSet dataset = file_or_group.openDataSet( name.c_str() );
+    //H5T_class_t type_class = dataset.getTypeClass();
+    DataSpace dataspace = dataset.getSpace();
+    static const unsigned int Rank =  ArrayType::rank + (boost::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
+    int rank = dataspace.getSimpleExtentNdims();
+    if (rank != Rank) throw "dimension error";
+    hsize_t dims_out[Rank];
+    int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
+    //std::cerr << "rank " << rank << ", dimensions " << (unsigned long)(dims_out[0]) << " x " << (unsigned long)(dims_out[1]) << std::endl;
+    resize_or_check(A, dims_out); 
+
+    if (C_reorder) { 
+     typename result_of::cache<true,Tag::C, ArrayType >::type C(A);
+     dataset.read( data(C.view()), data_type(C.view()), data_space(C.view()) , dataspace );
+    }
+    else { dataset.read( data(A), data_type(A), data_space(A) , dataspace ); } 
+
+   } 
+
+   // catch failure caused by the CommonFG operations
+   catch( FileIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSet operations
+   catch( DataSetIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSpace operations
+   catch( DataSpaceIException error ) { error.printError(); return -1; }
+   // catch failure caused by the DataSpace operations
+   catch( DataTypeIException error ) { error.printError(); return -1; }
+   return 0;
+
+  }
+
+}}}
+#endif
+
+

@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% set title = 'Home' %}
+{% block body %}
+
+   <h1>Developer manual</h1>
+   <p>Last updated on {{ last_updated }}.</p>
+
+   <table class="contentstable" align="center">
+     <tr valign="top">
+     <td width="50%">
+        <p class="biglink">
+           <a class="biglink" href="{{ pathto('arrays/contents') }}">
+              Array library </a><br>
+           <span class="linkdescr">
+              C++ multi-dimensional arrays. 
+           </span>
+        </p>
+     </td>
+     <td width="50%">
+        <p class="biglink">
+           <a class="biglink" href="{{ pathto('mctools/contents') }}">
+              Monte-Carlo Tools </a><br>
+           <span class="linkdescr">
+              Quickly write Monte-Carlo codes. 
+           </span>
+        </p>
+     </td>
+     </tr>
+     <tr valign="top">
+     <td width="50%">
+        <p class="biglink">
+           <a class="biglink" href="{{ pathto('utility') }}">
+              Utility </a><br>
+           <span class="linkdescr">
+              Exceptions, macros, etc...
+           </span>
+        </p>
+     </td>
+     </tr>
+   </table>
+
+{% endblock %}
