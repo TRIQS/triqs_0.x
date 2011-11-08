@@ -21,7 +21,3 @@ add_subdirectory(SumK)
 
 add_subdirectory(test)
 
-#deprecated
-#add_subdirectory (Lattice1)
-#add_subdirectory(SumK1)
-

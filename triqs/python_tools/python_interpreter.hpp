@@ -64,7 +64,7 @@ namespace triqs { namespace python_tools {
   /** Change the prompt of the interpreter */
   python_interpreter & set_prompt (std::string const & prompt);
 
-  /// Tag the svn version, etc.. 
+  /// Tag the version, etc.. 
   void print_greeting(); 
 
   /**

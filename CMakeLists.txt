@@ -66,15 +66,6 @@ endif(BOOST_SOURCE_DIR)
 find_package(CBLAS)
 include_directories(${CBLAS_INCLUDE_DIR})             
 
-# The subversion tag. Added to all codes.
-FIND_PACKAGE(Subversion)
-IF(Subversion_FOUND)
- Subversion_WC_INFO(${CMAKE_CURRENT_SOURCE_DIR} Project)
- # the additionnal " is needed otherwise the // in URL will be interpreted as a comment in C and the macro will be cut
- SET (SubversionInfo "Svn version ${Project_WC_REVISION} at URL: \"${Project_WC_URL}\"")
- add_definitions( -DSVN_VERSION=${SubversionInfo}) # for all compilations
-ENDIF(Subversion_FOUND)
-
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
  GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")

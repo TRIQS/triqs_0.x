@@ -94,7 +94,6 @@ namespace triqs { namespace python_tools {
  void python_interpreter::print_greeting() { 
   std::stringstream fs; 
   fs<< "myprint = lambda x : sys.stderr.write(\"%s\\n\"%x)\n" 
-   //<< "myprint ('Running  svn version : "<<AS_STRING(SVN_VERSION)<<" ')\n"
    << "myprint ('Compiled on "<<__DATE__<<" at " 
    << __TIME__<<" on machine "<< AS_STRING(__HOSTNAME__)<< " by "<< AS_STRING(__COMPILEDBY__) " ')\n";
   *this<<fs.str();
