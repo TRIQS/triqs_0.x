@@ -24,6 +24,7 @@
 #define my_MPI_H
 
 #include <triqs/utility/report_stream.hpp>
+#include <cstring>
 
 
 inline int system(std::string s){return(system(s.c_str()));}
