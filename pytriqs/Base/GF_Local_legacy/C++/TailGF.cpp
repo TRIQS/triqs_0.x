@@ -183,7 +183,6 @@ void TailGF::invert() {
 
 void TailGF::save(string file, bool accumulate) const {
   const int omin(OrderMin()), omax(OrderMax());
-  if (!IS_MASTER_NODE) return;
   stringstream fs; 
   fs<<file<<(( ( N1*N2>1) ) ? "/" : ".") <<"Moments.dat";
   ofstream f(fs.str().c_str(), (accumulate ? ios::out|ios::app : ios::out));
@@ -194,30 +193,25 @@ void TailGF::save(string file, bool accumulate) const {
 }
  
 void TailGF::load(string filename) {
-  if IS_MASTER_NODE 
-    {
-      bool NewStyleSave = true;
-      stringstream fs1; 
-      fs1<<filename<<((NewStyleSave && ( N1*N2>1) ) ? "/" : ".") <<"Moments.dat";
-      ifstream mom; mom.open(fs1.str().c_str());
-      if (mom.fail()) { 
-        //TRIQS_RUNTIME_ERROR<<"LOAD "<<filename<< ": I can't find the file "<<fs1.str()<<" ";
-        REPORT <<"CAN NOT FIND THE MOMENTS : GF_Bloc_w::load : Putting 0 !"<<endl;M=0;
-      }
-      else 
-        {
-	  int omin,omax;
-	  mom>>omin>>omax;
-	  if (omin<OrderMinMIN) TRIQS_RUNTIME_ERROR<<"TailGF::load : OrderMin too small";
-	  if (omax>OrderMaxMAX) TRIQS_RUNTIME_ERROR<<"TailGF::load : OrderMax too large";
-	  zero();
-	  Array <COMPLEX,2> MM(N1,N2,fortranArray);
-          for (int i=omin; i<=omax;i++) {mom>>MM; (*this)[i] = MM;}
-	  OrderMaxArray = omax;
-        }
-    }
-  Array<COMPLEX,3> tmp(M);
-  myMPI_bcast(tmp);
+
+  bool NewStyleSave = true;
+  stringstream fs1; 
+  fs1<<filename<<((NewStyleSave && ( N1*N2>1) ) ? "/" : ".") <<"Moments.dat";
+  ifstream mom; mom.open(fs1.str().c_str());
+  if (mom.fail()) { 
+    REPORT <<"CAN NOT FIND THE MOMENTS : GF_Bloc_w::load : Putting 0 !"<<endl;M=0;
+  }
+  else {
+    int omin,omax;
+    mom>>omin>>omax;
+    if (omin<OrderMinMIN) TRIQS_RUNTIME_ERROR<<"TailGF::load : OrderMin too small";
+    if (omax>OrderMaxMAX) TRIQS_RUNTIME_ERROR<<"TailGF::load : OrderMax too large";
+    zero();
+    Array <COMPLEX,2> MM(N1,N2,fortranArray);
+    for (int i=omin; i<=omax;i++) {mom>>MM; (*this)[i] = MM;}
+    OrderMaxArray = omax;
+  }
+
 }
 
 python::object TailGF::__reduce_to_dict__() const {

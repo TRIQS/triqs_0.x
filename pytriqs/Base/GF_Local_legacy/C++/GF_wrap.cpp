@@ -46,7 +46,7 @@ using namespace python;
     .def_readonly("Statistic",  &GF_Bloc_Base<DataType>::Statistic)	\
     .def_readonly("Beta",  &GF_Bloc_Base<DataType>::Beta)		\
     .def("copyFrom", &GF_Bloc_Base<DataType>::operator=)			\
-    .def("save",&GF_Bloc_Base<DataType>::save,save_overlo("Save the Green function into text files on the master node only.")) \
+    .def("save",&GF_Bloc_Base<DataType>::save,save_overlo("Save the Green's function into text files.")) \
     .def("load",&GF_Bloc_Base<DataType>::load,"Load the Green function from text files on all nodes. Inverse of save") \
     .def("zero",&GF_Bloc_Base<DataType>::zero,"Puts the GF to 0")	\
  ; 

@@ -132,38 +132,37 @@ template<> inline COMPLEX myset<COMPLEX> (double r2, double r3) {return (r2 + I 
 template <typename DataType>
 void GF_Bloc_Base<DataType>::save(string file, bool accumulate) const
 {
+
   vector<string> indices_namesL = my_indices(IndicesL),indices_namesR = my_indices(IndicesR);
   int step = 1;
   bool NewStyleSave = true;
   
- if IS_MASTER_NODE
-   {
-     if ( (N1*N2>1) && NewStyleSave) system("mkdir -p " + file);
-     for (int n1=1; n1<=N1;n1++) 
-       for (int n2=1; n2<=N2;n2++)
-	 {
-	   stringstream fs; 
-	   if ( N1*N2>1) fs<<file<<(NewStyleSave ? "/" : "_") <<indices_namesL[n1]<<"_"<<indices_namesR[n2]<<".dat";
-	   else fs<<file<<".dat";
-	   ofstream f(fs.str().c_str(), (accumulate ? ios::out|ios::app : ios::out));
-	   f.setf(ios::fixed,ios::floatfield);f.precision(PRECISION_OUTPUT);f<<endl<<endl;
-	   for (int i=mesh.index_min;i<=mesh.index_max;i+=step)  {
-	     switch (mesh.typeGF) { 
-	     case Imaginary_Time : 
-	     case Imaginary_Legendre :
-	       f<<real(mesh[i])<<"  "<<data(n1,n2,i) <<endl;
-	       break;
-	     case Imaginary_Frequency : 
-	       f<<imag(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
-	       break;
-	     default : 
-	       f<<real(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
-	       break;
-	     }      
-	   }
-	 }
-     tail.save(file,accumulate);
-   }
+  if ( (N1*N2>1) && NewStyleSave) system("mkdir -p " + file);
+  for (int n1=1; n1<=N1;n1++) {
+    for (int n2=1; n2<=N2;n2++) {
+      stringstream fs; 
+      if ( N1*N2>1) fs<<file<<(NewStyleSave ? "/" : "_") <<indices_namesL[n1]<<"_"<<indices_namesR[n2]<<".dat";
+      else fs<<file<<".dat";
+      ofstream f(fs.str().c_str(), (accumulate ? ios::out|ios::app : ios::out));
+      f.setf(ios::fixed,ios::floatfield);f.precision(PRECISION_OUTPUT);f<<endl<<endl;
+      for (int i=mesh.index_min;i<=mesh.index_max;i+=step)  {
+        switch (mesh.typeGF) { 
+          case Imaginary_Time : 
+          case Imaginary_Legendre :
+            f<<real(mesh[i])<<"  "<<data(n1,n2,i) <<endl;
+            break;
+          case Imaginary_Frequency : 
+            f<<imag(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
+            break;
+          default : 
+            f<<real(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
+            break;
+        }      
+      }
+    }
+  }
+  tail.save(file,accumulate);
+
 }
 
 
