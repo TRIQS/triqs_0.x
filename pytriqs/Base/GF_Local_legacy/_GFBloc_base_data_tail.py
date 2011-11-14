@@ -304,8 +304,9 @@ class _GFBloc_base_data_tail  :
 
     def replaceByTail(self,start) : 
         d = self._data.array
+        t = self._tail
         for n, om in enumerate(self.mesh) : # not the most efficient ...
-            if n> start : d[:,:,om] = t(om)
+            if n> start : d[:,:,n] = t(om).array
 
     #-------------------------------------------------------------------
 
