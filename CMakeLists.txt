@@ -28,6 +28,10 @@ if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
   Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
  endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
+ STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
+ IF(TILDE)
+  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
+ ENDIF(TILDE)
 endif(BOOST_SOURCE_DIR)
 
 
