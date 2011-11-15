@@ -9,25 +9,25 @@ Dependencies
 TRIQS is built upon several python and C++ libraries, which, if not present already in your system, can be freely downloaded and installed.
 All the libraries and tools used by TRIQS are listed in the table : 
 
-==================    ============  ================================================================================
-Libraries/tools       Version       Comment
-==================    ============  ================================================================================
-mpi                   openmpi e.g.  Parallelism.
+==================    ==============  ================================================================================
+Libraries/tools       Version         Comment
+==================    ==============  ================================================================================
+mpi                   openmpi e.g.    Parallelism.
                                     
-                                    Since standard linux distributions (and macports on OS X) 
-                                    now provides openmpi, even on laptops, we avoid the unnecessary complication
-                                    of maintaining a non parallel version of TRIQS.
-fftw                  >=3.2         Fourier transform  
-boost                 >= 1.46       C++ librairies.
-hdf5*                 >= 1.8.x      File storage system
-python*               2.6 or 2.7 
-scipy*                              python mathematical library         
-numpy*                              python scientific library
-h5py*                               python interface to hdf5 library
-sphinx*               >1.0          Python documentation tools
-pyparsing*                          tool for sphinx
-matplotlib*           >=0.99        python 2D plotting library
-==================    ============  ================================================================================
+                                      Since standard linux distributions (and macports on OS X)
+                                      now provides openmpi, even on laptops, we avoid the unnecessary complication
+                                      of maintaining a non parallel version of TRIQS.
+fftw                  >=3.2           Fourier transform
+boost                 >= 1.46         C++ librairies.
+hdf5*                 >= 1.8.x        File storage system
+python*               >=2.6.5 or 2.7
+scipy*                                python mathematical library
+numpy*                                python scientific library
+h5py*                                 python interface to hdf5 library
+sphinx*               >1.0            Python documentation tools
+pyparsing*                            tool for sphinx
+matplotlib*           >=0.99          python 2D plotting library
+==================    ==============  ================================================================================
 
  '*' designates the libraries included in the Enthought python distribution.
 
