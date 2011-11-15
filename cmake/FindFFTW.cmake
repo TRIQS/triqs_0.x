@@ -13,6 +13,8 @@ SET(TRIAL_PATHS
  /usr/local/include
  /opt/local/include
  /sw/include
+ $ENV{FFTW_ROOT}/include
+ ${FFTW_ROOT}/include
  )
 FIND_PATH(FFTW_INCLUDE_DIR fftw3.h ${TRIAL_PATHS} DOC "Include for FFTW")
 
@@ -21,6 +23,8 @@ SET(TRIAL_LIBRARY_PATHS
  /usr/local/lib
  /opt/local/lib
  /sw/lib
+ $ENV{FFTW_ROOT}/lib
+ ${FFTW_ROOT}/lib
  )
 
 SET(FFTW_LIBRARIES "FFTW_LIBRARIES-NOTFOUND" CACHE STRING "FFTW library")
