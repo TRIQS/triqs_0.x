@@ -61,8 +61,9 @@ simply by putting it in the HDF_Archive, e.g. ::
   Results["G"] = S.G # save the results
   
   import sys, pytriqs.Base.version as version
-  log = Results.create_group("log")
-  log["code_version"] = version.revision()
+  Results.create_group("log")
+  log = Results["log"]
+  log["code_version"] = version.revision
   log["script"] = open(sys.argv[0]).read() # read myself !
    
 The script that is currently being executed will be copied into the file `solution.h5`, under the subgroup `/log/script`.
