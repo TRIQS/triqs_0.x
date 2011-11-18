@@ -6,6 +6,8 @@
 FILE(GLOB_RECURSE SOURCES *.rst)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/BUILD/conf.py)
+EXECUTE_PROCESS(COMMAND sh -c "ln -fs ${CMAKE_CURRENT_SOURCE_DIR}/* ${CMAKE_CURRENT_BINARY_DIR}/BUILD" )
+EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/BUILD/html")
 
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
@@ -27,7 +29,6 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/BUILD/html/ COMPONENT documentatio
  PATTERN "CVS" EXCLUDE
  )
 
-EXECUTE_PROCESS(COMMAND sh -c "mkdir -p BUILD && cd BUILD && ln -fs ${CMAKE_CURRENT_SOURCE_DIR}/* ${CMAKE_CURRENT_BINARY_DIR}/BUILD" )
 
 if (TRIQS_BUILD_STATIC)
  add_dependencies(docs_sphinx bin/${ExecutableName} ) # need the executable to build the doc
