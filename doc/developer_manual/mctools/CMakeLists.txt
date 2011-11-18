@@ -15,6 +15,7 @@ PARENT_SCOPE
 
 SET(DOXYGEN_SOURCES ${TRIQS_SOURCE_DIR}/triqs/mc_tools/mc_generic.hpp)
 SET(DOXYGEN_NAME mctools)
+SET(DOXYGEN_HTML_OUTPUT ../../BUILD/html/doxy_mctools)
 
 include(${TRIQS_SOURCE_DIR}/cmake/BuildDoxygenDocs.cmake)
 

@@ -413,10 +413,12 @@ def create_role(app, tag_filename, rootdir):
 		warning_messages = []
 		if tag_file:
 			url = find_url(tag_file, part)
-			try:
-				url = find_url2(app.env.doxylink_cache[cache_name]['mapping'], part)
-			except LookupError as error:
-				warning_messages.append('Error while parsing `%s`. Is not a well-formed C++ function call or symbol. If this is not the case, it is a doxylink bug so please report it. Error reported was: %s' % (part, error))
+                        # If there are several doxy projects within the same sphinx instance then the cache is always OK
+                        # and one cannot regenerate a new cache for a new project... So I comment these 4 lines...
+			#try:
+			#	url = find_url2(app.env.doxylink_cache[cache_name]['mapping'], part)
+			#except LookupError as error:
+			#	warning_messages.append('Error while parsing `%s`. Is not a well-formed C++ function call or symbol. If this is not the case, it is a doxylink bug so please report it. Error reported was: %s' % (part, error))
 			if url:
 				
 				#If it's an absolute path then the link will work regardless of the document directory

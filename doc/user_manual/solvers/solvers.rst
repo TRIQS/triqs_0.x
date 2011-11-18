@@ -1,8 +1,8 @@
 .. index:: Quantum impurity solvers & DMFT
 
-.. _solvers:
-
 .. module:: pytriqs.Solvers
+
+.. _solvers:
 
 Quantum impurity solvers
 ========================

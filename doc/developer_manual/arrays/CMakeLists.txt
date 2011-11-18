@@ -18,6 +18,7 @@ SET(DOXYGEN_SOURCES
  ${TRIQS_SOURCE_DIR}/triqs/arrays/h5/array_stack.hpp
  )
 SET(DOXYGEN_NAME arrays)
+SET(DOXYGEN_HTML_OUTPUT ../../BUILD/html/doxy_arrays)
 
 include(${TRIQS_SOURCE_DIR}/cmake/BuildDoxygenDocs.cmake)
 

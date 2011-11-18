@@ -78,13 +78,15 @@ class Solver(Solver_Base):
 
     #--------------------------------------------------
 
-    def __init__(self,Beta,GFstruct,**param):
+    def __init__(self,Beta,GFstruct,N_Matsubara_Frequencies=1025,**param):
         """
         :param Beta: The inverse temperature
         :param GFstruct: The structure of the Green's functions. It must be a list of tuples,
                          each representing a block of the Green's function. The tuples have two
                          elements, the name of the block and a list of indices. For example:
                          [ ('up', [1,2,3]),  ('down', [1,2,3]) ].
+        :param N_Matsubara_Frequencies: (Optional, default = 1025) How many Matsubara frequencies
+                                        are used for the Green's functions.
         :param param: A list of extra parameters, described below.
         """
 
@@ -98,7 +100,7 @@ class Solver(Solver_Base):
 
         # Green function in frequencies
         a_list = [a for a,al in self.GFStruct]
-        glist = [ GFBloc_ImFreq(Indices = al, Beta = self.Beta) for a,al in self.GFStruct]
+        glist = [ GFBloc_ImFreq(Indices = al, Beta = self.Beta, NFreqMatsubara=N_Matsubara_Frequencies) for a,al in self.GFStruct]
         self.G0 = GF(NameList = a_list, BlockList = glist, Copy=False, Name="G0")
         self.G = GF(Name_Block_Generator = self.G0, Copy=True, Name="G")
         self.F = GF(Name_Block_Generator = self.G0, Copy=True, Name="F")

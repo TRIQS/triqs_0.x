@@ -106,8 +106,8 @@ pygments_style = 'sphinx'
 # -----------------------------
 
 breathe_projects = {
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/BUILD/html/doxy_mctools/xml/",
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/BUILD/html/doxy_arrays/xml/",
+        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/mctools/doxy_mctools/xml/",
+        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/arrays/doxy_arrays/xml/",
         }
 
 breathe_default_project = "mc_tools"
@@ -117,9 +117,9 @@ breathe_default_project = "mc_tools"
 
 doxylink = {
         'mctools_doxy' :
-        ('@CMAKE_CURRENT_BINARY_DIR@/BUILD/html/doxy_mctools/doxy.tag', './doxy_mctools/html/'),
+        ('@CMAKE_CURRENT_BINARY_DIR@/mctools/doxy_mctools/doxy.tag', './doxy_mctools'),
         'arrays_doxy' :
-        ('@CMAKE_CURRENT_BINARY_DIR@/BUILD/html/doxy_arrays/doxy.tag', './doxy_arrays/html/'),
+        ('@CMAKE_CURRENT_BINARY_DIR@/arrays/doxy_arrays/doxy.tag', './doxy_arrays'),
         }
 
 # Options for HTML output
@@ -154,7 +154,7 @@ html_theme = "agogo"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['@TRIQS_SOURCE_DIR@/doc/developer_manual/.static']
+#html_static_path = ['@TRIQS_SOURCE_DIR@/doc/developer_manual/.static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

@@ -10,6 +10,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR
 SET(DOC_EXT "_cpp")
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
+EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/BUILD && cd BUILD && ln -fs ${CMAKE_CURRENT_SOURCE_DIR}/* ${CMAKE_CURRENT_BINARY_DIR}/BUILD" )
+EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/BUILD/html")
+
 add_subdirectory(mctools)
 add_subdirectory(arrays)
 
@@ -34,4 +37,3 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/BUILD/html/ COMPONENT documentatio
  PATTERN "CVS" EXCLUDE
  )
 
-EXECUTE_PROCESS(COMMAND sh -c "mkdir -p BUILD && cd BUILD && ln -fs ${CMAKE_CURRENT_SOURCE_DIR}/* ${CMAKE_CURRENT_BINARY_DIR}/BUILD" )
