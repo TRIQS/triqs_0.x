@@ -346,7 +346,7 @@ class Solver(Solver_Base):
             known_coeff = numpy.zeros([sig.N1,sig.N2,1],numpy.float_)
             msh = [x.imag for x in sig.mesh]
             fit_start = msh[self.Fitting_Frequency_Start]
-            fit_stop  = msh[self.N_Frequencies_Accumulated]
+            fit_stop  = msh[self.N_Frequencies_Accumulated-1]
             
             sig.fitTail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)
 
