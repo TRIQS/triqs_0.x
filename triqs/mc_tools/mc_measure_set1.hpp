@@ -51,10 +51,10 @@ namespace mc_tools {
 
   //--------------------------------------------------------------------
 
-  template <class X> struct IsMeasure {
+  template <class X, typename MCSignType> struct IsMeasure {
    BOOST_CONCEPT_USAGE(IsMeasure)
    {
-    i.accumulate(std::complex<double>(0,1));    
+    i.accumulate(MCSignType(1.0));
     i.collect_results (*c);
    }
    private:
@@ -65,7 +65,7 @@ namespace mc_tools {
 
   template<typename MCSignType, typename MeasureType>
    class measure_impl : public measure_base<MCSignType> { 
-    BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType>));
+    BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>));
     void operator=(measure_impl const &); // forbidden
     protected:
     boost::scoped_ptr<MeasureType> ptr; 

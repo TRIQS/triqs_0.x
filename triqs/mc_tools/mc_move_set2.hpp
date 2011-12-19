@@ -152,9 +152,9 @@ namespace triqs { namespace mc_tools {
     std::cerr <<"  Proposition probability = "<<proba<<std::endl;
 #endif
     MCSignType rate_ratio = current->Try();
-    if (!std::isfinite(abs(rate_ratio))) 
+    if (!std::isfinite(std::abs(rate_ratio))) 
      TRIQS_RUNTIME_ERROR<<"Monte Carlo Error : the rate is not finite in move "<<name_of_currently_selected();
-    double abs_rate_ratio = abs(rate_ratio);
+    double abs_rate_ratio = std::abs(rate_ratio);
 #ifdef TRIQS_TOOLS_MC_DEBUG
     std::cerr << " Metropolis ratio " << rate_ratio<<". Abs(Metropolis ratio) " <<abs_rate_ratio << std::endl;
 #endif
@@ -171,7 +171,7 @@ namespace triqs { namespace mc_tools {
    MCSignType Accept() { 
     MCSignType accept_sign_ratio =  current->Accept();
     // just make sure that accept_sign_ratio is a sign!
-    assert(abs(abs(accept_sign_ratio)-1.0) < 1.e-10);
+    assert(std::abs(std::abs(accept_sign_ratio)-1.0) < 1.e-10);
 #ifdef TRIQS_TOOLS_MC_DEBUG
     std::cerr.setf(std::ios::scientific, std::ios::floatfield);
     std::cerr<<" ... Move accepted"<<std::endl;
@@ -208,7 +208,7 @@ namespace triqs { namespace mc_tools {
     for (unsigned int u = 0; u<Proba_Moves.size(); ++u) acc+=Proba_Moves[u];assert(acc>0);
     for (unsigned int u = 0; u<Proba_Moves.size(); ++u) Proba_Moves_Acc_Sum.push_back(Proba_Moves[u]/acc);
     for (unsigned int u = 1; u<Proba_Moves_Acc_Sum.size(); ++u) Proba_Moves_Acc_Sum[u] += Proba_Moves_Acc_Sum[u-1];
-    assert(abs(Proba_Moves_Acc_Sum[Proba_Moves_Acc_Sum.size()-1] -1)<1.e-13);
+    assert(std::abs(Proba_Moves_Acc_Sum[Proba_Moves_Acc_Sum.size()-1] -1)<1.e-13);
     Proba_Moves_Acc_Sum[Proba_Moves_Acc_Sum.size()-1] += 0.001; 
     // I shift the last proba acc so that even if random number in onecycle is 1 it is below that bound
     assert(Proba_Moves_Acc_Sum.size()==this->size()+1);

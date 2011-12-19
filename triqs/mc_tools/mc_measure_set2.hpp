@@ -37,10 +37,10 @@ namespace triqs { namespace mc_tools {
  namespace mpi=boost::mpi;
  namespace BLL = boost::lambda;
  
- template <class X> struct IsMeasure {
+ template <class X, typename MCSignType> struct IsMeasure {
   BOOST_CONCEPT_USAGE(IsMeasure)
   {
-   i.accumulate(std::complex<double>(0,1));    
+   i.accumulate(MCSignType(1.0));    
    i.collect_results(*c);
   }
   private:
@@ -65,7 +65,7 @@ namespace triqs { namespace mc_tools {
     accumulate_(BLL::bind(&MeasureType::accumulate,p,BLL::_1)),
     collect_results( BLL::bind(&MeasureType::collect_results, p,BLL::_1)),
     count_(0)
-   { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType>)); }
+   { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
  
