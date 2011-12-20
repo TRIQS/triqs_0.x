@@ -104,6 +104,9 @@ namespace triqs { namespace mc_tools {
    template<typename MeasureType>
     void add_measure (MeasureType *M, std::string name="") {  AllMeasures.insert(name,M);} 
 
+   // An access to the random number generator
+   polymorphic_random_generator RandomGenerator;
+
   protected:
    /**
      Reimplement to have another thermalization criterion. 
@@ -145,7 +148,6 @@ namespace triqs { namespace mc_tools {
 
   protected:
 
-   polymorphic_random_generator RandomGenerator;
    triqs::utility::report_stream report;
    size_t Rank;
    move_set<MCSignType> AllMoves;
