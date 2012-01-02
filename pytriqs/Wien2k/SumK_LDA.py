@@ -433,7 +433,7 @@ class SumK_LDA:
 
 
 
-    def analyse_BS(self, threshold = 0.00000001, includeshells = None):
+    def analyse_BS(self, threshold = 0.00001, includeshells = None):
         """ Determines the Greens function block structure from the simple point integration"""
 
         dm = self.simplepointdensmat()

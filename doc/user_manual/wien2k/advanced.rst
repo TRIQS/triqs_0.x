@@ -18,9 +18,9 @@ Then we define some parameters::
   U = 2.7
   J = 0.65
   Beta = 40
-  Loops =  10                       # Number of DMFT sc-loops
+  Loops =  10                      # Number of DMFT sc-loops
   Mix = 1.0                        # Mixing factor of Sigma after solution of the AIM
-  G0inv_Mix = 1.0                  # Mixing factor of the inverse of G0 as input for the AIM
+  DeltaMix = 1.0                   # Mixing factor of Delta as input for the AIM
   DC_type = 1                      # DC type: 0 FLL, 1 Held, 2 AMF
   useBlocs = True                  # use bloc structure from LDA input
   useMatrix = False                # True: Slater parameters, False: Kanamori parameters U+2J, U, U-J
@@ -104,14 +104,15 @@ previous section, with some additional refinement::
         
         # now calculate new G0:
         if (MPI.IS_MASTER_NODE()):
-            # We can do a mixing of G0^-1, in order to stabilize the DMFT iterations:
-            # corresponds to a mixing of Delta
+            # We can do a mixing of Delta in order to stabilize the DMFT iterations:
             S.G0 <<= S.Sigma + inverse(S.G)
             ar = HDF_Archive(HDFfilename,'a')
             if ((IterationNumber>1) or (previous_present)):
-                MPI.report("Mixing input G0inv with factor %s"%G0inv_Mix)
-                S.G0 <<= G0inv_Mix * S.G0 + (1.0-G0inv_Mix) * ar['G0invF']
-            ar['G0invF'] = S.G0
+                MPI.report("Mixing input Delta with factor %s"%DeltaMix)
+                Delta = (DeltaMix * S.G0.Delta()) + (1.0-DeltaMix) * ar['DeltaF']
+                S.G0 <<= S.G0 + S.G0.Delta() - Delta
+                
+            ar['DeltaF'] = S.G0.Delta()
             S.G0 <<= inverse(S.G0)
             del ar
             
