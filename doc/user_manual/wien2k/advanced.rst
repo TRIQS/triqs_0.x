@@ -10,7 +10,7 @@ First, we load the necessary modules::
   from pytriqs.Wien2k.SumK_LDA import *
   from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
   from pytriqs.Wien2k.Solver_MultiBand import *
-  from pytriqs.Base.GF_Local import GF_Initializers
+  from pytriqs.Base.GF_Local import *
 
 Then we define some parameters::
 
@@ -99,6 +99,7 @@ previous section, with some additional refinement::
 
         if ((IterationNumber==1)and(previous_present==False)):
             # Init the DC term and the real part of Sigma, if no previous run was found:
+            dm = S.G.density()
             SK.SetDoubleCounting( dm, U_interact = U, J_Hund = J, orb = 0, useDCformula = DC_type)
             S.Sigma <<= GF_Initializers.Const(SK.dc_imp[0]['up'][0,0])
         
@@ -119,7 +120,7 @@ previous section, with some additional refinement::
         S.G0 = MPI.bcast(S.G0)
 
         # Solve the impurity problem:
-        S.solve()
+        S.Solve()
 
         # solution done, do the post-processing:
         MPI.report("Total charge of impurity problem : %.6f"%S.G.total_density())
@@ -139,6 +140,7 @@ previous section, with some additional refinement::
             ar['GF'] = S.G
 
         # Now set new double counting:
+        dm = S.G.density()
         SK.SetDoubleCounting( dm, U_interact = U, J_Hund = J, orb = 0, useDCformula = DC_type)
         
 	#Save stuff:

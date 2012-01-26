@@ -91,7 +91,7 @@ set up the loop over DMFT iterations and the self-consistency condition::
           S.G <<= SK.extract_Gloc()[0]               # extract the local Green function
           S.G0 <<= inverse(S.Sigma + inverse(S.G))   # finally get G0, the input for the Solver
 
-          S.solve()                                  # now solve the impurity problem
+          S.Solve()                                  # now solve the impurity problem
 
 	  dm = S.G.density()                         # density matrix of the impurity problem  
           SK.SetDoubleCounting( dm, U_interact = U, J_Hund = J, useDCformula = DC_type)     # Set the double counting term
