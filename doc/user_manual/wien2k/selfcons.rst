@@ -76,13 +76,13 @@ nodes that are used::
 
   me@home $ run -qdmft -np 64 -i 10
 
-with the `-np` flag. In that case, you have to give the proper `MPI` execution statement, e.g. `mpiexec`, in the `run` script, 
+with the `-np` flag. In that case, you have to give the proper `MPI` execution statement, e.g. `mpiexec`, in the `run_lapw` script, 
 see the corresponding :program:`Wien2k` documentation. In many cases it is advisable to start from a converged one-shot 
 calculation.
 
 For practical purposes, you keep the number of DMFT loops within one DFT cycle low, or even to `Loops=1`. If you encouter 
 unstable convergence, you have to adjust the parameters such as
-`Loops`, `Mix`, or `G0inv_Mix` to improve the convergence.
+`Loops`, `Mix`, or `Delta_Mix` to improve the convergence.
 
 In the next section, :ref:`LDADMFTtutorial`, we will see in a detailed
 example, how such a self consistent calculation is performed.

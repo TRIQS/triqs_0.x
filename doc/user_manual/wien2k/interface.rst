@@ -39,7 +39,9 @@ There are three optional parameters to the Constructor:
   * `SymmSubGrp`: In this sub group we store all the data for applying the symmetry 
     operations in the DMFT loop. Standard value is `SymmCorr`.
   * `repacking`: If true, and the hdf5 file already exists, the system command :program:`h5repack` 
-    is invoked. This command ensures a minimal file size of the hdf5 file. Standard value is `False`.
+    is invoked. This command ensures a minimal file size of the hdf5
+    file. Standard value is `False`. If you want to use this, be sure
+    that :program:`h5repack` is in your path variable!
 
 After initialising the interface module, we can now convert the input text files into the
 hdf5 arxive by::

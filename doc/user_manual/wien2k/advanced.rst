@@ -11,6 +11,7 @@ First, we load the necessary modules::
   from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
   from pytriqs.Wien2k.Solver_MultiBand import *
   from pytriqs.Base.GF_Local import *
+  from pytriqs.Base.Archive.HDF_Archive import *
 
 Then we define some parameters::
 
@@ -107,7 +108,7 @@ previous section, with some additional refinement::
         if (MPI.IS_MASTER_NODE()):
             # We can do a mixing of Delta in order to stabilize the DMFT iterations:
             S.G0 <<= S.Sigma + inverse(S.G)
-            ar = HDF_Archive(HDFfilename,'a')
+            ar = HDF_Archive(LDAFilename+'.h5','a')
             if ((IterationNumber>1) or (previous_present)):
                 MPI.report("Mixing input Delta with factor %s"%DeltaMix)
                 Delta = (DeltaMix * S.G0.Delta()) + (1.0-DeltaMix) * ar['DeltaF']
@@ -136,8 +137,10 @@ previous section, with some additional refinement::
 
         # Write the final Sigma and G to the hdf5 archive:
         if (MPI.IS_MASTER_NODE()):
+            ar = HDF_Archive(LDAFilename+'.h5','a')	
             ar['SigmaF'] = S.Sigma
             ar['GF'] = S.G
+	    del ar
 
         # Now set new double counting:
         dm = S.G.density()
