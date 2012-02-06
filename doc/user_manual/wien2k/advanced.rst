@@ -129,15 +129,18 @@ previous section, with some additional refinement::
         # Now mix Sigma and G with factor Mix, if wanted:
         if ((IterationNumber>1) or (previous_present)):
             if (MPI.IS_MASTER_NODE()):
+                ar = HDF_Archive(LDAFilename+'.h5','a')
                 MPI.report("Mixing Sigma and G with factor %s"%Mix)
                 S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
                 S.G <<= Mix * S.G + (1.0-Mix) * ar['GF']
+                del ar
             S.G = MPI.bcast(S.G)
             S.Sigma = MPI.bcast(S.Sigma)
 
         # Write the final Sigma and G to the hdf5 archive:
         if (MPI.IS_MASTER_NODE()):
-            ar = HDF_Archive(LDAFilename+'.h5','a')	
+            ar = HDF_Archive(LDAFilename+'.h5','a')
+            ar['iterations'] = previous_runs + IterationNumber	
             ar['SigmaF'] = S.Sigma
             ar['GF'] = S.G
 	    del ar
