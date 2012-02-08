@@ -286,7 +286,9 @@ SUBROUTINE gf_HI_fullU(GF,Tail,e0f,ur,umn,ujmn,zmsb,nlm,Iwmax,nmom,ns,atocc,atma
         k=i-1
         LEFT=.TRUE.
      ENDIF
-     IF(i<nso.AND.N_occ(i)%ndeg>0.AND.N_occ(i+1)%ndeg==0) THEN
+! Fix 15.11.2011
+!    IF(i<nso.AND.N_occ(i)%ndeg>0.AND.N_occ(i+1)%ndeg==0) THEN
+     IF(i<nso.AND.N_occ(i)%ndeg>0) THEN
         l=i+1
         RIGHT=.TRUE.
      ENDIF
@@ -295,6 +297,12 @@ SUBROUTINE gf_HI_fullU(GF,Tail,e0f,ur,umn,ujmn,zmsb,nlm,Iwmax,nmom,ns,atocc,atma
         CALL add_to_GF_N(GF,Tail,arr,nso,nmom,Nat,Iwmax,l-k+1,N_occ(k:l),zmsb,Z,Eground,temp,zerotemp,LEFT,RIGHT)
      endif
   ENDDO
+  IF (verbosity>1) THEN
+      WRITE(*,*)'Notmalization of atomic GF:'
+      DO m=1,nso 
+        WRITE(*,*)Tail(1,m,m)
+      ENDDO
+  ENDIF
 
   deallocate( occ, E_A, ummss, docc, ener, arr, nground )
   DO i=0,nso
@@ -593,7 +601,9 @@ SUBROUTINE add_to_GF_N(GF,Tail,arr,nso,nmom,Nat,Iwmax,num,N_occ,zmsb,Z,Eground,t
      ENDDO
      ! Compute contribution to GF
      DO i=1,N_occ(num1)%ndeg
-        DO k=1,N_occ(num)%n
+     !   DO k=1,N_occ(num)%n
+     ! Fix 15.11.2011: only states above ndeg are included
+        DO k=N_occ(num)%ndeg+1,N_occ(num)%n
            IF(zerotemp) THEN
               ecoff=1d0
            ELSEIF(k >N_occ(num)%ndeg) THEN

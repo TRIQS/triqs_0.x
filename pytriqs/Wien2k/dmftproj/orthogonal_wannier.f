@@ -405,7 +405,9 @@ C --------------------------------------------------------
             IF (l==0) THEN
 C the only irep possible for s-orbital is the matrix itself.
              DO is=1,ns
-               D(ind1,1:nbnd)=
+C               D(ind1,1:nbnd)=
+C Bug correction 8.11.2012
+               D(ind1+1,1:nbnd)=
      &           pr_crorb(icrorb,ik,is)%mat_rep(1,nbbot:nbtop)
                ind1=ind1+1
              ENDDO
