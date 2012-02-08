@@ -9,3 +9,5 @@ Before you proceed, make sure you have read the LICENSE.txt file.
 
 Enjoy!
 
+The TRIQS team
+
