@@ -22,12 +22,10 @@ else (TRIQS_BUILD_STATIC)
  install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}.so DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
  set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
  STRING(REPLACE "/" "." MODPATH ${ModuleDest})
-  # FIX is  for alps201 hdf5 bug
-  #SET (FIX  "import pyalps.pyhdf5_c \n")
-  #nSET (FIX  "from pytriqs.alps import pyhdf5_c  \n")
-  #file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "import sys,dl\nflag = sys.getdlopenflags()\nsys.setdlopenflags(dl.RTLD_NOW|dl.RTLD_GLOBAL)\nfrom pytriqs.${MODPATH}._${MODNAME} import *\nsys.setdlopenflags(flag)")
-  # not ok : dl is not present on 64 bits machines and it is deprecated anyway, using ctypes as in numpy
-  file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "${FIX}\nimport sys,ctypes \nflag = sys.getdlopenflags()\nsys.setdlopenflags(flag|ctypes.RTLD_GLOBAL)\nfrom pytriqs.${MODPATH}._${MODNAME} import *\nsys.setdlopenflags(flag)")
+  # issue #26: setting RTLD_GLOBAL is no longer necessary because boost python is loaded dynamically and it was causing problems
+  # with a double definition of PyArray_API from multiarray.so
+  # file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "${FIX}\nimport sys,ctypes \nflag = sys.getdlopenflags()\nsys.setdlopenflags(flag|ctypes.RTLD_GLOBAL)\nfrom pytriqs.${MODPATH}._${MODNAME} import *\nsys.setdlopenflags(flag)")
+  file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "from pytriqs.${MODPATH}._${MODNAME} import *\n")
 endif (TRIQS_BUILD_STATIC)
 install( FILES ${CMAKE_BINARY_DIR}/${ModuleIncludeFile} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest})
 endfunction (python_build_module ModuleName)
