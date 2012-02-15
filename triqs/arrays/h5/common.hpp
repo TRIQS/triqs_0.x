@@ -143,7 +143,7 @@ namespace triqs { namespace arrays { namespace h5 {
  /********************* exists *************************************************/
 
  template < typename FileGroupType >
-  bool exists (FileGroupType file_or_group, std::string name) { return (H5Lexists(file_or_group.getId(), name.c_str(), NULL)); } 
+  bool exists (FileGroupType file_or_group, std::string name) { return (H5Lexists(file_or_group.getId(), name.c_str(), H5P_DEFAULT)); } 
 
  /****************** WRITE attribute *********************************************/
 
