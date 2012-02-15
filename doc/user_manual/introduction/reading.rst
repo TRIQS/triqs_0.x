@@ -2,7 +2,7 @@
 Recommended reading and references 
 ----------------------------------------------------------
 
-* A good set of lectures is from `Scipy <http://scipy-lectures.github.com/>`_.   
+* A good set of lectures is the `Scipy lecture notes <http://scipy-lectures.github.com/>`_.   
 
 * A good starting point to learn about scientific computing with Python and related ideas is 
   `Software carpentry <http://software-carpentry.org>`_, which  provides nice video/slides `lectures on Python <http://software-carpentry.org/4_0/python>`_
