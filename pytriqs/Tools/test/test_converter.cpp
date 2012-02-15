@@ -29,6 +29,7 @@ using namespace triqs::python_tools;
 #include <iostream>
 #include <iterator>
 #include <vector>
+#include <map>
 using namespace std;
 
 void f1( object x) { 
@@ -60,8 +61,10 @@ object f3() {
 void g(object x) {
  typedef boost::unordered_map<std::string, int > type;
  type M = Py_to_C::convert<type>::invoke(x);
- for (type::iterator it = M.begin(); it !=M.end(); ++it) {
-  std::cout<< it-> first <<" --- > "<< it-> second <<endl;
+ std::map<std::string,int> res;
+ res.insert(M.begin(), M.end());
+ for (std::map<std::string,int>::iterator it = res.begin(); it !=res.end(); ++it) {
+    std::cout<< it-> first <<" --- > "<< it-> second <<endl;
  }
 }
 
