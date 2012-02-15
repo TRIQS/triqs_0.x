@@ -110,7 +110,8 @@ namespace triqs { namespace arrays {
   template<int RANK,typename ArgsTuple>
    struct SlicedIndexOrder<Fortran<RANK>, ArgsTuple> {
     static const int NN=RANK - TupleTools::CountHowManyInt<ArgsTuple>::value;
-    typedef Fortran<NN> type;
+    // Changg Fortran<1> into C<1>. Fortran<1> is never returned
+    typedef typename boost::mpl::if_c< NN==1, C<1>, Fortran<NN> >::type type;
    };
 
   /*

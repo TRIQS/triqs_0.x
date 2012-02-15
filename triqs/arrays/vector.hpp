@@ -29,11 +29,6 @@
 #include "impl/option.hpp"
 
 namespace triqs { namespace arrays {
-  namespace indexmaps { 
-   // TO BE FIXWED 
-  typedef cuboid_map<indexmaps::IndexOrder::C<1>, false > cuboid_map_vector;
-  typedef cuboid_map<indexmaps::IndexOrder::Fortran<1>, false > cuboid_map_vector_b;
- }
 
  template <typename ValueType, typename Opt = Option::Default> class vector_view;
  template <typename ValueType, typename Opt = Option::Default> class vector;
@@ -50,11 +45,7 @@ namespace triqs { namespace arrays {
    typedef vector<ValueType,Opt> non_view_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S> vector_view (indexmaps::cuboid_map_vector const & Ind,S const & Mem): BaseType(Ind, Mem) {}
-
-   // a special case : if the map is fortran<1>, we need to rebuild it as C<1>, the defaults.
-   template<typename S> vector_view (indexmaps::cuboid_map_vector_b const & Ind,S const & Mem): 
-    BaseType(indexmaps::cuboid_map_vector(Ind.lengths(), Ind.strides(),Ind.start_shift()), Mem) {}
+   template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): BaseType(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP>

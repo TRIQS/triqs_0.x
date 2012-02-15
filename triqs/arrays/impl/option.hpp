@@ -146,6 +146,9 @@ namespace triqs { namespace arrays {
 
   // given Rank and Opt, return the IndexMap
   template<int R, class Opt>  struct R_Opt_2_IM : dim_iotag_2_imap< R, typename Opt::IndexOrderTag, Opt::BoundCheck > {};
+  
+  //overrule for Fortran<1> -> C<1> // broken
+  //template<class Opt>  struct R_Opt_2_IM<1,Opt> : dim_iotag_2_imap< 1, Tag::C, Opt::BoundCheck > {};
 
   // inverse function : from an IM, an Opt, compute the new Opt such that it would give this indexmap
   template<class IM> struct IM_2_Ordertag;
