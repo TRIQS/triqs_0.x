@@ -17,13 +17,7 @@ TRIQS is compatible with the great new IPython notebook (ipython 0.12), which is
 
 If you wish to install the notebook:
 
-* The simplest is to use an Enthought distribution.
-* Download and install the *development* version of ipython.
-  
-  * Use the python of the Enthought distribution, it will *replace* the Enthought ipython.
-
-  * Detailed instructions are on the 
-    `ipython web site <http://ipython.org/ipython-doc/dev/install/install.html#dependencies-for-the-ipython-html-notebook>`_.
+* The simplest is to use an Enthought distribution or Ubuntu 12.10.
 
 * Use the shell ipytriqs_notebook in the directory you want to work.
 
