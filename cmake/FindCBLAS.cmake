@@ -39,7 +39,7 @@ FIND_PATH(CBLAS_INCLUDE_DIR NAMES ${CBLAS_SEARCH_NAME}  PATHS ${TRIAL_PATHS} DOC
 mark_as_advanced(CBLAS_INCLUDE_DIR)
 
 IF (NOT CBLAS_INCLUDE_DIR)
- MESSAGE(FATAL_ERROR "I can not find cblas !")
+ MESSAGE(FATAL_ERROR "I can not find the cblas headers (cblas.h or mkl_cblas.h) !")
 ELSE (NOT CBLAS_INCLUDE_DIR)
  MESSAGE(STATUS "cblas header found at ${CBLAS_INCLUDE_DIR}")
 ENDIF (NOT CBLAS_INCLUDE_DIR)
