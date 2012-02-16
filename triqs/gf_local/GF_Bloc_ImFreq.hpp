@@ -20,31 +20,47 @@
  *
  ******************************************************************************/
 
-#include <triqs/utility/h5_exceptions.hpp>
-#include "MC.hpp"
-#include <boost/python/return_internal_reference.hpp>
-#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
-#include "Hloc.hpp"
+#ifndef TRIQS_BASE_GF_BLOC_IMFREQ_H
+#define TRIQS_BASE_GF_BLOC_IMFREQ_H
 
-using namespace boost::python;
+#include "GF_Bloc_Base.hpp"
+#include "fourier.hpp"
+#include "legendre_matsubara.hpp"
 
-namespace MC_Hybridization_Matsu {
- void solve (boost::python::object );
+class GF_Bloc_ImFreq : public GF_Bloc_Base<COMPLEX> {
+
+public: 
+  
+  GF_Bloc_ImFreq (boost::python::object IndicesL_,
+		  boost::python::object IndicesR_,
+		  PyObject * Data,
+		  boost::shared_ptr<MeshGF> Mesh,
+		  boost::shared_ptr<TailGF> Tail);
+  
+  GF_Bloc_ImFreq (const GF_Bloc_ImFreq & Gin);
+
+  /// Computes the density \f$ G(\tau = 0^-) \f$
+  PyArray<COMPLEX,2> density() const;
+
+  void setFromFourierOf(const GF_Bloc_ImTime & Gt, bool time_mesh_starts_at_half_bin = true) { fourier_direct(Gt,*this,time_mesh_starts_at_half_bin); }
+  void setFromLegendre(const GF_Bloc_ImLegendre & Gl) { legendre_matsubara_direct(Gl,*this); }
+ 
 };
 
-BOOST_PYTHON_MODULE(_pytriqs_Solver_HybridizationExpansion) {
+#endif
 
- triqs::utility::register_h5_exception();
 
- docstring_options doc_options;
- doc_options.disable_py_signatures();
 
- class_<Hloc>("Hloc",init<int,int,python::dict,python::dict,python::list,python::object,int>())
-  .def ("__repr__",&Hloc::print)
-  ;
 
- def ("MC_solve",&MC_Hybridization_Matsu::solve);
 
- def ("Random_Generators_Available", &triqs::mc_tools::polymorphic_random_generator::random_generator_names);
 
-};
+
+
+
+
+
+
+
+
+
+

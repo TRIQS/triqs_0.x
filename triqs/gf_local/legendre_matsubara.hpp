@@ -3,7 +3,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011 by L. Boehnke, M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -20,31 +20,14 @@
  *
  ******************************************************************************/
 
-#include <triqs/utility/h5_exceptions.hpp>
-#include "MC.hpp"
-#include <boost/python/return_internal_reference.hpp>
-#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
-#include "Hloc.hpp"
 
-using namespace boost::python;
+class GF_Bloc_ImFreq;
+class GF_Bloc_ImTime;
+class GF_Bloc_ImLegendre;
 
-namespace MC_Hybridization_Matsu {
- void solve (boost::python::object );
-};
+void legendre_matsubara_direct (GF_Bloc_ImLegendre const & Gl, GF_Bloc_ImFreq & Gw);
+void legendre_matsubara_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImLegendre & Gl);
 
-BOOST_PYTHON_MODULE(_pytriqs_Solver_HybridizationExpansion) {
+void legendre_matsubara_direct (GF_Bloc_ImLegendre const & Gl, GF_Bloc_ImTime & Gt);
+void legendre_matsubara_inverse (GF_Bloc_ImTime const & Gt, GF_Bloc_ImLegendre & Gl);
 
- triqs::utility::register_h5_exception();
-
- docstring_options doc_options;
- doc_options.disable_py_signatures();
-
- class_<Hloc>("Hloc",init<int,int,python::dict,python::dict,python::list,python::object,int>())
-  .def ("__repr__",&Hloc::print)
-  ;
-
- def ("MC_solve",&MC_Hybridization_Matsu::solve);
-
- def ("Random_Generators_Available", &triqs::mc_tools::polymorphic_random_generator::random_generator_names);
-
-};

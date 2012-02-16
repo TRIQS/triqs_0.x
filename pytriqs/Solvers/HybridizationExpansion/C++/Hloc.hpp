@@ -21,7 +21,7 @@
 #ifndef HLOC_H
 #define HLOC_H
 
-#include <GreenFunctions/GF_Bloc_ImFreq.hpp>
+#include <triqs/gf_local/GF_Bloc_ImFreq.hpp>
 #include <map>
 #include <set>
 #include <vector>

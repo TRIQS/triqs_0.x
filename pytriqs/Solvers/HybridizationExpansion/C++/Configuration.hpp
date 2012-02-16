@@ -23,13 +23,13 @@
 #ifndef CONFIGURATION_H_37j3hrf
 #define CONFIGURATION_H_37j3hrf
 
-#include <GreenFunctions/GF_C.hpp>
+#include <triqs/gf_local/GF_C.hpp>
 #include "detManip.hpp"
 #include "DynamicTrace.hpp"
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <map>
 #include "gf_binner_and_eval.hpp"
-#include "GreenFunctions/GF_Bloc_ImTime.hpp"
+#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
 
 /**
   The configuration of the Monte Carlo

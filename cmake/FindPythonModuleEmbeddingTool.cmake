@@ -19,7 +19,7 @@ else (TRIQS_BUILD_STATIC)
  add_library(${ModuleName} MODULE ${ARGN}  )
  set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
  target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS}) 
- install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${ModuleName}.so DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
+ install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
  set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
  STRING(REPLACE "/" "." MODPATH ${ModuleDest})
   # issue #26: setting RTLD_GLOBAL is no longer necessary because boost python is loaded dynamically and it was causing problems

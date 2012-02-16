@@ -24,7 +24,7 @@
 #define TRIQS_CTHYB1_MEASURES_LEGENDRE_ALL_H
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/h5/array_stack.hpp>
-#include "GreenFunctions/GF_Bloc_ImLegendre.hpp"
+#include <triqs/gf_local/GF_Bloc_ImLegendre.hpp>
 #include "Measures_Z.hpp"
 #include "Configuration.hpp"
 

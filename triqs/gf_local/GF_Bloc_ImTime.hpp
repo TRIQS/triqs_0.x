@@ -20,31 +20,31 @@
  *
  ******************************************************************************/
 
-#include <triqs/utility/h5_exceptions.hpp>
-#include "MC.hpp"
-#include <boost/python/return_internal_reference.hpp>
-#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
-#include "Hloc.hpp"
+#ifndef TRIQS_BASE_GF_BLOC_TIME_H
+#define TRIQS_BASE_GF_BLOC_TIME_H
 
-using namespace boost::python;
+#include "GF_Bloc_Base.hpp"
+#include "fourier.hpp"
+#include "legendre_matsubara.hpp"
 
-namespace MC_Hybridization_Matsu {
- void solve (boost::python::object );
-};
+class GF_Bloc_ImTime : public GF_Bloc_Base<double> {
+ void operator= (const GF_Bloc_ImTime & Gin); // not implemented to be fixed. there are const here....
+ public: 
+ GF_Bloc_ImTime (boost::python::object IndicesL_,
+   boost::python::object IndicesR_,
+   PyObject * Data,
+   boost::shared_ptr<MeshGF> Mesh,
+   boost::shared_ptr<TailGF> Tail);
 
-BOOST_PYTHON_MODULE(_pytriqs_Solver_HybridizationExpansion) {
+ GF_Bloc_ImTime (const GF_Bloc_ImTime & Gin);
+ 
+ const int numberTimeSlices;
 
- triqs::utility::register_h5_exception();
+ void setFromInverseFourierOf(const GF_Bloc_ImFreq & Gw, bool time_mesh_starts_at_half_bin = true) { fourier_inverse(Gw, *this,time_mesh_starts_at_half_bin);}
+ void setFromLegendre (GF_Bloc_ImLegendre const & Gl) { legendre_matsubara_direct(Gl,*this); }
 
- docstring_options doc_options;
- doc_options.disable_py_signatures();
-
- class_<Hloc>("Hloc",init<int,int,python::dict,python::dict,python::list,python::object,int>())
-  .def ("__repr__",&Hloc::print)
-  ;
-
- def ("MC_solve",&MC_Hybridization_Matsu::solve);
-
- def ("Random_Generators_Available", &triqs::mc_tools::polymorphic_random_generator::random_generator_names);
+ PyArray<GF_Bloc_Base<double>::element_value_type,2> integral_tau();
 
 };
+#endif
+

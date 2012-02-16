@@ -12,19 +12,30 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/signal_handler.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/stack_trace.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/blitzext/blitz_op.cpp 
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/fourier.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_Base.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImFreq.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImLegendre.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImTime.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ReFreq.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ReTime.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/legendre_matsubara.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/MeshGF.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/TailGF.cpp
 )
 
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
-#mark_as_advanced(Build_Array_tests)
 
 # Add the arrays
 add_subdirectory(arrays)
 add_subdirectory(python_tools)
 
-# The static lib will be build from the sources
+# The lib will be build from the sources
 add_library(triqs ${ALLSOURCES})
-#add_library(triqs SHARED ${ALLSOURCES}) 
 target_link_libraries (triqs ${TRIQS_LINK_LIBS} )
+
+# Install library
+install(TARGETS triqs DESTINATION lib)
 
 # Do we install the dev version?
 option(Install_dev "Install the dev version of TRIQS?" OFF)
@@ -33,9 +44,6 @@ if (Install_dev)
   # TRIQS cmake file
   configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/pytriqs/cmake)
-
-  # Install library
-  install(TARGETS triqs DESTINATION lib)
 
   # Add all headers
   FILE(GLOB ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

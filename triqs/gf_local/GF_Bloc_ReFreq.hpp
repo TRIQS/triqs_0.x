@@ -20,31 +20,44 @@
  *
  ******************************************************************************/
 
-#include <triqs/utility/h5_exceptions.hpp>
-#include "MC.hpp"
-#include <boost/python/return_internal_reference.hpp>
-#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
-#include "Hloc.hpp"
+#ifndef TRIQS_GF_BLOC_REFREQ_H
+#define TRIQS_GF_BLOC_REFREQ_H
 
-using namespace boost::python;
+#include "GF_Bloc_Base.hpp"
+#include "fourier.hpp"
 
-namespace MC_Hybridization_Matsu {
- void solve (boost::python::object );
-};
+class GF_Bloc_ReFreq : public GF_Bloc_Base<COMPLEX> 
+{
+public: 
+  
+  GF_Bloc_ReFreq (boost::python::object IndicesL_,
+		  boost::python::object IndicesR_,
+		  PyObject * Data,
+		  boost::shared_ptr<MeshGF> Mesh,
+		  boost::shared_ptr<TailGF> Tail);
+  
+  GF_Bloc_ReFreq (const GF_Bloc_ReFreq & Gin);
 
-BOOST_PYTHON_MODULE(_pytriqs_Solver_HybridizationExpansion) {
-
- triqs::utility::register_h5_exception();
-
- docstring_options doc_options;
- doc_options.disable_py_signatures();
-
- class_<Hloc>("Hloc",init<int,int,python::dict,python::dict,python::list,python::object,int>())
-  .def ("__repr__",&Hloc::print)
-  ;
-
- def ("MC_solve",&MC_Hybridization_Matsu::solve);
-
- def ("Random_Generators_Available", &triqs::mc_tools::polymorphic_random_generator::random_generator_names);
+  void setFromFourierOf(const GF_Bloc_ReTime & Gt) { fourier_direct(Gt,*this);}
+  
+  PyArray<COMPLEX,2> density() const;
 
 };
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

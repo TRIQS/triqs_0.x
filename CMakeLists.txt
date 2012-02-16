@@ -23,6 +23,9 @@ include (CMakeDetermineSystem)
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project (AllPrograms C CXX Fortran) 
 
+# Make sure the rpath is set fine after installation
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})

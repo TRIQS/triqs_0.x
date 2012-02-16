@@ -22,7 +22,7 @@
 
 #ifndef TRIQS_CTHYB1_MEASURES_LEGENDRE_H
 #define TRIQS_CTHYB1_MEASURES_LEGENDRE_H
-#include "GreenFunctions/GF_Bloc_ImLegendre.hpp"
+#include <triqs/gf_local/GF_Bloc_ImLegendre.hpp>
 #include "Measures_Z.hpp"
 
 /* Measure in Legendre Polynoms.  */
