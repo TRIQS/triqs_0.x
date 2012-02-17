@@ -250,9 +250,8 @@ class _GFBloc_base_data_tail  :
         elif Descriptors.is_scalar(arg): # a scalar
             d[:,:,:] *= arg
             # to be simplified when the *= scalar for tail will be added !
-            for n in range(t.OrderMax):
+            for n in range(t.OrderMin,t.OrderMax+1):
                 t[n].array[:,:] *= arg
-            #t = self._tail; t *= arg
         else:
           print type(arg)
           raise NotImplementedError
