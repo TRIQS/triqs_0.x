@@ -78,7 +78,7 @@ if (GIT_FOUND)
  GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")
  MESSAGE(STATUS "Git hash ${GIT_HASH}")
  MESSAGE(STATUS "Git branches : \n  ${GIT_BRANCHES}")
- add_definitions( -DGIT_HASH=${GIT_HASH}) # for all compilations
+ add_definitions( -DGIT_HASH="${GIT_HASH}") # for all compilations
 endif (GIT_FOUND)
 
 # Compute WhoAmI and hostname
