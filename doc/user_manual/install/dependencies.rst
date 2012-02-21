@@ -19,7 +19,7 @@ mpi                   e.g., openmpi     Parallelism
                                         of maintaining a non parallel version of TRIQS
 fftw                  >= 3.2            Fourier transform
 boost                 >= 1.46           C++ librairies
-hdf5*                 >= 1.8.0          File storage system. Important: the *serial* version must be installed
+hdf5                  >= 1.8.0          File storage system. Important: the *serial* version must be installed
 python*               >= 2.6.5
 scipy*                                  python mathematical library
 numpy*                                  python scientific library
@@ -46,14 +46,42 @@ Tested compilers include :
   * ifort 
   * gfortran
 
-Quick install of python dependencies using Enthought [all platforms]
+Quick install of python dependencies using Enthought [Recommended on all platforms]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A simple way to install all the python dependencies is to use the `Enthought <http://www.enthought.com/>`_ scientific python distribution.
+A simple way to install all the python dependencies is to use the `Enthought <http://www.enthought.com/>`_ scientific python distribution,
+which is available for most platforms [tested on version 7.2].
 
- * It contains recent versions of all the librairies marked with a star in the previous list, i.e. all the python tools and hdf5.  
- * It is free for academic use.
- * It is available for most platforms.
+Enthought's distribution allows you to have a recent python, ipython with all the necessary libraries
+(including the ipython notebook and its dependencies) without upgrading your machine's system (in particular python).
+It is very convenient on clusters, e.g. 
+
+How to proceed : 
+
+* Take the `EPD Free version <http://enthought.com/products/epd_free.php>`_  (the free and light version of Enthought).
+* Install it ::
+
+   bash epd_free.sh -b -p EPD_Free_Install_Dir
+
+* Add the following packages (the last two are only to compile the documentation) ::
+
+   EPD_Free_Install_Dir/bin/easy_install h5py
+   EPD_Free_Install_Dir/bin/easy_install Sphinx
+   EPD_Free_Install_Dir/bin/easy_install pyparsing
+
+* When compiling TRIQS, you will simply pass the option ::
+
+    cmake ..... -DPYTHON_INTERPRETER=EPD_Free_Install_Dir/bin/python
+
+ and that is all.
+
+.. warning ::
+ 
+ A priori, you could also use the regular, full Enthought distribution (it is free for academics), but we do not recommend it
+ at present. Indeed, in this distribution the HDF5 has been compiled without C++ support, which TRIQS requires.
+ So in most machines it will work, with h5py compiled with the Enthought HDF5 version, while the C++ code will silently include
+ your system's HDF5 headers, if they exist ...
+
 
 Regular install of dependencies [Ubuntu]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
