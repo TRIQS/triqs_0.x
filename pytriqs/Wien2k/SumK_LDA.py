@@ -684,7 +684,7 @@ class SumK_LDA:
                             bl   = self.GFStruct_Solver[iorb][ibl][0]
                             ind1 = self.GFStruct_Solver[iorb][ibl][1][i]
                             ind2 = self.GFStruct_Solver[iorb][ibl][1][j]
-                            dm[icrsh][self.mapinv[iorb][bl]][ind1,ind2] = densmat[bl][i,j]
+                            dm[icrsh][self.mapinv[iorb][bl]][ind1,ind2] = densmat[bl][i,j].real    # only real part relevant for trace
 
                 M = self.corr_shells[icrsh][3]
                 Ncr = {}
