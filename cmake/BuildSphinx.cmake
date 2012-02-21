@@ -6,10 +6,6 @@
 # This module looks for sphinx documentation tool 
 # and define a function that prepares the Makefile for sphinx-build
 
-#SET ( SphinxBuildOption "  " )
-#SET ( SphinxBuildOption "  " CACHE STRING "Options for sphinx-build other than -b (e.g. -E to rebuild all files each time)" )
-#mark_as_advanced(SphinxBuildOption)
-
 FIND_PROGRAM(SPHINXBUILD_EXECUTABLE
  NAMES sphinx-build sphinx-build-2.6
  PATHS $ENV{HOME}/bin /usr/bin /opt/local/bin 
@@ -38,6 +34,6 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(SPHINX DEFAULT_MSG SPHINXBUILD_EXECUTABLE)
 
 MARK_AS_ADVANCED( SPHINXBUILD_EXECUTABLE )
 
-SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/BUILD/html/contents.html)
-add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} COMMAND cd BUILD && ${SPHINXBUILD_EXECUTABLE} -b html . html)
+SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/BUILD/contents.html)
+add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} COMMAND ${SPHINXBUILD_EXECUTABLE} -c . -b html ${DOC_SOURCE} html)
 add_custom_target(docs_sphinx${DOC_EXT} ALL DEPENDS ${sphinx_top})
