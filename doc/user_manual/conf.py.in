@@ -21,7 +21,7 @@ import sys, os
 # General configuration
 # ---------------------
 
-sys.path +=["@TRIQS_SOURCE_DIR@/foreignlibs/breathe", "@TRIQS_SOURCE_DIR@/foreignlibs/mpl", "@TRIQS_SOURCE_DIR@/foreignlibs"]
+sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe", "@CMAKE_BINARY_DIR@/doc/mpl", "@CMAKE_BINARY_DIR@/doc"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
