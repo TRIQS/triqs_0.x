@@ -4,6 +4,12 @@ Breathe
 This is an extension to reStructuredText and Sphinx to be able to read and
 render the Doxygen xml output.
 
+Download
+--------
+
+Breathe is available from github and `PyPI, the Python Package Index
+<http://pypi.python.org/pypi/breathe>`_
+
 Documentation
 -------------
 
@@ -54,6 +60,7 @@ Thank you to:
 - `queezythegreat <https://github.com/queezythegreat>`_
 - `abingham <https://github.com/abingham>`_
 - `davidm <https://github.com/davidm>`_
+- `hobu <https://github.com/hobu>`_
 
 For their contributions; improving the code and the documentation. And thanks to:
 
