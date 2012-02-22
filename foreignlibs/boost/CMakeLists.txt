@@ -52,3 +52,7 @@ else(TRIQS_BUILD_STATIC)
  execute_process(COMMAND ln -fs ${CMAKE_CURRENT_BINARY_DIR}/mpi.so  ${CMAKE_BINARY_DIR}/pytriqs/boost)
 
 endif(TRIQS_BUILD_STATIC)
+
+if(Install_dev)
+  install(DIRECTORY numeric DESTINATION include/boost)
+endif(Install_dev)

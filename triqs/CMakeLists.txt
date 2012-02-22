@@ -43,21 +43,23 @@ if (Install_dev)
 
   # TRIQS cmake file
   configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/pytriqs/cmake)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
+
 
   # Add all headers
   FILE(GLOB ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     arrays/*.hpp
-    arrays/impl/*.hpp
-    arrays/IndexMaps/*.hpp
-    arrays/IndexMaps/cuboid/*.hpp
-    arrays/Storages/*.hpp
-    arrays/expressions/*.hpp
+    arrays/storages/*.hpp
     arrays/python/*.hpp
-    arrays/hdf5/*.hpp
-    arrays/tools/*.hpp
+    arrays/impl/*.hpp
+    arrays/expressions/*.hpp
+    arrays/h5/*.hpp
+    arrays/linalg/*.hpp
+    arrays/indexmaps/*.hpp
+    arrays/indexmaps/cuboid/*.hpp
     mc_tools/*.hpp
     python_tools/*.hpp
+    gf_local/*.hpp
     utility/*.hpp
   )
 
