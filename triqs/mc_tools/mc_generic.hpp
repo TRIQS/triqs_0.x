@@ -98,8 +98,17 @@ namespace triqs { namespace mc_tools {
    /**
     * Register the Measure M 
     *
-    * WARNING : the pointer is deleted automatically by the MC class at destruction. Correct usage is therefore 
-    *         myMC.add_measure( new myMOVE(...), Name);
+      \rst
+       .. warning::
+   
+          The pointer is deleted automatically by the MC class at destruction. 
+          Correct usage is therefore:
+
+       .. code-block:: c 
+        
+            myMC.add_measure( new myMEASURE(...), Name); 
+ 
+      \endrst
     */
    template<typename MeasureType>
     void add_measure (MeasureType *M, std::string name="") {  AllMeasures.insert(name,M);} 
