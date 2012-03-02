@@ -1,4 +1,5 @@
 
+
 # Compilation and installation of Blitz++ (+patch)
 IF (NOT BLITZ_INSTALLED)
  MESSAGE("----------------------------------")
@@ -11,6 +12,14 @@ IF (NOT BLITZ_INSTALLED)
  FILE(APPEND ${fff} "export CXX=${CMAKE_CXX_COMPILER}\n")
  FILE(APPEND ${fff} "export CXXFLAGS=\"${CMAKE_CXX_FLAGS}\"\n")
  FILE(APPEND ${fff} "export CXX_IS_GNU=${CMAKE_COMPILER_IS_GNUCXX}\n")
+
+ # overruling : using gnu for clang compiler
+ string(REGEX MATCH "clang" IS_CLANG ${CMAKE_CXX_COMPILER})
+ IF (IS_CLANG)
+  MESSAGE ( "Blitz config : you are using clang, I use the gcc version of blitz...  ")
+  FILE(APPEND ${fff} "export CXX_IS_GNU=1\n")
+ ENDIF (IS_CLANG) 
+
  FILE(APPEND ${fff} "cd blitz-0.9_CorrectedbyOPForICCBUG-ClangWarn\n")
  #FILE(APPEND ${fff} "cd blitz-0.9_CorrectedbyOPForICCBUG\n")
  FILE(APPEND ${fff} "echo Configuring Blitz : may take a while....\n")
