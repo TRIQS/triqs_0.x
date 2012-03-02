@@ -1,4 +1,4 @@
-SET( TRIQS_LINK_LIBS LocalGreenFunction_c triqs ${TRIQS_LINK_LIBS})
+SET( TRIQS_LINK_LIBS triqs ${TRIQS_LINK_LIBS})
 SET(ExecutableName "pytriqs" ) 
 
 if (TRIQS_BUILD_STATIC)
