@@ -12,6 +12,7 @@ Array library
    :maxdepth: 2
 
    introduction
+   getting_started
    basic_classes
    slicing
    assignment
