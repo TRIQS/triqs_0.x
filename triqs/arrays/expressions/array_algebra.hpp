@@ -67,8 +67,17 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
   ,proto::when< proto::negate<ArrayGrammar >,ArrayGrammar(proto::_child0)  >
   > {};
 
+ /* ---------------------------------------------------------------------------------------------------
+  * Define the main expression template ArrayExpr, the domain and Grammar (implemented below)
+  * NB : it modifies the PROTO Domain to make *COPIES* of all objects.
+  * We escape the copy of array by specializing the template below (end of file)
+  * ---> to be rediscussed.
+  * cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+  --------------------------------------------------------------------------------------------------- */
  template<typename Expr> struct ArrayExpr;
- struct ArrayDomain : proto::domain<proto::generator<ArrayExpr>, ArrayGrammar> {};
+ struct ArrayDomain : proto::domain<proto::generator<ArrayExpr>, ArrayGrammar> {
+  template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
+ };
 
  //   Evaluation context
  template<typename KeyType, typename ReturnType>
@@ -106,5 +115,17 @@ template<typename Expr > array_view <typename Expr::value_type, Expr::domain_typ
 eval( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}
 
 }}//namespace triqs::arrays
+
+
+// specializing the proto copy
+namespace boost { namespace proto { namespace detail { 
+
+ template<int N, typename T, typename Opt, typename Generator>    
+  struct as_expr< const triqs::arrays::array<T,N,Opt>, Generator, true > : as_expr< const triqs::arrays::array_view<T,N,Opt>, Generator, true> {};
+
+ template<int N, typename T, typename Opt, typename Generator>    
+  struct as_expr< triqs::arrays::array<T,N,Opt>, Generator, true > : as_expr< const triqs::arrays::array_view<T,N,Opt>, Generator, true> {};
+
+}}}
 
 #endif

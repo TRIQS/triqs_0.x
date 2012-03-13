@@ -94,8 +94,17 @@ template<typename T> struct wrap_vector {
   ,proto::when< proto::negate<MatrixGrammar>, MatrixGrammar(proto::_child0)>
   > {};
 
+ /* ---------------------------------------------------------------------------------------------------
+  * Define the main expression template ArrayExpr, the domain and Grammar (implemented below)
+  * NB : it modifies the PROTO Domain to make *COPIES* of all objects.
+  * We escape the copy of array by specializing the template below (end of file)
+  * ---> to be rediscussed.
+  * cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+  --------------------------------------------------------------------------------------------------- */
  template<typename Expr> struct MatrixExpr;
- struct MatrixDomain : proto::domain<proto::generator<MatrixExpr>, MatrixGrammar> {};
+ struct MatrixDomain : proto::domain<proto::generator<MatrixExpr>, MatrixGrammar> {
+  template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
+ };
 
  //   Evaluation context
  template<typename KeyType, typename ReturnType>
@@ -106,8 +115,6 @@ template<typename T> struct wrap_vector {
    template<typename T>// overrule just the terminals which have array interface.
     typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
     operator ()(p_tag::terminal, T const & t) const { return t[key]; }
-
-
   };
 
  //   Expression
@@ -147,6 +154,24 @@ template<typename Expr > matrix_view <typename Expr::value_type>
 eval( Expr const & e) { return matrix<typename Expr::value_type>(e);}
 
 }}//namespace triqs::arrays 
+
+// specializing the proto copy
+namespace boost { namespace proto { namespace detail { 
+
+ template<typename T, typename Opt, typename Generator>    
+  struct as_expr< const triqs::arrays::matrix<T,Opt>, Generator, true > : as_expr< const triqs::arrays::matrix_view<T,Opt>, Generator, true> {};
+
+ template<typename T, typename Opt, typename Generator>    
+  struct as_expr< triqs::arrays::matrix<T,Opt>, Generator, true > : as_expr< const triqs::arrays::matrix_view<T,Opt>, Generator, true> {};
+
+ template<typename T, typename Opt, typename Generator>    
+  struct as_expr< const triqs::arrays::vector<T,Opt>, Generator, true > : as_expr< const triqs::arrays::vector_view<T,Opt>, Generator, true> {};
+
+ template<typename T, typename Opt, typename Generator>    
+  struct as_expr< triqs::arrays::vector<T,Opt>, Generator, true > : as_expr< const triqs::arrays::vector_view<T,Opt>, Generator, true> {};
+
+
+}}}
 
 #endif
 
