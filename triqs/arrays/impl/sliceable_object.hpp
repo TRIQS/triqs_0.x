@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
 	  class Derived > 
 	   class sliceable_object   
 #ifdef TRIQS_HAS_LAZY_EXPRESSIONS
-	     : triqs::lazy_expressions::tag::is_callable
+	     : triqs::lazy::tag::is_callable
 #endif
 	   {
 	    public : 
@@ -130,14 +130,14 @@ namespace triqs { namespace arrays {
 #define IMPL(z, NN, unused)                                \
 	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
 	     typename boost::disable_if< \
-	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy_expressions::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
 	     typename result_of_call<true,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type  >::type\
 	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) const {\
 	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}\
 	     \
 	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
 	     typename boost::disable_if< \
-	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy_expressions::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
 	     typename result_of_call<false,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type >::type\
 	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) {\
 	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}
@@ -148,12 +148,12 @@ namespace triqs { namespace arrays {
 #define IMPL(z, NN, unused)                                \
 	     template< BOOST_PP_ENUM_PARAMS(NN, typename T) > \
 	     typename boost::enable_if< \
-	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy_expressions::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
-	     typename boost::proto::result_of::make_expr< boost::proto::tag::function, triqs::lazy_expressions::FntDomain , \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy_expression_or_ph<T, > BOOST_PP_INTERCEPT) >, \
+	     typename boost::proto::result_of::make_expr< boost::proto::tag::function, triqs::lazy::FntDomain , \
 	     typename ViewFactory<ValueType,rank, Opt , ViewTag >::type,   \
 	     BOOST_PP_ENUM_BINARY_PARAMS(NN,T,const & BOOST_PP_INTERCEPT)>::type  >::type  \
 	     operator()( BOOST_PP_ENUM_BINARY_PARAMS(NN,T,const & arg) ) const { \
-	      return boost::proto::make_expr<boost::proto::tag::function, triqs::lazy_expressions::FntDomain>( \
+	      return boost::proto::make_expr<boost::proto::tag::function, triqs::lazy::FntDomain>( \
 		typename ViewFactory<ValueType,rank, Opt , ViewTag >::type (self() )  , \
 		BOOST_PP_REPEAT(NN,AUX,nil)  );\
 	     }
