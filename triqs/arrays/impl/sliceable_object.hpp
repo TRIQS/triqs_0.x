@@ -39,9 +39,6 @@ namespace triqs { namespace arrays {
 	  template<typename IndexMapType2, typename SliceArgs> class Slicer,
 	  class Derived > 
 	   class sliceable_object   
-#ifdef TRIQS_HAS_LAZY_EXPRESSIONS
-	     : triqs::lazy::tag::is_callable
-#endif
 	   {
 	    public : 
 	     static const unsigned int rank = IndexMapType::domain_type::rank;
