@@ -18,10 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_TAYLOR_EXPANSION_H
+#ifndef TRIQS_UTILITY_ALGEBRA_H
 #define TRIQS_TAYLOR_EXPANSION_H 
 
-#include <boost/shared_ptr.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/proto/core.hpp>
@@ -85,7 +84,7 @@ namespace triqs { namespace utility { namespace expressions {
 
    struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<scalar_identification<proto::_value>()> > {}; 
 
-   template <typename Expr> struct TheExpr;
+   //template <typename Expr> struct TheExpr;
 
    struct Grammar : 
     proto::or_<
