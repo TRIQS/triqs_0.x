@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_TAYLOR_EXPANSION_H
 #define TRIQS_TAYLOR_EXPANSION_H 
 
@@ -26,20 +25,7 @@
 
 namespace triqs { namespace gf { 
 
- template<typename A>
-  class laurent_expansion { 
-
-   const int OrderMinMIN, OrderMaxMAX; // maxi dimension of the expansion. Fixed at construction.
-
-   // add python interface 
-
-   A const & operator[](int i) const { return M[i-OrderMinMIN];}
-
-   protected:
-   std::vector<A> M;
-
-  };
-
+ 
  /*
   * ImmutableLaurentExpansion Concept
   *
@@ -138,7 +124,24 @@ namespace triqs { namespace gf {
    value_type operator[] (int n) const { return LaurentExpansionGrammar()(*this)[n]; }
    friend std::ostream &operator <<(std::ostream &sout, LaurentExpansionExpr<Expr> const &expr) { return proto::eval(expr, triqs::utility::expressions::AlgebraPrintCtx (sout)); }
   };
- }
+ } // namespace expressions
+
+ // now implement it
+ 
+ template<typename A>
+  class laurent_expansion : tag::is_laurent_expansion  { 
+
+   const int OrderMinMIN, OrderMaxMAX; // maxi dimension of the expansion. Fixed at construction.
+
+   // add python interface 
+
+   A const & operator[](int i) const { return M[i-OrderMinMIN];}
+   A & operator[](int i) { return M[i-OrderMinMIN];}
+
+   protected:
+   std::vector<A> M;
+
+  };
 
 }}
 
