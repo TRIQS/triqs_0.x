@@ -86,7 +86,8 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
         self.KeyAsStringOnly = self.options['KeyAsStringOnly']
         self._reconstruct_python_objects = self.options['ReconstructPythonObject']
         self.is_top_level = False
- 
+        self._keys_cached= None
+
     #-------------------------------------------------------------------------
     def _key_cipher(self,key) : 
         if key in self.ignored_keys : 
@@ -113,15 +114,16 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
     #-------------------------------------------------------------------------
     def __contains__(self,key) : 
         key= self._key_cipher(key)
-        return key in list(self.keys())
+        return key in self.keys()
     
     #-------------------------------------------------------------------------
     def keys(self) :
         """
-        Generator returning the keys of the group
+        List of the keys of the group
         """
-        return self._keys()
-   
+        if not self._keys_cached : self._keys_cached = list(self._keys())
+        return self._keys_cached
+
     #-------------------------------------------------------------------------
     def values(self) :
         """
@@ -145,7 +147,10 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
     #-------------------------------------------------------------------------
     def __iter__(self) :
         """Returns the keys, like a dictionary"""
-        return self.keys()
+        def res() :
+            for name in self.keys():
+                yield name
+        return res()
 
     #-------------------------------------------------------------------------
     def __len__(self) :
@@ -160,7 +165,8 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
     def __delitem__(self,key) :
         key= self._key_cipher(key)
         self._clean_key(key,True) 
- 
+        self._keys_cached = None
+
     #-------------------------------------------------------------------------
     def __setitem__(self,key,val) :
         key= self._key_cipher(key)# first look if key is a string or key
@@ -223,6 +229,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
             except:
                raise #ValueError, "Value %s\n is not of a type suitable to storage in HDF file"%val
         self._flush()
+        self._keys_cached = None
 
     #-------------------------------------------------------------------------
     def get_raw (self,key):
