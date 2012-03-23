@@ -141,8 +141,8 @@ namespace triqs { namespace mc_tools {
    double Try() {
     assert( Proba_Moves_Acc_Sum.size()>0);
     // Choice of move with its probability
-    double proba = RNG();assert(proba>0);
-    current_move_number =0; while (proba > Proba_Moves_Acc_Sum[current_move_number] ) { current_move_number++;}
+    double proba = RNG(); assert(proba>=0);
+    current_move_number =0; while (proba >= Proba_Moves_Acc_Sum[current_move_number] ) { current_move_number++;}
     assert(current_move_number>0); assert(current_move_number<=this->size());
     current_move_number--;
     current =  & (*this)[current_move_number];
