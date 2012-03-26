@@ -27,6 +27,7 @@
 #include <boost/proto/context.hpp>
 #include <boost/proto/transform/arg.hpp>
 #include <boost/proto/transform.hpp>
+#include <boost/proto/domain.hpp>
 //#include <boost/preprocessor/repetition/repeat.hpp>
 //#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 //#include <boost/preprocessor/facilities/intercept.hpp>
@@ -34,7 +35,7 @@
 //#include <boost/preprocessor/punctuation/comma.hpp>
 //#include <boost/preprocessor/arithmetic/sub.hpp>
 #include <complex>
-//#include "triqs/utility/typeid_name.hpp"
+#include "triqs/utility/typeid_name.hpp"
 #include <assert.h>
 
 namespace triqs { namespace utility { namespace proto { 
@@ -70,32 +71,70 @@ namespace triqs { namespace utility { namespace proto {
 
  namespace algebra { 
 
- template< typename A, template<typename Expr> class The_Expr> 
+ template< typename OpsCompound, template<typename T> class is_element, template<typename T> class is_scalar = is_in_ZRC > 
   struct grammar_generator {
 
-   struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<typename A::template is_element<proto::_value>()> > {}; 
-   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<typename A::template is_scalar<proto::_value>()> > {}; 
+   struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<is_element<proto::_value>()> > {}; 
+   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar<proto::_value>()> > {}; 
    struct Grammar : 
     proto::or_<
-    proto::when< ScalarGrammar,                       typename A::template wrap_scalar<proto::_value>(proto::_value) >
+    proto::when< ScalarGrammar,                       typename OpsCompound::template scalar<proto::_value>(proto::_value) >
     ,proto::when< LeafGrammar,                        proto::_value >
-    ,proto::when< proto::plus <Grammar,Grammar>,      typename A::template wrap_binary_node<p_tag::plus,proto::_left,proto::_right > (proto::_left,proto::_right) >
-    ,proto::when< proto::minus <Grammar,Grammar>,     typename A::template wrap_binary_node<p_tag::minus,proto::_left,proto::_right > (proto::_left,proto::_right)  >
-    ,proto::when< proto::multiplies<Grammar,Grammar>, typename A::template wrap_binary_node<p_tag::multiplies,proto::_left,proto::_right > (proto::_left,proto::_right)>
-    ,proto::when< proto::divides<Grammar,Grammar>,    typename A::template wrap_binary_node<p_tag::divides,proto::_left,proto::_right > (proto::_left,proto::_right)>
-    ,proto::when< proto::negate<Grammar >,            typename A::template wrap_negate <proto::_left >(proto::_left) >
+    ,proto::when< proto::plus <Grammar,Grammar>,      typename OpsCompound::template binary_node<p_tag::plus,proto::_left,proto::_right > (proto::_left,proto::_right) >
+    ,proto::when< proto::minus <Grammar,Grammar>,     typename OpsCompound::template binary_node<p_tag::minus,proto::_left,proto::_right > (proto::_left,proto::_right)  >
+    ,proto::when< proto::multiplies<Grammar,Grammar>, typename OpsCompound::template binary_node<p_tag::multiplies,proto::_left,proto::_right > (proto::_left,proto::_right)>
+    ,proto::when< proto::divides<Grammar,Grammar>,    typename OpsCompound::template binary_node<p_tag::divides,proto::_left,proto::_right > (proto::_left,proto::_right)>
+    ,proto::when< proto::negate<Grammar >,            typename OpsCompound::template negate <proto::_left >(proto::_left) >
     > {};
 
    typedef Grammar type;
   };
 
- template< typename Grammar, template<typename Expr> class The_Expr, bool WithCopy> struct domain;
+  /* ---------------------------------------------------------------------------------------------------
+   * The domain can enforce copies or not...
+   * --------------------------------------------------------------------------------------------------- */
+ 
+ template< typename Grammar, template<typename Expr> class The_Expr, bool EnforceCopy> struct domain;
 
- template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : 
-  proto::domain<proto::generator<The_Expr>, Grammar> { };
- template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : 
-  proto::domain<proto::generator<The_Expr>, Grammar> {
-  //template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : proto::domain<proto::generator<The_Expr>, Grammar> { };
+ //If true it modifies the PROTO Domain to make *COPIES* of all objects.
+ //cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : proto::domain<proto::generator<The_Expr>, Grammar> {
+  template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
+ };
+
+ /* -------------------------------------------
+  *  Structure of algebra for algebra valued functions
+  * ------------------------------------------ */
+
+ struct algebra_function_desc { 
+
+  template<typename ProtoTag, typename L, typename R> struct binary_node  { 
+   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
+   template <typename T> struct call_rtype {
+    //typedef BOOST_TYPEOF_TPL (pseudo_default_construct<L>() (pseudo_default_construct<T>())) T1;
+    //typedef BOOST_TYPEOF_TPL (pseudo_default_construct<R>() (pseudo_default_construct<T>())) T2;
+    typedef typename L::template call_rtype<T>::type T1;
+    typedef typename R::template call_rtype<T>::type T2;
+    typedef _ops_<ProtoTag, T1, T2 > ops_type;
+    typedef typename ops_type::result_type type;
+   };
+   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg),r(arg));}
+  }; 
+
+  template<typename S> struct scalar {
+   S s; scalar( S const & x) : s(x) {}
+   template <typename T> struct call_rtype { typedef S type; };
+   template<typename T> typename call_rtype<T>::type operator() (T) const {return s;}
+  };
+
+  template<typename L> struct negate  { 
+   L const & l; negate (L const & l_):l(l_) {} 
+   template <typename T> struct call_rtype {
+    typedef BOOST_TYPEOF_TPL ( (- pseudo_default_construct<L>() (pseudo_default_construct<T>()))) type;
+   };
+   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return  (- l(arg));} 
+  }; 
  };
 
  }
@@ -109,51 +148,17 @@ namespace triqs { namespace utility { namespace proto {
   result_type out;
   AlgebraPrintCtx(std::ostream & out_):out(out_) {}
   template <typename T>
-   result_type operator ()(proto::tag::terminal, const T & A) const { return formal_print(out,A); }
-  template<typename L, typename R>
-   result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
-  template<typename L, typename R>
-   result_type operator ()(proto::tag::minus, L const &l, R const &r) const { return out << '(' << l << " - " << r << ')'; }
-  template<typename L, typename R>
-   result_type operator ()(proto::tag::multiplies, L const &l, R const &r) const { return out << l << " * " << r; }
-  template<typename L, typename R>
-   result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
+   typename boost::enable_if<is_in_ZRC<T>, result_type>::type 
+   operator ()(proto::tag::terminal, const T & A) const { return out<<A; }
+  template <typename T>
+   typename boost::disable_if<is_in_ZRC<T>, result_type>::type 
+   operator ()(proto::tag::terminal, const T & A) const { return out<< triqs::utility::typeid_name(A); }
+  template<typename L, typename R> result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
+  template<typename L, typename R> result_type operator ()(proto::tag::minus, L const &l, R const &r) const { return out << '(' << l << " - " << r << ')'; }
+  template<typename L, typename R> result_type operator ()(proto::tag::multiplies, L const &l, R const &r) const { return out << l << " * " << r; }
+  template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
- /* -------------------------------------------
-  *   Print context
-  * ------------------------------------------ */
-
- struct algebra_function_desc { 
-
-  template<typename ProtoTag, typename L, typename R> struct wrap_binary_node  { 
-   L const & l; R const & r;
-   wrap_binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
-   template <typename T> struct call_rtype {
-    typedef BOOST_TYPEOF_TPL (pseudo_default_construct<L>() (pseudo_default_construct<T>())) T1;
-    typedef BOOST_TYPEOF_TPL (pseudo_default_construct<R>() (pseudo_default_construct<T>())) T2;
-    typedef _ops_<ProtoTag, typename L:: template call_rtype<T>::type, typename R:: template call_rtype<R>::type > ops_type;
-    typedef typename ops_type::result_type type;
-   };
-   template<typename T> typename call_rtype<T>::type  operator() (T const & arg) const { return  call_rtype<T>::ops_type::invoke(l(arg),r(arg));}
-  }; 
-
-  template<typename S> struct wrap_scalar {
-   typedef S result_type;
-   S s; 
-   wrap_scalar( S const & x) : s(x) {}
-   template<typename T> result_type operator() (T) const { return s;}
-  };
-
-  template<typename L> struct wrap_negate  { 
-   L const & l; 
-   wrap_negate (L const & l_):l(l_) {} 
-   template <typename T> struct call_rtype {
-    typedef BOOST_TYPEOF_TPL ( (- pseudo_default_construct<L>() (pseudo_default_construct<T>()))) type;
-   };
-   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const { return  (- l(arg));} 
-  }; 
- };
 
 }}}
 
