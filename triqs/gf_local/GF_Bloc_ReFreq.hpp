@@ -3,7 +3,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012 by M. Ferrero, O. Parcollet, I. Krivenko
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -25,6 +25,7 @@
 
 #include "GF_Bloc_Base.hpp"
 #include "fourier.hpp"
+#include "pade.hpp"
 
 class GF_Bloc_ReFreq : public GF_Bloc_Base<COMPLEX> 
 {
@@ -39,7 +40,9 @@ public:
   GF_Bloc_ReFreq (const GF_Bloc_ReFreq & Gin);
 
   void setFromFourierOf(const GF_Bloc_ReTime & Gt) { fourier_direct(Gt,*this);}
-  
+
+  void setFromPadeOf(const GF_Bloc_ImFreq & Gw, double Freq_Offset = .0);
+
   PyArray<COMPLEX,2> density() const;
 
 };

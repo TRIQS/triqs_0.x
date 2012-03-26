@@ -30,6 +30,7 @@
 #include <triqs/gf_local/GF_Bloc_ImLegendre.hpp>
 #include <triqs/gf_local/GF_C.hpp>
 #include <boost/python/return_internal_reference.hpp>
+#include <boost/python/def.hpp>
 #include <boost/shared_ptr.hpp>
 
 using namespace python;
@@ -54,7 +55,6 @@ using namespace python;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(save_overlo, save, 1,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(F_overloads, setFromFourierOf, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Finv_overloads, setFromInverseFourierOf, 1, 2);
-
 
 void translatorString(std::string const& x) { PyErr_SetString(PyExc_RuntimeError, x.c_str()); };
 
@@ -153,6 +153,7 @@ Sets to the Fourier transform of Gt.\n\
   class_<GF_Bloc_ReFreq, bases<GF_Bloc_Base<COMPLEX> > >("GFBloc_ReFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReFreq::density, "Computes the density :math:`G(\\tau = 0^-)`")
     .def("setFromFourierOf",&GF_Bloc_ReFreq::setFromFourierOf,"Sets to the Fourier transform of Gt")
+    .def("setFromPadeOf",&GF_Bloc_ReFreq::setFromPadeOf,(python::arg("Gw"), python::arg("Freq_Offset") = .0),"Sets to the analytic continuation of Gw using Pade approximants.")
     ;
 
   // **********   ImTime ******************
