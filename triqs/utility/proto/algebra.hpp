@@ -120,8 +120,42 @@ namespace triqs { namespace utility { namespace proto {
    result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
+ /* -------------------------------------------
+  *   Print context
+  * ------------------------------------------ */
 
- }}}
+ struct algebra_function_desc { 
+
+  template<typename ProtoTag, typename L, typename R> struct wrap_binary_node  { 
+   L const & l; R const & r;
+   wrap_binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
+   template <typename T> struct call_rtype {
+    typedef BOOST_TYPEOF_TPL (pseudo_default_construct<L>() (pseudo_default_construct<T>())) T1;
+    typedef BOOST_TYPEOF_TPL (pseudo_default_construct<R>() (pseudo_default_construct<T>())) T2;
+    typedef _ops_<ProtoTag, typename L:: template call_rtype<T>::type, typename R:: template call_rtype<R>::type > ops_type;
+    typedef typename ops_type::result_type type;
+   };
+   template<typename T> typename call_rtype<T>::type  operator() (T const & arg) const { return  call_rtype<T>::ops_type::invoke(l(arg),r(arg));}
+  }; 
+
+  template<typename S> struct wrap_scalar {
+   typedef S result_type;
+   S s; 
+   wrap_scalar( S const & x) : s(x) {}
+   template<typename T> result_type operator() (T) const { return s;}
+  };
+
+  template<typename L> struct wrap_negate  { 
+   L const & l; 
+   wrap_negate (L const & l_):l(l_) {} 
+   template <typename T> struct call_rtype {
+    typedef BOOST_TYPEOF_TPL ( (- pseudo_default_construct<L>() (pseudo_default_construct<T>()))) type;
+   };
+   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const { return  (- l(arg));} 
+  }; 
+ };
+
+}}}
 
 #undef OP_NAME
 #undef OP_OP
