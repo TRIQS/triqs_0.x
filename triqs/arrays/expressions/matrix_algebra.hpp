@@ -39,7 +39,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace matrix_al
  typedef indexmaps::cuboid_domain<2> matrix_domain_type;
 
  template<typename T> struct wrap_scalar { 
-  typedef T value_type; T const & val;
+  typedef T value_type; T val;
   typedef matrix_domain_type domain_type;
   wrap_scalar( T const &x ): val(x) {}
   domain_type domain() const { return domain_type();}
