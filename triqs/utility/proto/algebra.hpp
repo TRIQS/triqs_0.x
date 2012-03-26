@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #ifndef TRIQS_UTILITY_ALGEBRA_H
-#define TRIQS_TAYLOR_EXPANSION_H 
+#define TRIQS_UTILITY_ALGEBRA_H 
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -37,9 +37,9 @@
 //#include "triqs/utility/typeid_name.hpp"
 #include <assert.h>
 
-namespace triqs { namespace utility { namespace expressions { 
+namespace triqs { namespace utility { namespace proto { 
 
- namespace proto = boost::proto; namespace p_tag= proto::tag;
+  namespace mpl = boost::mpl; namespace proto = boost::proto; namespace p_tag= proto::tag;
 
  template<typename T> struct is_in_ZRC : boost::is_arithmetic<T>  {};
  template<> struct is_in_ZRC<bool> : mpl::true_ {};
@@ -61,43 +61,44 @@ namespace triqs { namespace utility { namespace expressions {
 
 #define AUX(r, data, elem) \
  template<typename A, typename B> struct _ops_<p_tag::OP_NAME(elem),A,B> {\
-  typedef BOOST_TYPEOF_TPL( pseudo_default_construct<A>() OP_OP(elem) pseudo_default_construct<B>()) return_type;\
-  static return_type invoke( A const &a , B const & b) { return a OP_OP(elem) b;} };
+  typedef BOOST_TYPEOF_TPL( pseudo_default_construct<A>() OP_OP(elem) pseudo_default_construct<B>()) result_type;\
+  static result_type invoke( A const &a , B const & b) { return a OP_OP(elem) b;} };
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , BINARY_OP); 
 #undef AUX
-#undef OP_NAME
-#undef OP_OP
-#undef BINARY_OP
 
  template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
 
- template< 
-  template<typename T> class leaf_identification >
-  ,template<typename T> class scalar_identification >
-  ,template<typename T> class wrap_scalar >
-  ,template<typename ProtoTag, typename L, typename R> class wrap_binary_node >
-  ,template<typename T> class wrap_negate >
-  >
+ namespace algebra { 
+
+ template< typename A, template<typename Expr> class The_Expr> 
   struct grammar_generator {
 
-   struct LeafGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<leaf_identification<proto::_value>()> > {}; 
-
-   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<scalar_identification<proto::_value>()> > {}; 
-
-   //template <typename Expr> struct TheExpr;
-
+   struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<typename A::template is_element<proto::_value>()> > {}; 
+   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<typename A::template is_scalar<proto::_value>()> > {}; 
    struct Grammar : 
     proto::or_<
-    proto::when< ScalarGrammar,wrap_scalar<proto::_value>(proto::_value) >
-    ,proto::when< LeafGrammar,proto::_value >
-    ,proto::when< proto::plus <Grammar,Grammar>,      wrap_binary_node<p_tag::plus,_left,_right > (_left,_right) >
-    ,proto::when< proto::minus <Grammar,Grammar>,     wrap_binary_node<p_tag::minus,_left,_right > (_left,_right)  >
-    ,proto::when< proto::multiplies<Grammar,Grammar>, wrap_binary_node<p_tag::multiplies,_left,_right > (_left,_right)>
-    ,proto::when< proto::divides<Grammar,Grammar>,    wrap_binary_node<p_tag::divides,_left,_right > (_left,_right)>
-    ,proto::when< proto::negate<Grammar >,            wrap_negate <_left >(_left) >
+    proto::when< ScalarGrammar,                       typename A::template wrap_scalar<proto::_value>(proto::_value) >
+    ,proto::when< LeafGrammar,                        proto::_value >
+    ,proto::when< proto::plus <Grammar,Grammar>,      typename A::template wrap_binary_node<p_tag::plus,proto::_left,proto::_right > (proto::_left,proto::_right) >
+    ,proto::when< proto::minus <Grammar,Grammar>,     typename A::template wrap_binary_node<p_tag::minus,proto::_left,proto::_right > (proto::_left,proto::_right)  >
+    ,proto::when< proto::multiplies<Grammar,Grammar>, typename A::template wrap_binary_node<p_tag::multiplies,proto::_left,proto::_right > (proto::_left,proto::_right)>
+    ,proto::when< proto::divides<Grammar,Grammar>,    typename A::template wrap_binary_node<p_tag::divides,proto::_left,proto::_right > (proto::_left,proto::_right)>
+    ,proto::when< proto::negate<Grammar >,            typename A::template wrap_negate <proto::_left >(proto::_left) >
     > {};
 
+   typedef Grammar type;
   };
+
+ template< typename Grammar, template<typename Expr> class The_Expr, bool WithCopy> struct domain;
+
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : 
+  proto::domain<proto::generator<The_Expr>, Grammar> { };
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : 
+  proto::domain<proto::generator<The_Expr>, Grammar> {
+  //template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
+ };
+
+ }
 
  /* -------------------------------------------
   *   Print context
@@ -119,7 +120,12 @@ namespace triqs { namespace utility { namespace expressions {
    result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
-}}}
+
+ }}}
+
+#undef OP_NAME
+#undef OP_OP
+#undef BINARY_OP
 
 #endif
 
