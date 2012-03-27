@@ -21,10 +21,10 @@ struct my_matrix_valued_function {
 my_matrix_valued_function(my_matrix_valued_function const &x): data(x.data) { 
  std::cout  << "COPY my_matrix_valued_function"<<std::endl ;
 }
-template<typename T> struct call_rtype{ typedef triqs::arrays::array_view<double,2> type;};
-//template<typename T> struct call_rtype{ typedef triqs::arrays::matrix_view<double> type;};
- //triqs::arrays::matrix_view<double> operator()(size_t i) const { return triqs::arrays::matrix_view<double> (data(range(),range(),i));}
- triqs::arrays::array_view<double,2> operator()(size_t i) const { return triqs::arrays::array_view<double,2> (data(range(),range(),i));}
+//template<typename T> struct call_rtype{ typedef triqs::arrays::array_view<double,2> type;};
+template<typename T> struct call_rtype{ typedef triqs::arrays::matrix_view<double> type;};
+ triqs::arrays::matrix_view<double> operator()(size_t i) const { return triqs::arrays::matrix_view<double> (data(range(),range(),i));}
+ //triqs::arrays::array_view<double,2> operator()(size_t i) const { return triqs::arrays::array_view<double,2> (data(range(),range(),i));}
 };
 
 // a trait to identity this type 
