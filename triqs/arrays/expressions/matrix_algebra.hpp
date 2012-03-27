@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -105,7 +104,7 @@ template<typename T> struct wrap_vector {
  struct MatrixDomain : proto::domain<proto::generator<MatrixExpr>, MatrixGrammar> {
   template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
  };
-
+/*
  //   Evaluation context
  template<typename KeyType, typename ReturnType>
   struct MatrixEvalCtx : proto::callable_context< MatrixEvalCtx<KeyType,ReturnType> const > {
@@ -116,7 +115,7 @@ template<typename T> struct wrap_vector {
     typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
     operator ()(p_tag::terminal, T const & t) const { return t[key]; }
   };
-
+*/
  //   Expression
  template<typename Expr> struct MatrixExpr : Tag::expression, proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> { 
   typedef proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> base_type;
@@ -127,17 +126,14 @@ template<typename T> struct wrap_vector {
   typedef size_t index_type;
   static const int rank = _T::domain_type::rank; static_assert((rank==2), "2 indices expected"); 
  
-  _T transfo;
-  MatrixExpr( Expr const & expr = Expr() ) : base_type( expr ),transfo(MatrixGrammar()(*this)) {}
+  MatrixExpr( Expr const & expr = Expr() ) : base_type( expr ) {} 
  
-  domain_type domain() const { return transfo.domain(); }
-  //domain_type domain() const { return MatrixGrammar()(*this).domain(); }
+  domain_type domain() const { return MatrixGrammar()(*this).domain(); }
   size_t dim0() const { return this->domain().lengths()[0];} 
   size_t dim1() const { return this->domain().lengths()[1];} 
 
   value_type operator[] (key_type const &key) const { 
-   return transfo[key];
-   //return MatrixGrammar()(*this)[key];
+   return MatrixGrammar()(*this)[key];
    //return proto::eval(*this, MatrixEvalCtx<key_type ,value_type> (key)); 
   }
  
