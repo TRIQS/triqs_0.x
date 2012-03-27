@@ -29,10 +29,12 @@ struct my_matrix_valued_function {
 template <typename T> struct is_a_m_f                            : mpl::false_{};
 template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {};
 
-template <typename Expr> struct The_Expr;
 namespace tupa=triqs::utility::proto::algebra;
+
+template <typename Expr> struct The_Expr;
+
 typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f>::type grammar;
-typedef tupa::domain<grammar,The_Expr,true>                    domain;
+typedef tupa::domain<grammar,The_Expr,true>                                 domain;
 
 template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{
  typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;

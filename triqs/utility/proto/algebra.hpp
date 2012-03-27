@@ -108,6 +108,8 @@ namespace triqs { namespace utility { namespace proto {
   template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
  };
 
+ // Make this by trait and unify with the view like the arrays.
+
  /* -------------------------------------------
   *  Structure of algebra for algebra valued functions
   * ------------------------------------------ */
