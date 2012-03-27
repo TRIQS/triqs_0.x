@@ -47,15 +47,21 @@ void define_pade_coefficients(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,
     a = g(i,i);
 }
 
-void define_polynomials(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &a,
-                        Array<COMPLEX,1> &A, Array<COMPLEX,1> &B)
+COMPLEX pade_substitute(const Array<COMPLEX,1> &a, const Array<COMPLEX,1> &z_in, COMPLEX e)
 {
-}
+    COMPLEX A1(0);
+    COMPLEX A2 = a(0);
+    COMPLEX B1(1.0), B2(1.0);
 
-COMPLEX pade_substitute(const Array<COMPLEX,1> &A, const Array<COMPLEX,1> &B, COMPLEX e)
-{
-    // TODO
-    return 0;
+    int N = a.size();
+    for(int i=0; i<=N-2; ++i){
+        COMPLEX Anew = A2 + (e - z_in(i))*a(i+1)*A1;
+        COMPLEX Bnew = B2 + (e - z_in(i))*a(i+1)*B1;
+        A1 = A2; A2 = Anew;
+        B1 = B2; B2 = Bnew;
+    }
+
+    return A2/B2;
 }
 
 void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Frequencies, double Freq_Offset)
@@ -71,13 +77,16 @@ void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Freque
     firstIndex i;
     z_in = I*Pi/Beta*(2*i+omegaShift);
 
+    // Just copy the tail. It doesn't need to conform to the Pade approximant.
+    Gw.tail = Ge.tail;
+
     int N1 = Gw.N1, N2 = Gw.N2;
     for (int n1=1; n1<=N1;n1++)
         for (int n2=1; n2<=N2;n2++){
             int N = Gw.mesh.len();
 
-            Array<COMPLEX,1> u_in(N_Matsubara_Frequencies);    // Values at the Matsubara frequencies
-            Array<COMPLEX,1> a(N_Matsubara_Frequencies);    // Pade coefficients
+            Array<COMPLEX,1> u_in(N_Matsubara_Frequencies);     // Values at the Matsubara frequencies
+            Array<COMPLEX,1> a(N_Matsubara_Frequencies);        // Pade coefficients
 
             for(int i=0; i < N_Matsubara_Frequencies; ++i){
                 u_in(i) = (i < N ? Gw.data_const(n1,n2,i) : Gw.tail.eval(z_in(i))(n1,n2));
@@ -85,17 +94,11 @@ void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Freque
 
             define_pade_coefficients(z_in,u_in,a);
 
-            //Array<COMPLEX,1> A((N_Matsubara_Frequencies-1)/2 + 1)
-            //Array<COMPLEX,1> B(N_Matsubara_Frequencies/2 + 1);
-            //define_polynomials(z_in,a,A,B);
-
             int Ne = Ge.mesh.len();
+            Ge.zero();
             for (int i=0; i < Ne; ++i) {
-                COMPLEX e = Ge.mesh[i] - I*Freq_Offset;
-                //Ge.data(n1,n2,i) = pade_substitute(A,B,e);
+                COMPLEX e = Ge.mesh[i] + I*Freq_Offset;
+                Ge.data(n1,n2,i) = pade_substitute(a,z_in,e);
             }
         }
-
-    // Just copy the tail. It doesn't need to conform to the Pade approximant.
-    Gw.tail = Ge.tail;
 }
