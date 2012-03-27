@@ -69,6 +69,11 @@ namespace triqs { namespace utility { namespace proto {
 
  template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
 
+ template <typename T, typename A0> struct call_result_type { 
+  typedef BOOST_TYPEOF_TPL (pseudo_default_construct<T>() (pseudo_default_construct<A0>())) type;
+  };
+ //template <typename T, typename A0> struct call_result_type<T,A0, typename T::template call_rtype<A0>::type> : T::template call_rtype<A0> {};
+
  namespace algebra { 
 
  template< typename OpsCompound, template<typename T> class is_element, template<typename T> class is_scalar = is_in_ZRC > 
@@ -106,16 +111,13 @@ namespace triqs { namespace utility { namespace proto {
  /* -------------------------------------------
   *  Structure of algebra for algebra valued functions
   * ------------------------------------------ */
-
  struct algebra_function_desc { 
 
   template<typename ProtoTag, typename L, typename R> struct binary_node  { 
    L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
    template <typename T> struct call_rtype {
-    //typedef BOOST_TYPEOF_TPL (pseudo_default_construct<L>() (pseudo_default_construct<T>())) T1;
-    //typedef BOOST_TYPEOF_TPL (pseudo_default_construct<R>() (pseudo_default_construct<T>())) T2;
-    typedef typename L::template call_rtype<T>::type T1;
-    typedef typename R::template call_rtype<T>::type T2;
+    typedef typename call_result_type<L,T>::type T1;
+    typedef typename call_result_type<R,T>::type T2;
     typedef _ops_<ProtoTag, T1, T2 > ops_type;
     typedef typename ops_type::result_type type;
    };

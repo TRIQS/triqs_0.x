@@ -3,7 +3,7 @@
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/expressions/matrix_algebra.hpp>
-#include <triqs/arrays/expressions/array_algebra.hpp>
+//#include <triqs/arrays/expressions/array_algebra.hpp>
 #include <vector>
 #include <iostream>
 
@@ -17,14 +17,12 @@ using triqs::arrays::array;
 struct my_matrix_valued_function {
  triqs::arrays::array<double, 3> data;
  my_matrix_valued_function (double x): data(2,2,5) { data()=0; for (size_t u=0; u< 5; ++u) {data(0,0,u) = x*u;data(1,1,u) = -x*u;}}
-
-my_matrix_valued_function(my_matrix_valued_function const &x): data(x.data) { 
- std::cout  << "COPY my_matrix_valued_function"<<std::endl ;
-}
-//template<typename T> struct call_rtype{ typedef triqs::arrays::array_view<double,2> type;};
-template<typename T> struct call_rtype{ typedef triqs::arrays::matrix_view<double> type;};
- triqs::arrays::matrix_view<double> operator()(size_t i) const { return triqs::arrays::matrix_view<double> (data(range(),range(),i));}
- //triqs::arrays::array_view<double,2> operator()(size_t i) const { return triqs::arrays::array_view<double,2> (data(range(),range(),i));}
+ my_matrix_valued_function(my_matrix_valued_function const &x): data(x.data) { std::cerr  << "COPY my_matrix_valued_function"<<std::endl ; }
+ 
+ //template<typename T> struct call_rtype{ typedef triqs::arrays::array_view<double,2> type;};
+ //template<typename T> struct call_rtype{ typedef triqs::arrays::matrix_view<double> type;};
+ //typename call_rtype<size_t>::type operator()(size_t i) const { return data(range(),range(),i);}
+ triqs::arrays::matrix_view<double> operator()(size_t i) const { return data(range(),range(),i);}
 };
 
 // a trait to identity this type 
@@ -42,9 +40,7 @@ template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<E
 
  typedef typename boost::result_of<grammar(Expr) >::type _G;
 
-   template <typename T> struct call_rtype { typedef typename _G::template call_rtype<T>::type type; };
- 
- typename _G::template call_rtype<size_t>::type operator() (size_t n) const { return grammar()(*this)(n); }
+ typename triqs::utility::proto::call_result_type<_G,size_t>::type operator() (size_t n) const { return grammar()(*this)(n); }
 
  friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
 };
@@ -62,25 +58,8 @@ int main() {
  TEST( (2.0* f1 ) (0));
  TEST( (2* f1 + f2) (1));
 
- TEST("----");
- {
-  auto r1 = 2.0*f1(1)  +f2 (1);
- TEST(r1);
- auto r = r1;
- auto r2 = r[ triqs::arrays::mini_vector<size_t,2>(0,0)];
- TEST(r2);
- }
-
- TEST("--****--");
-
- {
- auto r =  ( 2*f1  +f2 ) (1);
- TEST(r);
- auto r2 = r[ triqs::arrays::mini_vector<size_t,2>(0,0)];
- TEST(r2);
- auto rr =  triqs::arrays::array<double,2>(( 2*f1  +f2 ) (1));
- TEST( rr);
- }
+ TEST( triqs::arrays::matrix<double> ( ( 2*f1  +f2 ) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  +f2 ) (1)) );
 
 };
 
