@@ -41,7 +41,8 @@ public:
 
   void setFromFourierOf(const GF_Bloc_ReTime & Gt) { fourier_direct(Gt,*this);}
 
-  void setFromPadeOf(const GF_Bloc_ImFreq & Gw, double Freq_Offset = .0);
+  // TODO implement a more flexible way to select input Matsubara points
+  void setFromPadeOf(const GF_Bloc_ImFreq & Gw, int N_Matsubara_Frequencies, double Freq_Offset);
 
   PyArray<COMPLEX,2> density() const;
 

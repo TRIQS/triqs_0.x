@@ -150,10 +150,13 @@ Sets to the Fourier transform of Gt.\n\
 
   // **********   ReFreq ******************
 
+  char refreq_doc_pade[] = "Sets to the analytic continuation of Gw using Pade approximants.";
+
   class_<GF_Bloc_ReFreq, bases<GF_Bloc_Base<COMPLEX> > >("GFBloc_ReFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReFreq::density, "Computes the density :math:`G(\\tau = 0^-)`")
     .def("setFromFourierOf",&GF_Bloc_ReFreq::setFromFourierOf,"Sets to the Fourier transform of Gt")
-    .def("setFromPadeOf",&GF_Bloc_ReFreq::setFromPadeOf,(python::arg("Gw"), python::arg("Freq_Offset") = .0),"Sets to the analytic continuation of Gw using Pade approximants.")
+    .def("setFromPadeOf",&GF_Bloc_ReFreq::setFromPadeOf,
+         (python::arg("Gw"), python::arg("N_Matsubara_Frequencies") = 100, python::arg("Freq_Offset") = .0),refreq_doc_pade)
     ;
 
   // **********   ImTime ******************
