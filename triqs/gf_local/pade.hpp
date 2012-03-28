@@ -20,48 +20,12 @@
  *
  ******************************************************************************/
 
-#ifndef TRIQS_GF_BLOC_REFREQ_H
-#define TRIQS_GF_BLOC_REFREQ_H
+#ifndef TRIQS_GF_BLOC_PADE
+#define TRIQS_GF_BLOC_PADE
 
-#include "GF_Bloc_Base.hpp"
-#include "fourier.hpp"
-#include "pade.hpp"
+class GF_Bloc_ReTime;
+class GF_Bloc_ReFreq;
 
-class GF_Bloc_ReFreq : public GF_Bloc_Base<COMPLEX> 
-{
-public: 
-  
-  GF_Bloc_ReFreq (boost::python::object IndicesL_,
-		  boost::python::object IndicesR_,
-		  PyObject * Data,
-		  boost::shared_ptr<MeshGF> Mesh,
-		  boost::shared_ptr<TailGF> Tail);
-  
-  GF_Bloc_ReFreq (const GF_Bloc_ReFreq & Gin);
-
-  void setFromFourierOf(const GF_Bloc_ReTime & Gt) { fourier_direct(Gt,*this);}
-
-  // TODO implement a more flexible way to select input Matsubara points
-  void setFromPadeOf(const GF_Bloc_ImFreq & Gw, int N_Matsubara_Frequencies, double Freq_Offset);
-
-  PyArray<COMPLEX,2> density() const;
-
-};
+void pade (GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Frequencies, double Freq_Offset);
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -61,4 +61,9 @@ PyArray<COMPLEX,2> GF_Bloc_ReFreq::density() const
   return(dens);
 }
  
+void GF_Bloc_ReFreq::setFromPadeOf(const GF_Bloc_ImFreq & Gw, int N_Matsubara_Frequencies, double Freq_Offset)
+{
+    if(Freq_Offset < 0) TRIQS_RUNTIME_ERROR << "Frequency offset must be non-negative (Freq_Offset = " << Freq_Offset << ")";
 
+    pade(Gw,*this,N_Matsubara_Frequencies,Freq_Offset);
+}
