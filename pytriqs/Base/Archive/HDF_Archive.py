@@ -86,8 +86,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
         self.KeyAsStringOnly = self.options['KeyAsStringOnly']
         self._reconstruct_python_objects = self.options['ReconstructPythonObject']
         self.is_top_level = False
-        self._keys_cached= None
-
+ 
     #-------------------------------------------------------------------------
     def _key_cipher(self,key) : 
         if key in self.ignored_keys : 
@@ -117,14 +116,6 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
         return key in self.keys()
     
     #-------------------------------------------------------------------------
-    def keys(self) :
-        """
-        List of the keys of the group
-        """
-        if not self._keys_cached : self._keys_cached = list(self._keys())
-        return self._keys_cached
-
-    #-------------------------------------------------------------------------
     def values(self) :
         """
         Generator returning the values in the group
@@ -147,8 +138,8 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
     #-------------------------------------------------------------------------
     def __iter__(self) :
         """Returns the keys, like a dictionary"""
-        def res() :
-            for name in self.keys():
+        def res() : 
+            for name in self.keys() :
                 yield name
         return res()
 
@@ -165,13 +156,13 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
     def __delitem__(self,key) :
         key= self._key_cipher(key)
         self._clean_key(key,True) 
-        self._keys_cached = None
-
+        self._cached_keys = None
+ 
     #-------------------------------------------------------------------------
     def __setitem__(self,key,val) :
         key= self._key_cipher(key)# first look if key is a string or key
        
-        if key in list(self.keys()) : 
+        if key in self.keys() : 
             if self.options['do_not_overwrite_entries'] : raise KeyError, "key %s already exists"%key 
             self._clean_key(key) # clean things 
 
@@ -229,7 +220,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
             except:
                raise #ValueError, "Value %s\n is not of a type suitable to storage in HDF file"%val
         self._flush()
-        self._keys_cached = None
+        self._cached_keys = None
 
     #-------------------------------------------------------------------------
     def get_raw (self,key):
@@ -284,6 +275,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
                 res = r_class.__factory_from_hdf5__(self)
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
+                print [K for K in SUB]
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )
                 res = r_class.__factory_from_dict__(values) 
             else : 

@@ -31,6 +31,7 @@ class HDF_Archive_group_basic_layer :
         self._group = parent._group[subpath] if subpath else parent._group
         assert type(self._group) in [h5py.highlevel.Group,h5py.highlevel.File], "Internal error"
         self.ignored_keys = [] 
+        self._cached_keys = None
 
     def _init_root(self, LocalFileName, Open_Flag) : 
         try : 
@@ -109,12 +110,12 @@ class HDF_Archive_group_basic_layer :
   
     def create_group (self,key):
         self._group.create_group(key)
+        self._cached_keys = None
 
-    def _keys(self) :
-        def res() : 
-            for name in  self._group.iterkeys():
-                yield name
-        return res()
+    def keys(self) :
+
+        if not self._cached_keys : self._cached_keys = self._group.keys()
+        return self._cached_keys
 
     def _clean_key(self,key, report_error=False) :
         if report_error and key not in self._group : 
