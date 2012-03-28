@@ -18,10 +18,6 @@ struct my_matrix_valued_function {
  triqs::arrays::array<double, 3> data;
  my_matrix_valued_function (double x): data(2,2,5) { data()=0; for (size_t u=0; u< 5; ++u) {data(0,0,u) = x*u;data(1,1,u) = -x*u;}}
  my_matrix_valued_function(my_matrix_valued_function const &x): data(x.data) { std::cerr  << "COPY my_matrix_valued_function"<<std::endl ; }
- 
- //template<typename T> struct call_rtype{ typedef triqs::arrays::array_view<double,2> type;};
- //template<typename T> struct call_rtype{ typedef triqs::arrays::matrix_view<double> type;};
- //typename call_rtype<size_t>::type operator()(size_t i) const { return data(range(),range(),i);}
  triqs::arrays::matrix_view<double> operator()(size_t i) const { return data(range(),range(),i);}
 };
 
@@ -29,23 +25,23 @@ struct my_matrix_valued_function {
 template <typename T> struct is_a_m_f                            : mpl::false_{};
 template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {};
 
+// a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
 template <typename T> struct is_scalar_or_element   : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
+
 
 namespace tupa=triqs::utility::proto::algebra;
 
-template <typename Expr> struct The_Expr;
+template <typename Expr> struct The_Expr;  // the expression
 
-typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f, is_scalar_or_element>::type grammar;
-typedef tupa::domain<grammar,The_Expr,true>                                 domain;
+typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f, is_scalar_or_element>::type grammar; // the grammar
 
-template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{
+typedef tupa::domain<grammar,The_Expr,true>  domain; // the domain 
+
+template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{ // impl the expression
  typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;
  The_Expr( Expr const & expr = Expr() ) : basetype ( expr ) {}
-
  typedef typename boost::result_of<grammar(Expr) >::type _G;
-
  typename triqs::utility::proto::call_result_type<_G,size_t>::type operator() (size_t n) const { return grammar()(*this)(n); }
-
  friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
 };
 
