@@ -13,6 +13,7 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/stack_trace.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/blitzext/blitz_op.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/fourier.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/pade.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_Base.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImFreq.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImLegendre.cpp
