@@ -79,6 +79,13 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
   template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
  };
 
+ //For arrays, special treatment : the arrays are replaced by the corresponding const view
+ template<int N, typename T, typename Opt> struct ArrayDomain::as_child< array<T,N,Opt> > : 
+  ArrayDomain::proto_base_domain::template as_expr< const array_view<T,N,Opt> >{};
+
+ template<int N, typename T, typename Opt> struct ArrayDomain::as_child< const array<T,N,Opt> > : 
+  ArrayDomain::proto_base_domain::template as_expr< const array_view<T,N,Opt> >{};
+
  //   Evaluation context
  template<typename KeyType, typename ReturnType>
   struct ArrayEvalCtx : proto::callable_context< ArrayEvalCtx<KeyType,ReturnType> const > {
@@ -117,15 +124,5 @@ eval( Expr const & e) { return array<typename Expr::value_type, Expr::domain_typ
 }}//namespace triqs::arrays
 
 
-// specializing the proto copy
-namespace boost { namespace proto { namespace detail { 
-
- template<int N, typename T, typename Opt, typename Generator>    
-  struct as_expr< const triqs::arrays::array<T,N,Opt>, Generator, true > : as_expr< const triqs::arrays::array_view<T,N,Opt>, Generator, true> {};
-
- template<int N, typename T, typename Opt, typename Generator>    
-  struct as_expr< triqs::arrays::array<T,N,Opt>, Generator, true > : as_expr< const triqs::arrays::array_view<T,N,Opt>, Generator, true> {};
-
-}}}
 
 #endif

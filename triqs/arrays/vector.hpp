@@ -43,6 +43,7 @@ namespace triqs { namespace arrays {
    typedef details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view > BaseType;
    typedef vector_view<ValueType,Opt> view_type;
    typedef vector<ValueType,Opt> non_view_type;
+   typedef void has_view_type_tag;
 
    /// Build from an IndexMap and a storage 
    template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): BaseType(Ind, Mem) {}
@@ -84,6 +85,7 @@ namespace triqs { namespace arrays {
    typedef typename BaseType::indexmap_type indexmap_type;
    typedef vector_view<ValueType,Opt> view_type;
    typedef vector<ValueType,Opt> non_view_type;
+   typedef void has_view_type_tag;
 
    /// Empty vector.
    vector():BaseType(indexmap_type(),storage_type()) {}

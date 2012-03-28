@@ -91,6 +91,7 @@ namespace triqs { namespace arrays {
    typedef details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > BaseType;
    typedef  matrix_view<ValueType,Opt> view_type;
    typedef  matrix<ValueType,Opt> non_view_type;
+   typedef void has_view_type_tag;
    typedef  Opt opt_type;
 
    /// Build from an IndexMap and a storage 
@@ -132,6 +133,7 @@ namespace triqs { namespace arrays {
    typedef typename BaseType::indexmap_type indexmap_type;
    typedef matrix_view<ValueType,Opt> view_type;
    typedef matrix<ValueType,Opt> non_view_type;
+   typedef void has_view_type_tag;
    typedef Opt opt_type;
 
    /// Empty matrix.

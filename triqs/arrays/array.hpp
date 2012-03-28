@@ -40,6 +40,7 @@ namespace triqs { namespace arrays {
     typedef typename BaseType::indexmap_type indexmap_type;
     typedef array_view<ValueType,Rank,Opt> view_type;
     typedef array<ValueType,Rank,Opt> non_view_type;
+    typedef void has_view_type_tag;
 
     /// Build from an IndexMap and a storage 
     template<typename S> array_view (indexmap_type const & Ind,S const & Mem): BaseType(Ind, Mem) {}
@@ -78,6 +79,7 @@ namespace triqs { namespace arrays {
    typedef typename BaseType::indexmap_type indexmap_type;
    typedef array_view<ValueType,Rank,Opt> view_type;
    typedef array<ValueType,Rank,Opt> non_view_type;
+   typedef void has_view_type_tag;
 
    /// Empty array.
    array():BaseType(indexmap_type(),storage_type()) {}
