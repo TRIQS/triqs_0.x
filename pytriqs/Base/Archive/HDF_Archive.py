@@ -275,7 +275,6 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
                 res = r_class.__factory_from_hdf5__(self)
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
-                print [K for K in SUB]
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )
                 res = r_class.__factory_from_dict__(values) 
             else : 
