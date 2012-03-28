@@ -29,11 +29,13 @@ struct my_matrix_valued_function {
 template <typename T> struct is_a_m_f                            : mpl::false_{};
 template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {};
 
+template <typename T> struct is_scalar_or_element   : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
+
 namespace tupa=triqs::utility::proto::algebra;
 
 template <typename Expr> struct The_Expr;
 
-typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f>::type grammar;
+typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f, is_scalar_or_element>::type grammar;
 typedef tupa::domain<grammar,The_Expr,true>                                 domain;
 
 template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{
@@ -52,6 +54,7 @@ BOOST_PROTO_DEFINE_OPERATORS(is_a_m_f, domain);
 int main() { 
 
  my_matrix_valued_function f1(1),f2(10);
+ triqs::arrays::matrix<double> A(2,2); A()=0; A(0,0) = 2; A(1,1) = 20;
 
  TEST( (f1 - f2));
 
@@ -62,6 +65,8 @@ int main() {
 
  TEST( triqs::arrays::matrix<double> ( ( 2*f1  +f2 ) (1)) );
  TEST( triqs::arrays::eval ( ( 2*f1  +f2 ) (1)) );
+
+ TEST( triqs::arrays::eval ( ( A*f1  +f2 ) (1)) );
 
 };
 
