@@ -21,6 +21,7 @@
 #ifndef TRIQS_UTILITY_ALGEBRA_H
 #define TRIQS_UTILITY_ALGEBRA_H 
 
+#include <boost/type_traits/add_const.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/proto/core.hpp>
@@ -37,6 +38,14 @@
 #include <complex>
 #include "triqs/utility/typeid_name.hpp"
 #include <assert.h>
+
+namespace triqs { 
+
+ template<typename T, typename Void =void> struct view_type_if_exists_else_type {typedef T type;}; 
+ template<typename T> struct view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::view_type type;}; 
+ template<typename T> struct view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
+
+}
 
 namespace triqs { namespace utility { namespace proto { 
 
@@ -99,16 +108,17 @@ namespace triqs { namespace utility { namespace proto {
    * The domain can enforce copies or not...
    * --------------------------------------------------------------------------------------------------- */
  
- template< typename Grammar, template<typename Expr> class The_Expr, bool EnforceCopy> struct domain;
+ template< typename Grammar, template<typename Expr> class The_Expr, bool CopyOrViewInsteadOfRef> struct domain;
 
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : proto::domain<proto::generator<The_Expr>, Grammar> { };
- //If true it modifies the PROTO Domain to make *COPIES* of all objects.
+ //If true it modifies the PROTO Domain to make *COPIES* of ALL objects.
  //cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+ //Objects which have a view type are however NOT copied, the copy is replaced by a VIEW.
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : proto::domain<proto::generator<The_Expr>, Grammar> {
-  template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
+  //template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
+  template< typename T > struct as_child : 
+   domain<Grammar,The_Expr,true>::proto_base_domain::template as_expr< typename boost::add_const<typename triqs::view_type_if_exists_else_type <T>::type >::type > {};
  };
-
- // Make this by trait and unify with the view like the arrays.
 
  /* -------------------------------------------
   *  Structure of algebra for algebra valued functions
@@ -169,6 +179,11 @@ namespace triqs { namespace utility { namespace proto {
 #undef OP_NAME
 #undef OP_OP
 #undef BINARY_OP
+
+namespace triqs { 
+
+ template<typename T> struct has_a_view_type: boost::mpl::false_{};
+}
 
 #endif
 
