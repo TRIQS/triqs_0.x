@@ -81,7 +81,6 @@ namespace triqs { namespace utility { namespace proto {
  template <typename T, typename A0> struct call_result_type { 
   typedef BOOST_TYPEOF_TPL (pseudo_default_construct<T>() (pseudo_default_construct<A0>())) type;
   };
- //template <typename T, typename A0> struct call_result_type<T,A0, typename T::template call_rtype<A0>::type> : T::template call_rtype<A0> {};
 
  namespace algebra { 
 
@@ -173,17 +172,10 @@ namespace triqs { namespace utility { namespace proto {
   template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
-
 }}}
 
 #undef OP_NAME
 #undef OP_OP
 #undef BINARY_OP
-
-namespace triqs { 
-
- template<typename T> struct has_a_view_type: boost::mpl::false_{};
-}
-
 #endif
 
