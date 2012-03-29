@@ -54,5 +54,7 @@
  };
 #define TRIQS_MAKE_TRAIT_HAS_METHOD( ReturnType, ArgTypeList, Name, NickName) TRIQS_MAKE_TRAIT_HAS_METHOD_IMPL(ReturnType,ArgTypeList,Name,NickName,)
 #define TRIQS_MAKE_TRAIT_HAS_CONST_METHOD( ReturnType, ArgTypeList, Name, NickName) TRIQS_MAKE_TRAIT_HAS_METHOD_IMPL(ReturnType,ArgTypeList,Name,NickName,const)
+//#define TRIQS_MAKE_TRAIT_HAS_METHOD_TPL( ReturnType, ArgTypeList, TPL,Name, NickName) TRIQS_MAKE_TRAIT_HAS_METHOD_IMPL(ReturnType,ArgTypeList,Name,NickName,,TPL)
+//#define TRIQS_MAKE_TRAIT_HAS_CONST_METHOD_TPL( ReturnType, ArgTypeList, TPL, Name, NickName) TRIQS_MAKE_TRAIT_HAS_METHOD_IMPL(ReturnType,ArgTypeList,Name,NickName,const,TPL)
 
 
