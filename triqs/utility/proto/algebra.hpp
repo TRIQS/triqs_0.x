@@ -39,14 +39,6 @@
 #include "triqs/utility/typeid_name.hpp"
 #include <assert.h>
 
-namespace triqs { 
-
- template<typename T, typename Void =void> struct view_type_if_exists_else_type {typedef T type;}; 
- template<typename T> struct view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::view_type type;}; 
- template<typename T> struct view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
-
-}
-
 namespace triqs { namespace utility { namespace proto { 
 
   namespace mpl = boost::mpl; namespace proto = boost::proto; namespace p_tag= proto::tag;
@@ -106,7 +98,11 @@ namespace triqs { namespace utility { namespace proto {
   /* ---------------------------------------------------------------------------------------------------
    * The domain can enforce copies or not...
    * --------------------------------------------------------------------------------------------------- */
- 
+
+ template<typename T, typename Void =void> struct const_view_type_if_exists_else_type {typedef T type;}; 
+ template<typename T> struct const_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
+// template<typename T> struct const_view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
+
  template< typename Grammar, template<typename Expr> class The_Expr, bool CopyOrViewInsteadOfRef> struct domain;
 
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : proto::domain<proto::generator<The_Expr>, Grammar> { };
@@ -116,7 +112,7 @@ namespace triqs { namespace utility { namespace proto {
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : proto::domain<proto::generator<The_Expr>, Grammar> {
   //template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
   template< typename T > struct as_child : 
-   domain<Grammar,The_Expr,true>::proto_base_domain::template as_expr< typename boost::add_const<typename triqs::view_type_if_exists_else_type <T>::type >::type > {};
+   domain<Grammar,The_Expr,true>::proto_base_domain::template as_expr< typename boost::add_const<typename const_view_type_if_exists_else_type <T>::type >::type > {};
  };
 
  /* -------------------------------------------
