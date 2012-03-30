@@ -39,9 +39,12 @@ namespace triqs { namespace arrays {
 	 (first_ == last_), (*this) << " is an invalid range.");
 	 ARRAY_PRECHECK((last_-first_) % step == 0,
 	 (*this) << ": the stride must evenly divide the range");
-	 */  }
+	 */  
+  }
 
-   range():first_(0),last_(-1),step_(1) {} // i.e. all
+  explicit range (int first__) :first_(first__), last_(first__+1), step_(1) {}
+
+  range():first_(0),last_(-1),step_(1) {} // i.e. all
 
   range(const range& r):first_(r.first_), last_(r.last_), step_(r.step_) {}
 
@@ -56,7 +59,7 @@ namespace triqs { namespace arrays {
    return os;
   }
  };
- 
+
  class ellipsis : public range { 
   public :
    ellipsis( int first__, int last__, int step__=1): range(first__, last__, step__) {}
