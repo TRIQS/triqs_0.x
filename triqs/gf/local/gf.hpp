@@ -103,13 +103,22 @@ using tqa::range;
 
   TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,gf);
 
-  // pb : view of the indices !!
   template<typename A, typename B> view_type slice(A a, B b) { 
-   return view_type( mesh, data( range(a), range(b), range()), _myslice(aux_ptr,a,b), _myslice(indices_left,a,b), _myslice(indices_right,a,b) ); 
+   return view_type( mesh, data (range(a), range(b), range()), _myslice(aux_ptr,a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
   }
-  template<typename A, typename B> const view_type slice(A a, B b) const { return gf_view( mesh, data( range(a), range(b), range())); }
+  template<typename A, typename B> const view_type slice(A a, B b) const { 
+   return view_type( mesh, data (range(a), range(b), range()), _myslice(aux_ptr,a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
+  }
 
-  view_type view() { return view_type(mesh,data,aux_ptr,indices_left, indices_right);}
+  private:
+  // pb with the shared_ptr
+  template <typename D, bool IV, typename A, typename T1, typename T2> gf<D,true,A> _myslice( gf<D,IV,A> const &X, T1 a, T2 b) { return X.slice(a,b);}
+  template <typename T1, typename T2> boost::shared_ptr<void> _myslice( boost::shared_ptr<void> const &X, T1 a, T2 b) { return boost::shared_ptr<void>();}
+  std::vector<string> _myslice(std::vector<string> const & V, range const & R) { }
+
+  public:
+
+  view_type view()             { return view_type(mesh,data,aux_ptr,indices_left, indices_right);}
   const view_type view() const { return view_type(mesh,data,aux_ptr,indices_left, indices_right);}
 
   template<typename RHS> // specialize for various RHS ( fourier_impl, other gf, etc....)
