@@ -31,6 +31,8 @@ namespace triqs { namespace gf {
   struct matsubara_time{};
   struct real_freq {};
   struct real_time {};
+ 
+  struct infty{};
  }
 
 }}
