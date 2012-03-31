@@ -39,7 +39,7 @@ int main() {
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
  // tail 
- auto t = G.tail_view();
+ BOOST_AUTO( t, G.tail_view());
  TEST( t( 0) ) ;
 
  TEST( Gv2.tail_view()( 0) ) ;
