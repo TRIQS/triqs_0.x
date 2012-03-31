@@ -3,31 +3,45 @@
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
 namespace tql= triqs::lazy;
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
 
  std::vector<std::string> ind; ind.push_back("1");ind.push_back("2");
- local::gf<meshes::matsubara_freq,false> G(2,2, meshes::matsubara_freq(Fermion), ind,ind);
- //local::gf<meshes::matsubara_freq,true>  Ge(2,2, meshes::matsubara_freq(Fermion), ind,ind);
-
- //local::gf<meshes::matsubara_freq,false> Gd; 
- //local::gf<meshes::matsubara_freq,true> Gvd; 
+ typedef local::gf<meshes::matsubara_freq,false> Gf_type;
+ typedef local::gf<meshes::matsubara_freq,true> Gf_view_type;
  
- local::gf<meshes::matsubara_freq,true> Gv =G;
- std::cout  << G( 0) <<std::endl ;
+ Gf_type G1; // empty
+ TEST( G1( 0) ) ;
+
+ Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind,ind);
+ 
+ // should not compile and does not
+ //Gf_view_type Ge(2,2, meshes::matsubara_freq(Fermion), ind,ind);
+
+ Gf_view_type Gv =G;
+ TEST( G( 0) ) ;
+
+ Gf_view_type Gv2 = G.slice(0,0);
+ TEST( Gv2( 0) ) ;
 
  triqs::lazy::placeholder<0> om_;
 
- std::cout << G(om_) << std::endl ;
- std::cout << tql::eval(G(om_), om_=0) << std::endl ;
+ TEST( G(om_) ) ;
+ TEST( tql::eval(G(om_), om_=0) ) ;
 
- std::cout << Gv(om_) << std::endl ;
- std::cout << tql::eval(Gv(om_), om_=0) << std::endl ;
+ TEST( Gv(om_) ) ;
+ TEST( tql::eval(Gv(om_), om_=0) ) ;
 
  G(om_) = 1/(om_ + 2.3);
 
-  std::cout << Gv(om_) << std::endl ;
- std::cout << tql::eval(Gv(om_), om_=0) << std::endl ;
+  TEST( Gv(om_) ) ;
+ TEST( tql::eval(Gv(om_), om_=0) ) ;
 
- 
+ // tail 
+ auto t = G.tail_view();
+ TEST( t( 0) ) ;
+
+ TEST( Gv2.tail_view()( 0) ) ;
+  
 }

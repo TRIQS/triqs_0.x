@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
    static const bool mesh_tail = false;
    const size_t order;
    size_t len() const{ return order;}
-   tail(size_t order_) : order(order_) {}
+   tail(size_t order_=5) : order(order_) {}
   };
 
   struct matsubara_freq : domains::matsubara_freq {
