@@ -38,9 +38,19 @@ namespace triqs { namespace gf {
 
 namespace triqs { namespace gf { namespace local {
 
+//template <typename T> struct view_type_of { typedef typename T::view_type type;};
+//template <> struct view_type_of<void> { typedef void type;};
+
+struct nothing { 
+
+ typedef nothing view_type;
+ template<typename A, typename B> view_type slice(A a, B b) const { return nothing();}
+
+};
+
 using tqa::range;
 
- template<typename DomainType, bool IsView, typename AuxType = void> class gf {
+ template<typename DomainType, bool IsView, typename AuxType = nothing> class gf {
 
  public:
 
@@ -49,27 +59,29 @@ using tqa::range;
   typedef tqa::matrix_view<element_value_type, Option::Fortran>       result_type;
   typedef tqa::matrix_view<const element_value_type, Option::Fortran> const_result_type;
 
-
   typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
   typedef gf<DomainType,true>   view_type;
   typedef gf<DomainType,false>  non_view_type;
 
   typedef std::vector<string> indices_type;
 
-  typedef AuxType aux_type;
-  typedef AuxType aux_view_type;
-  typedef boost::shared_ptr< typename mpl::if_<IsView, aux_view_type, aux_type>::type >  aux_ptr_type;
+  //typedef AuxType aux_type;
+  //typedef typename view_type_of<aux_type>::type aux_view_type; // correct this
+  //typedef mpl::if_< boost::is_same<aux_type,void>, void, typename aux_type::typename view_type_of<aux_type>::type aux_view_type; // correct this
+  //typedef typename mpl::if_<IsView, aux_view_type, aux_type>::type  aux_type;
+  typedef typename AuxType::view_type                              aux_view_type; 
+  typedef typename mpl::if_<IsView, aux_view_type, AuxType>::type  aux_type;
 
-  typedef tqa::array      <value_element_type,3>                      data_non_view_type;
-  typedef tqa::array_view <value_element_type,3>                      data_view_type;
-  typedef typename mpl::if_<IsView, data_view_type, data_type>::type  data_type;
+  typedef tqa::array      <value_element_type,3>                               data_non_view_type;
+  typedef tqa::array_view <value_element_type,3>                               data_view_type;
+  typedef typename mpl::if_<IsView, data_view_type, data_non_view_type>::type  data_type;
  
   typedef typename DomainType::index_type arg0_type;
 
  protected:
   mesh_type mesh;
   data_type data;
-  aux_ptr_type aux_ptr;
+  aux_type aux;
   indices_type indices_left, indices_right;
 
  public:
@@ -82,44 +94,45 @@ using tqa::range;
      // init aux
     }
 
-  gf (mesh_type const & mesh_, data_view_type const & data_, aux_view_type aux_, indices_type const & indices_left_, indices_type const & indices_right_) : 
+  gf (mesh_type const & mesh_, data_view_type const & data_, aux_view_type const & aux_, indices_type const & indices_left_, indices_type const & indices_right_) : 
    data(data_), mesh(mesh_), aux(aux_), indices_left(indices_left_), indices_right(indices_right_) {}
 
-  gf(gf const & x): mesh(x.mesh), data(x.data), aux_ptr(x.aux_ptr), indices_left(x.indices_left), indices_right(x.indices_right) {}
+  gf(gf const & x): mesh(x.mesh), data(x.data), aux(x.aux), indices_left(x.indices_left), indices_right(x.indices_right) {}
 
   // view from regular, and vice versa
-  template<typename GfType> gf(GfType const & x): mesh(x.mesh), data(x.data), aux_ptr(x.aux_ptr), indices_left(x.indices_left), indices_right(x.indices_right) {}
+  template<typename GfType> gf(GfType const & x): mesh(x.mesh), data(x.data), aux(x.aux), indices_left(x.indices_left), indices_right(x.indices_right) {}
 
   //template<typename T> typename boost::disable_if< tql::is_lazy<T>, result_type>::type operator() (T const & x) { return data(range(),range(),x);}
   //template<typename T> typename boost::disable_if< tql::is_lazy<T>, const_result_type>::type operator() (T const & x) const { return data(range(),range(),x);}
 
+  triqs::arrays::mini_vector<size_t,2> result_shape() const { return data.shape();}
+  
   result_type       operator()       ( arg0_type const & x) { return data(range(),range(),x);}
   const_result_type operator() const ( arg0_type const & x) { return data(range(),range(),x);}
 
-  aux_type       operator()       ( domain::infty const & x) { return aux;}
-  const aux_type operator() const ( domain::infty const & x) { return aux;}
+  aux_view_type       operator()       ( domain::infty const & x) { return aux;}
+  const aux_view_type operator() const ( domain::infty const & x) { return aux;}
 
-  triqs::arrays::mini_vector<size_t,2> result_shape() const { return data.shape();}
-
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,gf);
+  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,gf_view);
+  //TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,gf);
 
   template<typename A, typename B> view_type slice(A a, B b) { 
-   return view_type( mesh, data (range(a), range(b), range()), _myslice(aux_ptr,a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
+   return view_type( mesh, data (range(a), range(b), range()), aux.slice(a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
   }
   template<typename A, typename B> const view_type slice(A a, B b) const { 
-   return view_type( mesh, data (range(a), range(b), range()), _myslice(aux_ptr,a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
+   return view_type( mesh, data (range(a), range(b), range()), aux.slice(a,b), _myslice(indices_left,range(a)), _myslice(indices_right,range(b)) ); 
   }
 
   private:
-  // pb with the shared_ptr
-  template <typename D, bool IV, typename A, typename T1, typename T2> gf<D,true,A> _myslice( gf<D,IV,A> const &X, T1 a, T2 b) { return X.slice(a,b);}
-  template <typename T1, typename T2> boost::shared_ptr<void> _myslice( boost::shared_ptr<void> const &X, T1 a, T2 b) { return boost::shared_ptr<void>();}
+  //template <typename D, bool IV, typename A, typename T1, typename T2> gf<D,true,A> _myslice( gf<D,IV,A> const &X, T1 a, T2 b) { return X.slice(a,b);}
+  //template <typename X, typename T1, typename T2> typename X::view_type _myslice( X const &x, T1 a, T2 b) { return x.slice(a,b);}
+  //template <typename T1, typename T2> void _myslice( void, T1 a, T2 b) {}
   std::vector<string> _myslice(std::vector<string> const & V, range const & R) { }
 
   public:
 
-  view_type view()             { return view_type(mesh,data,aux_ptr,indices_left, indices_right);}
-  const view_type view() const { return view_type(mesh,data,aux_ptr,indices_left, indices_right);}
+  //view_type view()             { return view_type(mesh,data,aux,indices_left, indices_right);}
+  //const view_type view() const { return view_type(mesh,data,aux,indices_left, indices_right);}
 
   template<typename RHS> // specialize for various RHS ( fourier_impl, other gf, etc....)
    gf & operator = (RHS const & rhs) { triqs::gf::assignment_impl<gf,RHS>::invoke(*this,rhs); return *this; } 
