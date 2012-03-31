@@ -24,63 +24,49 @@
 #include <triqs/lazy/core.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
+#include "./domains.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
  namespace tqa= triqs::arrays;
  namespace tql= triqs::lazy;
+ namespace mpl= boost::mpl;
  using tqa::range;
-
- template<typename DomainType, bool IsView> class gf;
 
  // implementation details declaration
  namespace impl {
   template<typename LHS, typename RHS, typename Enable=void > struct assignment;
-  inline std::vector<string> slice_vector(std::vector<string> const & V, range const & R);
+  inline std::vector<std::string> slice_vector(std::vector<std::string> const & V, range const & R);
   struct nothing; 
-  template<typename DomainType> struct tail_type_from_domain;
+  template<typename MeshType> struct tail_type_from_domain;
   template<typename T, typename F> struct assign_to_F_of_infty;
  }
 
- namespace impl { // separate ?
-  struct nothing { 
-   typedef nothing view_type;
-   template<typename A, typename B> view_type slice(A a, B b) const { return nothing();}
-   nothing(...){}
-   void operator=(...) {}
-  };
-
-  template<typename DomainType> struct tail_type_from_domain { typedef nothing type;}
-  template<> struct tail_type_from_domain<domains::matsubara_freq> { typedef gf<domains::tail,false> type;}
-
-  template<typename T, typename F> struct assign_to_F_of_infty { static void invoke(T & lhs, F const & f) { lhs = F(domains::infty);} };
-  template<typename F> struct assign_to_F_of_infty<nothing,F> { static void invoke(T & lhs, F const & f) {} };
- }
-
  // the class 
- template<typename DomainType, bool IsView> class gf {
+ template<typename MeshType, bool IsView> class gf {
 
   public:
 
-   typedef double value_element_type;
-   typedef DomainType domain_type;
-   typedef std::vector<string> indices_type;
+   typedef typename MeshType::gf_result_type value_element_type;
+   typedef MeshType mesh_type;
+   typedef MeshType domain_type;
+   typedef std::vector<std::string> indices_type;
 
+   typedef gf<MeshType,true>   view_type;
+   typedef gf<MeshType,false>  non_view_type;
    typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
-   typedef gf<DomainType,true>   view_type;
-   typedef gf<DomainType,false>  non_view_type;
 
-   typedef typename tail_type_from_domain<DomainType>::type                      tail_non_view_type; 
-   typedef typename tail_non_view_type::view_type                                tail_view_type; 
-   typedef typename mpl::if_<IsView, tail_view_type, tail_non_view_type>::type   tail_type;
+   typedef typename mpl::if_c<MeshType::has_tail, gf<meshes::tail,false>, impl::nothing>::type  tail_non_view_type; 
+   typedef typename tail_non_view_type::view_type                                               tail_view_type; 
+   typedef typename mpl::if_c<IsView, tail_view_type, tail_non_view_type>::type                 tail_type;
 
-   typedef tqa::array      <value_element_type,3>                               data_non_view_type;
-   typedef tqa::array_view <value_element_type,3>                               data_view_type;
-   typedef typename mpl::if_<IsView, data_view_type, data_non_view_type>::type  data_type;
+   typedef tqa::array      <value_element_type,3>                                data_non_view_type;
+   typedef tqa::array_view <value_element_type,3>                                data_view_type;
+   typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
 
-   typedef typename DomainType::index_type arg0_type;
-   typedef tqa::matrix_view<element_value_type, Option::Fortran>       result_type;
-   typedef tqa::matrix_view<const element_value_type, Option::Fortran> const_result_type;
+   typedef typename MeshType::index_type arg0_type;
+   typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       result_type;
+   typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_result_type;
 
   protected:
    mesh_type mesh;
@@ -90,7 +76,7 @@ namespace triqs { namespace gf { namespace local {
 
    const indices_type indices_left, indices_right;
 
-   mesh_type const & mesh() const { return mesh;}
+   mesh_type const & the_mesh() const { return mesh;}
 
    data_view_type data_view() { return data;}
    const data_view_type data_view() const { return data;}
@@ -98,10 +84,18 @@ namespace triqs { namespace gf { namespace local {
    tail_view_type tail_view() { return tail;}
    const tail_view_type tail_view() const { return tail;}
 
+   template<typename V=int>
+    gf() :
+     mesh(), data(1,1,mesh.len()),tail(1,1,mesh.mesh_tail,std::vector<std::string>(1,"1"),std::vector<std::string>(1,"1")),  indices_left(std::vector<std::string>(1,"1")), indices_right(std::vector<std::string>(1,"1")) {
+      static_assert(!IsView, "Ooops");
+      
+     }
+
    template<typename S> // not valid for the view, need a template and a disabler 
-    gf (S N1, S N2, mesh_type const & mesh_, indices_type const & indices_left_, indices_type const & indices_right_, 
-      typename boost::disable_if_c<IsView>::type * dummy =NULL ) : 
-     mesh(mesh_), data(N1,N2,mesh_.len()),tail(mesh_.mesh_tail),  indices_left(indices_left_), indices_right(indices_right_) {
+    gf (S N1, S N2, mesh_type const & mesh_, indices_type const & indices_left_, indices_type const & indices_right_) : 
+      //typename boost::disable_if_c<IsView>::type * dummy =NULL ) : 
+     mesh(mesh_), data(N1,N2,mesh_.len()),tail(N1,N2,mesh_.mesh_tail,indices_left_,indices_right_),  indices_left(indices_left_), indices_right(indices_right_) {
+      static_assert(!IsView, "Ooops");
      }
 
    /*  // not valid for the view, need a disabler
@@ -116,15 +110,15 @@ namespace triqs { namespace gf { namespace local {
 
    gf(gf const & x): mesh(x.mesh), data(x.data), tail(x.tail), indices_left(x.indices_left), indices_right(x.indices_right) {}
 
-   template<typename GfType> gf(GfType const & x): mesh(x.mesh), data(x.data), tail(x.tail), indices_left(x.indices_left), indices_right(x.indices_right) {}
+   template<typename GfType> gf(GfType const & x): mesh(x.the_mesh()), data(x.data_view()), tail(x.tail_view()), indices_left(x.indices_left), indices_right(x.indices_right) {}
 
    triqs::arrays::mini_vector<size_t,2> result_shape() const { return data.shape();}
 
-   result_type       operator()       ( arg0_type const & x) { return data(range(),range(),x);}
-   const_result_type operator() const ( arg0_type const & x) { return data(range(),range(),x);}
+   result_type       operator() ( arg0_type const & x)       { return data(range(),range(),x);}
+   const_result_type operator() ( arg0_type const & x) const { return data(range(),range(),x);}
 
-   tail_view_type       operator()       ( domain::infty const & x) { return tail;}
-   const tail_view_type operator() const ( domain::infty const & x) { return tail;}
+   tail_view_type       operator() ( domains::infty const & x)       { return tail;}
+   const tail_view_type operator() ( domains::infty const & x) const { return tail;}
 
    //TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
    TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,view_type);
@@ -137,7 +131,7 @@ namespace triqs { namespace gf { namespace local {
    }
 
    template<typename RHS> // specialize for various RHS ( fourier_impl, other gf, etc....)
-    gf & operator = (RHS const & rhs) { triqs::gf::impl::assignment<gf,RHS>::invoke(*this,rhs); return *this; } 
+    gf & operator = (RHS const & rhs) { impl::assignment<gf,RHS>::invoke(*this,rhs); return *this; } 
 
    // lazy_assignable
    template<typename F>
@@ -147,27 +141,27 @@ namespace triqs { namespace gf { namespace local {
     }
 
    /// Save the Green function in i omega_n (as 2 columns).
-   void save(string file,  bool accumulate=false) const {}
+   void save(std::string file,  bool accumulate=false) const {}
 
    /// Load the GF
-   void load(string file){}
+   void load(std::string file){}
 
    /// HDF5 saving ....
 
  };
 
- // gf.impl.hpp
+  namespace impl { // separate ?
+  struct nothing { 
+   typedef nothing view_type;
+   template<typename A, typename B> view_type slice(A a, B b) const { return nothing();}
+   nothing(...){}
+   template<typename T1, typename T2, typename T3, typename T4, typename T5> nothing(T1,T2,T3,T4,T5){}
+   template<typename T> void operator=(T) {}
+  };
 
- // implementation of expression template as function of omega...
- // keep the domain
-
- // 
- // integrate + enable ??
- template< typename GfType> struct integrate_impl; 
- template< typename GfType> typename GfType::result_type integrate(GfType const & x) { return integrate_impl<GfType>::invoke(x);}
- // + lazy overload + work on the concept only !!
- // 
- // rewrite the immutable_concept : call, slice, domain
+  template<typename T, typename F> struct assign_to_F_of_infty { static void invoke(T & lhs, F const & f) { lhs = F(domains::infty());} };
+  template<typename F> struct assign_to_F_of_infty<nothing,F> { static void invoke(nothing & lhs, F const & f) {} };
+ }
 
 
 }}}

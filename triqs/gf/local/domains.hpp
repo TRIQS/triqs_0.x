@@ -26,13 +26,50 @@ namespace triqs { namespace gf {
 
  enum Statistic {Boson,Fermion};
 
- namespace domain {
-  template<Statistic S> struct matsubara_freq{};
+ namespace domains {
+  struct matsubara_freq{};
   struct matsubara_time{};
+  struct matsubara_legendre{};
   struct real_freq {};
   struct real_time {};
- 
   struct infty{};
+ }
+
+ namespace meshes { 
+
+  struct tail{
+   typedef std::complex<double> gf_result_type;
+   static const bool has_tail = false;
+   typedef size_t index_type;
+   static const bool mesh_tail = false;
+   const size_t order;
+   size_t len() const{ return order;}
+   tail(size_t order_) : order(order_) {}
+  };
+
+  struct matsubara_freq : domains::matsubara_freq {
+   const size_t n_max; 
+   Statistic statistic;
+   static const bool has_tail = true;
+   tail mesh_tail;
+   typedef std::complex<double> gf_result_type;
+   typedef size_t index_type;
+   size_t len() const{ return n_max;}
+   matsubara_freq (Statistic s=Fermion, size_t n_max_=1025, size_t tail_expansion_order=5 ): 
+    n_max( n_max_), statistic(s), mesh_tail(tail_expansion_order) {}
+  };
+
+  struct matsubara_time : domains::matsubara_freq {
+   const size_t n_time_slices; 
+   Statistic statistic;
+   static const bool has_tail = true;
+   typedef double gf_result_type;
+   typedef size_t index_type;
+   size_t len() const{ return n_time_slices;}
+   matsubara_time (size_t n_time_slices_, Statistic s): n_time_slices( n_time_slices_), statistic(s) {}
+  };
+
+  
  }
 
 }}

@@ -43,6 +43,7 @@ class GF_Bloc_ImTime : public GF_Bloc_Base<double> {
  void setFromInverseFourierOf(const GF_Bloc_ImFreq & Gw, bool time_mesh_starts_at_half_bin = true) { fourier_inverse(Gw, *this,time_mesh_starts_at_half_bin);}
  void setFromLegendre (GF_Bloc_ImLegendre const & Gl) { legendre_matsubara_direct(Gl,*this); }
 
+ // REMOVE THIS 
  PyArray<GF_Bloc_Base<double>::element_value_type,2> integral_tau();
 
 };
