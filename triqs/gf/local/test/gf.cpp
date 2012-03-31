@@ -2,6 +2,7 @@
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
+namespace tql= triqs::lazy;
 
 int main() {
 
@@ -12,11 +13,21 @@ int main() {
  //local::gf<meshes::matsubara_freq,false> Gd; 
  //local::gf<meshes::matsubara_freq,true> Gvd; 
  
- local::gf<meshes::matsubara_freq,true> Gv =G; //.view();
+ local::gf<meshes::matsubara_freq,true> Gv =G;
  std::cout  << G( 0) <<std::endl ;
 
  triqs::lazy::placeholder<0> om_;
 
- //std::cout << G(om_) << std::endl ;
+ std::cout << G(om_) << std::endl ;
+ std::cout << tql::eval(G(om_), om_=0) << std::endl ;
 
+ std::cout << Gv(om_) << std::endl ;
+ std::cout << tql::eval(Gv(om_), om_=0) << std::endl ;
+
+ G(om_) = 1/(om_ + 2.3);
+
+  std::cout << Gv(om_) << std::endl ;
+ std::cout << tql::eval(Gv(om_), om_=0) << std::endl ;
+
+ 
 }

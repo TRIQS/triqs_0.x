@@ -46,7 +46,7 @@ namespace triqs { namespace gf { namespace local {
    template<typename T> void operator=(T) {}
   };
 
-  template<typename T, typename F> struct assign_to_F_of_infty { static void invoke(T & lhs, F const & f) { lhs = F(domains::infty());} };
+  template<typename T, typename F> struct assign_to_F_of_infty { static void invoke(T & lhs, F const & f) { lhs = f(domains::infty());} };
   template<typename F> struct assign_to_F_of_infty<nothing,F> { static void invoke(nothing & lhs, F const & f) {} };
  }
 
@@ -109,9 +109,9 @@ namespace triqs { namespace gf { namespace local {
    tail_view_type       operator() ( domains::infty const & x)       { return tail;}
    const tail_view_type operator() ( domains::infty const & x) const { return tail;}
 
-   //TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
-   TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,view_type);
-
+   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
+   //TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(1,view_type);
+   
    //view_type view() const { return view_type(*this);}
 
    template<typename A, typename B> view_type slice(A a, B b) { 
@@ -123,8 +123,8 @@ namespace triqs { namespace gf { namespace local {
 
    // lazy_assignable
    template<typename F> void set_from_function(F f) { 
-     const size_t Nmax = data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = F(u);
-     impl::assign_to_F_of_infty<tail_type,F>::invoke(tail,f);
+     const size_t Nmax = data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = f(u);
+     //impl::assign_to_F_of_infty<tail_type,F>::invoke(tail,f);
     }
 
    /// Save the Green function in i omega_n (as 2 columns).
@@ -138,19 +138,23 @@ namespace triqs { namespace gf { namespace local {
  };
 
  template<typename MeshType> class gf<MeshType,true> : public gf_impl<MeshType,true> {
-  typedef gf_impl<MeshType,true> B;
+  typedef gf_impl<MeshType,true> B; 
   typedef typename B::mesh_type mesh_type;
   typedef typename B::data_view_type data_view_type;
   typedef typename B::tail_view_type tail_view_type;
   typedef typename B::indices_type indices_type;
-  public : 
-  gf (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
-   B(mesh_,data_,tail_,indices_left_,indices_right_) {}
+  public :
+  typedef B base_type;
+
+  //GARDER ??? 
+  //gf (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
+  // B(mesh_,data_,tail_,indices_left_,indices_right_) {}
 
   gf(gf const & x): B(x){};
   template<typename GfType> gf(GfType const & x): B(x) {};
 
   template<typename RHS> gf & operator = (RHS const & rhs) { impl::assignment<gf,RHS>::invoke(*this,rhs); return *this; } 
+   std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
 
  };
 
@@ -163,10 +167,12 @@ namespace triqs { namespace gf { namespace local {
   typedef typename B::data_non_view_type data_non_view_type;
   typedef typename B::tail_non_view_type tail_non_view_type;
   public : 
-  gf (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
-   B(mesh_,data_,tail_,indices_left_,indices_right_) {}
+ // gf (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
+  // B(mesh_,data_,tail_,indices_left_,indices_right_) {}
 
-  gf(gf const & x): B(x){}; // FAIRE DES COPIES !!!!
+   std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf";}
+
+   gf(gf const & x): B(x){}; // FAIRE DES COPIES !!!!
   template<typename GfType> gf(GfType const & x): B(x) {};
 
   /* gf() : B( mesh_type(), 
