@@ -21,5 +21,6 @@ add_triqs_test_hdf(GF_BasOps " -p 1.e-6" ) #" -p 1.e-6" ) # quick fix for pb on 
 # a simple dos on square lattice
 add_triqs_test_hdf(dos1 " -d 1.e-6" )
 
-
+# Pade approximation
+add_triqs_test_hdf(Pade " -d 1.e-6" )
 
