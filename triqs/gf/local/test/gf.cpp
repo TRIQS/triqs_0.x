@@ -11,9 +11,9 @@ int main() {
  typedef local::gf<meshes::matsubara_freq,false> Gf_type;
  typedef local::gf<meshes::matsubara_freq,true> Gf_view_type;
  
- Gf_type G1; // empty
+Gf_type G1; // empty
  TEST( G1( 0) ) ;
-
+ 
  Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind,ind);
  
  // should not compile and does not

@@ -83,6 +83,8 @@ namespace triqs { namespace gf { namespace local {
     typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       result_type;
     typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_result_type;
 
+    typedef gf<MeshType,IsView> Derived;
+
    protected:
     mesh_type mesh;
     data_type data;
@@ -103,9 +105,14 @@ namespace triqs { namespace gf { namespace local {
     gf_impl (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
      data(data_), mesh(mesh_), tail(tail_), indices_left(indices_left_), indices_right(indices_right_) {}
 
-    gf_impl(gf_impl const & x): mesh(x.mesh), data(x.data), tail(x.tail), indices_left(x.indices_left), indices_right(x.indices_right) {}
+    //gf_impl(gf_impl const & x): mesh(x.mesh), data(x.data), tail(x.tail), indices_left(x.indices_left), indices_right(x.indices_right) {}
 
     template<typename GfType> gf_impl(GfType const & x): mesh(x.the_mesh()), data(x.data_view()), tail(x.tail_view()), indices_left(x.indices_left), indices_right(x.indices_right) {}
+ 
+    gf_impl() {} 
+ 
+    gf_impl (size_t N1, size_t N2, mesh_type const & mesh_, indices_type const & indices_left_, indices_type const & indices_right_) : 
+      mesh(mesh_), data(N1,N2,mesh.len()), tail(N1,N2,mesh.mesh_tail,indices_left_,indices_right_), indices_left(indices_left_), indices_right(indices_right_) { }
 
    public:
 
@@ -134,6 +141,8 @@ namespace triqs { namespace gf { namespace local {
      //impl::assign_to_F_of_infty<tail_type,F>::invoke(tail,f);
     }
 
+   template<typename RHS> Derived & operator = (RHS const & rhs) { impl::assignment<Derived,RHS>::invoke(static_cast<Derived >(*this),rhs); return *this; } 
+
     /// Save the Green function in i omega_n (as 2 columns).
     void save(std::string file,  bool accumulate=false) const {}
 
@@ -153,48 +162,28 @@ namespace triqs { namespace gf { namespace local {
   public :
    typedef impl::gf_impl<MeshType,true> base_type;
 
-   // KEEP this ??
    //gf (mesh_type const & mesh_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_left_, indices_type const & indices_right_) : 
    // B(mesh_,data_,tail_,indices_left_,indices_right_) {}
 
-   gf(gf const & x): base_type(x){};
    template<typename GfType> gf(GfType const & x): base_type(x) {};
 
-   template<typename RHS> gf & operator = (RHS const & rhs) { impl::assignment<gf,RHS>::invoke(*this,rhs); return *this; } 
    std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
-
  };
 
  /**------------------------------------------------------------------------------
   * The regular class of GF
   *-----------------------------------------------------------------------------*/
   template<typename MeshType> class gf<MeshType,false> : public impl::gf_impl<MeshType,false> {
-  
-  typedef impl::gf_impl<MeshType,false> B;
-  typedef typename B::mesh_type mesh_type;
-  typedef typename B::data_view_type data_view_type;
-  typedef typename B::tail_view_type tail_view_type;
-  typedef typename B::indices_type indices_type;
-  typedef typename B::data_non_view_type data_non_view_type;
-  typedef typename B::tail_non_view_type tail_non_view_type;
-
   public : 
+   typedef impl::gf_impl<MeshType,false> base_type;
 
-  gf() : B( mesh_type(),  data_non_view_type(), tail_non_view_type(), std::vector<std::string>(),std::vector<std::string>()) {}
+   gf():base_type() {} 
 
-  gf (size_t N1, size_t N2, mesh_type const & mesh_, indices_type const & indices_left_, indices_type const & indices_right_) : 
-   B(mesh_, data_non_view_type(N1,N2,mesh_.len()), tail_non_view_type(N1,N2,mesh_.mesh_tail,indices_left_,indices_right_), indices_left_, indices_right_) { }
+   gf (size_t N1, size_t N2, typename base_type::mesh_type const & mesh_, typename base_type::indices_type const & indices_left, typename base_type::indices_type const & indices_right) : 
+    base_type(N1,N2,mesh_,indices_left,indices_right) {}
 
-  // constructor makes true copies 
-  gf(gf const & x): B(x.mesh, data_non_view_type(x.data), tail_non_view_type(x.tail), x.indices_left, x.indices_right){};
-
-  template<typename GfType> 
-   gf(GfType const & x): B(x.the_mesh(), data_non_view_type(x.data_view()), tail_non_view_type(x.tail_view()), x.indices_left, x.indices_right){};
-
-  template<typename RHS> gf & operator = (RHS const & rhs) { impl::assignment<gf,RHS>::invoke(*this,rhs); return *this; } 
-
- };
-
+   template<typename GfType> gf(GfType const & x): base_type(x) {} 
+  };
 
 }}}
 #endif

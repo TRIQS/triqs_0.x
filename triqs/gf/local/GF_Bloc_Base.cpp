@@ -241,4 +241,51 @@ void GF_Bloc_Base<DataType>::MPI_bcast() {
 template class GF_Bloc_Base<COMPLEX>;
 template class GF_Bloc_Base<double>;
 
+ 
+sum (expr,  x_ << domain )
+sum (expr,  x_ | domain )
+sum (expr,  x_ |= domain )
+sum (expr,  x_ & y_ |= domain )
+
+auto i_ = first_index(A);
+auto k_ = first_index(B);
+
+// HELP ! : i_== k_ !!!!!
+
+auto i_= placeholder<0> & A.index_domain(1);
+
+auto i_= A.index<0>(1); // obscur ?
+
+auto j_ = second_index(A);
+
+sum (A(i_,j_) * B(j_,1), j_ = A.index_range(1) );
+sum (A(i_,j_) * B(j_,1), j_ |= range(1,n) );
+sum (A(i_,j_) * B(j_,1), j_ <<= range(1,n) );
+sum (A(i_,j_) * B(j_,1), j_ << range(1,n) );
+
+sum (A(i_,j_) * B(j_,1), j_);
+sum (A(i_,j_) * B(j_,i_), i_ & j_);
+
+
+// GOOD 
+sum (A(i_,j_) * B(j_,1), j_ = range(1,n) );
+sum (A(i_,j_) * B(j_,1), i_ = A.index_range(0), j_ = A.index_range(1) );
+
+// is the same : ok, 3 --> range(3,4)
+sum (A(i_,j_) * B(j_,1), j_ = 3 ) == eval (A(i_,j_) * B(j_,1), j_ = 3 );  
+
+sum( expr, i_= D) ----> triqs::lazy::sum_impl<D_type>::invoke(i_>> expr, D);
+
+integrate( g(k0,om_), om_ = segment[a,b]); 
+
+//options of the sum ?
+sum(expr, i_=D, Riemann( ));
+
+auto om_ = omega_index(G);
+sum(G(k0,om_), om_);
+
+
+
+
+
 
