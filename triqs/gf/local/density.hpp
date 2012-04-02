@@ -44,9 +44,9 @@ namespace triqs { namespace gf { namespace local {
  //-------------------------------------------------------
  // For Imaginary Matsubara Frequency functions
  // ------------------------------------------------------
- template< typename GfType> struct density_impl<GfType, typename boost::enable_if< has_gf_loc_concept<GfType, domains::matsubara_freq> >::type > { 
+ template< typename GfType> struct density_impl<GfType, typename boost::enable_if< typename has_gf_loc_concept<GfType, domains::matsubara_freq> >::type > { 
 
-  static dcomplex F(dcomplex a,double b,double Beta) {return -a/(1+exp(-Beta*b));}
+  dcomplex F(dcomplex a,double b,double Beta) {return -a/(1+exp(-Beta*b));}
 
   static typename GfType::result_type invoke(GfType const & G) {
 

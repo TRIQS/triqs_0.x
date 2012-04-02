@@ -7,14 +7,16 @@ namespace tql= triqs::lazy;
 
 int main() {
 
- std::vector<std::string> ind; ind.push_back("1");ind.push_back("2");
+ std::vector<std::vector<std::string> > ind(1); 
+ ind[0].push_back("1");ind[0].push_back("2"); ind.push_back(ind[0]);
+
  typedef local::gf<meshes::matsubara_freq,false> Gf_type;
  typedef local::gf<meshes::matsubara_freq,true> Gf_view_type;
  
 Gf_type G1; // empty
  TEST( G1( 0) ) ;
  
- Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind,ind);
+ Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind);
  
  // should not compile and does not
  //Gf_view_type Ge(2,2, meshes::matsubara_freq(Fermion), ind,ind);
@@ -24,6 +26,9 @@ Gf_type G1; // empty
 
  Gf_view_type Gv2 = G.slice(0,0);
  TEST( Gv2( 0) ) ;
+ Gv2(0) = 10;
+ TEST( Gv2( 0) ) ;
+ TEST( G( 0) ) ;
 
  triqs::lazy::placeholder<0> om_;
 
