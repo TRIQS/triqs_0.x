@@ -36,7 +36,7 @@ gr._tail[1] = numpy.array([[1.0]])
 
 # Analytic continuation of gm
 g_pade = GFBloc_ReFreq(Indices = [0], Beta = beta, MeshArray = numpy.arange(-6,6,0.01), Name = "g_pade")
-g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Shift = eta)
+g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 # Comparison plot
 from pytriqs.Base.Plot.MatplotlibInterface import oplot
