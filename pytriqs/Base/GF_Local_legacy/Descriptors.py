@@ -202,7 +202,7 @@ class SemiCircular (Base):
      .. math ::
         g(z) = \int \frac{A(\omega)}{z-\omega} d\omega
         
-    where :math:`A(\omega) = \theta( D - |\omega|)\sqrt{ D^2 - \omega^2}/(2\pi D)` 
+    where :math:`A(\omega) = \theta( D - |\omega|) 2 \sqrt{ D^2 - \omega^2}/(\pi D^2)` 
       
      (only works in combination with frequency Green's functions).
     """
