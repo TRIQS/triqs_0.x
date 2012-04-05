@@ -1,6 +1,6 @@
 .. highlight:: c
 
-The HDF5 interface 
+The great HDF5 interface 
 ######################
 
 
