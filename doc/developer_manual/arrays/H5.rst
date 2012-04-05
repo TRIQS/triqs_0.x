@@ -1,7 +1,8 @@
 .. highlight:: c
 
-HDF5 interface 
-################
+The HDF5 interface 
+######################
+
 
 The array classes (`array`, `matrix`, `vector`) have a simple interface to the HDF5 files.
 
