@@ -13,7 +13,7 @@ More specific cases and options are described in the following paragraphs.
 
      git clone git://github.com/TRIQS/TRIQS.git path_to_triqs_sources
 
-#. Download the `sources of boost <http://ipht.cea.fr/triqs/download/boost_1_47_0.tar.bz2>`_ and untar them into ``path_to_boost_sources``.
+#. Download the `sources of boost <http://ipht.cea.fr/triqs/download/boost_src.tar.bz2>`_ and untar them into ``path_to_boost_sources``.
    **Don't compile boost**.
 
 #. Create a build directory (different from the TRIQS source directory nor a subdirectory thereof) ::
