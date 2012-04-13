@@ -18,7 +18,7 @@ mpi                   e.g., openmpi     Parallelism
                                         now provides openmpi, even on laptops, we avoid the unnecessary complication
                                         of maintaining a non parallel version of TRIQS
 fftw                  >= 3.2            Fourier transform
-boost                 >= 1.46           C++ librairies
+boost                 >= 1.49           C++ librairies
 hdf5                  >= 1.8.0          File storage system. Important: the *serial* version must be installed
 python*               >= 2.6.5
 scipy*                                  python mathematical library
