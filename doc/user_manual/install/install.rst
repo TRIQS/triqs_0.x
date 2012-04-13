@@ -41,7 +41,8 @@ More specific cases and options are described in the following paragraphs.
    
 .. toctree::
    :maxdepth: 1
-
+   
+   install_on_osx_lion
    downloading
    dependencies
    install_options
