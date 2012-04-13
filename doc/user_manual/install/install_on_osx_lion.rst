@@ -14,7 +14,7 @@ ________________________________
 #. Install macports (from a binary)
 #. Install XCode 4.3 (directly from the Mac store). In Preferences/Downloads, install "Command Line tools"
 #. Install the **full** Enthought Python Distribution (EPD) (from a binary)
-#. Download the sources of boost (>1.46) and untar them into a given directory ``BOOST_SRC``
+#. Download the `sources of boost <http://ipht.cea.fr/triqs/download/boost_src.tar.bz2>` (1.49) and untar them into a given directory ``BOOST_SRC``
 #. Install cmake, git, gfortran, openmpi and fftw::
 
       sudo port install cmake git-core gcc46 openmpi fftw-3
