@@ -35,6 +35,7 @@ namespace triqs { namespace arrays {
   class array_view : Tag::array_view, Tag::array_algebra_expression_terminal, 
   public details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view >,
   public providers::compound_assign_ops<array_view<ValueType,Rank,Opt> > {
+   static_assert( Rank>0, " Rank must be >0");
    public :
     typedef details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > BaseType;
     typedef typename BaseType::indexmap_type indexmap_type;
@@ -142,5 +143,6 @@ namespace triqs { namespace arrays {
 
   };//array class
 }}//namespace triqs::arrays
+
 #endif
 

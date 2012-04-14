@@ -27,14 +27,19 @@ namespace triqs { namespace arrays { namespace h5 {
  using namespace H5;
 
  namespace details { // to be replaced by ellipsis 
-  template<class T, size_t N, class Opt> array_view<T,N-1,Opt> slice0( array<T,N,Opt> const & A, size_t ind);
+  template<class T, size_t N, class Opt> array_view<T,N-1,Opt> slice0( array<T,N,Opt> & A, size_t ind);
 #define AUX(z,p,unused) BOOST_PP_COMMA_IF(p) range()
 #define IMPL(z, NN, unused) \
-  template<class T, class Opt> array_view<T,BOOST_PP_INC(NN),Opt> slice0( array<T,BOOST_PP_INC(NN)+1,Opt> const & A, size_t ind) {\
+  template<class T, class Opt> array_view<T,BOOST_PP_INC(NN),Opt> slice0( array<T,BOOST_PP_INC(NN)+1,Opt> & A, size_t ind) {\
    return A(ind,BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil));}
   BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
 #undef IMPL
 #undef AUX
+  template<class T, class Opt> T & slice0( array<T,1,Opt> & A, size_t ind) { return A(ind);}
+
+  // to be removed after tests
+  // template<class T, int N> struct array_view_or_number { typedef array_view<T,N> type;};
+  // template<class T> struct array_view_or_number<T,0> { typedef T & type;};
  }
 
  /**
@@ -74,7 +79,8 @@ namespace triqs { namespace arrays { namespace h5 {
     }
 
    ~array_stack() {flush();} 
-   array_view<T,dim> operator() () { return details::slice0(buffer, step); } 
+   //array_view<T,dim> operator() () { return details::slice0(buffer, step); } 
+   typename boost::mpl::if_c<(dim>0), array_view<T,dim>, T &>::type operator() () { return details::slice0(buffer, step); } 
    void operator++() { ++step; ++_size; if (step==bufsize) flush();  } 
    void flush() { save_buffer(); step=0;}
    template<class AType> void operator << ( AType const & A) { (*this)() = A; ++(*this);}

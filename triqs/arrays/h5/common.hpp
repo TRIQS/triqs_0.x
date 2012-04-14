@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_H5_COMMON_H
 
 #include <H5Cpp.h>
-#include "../impl/cache.hpp"
+#include "../cache.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/utility/enable_if.hpp>
 

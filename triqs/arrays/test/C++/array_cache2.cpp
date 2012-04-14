@@ -51,12 +51,8 @@ int main(int argc, char **argv) {
  cout<<"A = "<<A<<endl;
  cout<<"Ac = "<<Ac<<endl;
 
- // hum, does not seem really useful...
- //cout<<"----------"<<endl;
- //cout<<"Expr = "<< make_const_cache_C_order(2*A) <<endl;
-
- //typedef array<long,2, Option::Fortran > D;
- //const_cache<D, array< D::value_type, D::domain_type::rank,Option::C> > JJJ(A);
+ cout<<"----------"<<endl;
+ cout<<"Expr = "<< make_const_cache_C_order(2*A).view() <<endl;
 
  cout<<"----------"<<endl;
  cout<<"A F->C = "<< make_const_cache_C_order(A).view() <<endl;

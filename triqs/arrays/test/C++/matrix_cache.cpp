@@ -22,6 +22,7 @@
 
 #include "./python_stuff.hpp"
 
+#include "./src/matrix.hpp"
 #include "./src/linalg/matrix_cache.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
 
