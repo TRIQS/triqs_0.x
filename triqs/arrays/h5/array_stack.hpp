@@ -37,35 +37,40 @@ namespace triqs { namespace arrays { namespace h5 {
 #undef AUX
   template<class T, class Opt> T & slice0( array<T,1,Opt> & A, size_t ind) { return A(ind);}
 
-  // to be removed after tests
-  // template<class T, int N> struct array_view_or_number { typedef array_view<T,N> type;};
-  // template<class T> struct array_view_or_number<T,0> { typedef T & type;};
+  template<typename B, typename Enable = void> struct get_value_type { typedef B type; static const size_t rank = 0;};
+  template<typename B> struct get_value_type<B, typename boost::enable_if<is_value_class<B> >::type > { 
+   typedef typename B::value_type type;static const size_t rank = B::rank;};
+
  }
 
  /**
-  *  Hdf5 array stack 
+  *  \brief Hdf5 array stack
+  *  \tparam  BaseElementType The type of the base element of the stack. Can be an array/matrix/vector or a scalar.
+  *           If it in a scalar, the array_stack will write an hdf5 array of dimension 1
+  *           If it in an array/matrix/vector, the array_stack will write an hdf5 array of dimension BaseElementType::rank +1 
+  *
   */
- template<class T, size_t dim>
+ template< typename BaseElementType>
   class array_stack {
-   size_t bufsize, step, _size; 
+   typedef BaseElementType base_element_type;
+   static_assert( (is_value_class<BaseElementType>::value || is_scalar<BaseElementType>::value), "BaseElementType must be an array/matrix/vector or a simple number");
+   typedef typename details::get_value_type<BaseElementType>::type T;
+   static const size_t dim = details::get_value_type<BaseElementType>::rank; 
+   size_t bufsize_, step, _size; 
    static const bool T_is_complex = boost::is_complex<T>::value;
    static const unsigned int RANK = dim + 1 + (T_is_complex ? 1 : 0);
    mini_vector<hsize_t,RANK> dims, offset, maxdims, dim_chunk, buffer_dim, zero;
    DataSet dataset;
    array<T,dim+1> buffer;
 
-   public :
-
-   size_t size() const { return _size;}
-
    template <typename FileGroupType >
-    array_stack( FileGroupType file_or_group, std::string const & name, mini_vector<size_t,dim> const & a_dims, size_t bufsize_)  {
+   void construct_delegate ( FileGroupType file_or_group, std::string const & name, mini_vector<size_t,dim> const & a_dims, size_t bufsize)  {
      mini_vector<hsize_t,RANK> dim_chunk;
-     bufsize = bufsize_; step = 0; _size =0; 
+     bufsize_ = bufsize; step = 0; _size =0; 
      for (size_t i =1; i<=dim; ++i) { dims[i] = a_dims[i-1];}
      if (T_is_complex) { dims[RANK-1] =2; }
      maxdims = dims; buffer_dim = dims; dim_chunk = dims;
-     dims[0] = 0; maxdims[0] = H5S_UNLIMITED; dim_chunk[0]=1; buffer_dim[0] = bufsize;
+     dims[0] = 0; maxdims[0] = H5S_UNLIMITED; dim_chunk[0]=1; buffer_dim[0] = bufsize_;
      mini_vector<size_t,dim+1> s; for (size_t i =0; i<=dim; ++i) {s[i] =  buffer_dim[i];} 
      buffer.resize(s);
      DataSpace mspace1( RANK, dims.ptr(), maxdims.ptr());
@@ -78,11 +83,55 @@ namespace triqs { namespace arrays { namespace h5 {
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }
 
-   ~array_stack() {flush();} 
-   //array_view<T,dim> operator() () { return details::slice0(buffer, step); } 
+   public :
+
+   size_t size() const { return _size;}
+
+   /** 
+    * \brief Constructor : valid only if the base is a scalar
+    *  \param file_or_group The h5 file or group, of type FileGroupType
+    *  \param name The name of the hdf5 array in the file/group where the stack will be stored
+    *  \param bufsize The size of the bufferThe name of the hdf5 array in the file/group where the stack will be stored
+    *  \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with stackstrace, cf doc). 
+    */
+   template <typename FileGroupType >
+    array_stack( FileGroupType file_or_group, std::string const & name, size_t bufsize)  {
+     static_assert( (is_scalar<BaseElementType>::value), "This constructor is only available for a scalar BaseElementType");
+     construct_delegate ( file_or_group, name,mini_vector<size_t,0>() , bufsize);
+    }
+
+   /** 
+    * \brief Constructor : 
+    *  \param file_or_group The h5 file or group, of type FileGroupType
+    *  \param name The name of the hdf5 array in the file/group where the stack will be stored
+    *  \param base_element_shape The shape of the base array/matrix/vector [or mini_vector<size_t,0>() for a scalar]
+    *  \param bufsize The size of the bufferThe name of the hdf5 array in the file/group where the stack will be stored
+    *  \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with stackstrace, cf doc). 
+    */
+   template <typename FileGroupType >
+    array_stack( FileGroupType file_or_group, std::string const & name, mini_vector<size_t,dim> const & base_element_shape, size_t bufsize)  {
+     construct_delegate ( file_or_group, name, base_element_shape, bufsize);
+    }
+
+   ///
+   ~array_stack() {flush();}
+
+   /**
+    * \return A view (for an array/matrix/vector base) or a reference (for a scalar base) to the top of the stack
+    *         i.e. the next element to be assigned to
+    */
    typename boost::mpl::if_c<(dim>0), array_view<T,dim>, T &>::type operator() () { return details::slice0(buffer, step); } 
-   void operator++() { ++step; ++_size; if (step==bufsize) flush();  } 
+   
+   /// Advance the stack by one
+   void operator++() { ++step; ++_size; if (step==bufsize_) flush();  } 
+   
+   /// Flush the buffer to the disk. Automatically called at destruction of the array_stack.
    void flush() { save_buffer(); step=0;}
+   
+   /** 
+    * Add a element onto the stack and advance it by one.
+    * S << X is equivalent to S() = A; ++S;
+    */ 
    template<class AType> void operator << ( AType const & A) { (*this)() = A; ++(*this);}
 
    protected:

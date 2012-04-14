@@ -45,10 +45,15 @@ void test(std::string filename, T init) {
  T C;
  array<T,1> C_stack_keep(N), C_stack_compare(N);
 
- h5::array_stack<T,2> SA( file, "A", A.shape() , bufsize);
- h5::array_stack<T,1> SB( file, "B", B.shape() , bufsize);
- h5::array_stack<T,0> SC( file, "C", mini_vector<size_t,0>() , bufsize);
-
+ //h5::array_stack<T,2> SA( file, "A", A.shape() , bufsize);
+ //h5::array_stack<T,1> SB( file, "B", B.shape() , bufsize);
+ //h5::array_stack<T,0> SC( file, "C", mini_vector<size_t,0>() , bufsize);
+ h5::array_stack< array<T,2 > > SA( file, "A", A.shape() , bufsize);
+ h5::array_stack< array<T,1 > > SB( file, "B", B.shape() , bufsize);
+ h5::array_stack< T> SC( file, "C", bufsize);
+ //h5::array_stack< T> SC( file, "C", mini_vector<size_t,0>() , bufsize); // also valid ...
+ //h5::array_stack< array<T,1 > > SB2( file, "B", bufsize); // does not compile
+ 
  for (int u = 0; u<N; ++u)  {
   A() = double(u+1)* init; 
   B() = double(u+1)* init; 
