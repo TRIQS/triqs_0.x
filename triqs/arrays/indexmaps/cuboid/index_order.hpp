@@ -158,6 +158,12 @@ namespace triqs { namespace arrays {
     typedef typename  details::slo_impl<0,ArgsTuple,typename custom<P>::perm_inv, M, custom<P>::rank >::type P2;
     typedef custom<P2> type;
    };
+
+  template<typename A1, typename A2> struct same_order {
+  static const bool value = (A1::rank==A1::rank) && Permutations::is_equal<typename A1::perm,typename A2::perm>::value;
+  typedef mpl::bool_<value> type;
+ };
+
  }}
  //-----------------------------------------------------------
  // checks if two static order are identical
@@ -167,5 +173,6 @@ namespace triqs { namespace arrays {
 	    operator ==( T1 const & x1, T2 const & x2)  { 
 	     return ( (x1.rank==x2.rank) && Permutations::is_equal<typename T1::perm,typename T2::perm>::value) ;
 	    }
+
 }}//namespace triqs::arrays 
 #endif
