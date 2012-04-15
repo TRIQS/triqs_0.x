@@ -40,7 +40,7 @@ class Measure_G_Legendre_all : public Measure_acc_sign<COMPLEX> {
 
  tqa::array<double,3> data,data_part;
  tqa::h5::H5File outfile;
- tqa::h5::array_stack<double,3>  data_stack;
+ tqa::h5::array_stack< tqa::array<double,3 > >  data_stack;
 
  template<class T1, class T2, class T3, class T4>
   static std::string filename(T1 x1, T2 x2, T3 x3, T4 x4) { std::stringstream f; f<<x1<<x2<<x3<<x4; return f.str(); }
