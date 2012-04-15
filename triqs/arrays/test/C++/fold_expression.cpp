@@ -25,7 +25,6 @@
 #include "./src/expressions/fold.hpp"
 #include "./src/expressions/map.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
-//#include "./src/expressions/arithmetic.hpp"
 #include <iostream>
 #include <functional>
 
