@@ -169,7 +169,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 //-----------------------------------------------------
 
 template <typename ValueType, int D, typename Opt> 
-array<ValueType,D,Opt>::array (PyObject * X):BaseType(typename array<ValueType,D,Opt>::indexmap_type(),typename array<ValueType,D,Opt>::storage_type()) { 
+array<ValueType,D,Opt>::array (PyObject * X):impl_type(typename array<ValueType,D,Opt>::indexmap_type(),typename array<ValueType,D,Opt>::storage_type()) { 
  try { boost::tie(this->indexmap_,this->storage_) =  numpy_interface::extract_len_stri_block<indexmap_type,value_type>(X, true); }
  catch(numpy_interface::copy_exception ){ // intercept only this one...
   TRIQS_RUNTIME_ERROR<<"array construction from a numpy : the copy has failed for a mysterious reason ...";
@@ -177,7 +177,7 @@ array<ValueType,D,Opt>::array (PyObject * X):BaseType(typename array<ValueType,D
 }
 
 template <typename ValueType, typename Opt> 
-matrix<ValueType,Opt>::matrix (PyObject * X):BaseType(typename matrix<ValueType,Opt>::indexmap_type(),typename matrix<ValueType,Opt>::storage_type()) { 
+matrix<ValueType,Opt>::matrix (PyObject * X):impl_type(typename matrix<ValueType,Opt>::indexmap_type(),typename matrix<ValueType,Opt>::storage_type()) { 
  try { boost::tie(this->indexmap_,this->storage_) =  numpy_interface::extract_len_stri_block<indexmap_type,value_type>(X, true); }
  catch(numpy_interface::copy_exception ){ // intercept only this one...
   TRIQS_RUNTIME_ERROR<<"matrix construction from a numpy : the copy has failed for a mysterious reason ...";
@@ -185,7 +185,7 @@ matrix<ValueType,Opt>::matrix (PyObject * X):BaseType(typename matrix<ValueType,
 }
 
 template <typename ValueType, typename Opt> 
-vector<ValueType,Opt>::vector (PyObject * X):BaseType(typename vector<ValueType,Opt>::indexmap_type(),typename vector<ValueType,Opt>::storage_type()) { 
+vector<ValueType,Opt>::vector (PyObject * X):impl_type(typename vector<ValueType,Opt>::indexmap_type(),typename vector<ValueType,Opt>::storage_type()) { 
  try { boost::tie(this->indexmap_,this->storage_) =  numpy_interface::extract_len_stri_block<indexmap_type,value_type>(X, true); }
  catch(numpy_interface::copy_exception ){ // intercept only this one...
   TRIQS_RUNTIME_ERROR<<"array construction from a numpy : the copy has failed for a mysterious reason ...";
@@ -194,7 +194,7 @@ vector<ValueType,Opt>::vector (PyObject * X):BaseType(typename vector<ValueType,
 
 
 template <typename ValueType, int D, typename Opt> 
-array_view<ValueType,D,Opt>::array_view (PyObject * X):BaseType(
+array_view<ValueType,D,Opt>::array_view (PyObject * X):impl_type(
   typename array_view<ValueType,D,Opt>::indexmap_type(),
   typename array_view<ValueType,D,Opt>::storage_type()) { 
  try { 
@@ -212,7 +212,7 @@ array_view<ValueType,D,Opt>::array_view (PyObject * X):BaseType(
 }
 
 template <typename ValueType, typename Opt> 
-matrix_view<ValueType,Opt>::matrix_view (PyObject * X):BaseType(
+matrix_view<ValueType,Opt>::matrix_view (PyObject * X):impl_type(
   typename matrix_view<ValueType,Opt>::indexmap_type(),
   typename matrix_view<ValueType,Opt>::storage_type()) { 
  try { 
@@ -229,7 +229,7 @@ matrix_view<ValueType,Opt>::matrix_view (PyObject * X):BaseType(
 }
 
 template <typename ValueType, typename Opt> 
-vector_view<ValueType,Opt>::vector_view (PyObject * X):BaseType(
+vector_view<ValueType,Opt>::vector_view (PyObject * X):impl_type(
   typename vector_view<ValueType,Opt>::indexmap_type(),
   typename vector_view<ValueType,Opt>::storage_type()) { 
  try { 
