@@ -21,13 +21,22 @@
 #ifndef TRIQS_ARRAYS_H5_LOWLEVEL_H
 #define TRIQS_ARRAYS_H5_LOWLEVEL_H
 #include "./common.hpp"
-namespace triqs { ///< triqs  
- namespace arrays { ///< arrays
-  namespace h5 { ///<h5
+namespace triqs { 
+ namespace arrays { 
+  namespace h5 { 
 
    /*********************************** WRITE array ****************************************************************/
    /** 
-    * Write an array or a view in an hdf5 file
+    * \brief Write an array or a view into an hdf5 file
+    * \tparam ArrayType The type of the array/matrix/vector, etc..
+    * \tparam FileGroupType The type of the file or of the group
+    * \param file_or_group The h5 file or group, of type FileGroupType
+    * \param name The name of the hdf5 array in the file/group where the stack will be stored
+    * \param A The array to be stored
+    * \param C_reorder bool If true [default] the data will be stored in C order in the hdf5, hence making a temporary
+    *        cache of the data to reorder them in memory. 
+    *        If false, the array is stored as it [if you know what you are doing]
+    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
    template <typename ArrayType, typename FileGroupType >
     void write (FileGroupType file_or_group, std::string const & name, ArrayType const & A, bool C_reorder = true) { 
@@ -52,7 +61,15 @@ namespace triqs { ///< triqs
 
    /*********************************** READ array ****************************************************************/
    /** 
-    * Read an array or a view from an hdf5 file
+    * \brief Read an array or a view from an hdf5 file
+    * \tparam ArrayType The type of the array/matrix/vector, etc..
+    * \tparam FileGroupType The type of the file or of the group
+    * \param file_or_group The h5 file or group, of type FileGroupType
+    * \param name The name of the hdf5 array in the file/group where the stack will be stored
+    * \param A The array to be stored
+    * \param C_reorder bool If true [default] the data will be stored in C order in the hdf5, hence making a temporary
+    *        cache of the data to reorder them in memory. If false, the array is stored as it [if you know what you are doing]
+    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
    template <typename ArrayType, typename FileGroupType >
     void read (FileGroupType file_or_group, std::string const & name,  ArrayType & A, bool C_reorder = true) { 
