@@ -66,7 +66,8 @@ namespace triqs { namespace arrays {
    final_view_type * prep() const { 
     if (!init) {
 #ifdef TRIQS_ARRAYS_CACHE_COPY_VERBOSE
-     std::cerr<< " Cache : copy made "<<std::endl;
+     std::cerr<< " Cache : copy made "<< std::endl;
+     std::cerr<< " -- TRACE = --" << std::endl << triqs::utility::stack_trace() << std::endl;
 #endif
      copy.reset(new CacheType(original_view)); view_ptr.reset(new final_view_type(*copy)); init=true; 
     } 
