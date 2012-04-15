@@ -19,7 +19,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_EXPRESSION_ALGEBRA_COMMON_H
 #define TRIQS_ARRAYS_EXPRESSION_ALGEBRA_COMMON_H
 
@@ -38,8 +37,7 @@
 
 namespace triqs { namespace arrays { namespace expressions { 
 
- namespace mpl = boost::mpl;
- namespace proto = boost::proto;
+ namespace mpl = boost::mpl; namespace proto = boost::proto;
  using boost::enable_if; using  boost::enable_if_c;
  using proto::_left; using proto::_right; namespace p_tag= proto::tag;
 
@@ -59,13 +57,11 @@ namespace triqs { namespace arrays { namespace expressions {
   * ------------------------------------------ */
  template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
 
- // Formal print of A, no data.
  struct AlgebraPrintCtx : proto::callable_context< AlgebraPrintCtx const > {
   typedef std::ostream &result_type;
   result_type out;
   AlgebraPrintCtx(std::ostream & out_):out(out_) {}
-  template <typename T>
-   result_type operator ()(proto::tag::terminal, const T & A) const { return formal_print(out,A); }
+  template <typename T> result_type operator ()(proto::tag::terminal, const T & A) const { return formal_print(out,A); }
   template<typename L, typename R>
    result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
   template<typename L, typename R>
@@ -76,10 +72,7 @@ namespace triqs { namespace arrays { namespace expressions {
    result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
- /* -------------------------------------------
-  *   Debug tool
-  * ------------------------------------------ */
-
+  // Debug tool
  template<typename Expr>
   std::ostream & print_structure (std::ostream &sout, Expr const & E)  { 
    sout<<"Expression  "<<E <<std::endl;//triqs::utility::typeid_name(*this)<<std::endl;
@@ -87,7 +80,6 @@ namespace triqs { namespace arrays { namespace expressions {
    sout<<"            : domain_type : "<<triqs::utility::typeid_name((typename Expr::domain_type*)0)<<std::endl;
    return sout;
   }
-
 }}}//namespace triqs::arrays 
 #endif
 

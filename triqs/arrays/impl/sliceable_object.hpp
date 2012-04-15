@@ -160,12 +160,7 @@ namespace triqs { namespace arrays {
 #undef IMPL
 
 #endif
-
 #endif
-
-
-
-
 	   };// end class
 
 }}//namespace triqs::arrays 

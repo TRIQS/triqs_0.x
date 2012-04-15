@@ -29,7 +29,6 @@ namespace triqs {
   namespace h5 { 
 
  /*********************************** WRITE array ****************************************************************/
-
  /** 
   * Write an array or a view in an hdf5 file
   */
@@ -55,7 +54,6 @@ namespace triqs {
   }
 
  /*********************************** READ array ****************************************************************/
-
  /** 
   * Read an array or a view from an hdf5 file
   */

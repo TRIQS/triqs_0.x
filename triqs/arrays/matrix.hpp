@@ -116,7 +116,6 @@ namespace triqs { namespace arrays {
    matrix_view & operator=(matrix_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view);
-   
  };
 
  //--------------------------------------------------
@@ -178,7 +177,6 @@ namespace triqs { namespace arrays {
     }
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix);
-   
  };//matrix class
 
  namespace details { 
@@ -246,8 +244,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
   };
 
  template <typename ValueType, typename Opt, typename Id >
-  struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: 
-  adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
+  struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
 
 }}}} // namespace detail, namespace binding, namespace numeric, namespace boost
 #endif

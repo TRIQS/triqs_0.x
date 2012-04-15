@@ -153,18 +153,16 @@ template<typename T> struct wrap_vector {
 
   value_type operator()(index_type const & i1, index_type const & i2) const { return (*this)[mini_vector<size_t,2>(i1,i2)]; }
 
-  friend std::ostream &operator <<(std::ostream &sout, MatrixExpr<Expr> const &expr) { return proto::eval(expr, AlgebraPrintCtx (sout)); }
+  friend std::ostream &operator <<(std::ostream &sout, MatrixExpr<Expr> const &expr){return proto::eval(expr,AlgebraPrintCtx(sout));}
  };
 }}
 
 BOOST_PROTO_DEFINE_OPERATORS(expressions::matrix_algebra::IsMatrix, expressions::matrix_algebra::MatrixDomain);
 //BOOST_PROTO_DEFINE_OPERATORS(expressions::matrix_algebra::IsMatrixOrVector, expressions::matrix_algebra::MatrixDomain);
 
-template<typename Expr > matrix_view <typename Expr::value_type>
-eval( Expr const & e) { return matrix<typename Expr::value_type>(e);}
+template<typename Expr > matrix_view <typename Expr::value_type> eval( Expr const & e) { return matrix<typename Expr::value_type>(e);}
 
 }}//namespace triqs::arrays 
-
 
 #endif
 
