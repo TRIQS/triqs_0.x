@@ -25,7 +25,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/providers.hpp"
+#include "impl/compound_assign.hpp"
 #include "impl/option.hpp"
 
 namespace triqs { namespace arrays {
@@ -36,8 +36,7 @@ namespace triqs { namespace arrays {
  /** */
  template <typename ValueType, typename Opt >
   class vector_view : Tag::vector_view, Tag::vector_algebra_expression_terminal,
-  public details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >,
-  public providers::compound_assign_ops<vector_view<ValueType,Opt> >
+  public details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
  {
   public :
    typedef details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view > BaseType;
@@ -67,16 +66,17 @@ namespace triqs { namespace arrays {
 
    vector_view & operator=(vector_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
 
-   size_t size() const { return this->shape()[0];} 
-   
+   size_t size() const { return this->shape()[0];}
+
+   TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
+
  };
 
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::vector_view> { typedef vector_view<V,Opt> type; };
 
  template <typename ValueType, typename Opt>
   class vector: Tag::vector,Tag::vector_algebra_expression_terminal,
-  public vector_view<ValueType,Opt>::BaseType,
-  public providers::compound_assign_ops<vector_view<ValueType,Opt> >
+  public vector_view<ValueType,Opt>::BaseType
  {
   public :
    typedef typename vector_view<ValueType,Opt>::BaseType  BaseType;
@@ -134,6 +134,8 @@ namespace triqs { namespace arrays {
     }
 
    size_t size() const { return this->shape()[0];} 
+
+   TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
  };//vector class
 }}//namespace triqs::arrays

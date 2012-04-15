@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/providers.hpp"
+#include "impl/compound_assign.hpp"
 #include "vector.hpp"
 
 namespace triqs { namespace arrays {
@@ -52,9 +52,7 @@ namespace triqs { namespace arrays {
   // hence it is not in the indexmap_storage_pair class : e.g. dim, transpose, etc...
   // I use CRTP
   template <typename ValueType, typename Opt, typename Derived  >
-   struct matrix_common :
-    Tag::matrix_algebra_expression_terminal, 
-    public providers::compound_assign_ops<Derived>
+   struct matrix_common : Tag::matrix_algebra_expression_terminal
   {
    size_t dim0() const { Derived const & self = static_cast<Derived const & >(*this); return self.shape()[0];} 
    size_t dim1() const { Derived const & self = static_cast<Derived const & >(*this); return self.shape()[1];} 
@@ -117,6 +115,8 @@ namespace triqs { namespace arrays {
 
    matrix_view & operator=(matrix_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
 
+   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view);
+   
  };
 
  //--------------------------------------------------
@@ -177,6 +177,8 @@ namespace triqs { namespace arrays {
      return *this; 
     }
 
+   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix);
+   
  };//matrix class
 
  namespace details { 

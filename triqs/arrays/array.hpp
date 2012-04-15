@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/providers.hpp"
+#include "impl/compound_assign.hpp"
 #include "impl/option.hpp"
 
 namespace triqs { namespace arrays {
@@ -33,8 +33,7 @@ namespace triqs { namespace arrays {
  
  template <typename ValueType, int Rank, typename Opt>
   class array_view : Tag::array_view, Tag::array_algebra_expression_terminal, 
-  public details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view >,
-  public providers::compound_assign_ops<array_view<ValueType,Rank,Opt> > {
+  public details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view >{
    static_assert( Rank>0, " Rank must be >0");
    public :
     typedef details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > BaseType;
@@ -65,14 +64,14 @@ namespace triqs { namespace arrays {
     ///
     array_view & operator=(array_view const & X) { assignment(*this,X); return *this; } //without this, the standard = is synthetized...
 
+    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
 
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::array_view > { typedef array_view<V,R,Opt> type; };
 
  template <typename ValueType, int Rank, typename Opt>
   class array: Tag::array, Tag::array_algebra_expression_terminal, 
-  public  array_view<ValueType,Rank,Opt>::BaseType,
-  public providers::compound_assign_ops<array<ValueType,Rank,Opt> >  { 
+  public  array_view<ValueType,Rank,Opt>::BaseType { 
    typedef typename array_view<ValueType,Rank,Opt>::BaseType BaseType;
    public:
    typedef typename BaseType::value_type value_type;
@@ -140,6 +139,8 @@ namespace triqs { namespace arrays {
      assignment(*this,X);
      return *this; 
     }
+  
+    TRIQS_DEFINE_COMPOUND_OPERATORS(array);
 
   };//array class
 }}//namespace triqs::arrays
