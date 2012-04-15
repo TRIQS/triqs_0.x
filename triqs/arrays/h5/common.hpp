@@ -159,6 +159,7 @@ namespace triqs { namespace arrays { namespace h5 {
  } 
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
+ catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\
  catch( FileIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 File error"; }\
  catch( DataSetIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataSet error"; }\
  catch( DataSpaceIException error ) { error.printError();  TRIQS_RUNTIME_ERROR<<"H5 DataSpace error"; }\

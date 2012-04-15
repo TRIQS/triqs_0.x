@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
  h5::read (file, "D",D2);  cout<< "D = "<< D2<<endl;
  h5::read (file, "C",C2);  cout<< "C = "<< C2<<endl;
 
+ //array<long,1> E; h5::read (file, "A",E);   cout<< "E = "<< E<<endl;
 
  } 
  catch( const char * err) { cout<<err<<endl;}
