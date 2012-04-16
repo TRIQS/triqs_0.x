@@ -1,7 +1,7 @@
 
 .. highlight:: c
 
-Algebraic expressions with arrays and matrices
+array and matrix/vector algebra 
 =======================================================
 
 Arrays and matrices can be combined in formal algebraic expressions, which models the :ref:`HasImmutableArrayInterface` concept.

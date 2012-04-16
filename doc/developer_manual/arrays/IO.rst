@@ -1,6 +1,6 @@
 .. highlight:: c
 
-I/O,  MPI, Serialization, ... 
+MPI and serialization  
 ##########################################
 
 Serialization 

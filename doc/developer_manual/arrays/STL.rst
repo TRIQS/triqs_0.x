@@ -1,6 +1,6 @@
 .. highlight:: c
 
-Iterators, Interaction with STL 
+Compatibility with STL and iterators, Interaction with STL 
 ##################################################################
 
 The arrays are compatible with STL containers and algorithms.
@@ -43,12 +43,6 @@ The indices can also be produces in a custom order ::
   something like : 
   for (auto it = A.indexmap().domain().begin(permutation<0,1>()); it; ++it) cout<<"  "<<*it<<endl;
 
-
-
-Non C++0x users will have to use::
-
-  for (array<long,2>::indexmap_type::domain_type::generator it = A.indexmap().domain().begin(); it; ++it) ....
-  typedef IndexMaps::cuboid_index_generator< array<long,2>::indexmap_type::domain_type, Permutations::permutation<0,1> > it_type;
 
 
 Using STL containers and algorithms

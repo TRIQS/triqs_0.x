@@ -1,11 +1,7 @@
 .. highlight:: c
 
-Functional like constructs : foreach, map, fold, ...
+Functional constructs :  map, fold, ...
 ========================================================
-
-
-foreach
---------------
 
 
 map
@@ -38,8 +34,6 @@ map
    double f(int i) { return i*10;}
    int main() { 
     auto F = map(f);
-    // for non C++0x users....
-    //triqs::arrays::result_of::map<double (*)(int)>::type  F = map(f);
     array<int,2> A(2,2); 
     array<double,2> B; 
     A() =2;
@@ -53,10 +47,6 @@ map
 
    auto Abs = map( static_cast< double (*)(double)> (std::abs) );
    
-   // for non C++0x users....
-   // triqs::arrays::result_of::map<double (*)(double)>::type  Abs = map( static_cast< double (*)(double)> (std::abs) );
-
-
 fold
 -------------------------------------------------
 

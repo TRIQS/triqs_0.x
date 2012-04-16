@@ -1,8 +1,8 @@
-Getting started 
-===========================
+A little tour of the library
+===================================
 
 .. highlight:: c
 
-* **Simplicity of use**.
+TO BE WRITTEN : a few simple examples
 
 

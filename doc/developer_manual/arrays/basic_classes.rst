@@ -7,12 +7,10 @@ The library provides several interoperable forms of arrays : array, matrix and v
 .. toctree::
    :maxdepth: 2
 
-   view_or_not_view
    arrays
    matrix
    vector
    options
-   shape
    memory_management 
    basic_interop
 
