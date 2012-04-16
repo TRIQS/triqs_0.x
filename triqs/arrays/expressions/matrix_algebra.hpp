@@ -58,6 +58,7 @@ template<typename T> struct wrap_vector {
  template<class V> struct _op<p_tag::plus,V> { static V invoke(V const & a, V const & b) { return a+b;}};
  template<class V> struct _op<p_tag::minus,V> { static V invoke(V const & a, V const & b) { return a-b;}};
  template<class V> struct _op<p_tag::multiplies,V> { static V invoke(V const & a, V const & b) { return a*b;}};
+ template<class V> struct _op<p_tag::divides,V> { static V invoke(V const & a, V const & b) { return a/b;}};
 
  template<typename ProtoTag, typename T1, typename T2> struct TypeAndDomain { 
   typedef typename T1::value_type V1;

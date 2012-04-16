@@ -158,8 +158,8 @@ namespace triqs { namespace arrays {
 	     BOOST_PP_REPEAT_FROM_TO(1,BOOST_PP_INC(ARRAY_NRANK_MAX) , IMPL, nil);
 
 #undef IMPL
-
 #endif
+#undef AUX
 #endif
 	   };// end class
 
