@@ -21,15 +21,20 @@
 #ifndef TRIQS_GF_LOCAL_GF_H
 #define TRIQS_GF_LOCAL_GF_H 
 
+#include <boost/type_traits/is_complex.hpp> 
 #include <triqs/lazy/core.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
+#include <triqs/utility/proto/algebra.hpp>
+#include <triqs/arrays/expressions/matrix_algebra.hpp>
 #include "./domains.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
  namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl;
  using tqa::range;
+
+ namespace tag { struct is_gf{};}
 
  template<typename DomainType> class gf;
  template<typename DomainType> class gf_view;
@@ -44,12 +49,22 @@ namespace triqs { namespace gf { namespace local {
    nothing(...){}
    template<typename T1, typename T2, typename T3, typename T4> nothing(T1,T2,T3,T4){}
    template<typename T> void operator=(T) {}
+   template<typename T> void set_from_function(T) {}
   };
+
+  template<typename TailViewType>
+   struct wrap_infty : tag::is_gf {
+    TailViewType tail;
+    wrap_infty(TailViewType const & t): tail(t) {}
+    //operator TailViewType() const { return tail; } 
+    operator domains::infty() const { return domains::infty();}
+    typename TailViewType::const_result_type operator() ( typename TailViewType::arg0_type const & x) const { return tail(x);}
+   };
 
   /*------------------------------------------------------------------------------
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
-  template<typename DomainType, bool IsView> class gf_impl {
+  template<typename DomainType, bool IsView> class gf_impl : tag::is_gf {
 
    public:
 
@@ -73,7 +88,6 @@ namespace triqs { namespace gf { namespace local {
     typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       result_type;
     typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_result_type;
 
-
    protected:
     domain_type _domain;
     data_type data;
@@ -81,7 +95,6 @@ namespace triqs { namespace gf { namespace local {
     indices_type _indices;
 
    public:
-
 
     domain_type const & domain() const { return _domain;}
 
@@ -127,27 +140,18 @@ namespace triqs { namespace gf { namespace local {
 
     template<typename RHS> void operator = (RHS const & rhs) { _domain = rhs.domain(); data = rhs.data; tail= rhs.data; } 
 
-    // lazy_assignable // TO DO : the computation of the tail is not ready
-    template<typename F> void set_from_function(F f) { 
-     const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(u);
-     compute_tail(tail,f); // the tail is only computed if it exists, or f maybe called for infty in undefined cases.
-    }
    private:
-
-    struct wrap_infty {
-     tail_view_type tail;
-     wrap_infty(tail_view_type const & t): tail(t) {}
-     operator tail_view_type() const { return tail; } 
-     operator domains::infty() const { return domains::infty();}
-    };
-
-    size_t N(size_t i) const { return data.shape()[i];}
-    template<typename F> void compute_tail(gf_impl<meshes::tail, IsView> & t, F f) { }//t = f( wrap_infty( tail_non_view_type(N(0), N(1),domain().mesh_tail ,indices())));}
+    template<typename F> void compute_tail(gf_impl<meshes::tail, IsView> & t, F f) { 
+     t.set_from_function( f( wrap_infty<tail_view_type>( tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()))));
+    }
     template<typename F> void compute_tail(nothing & t, F f) {}
 
-  public:
-
-    //const tail_view_type operator() ( wrap_infty const & w) const { return tail;}
+   public:
+    // lazy_assignable // TO DO : the computation of the tail is not ready
+    template<typename F> void set_from_function(F f) { 
+     const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(1.0*u);
+     compute_tail(tail,f); // the tail is only computed if it exists, or f maybe called for infty in undefined cases.
+    }
 
     /// Save the Green function in i omega_n (as 2 columns).
     void save(std::string file,  bool accumulate=false) const {}
@@ -157,7 +161,7 @@ namespace triqs { namespace gf { namespace local {
 
     /// HDF5 saving ....
 
-  private : 
+   private : 
     indices_type slice_indices(indices_type const & V, range const & R1, range const & R2){
      indices_type res(2); res[0].reserve(R1.last() - R1.first() + 1); res[1].reserve(R2.last() - R2.first() + 1); 
      for (size_t u =R1.first(); u<=R1.last(); ++u) res[0].push_back(V[0][u]);
@@ -165,49 +169,80 @@ namespace triqs { namespace gf { namespace local {
      return res;
     }
     friend class gf_impl<domain_type,!IsView>;
+  };
+
+ }// namespace impl 
+
+ // ---------------------------------------------------------------------------------
+ /**
+  * The View class of GF
+  */
+ template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true> {
+  typedef impl::gf_impl<DomainType,true> base_type;
+  public :
+
+  // gf (domain_type const & domain_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_) : 
+  // B(domain_,data_,tail_,indices_) {}
+
+  template<typename GfType> gf_view(GfType const & x): base_type(x) {};
+
+  template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
+
+  template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+
+  std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
  };
 
-}// namespace impl 
+ // ---------------------------------------------------------------------------------
+ /**
+  * The regular class of GF
+  */
+ template<typename DomainType> class gf : public impl::gf_impl<DomainType,false> {
+  typedef impl::gf_impl<DomainType,false> base_type;
+  public : 
 
-// ---------------------------------------------------------------------------------
-/**
- * The View class of GF
- */
-template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true> {
- typedef impl::gf_impl<DomainType,true> base_type;
- public :
+  gf():base_type() {} 
 
- // gf (domain_type const & domain_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_) : 
- // B(domain_,data_,tail_,indices_) {}
+  gf (size_t N1, size_t N2, typename base_type::domain_type const & domain_, typename base_type::indices_type const & indices_) : 
+   base_type(N1,N2,domain_,indices_) {}
 
- template<typename GfType> gf_view(GfType const & x): base_type(x) {};
+  template<typename GfType> gf(GfType const & x): base_type(x) {}
 
- template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
+  template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
 
- template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+ };
 
- std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
-};
 
-// ---------------------------------------------------------------------------------
-/**
- * The regular class of GF
- */
-template<typename DomainType> class gf : public impl::gf_impl<DomainType,false> {
- typedef impl::gf_impl<DomainType,false> base_type;
- public : 
+ // -------------------------------   Expression template --------------------------------------------------
 
- gf():base_type() {} 
+ // a trait to identity the local gf
+ template <typename G> struct is_gf : boost::is_base_of< tag::is_gf, G> {} ;
+ //template <> struct is_gf<  impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty >: mpl::true_{};
+ //static_assert( boost::is_base_of<tag::is_gf, impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty >::value, "oops");
 
- gf (size_t N1, size_t N2, typename base_type::domain_type const & domain_, typename base_type::indices_type const & indices_) : 
-  base_type(N1,N2,domain_,indices_) {}
+ // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
+ template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
- template<typename GfType> gf(GfType const & x): base_type(x) {}
+ namespace tupa=triqs::utility::proto::algebra;
 
- template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+ template <typename Expr> struct The_Expr;  // the expression
+ typedef tupa::grammar_generator<tupa::algebra_function_desc,is_gf, is_scalar_or_element>::type grammar; // the grammar
+ typedef tupa::domain<grammar,The_Expr,true>  domain; // the domain 
 
-};
+ template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{ // impl the expression
+  typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;
+  The_Expr( Expr const & expr = Expr() ) : basetype ( expr ) {}
+  typedef typename boost::result_of<grammar(Expr) >::type _G;
+
+  template<typename T> typename triqs::utility::proto::call_result_type<_G,size_t>::type operator() (T x) const { return grammar()(*this)(x); }
+
+  // formal print of the expression
+  friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
+ };
+
+ BOOST_PROTO_DEFINE_OPERATORS(is_gf, domain);
 
 }}}
+
 #endif
 

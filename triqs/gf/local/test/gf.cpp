@@ -3,6 +3,7 @@
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
 namespace tql= triqs::lazy;
+namespace tqa= triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
@@ -36,7 +37,11 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
- G(om_) = 1/(om_ + 2.3);
+
+  tqa::matrix<double> Id; Id() = 1;
+  G(om_) = (om_ + 2.3);
+  //G(om_) = 1/(om_ + 2.3);
+ //G(om_) = Id* (1/(om_ + 2.3) );
 
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
@@ -52,5 +57,7 @@ int main() {
  TEST( G( 0) ) ;
  TEST( Gc( 0) ) ;
 
+ TEST( (G + 2.0* Gc)( 0) ) ;
 
+ //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
 }
