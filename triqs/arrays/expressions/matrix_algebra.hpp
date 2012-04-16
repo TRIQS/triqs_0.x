@@ -42,8 +42,8 @@ namespace triqs { namespace arrays { namespace expressions { namespace matrix_al
   typedef matrix_domain_type domain_type;
   wrap_scalar( T const &x ): val(x) {}
   domain_type domain() const { return domain_type();}
-  value_type operator[](mini_vector<size_t,2> const & key) const { return val;}
-  value_type operator()(size_t, size_t) const { return val;}
+  value_type operator[](mini_vector<size_t,2> const & key) const { return (key[0]==key[1] ? val : T());}
+  value_type operator()(size_t i, size_t j) const { return (i==j ? val : T());}
  };
 
 template<typename T> struct wrap_vector { 
@@ -60,21 +60,35 @@ template<typename T> struct wrap_vector {
  template<class V> struct _op<p_tag::multiplies,V> { static V invoke(V const & a, V const & b) { return a*b;}};
  template<class V> struct _op<p_tag::divides,V> { static V invoke(V const & a, V const & b) { return a/b;}};
 
- template<typename ProtoTag, typename T1, typename T2> struct TypeAndDomain { 
-  typedef typename T1::value_type V1;
-  typedef typename T2::value_type V2;
-  typedef BOOST_TYPEOF_TPL( V1() + V2()) value_type;
+ template<typename ProtoTag, typename T1, typename T2> struct matrix_add_sub_impl { 
+  typedef typename T1::value_type V1; typedef typename T2::value_type V2; typedef BOOST_TYPEOF_TPL( V1() + V2()) value_type;
   typedef matrix_domain_type domain_type;
-  T1 const & a; T2 const & b;
-  TypeAndDomain (T1 const & a_, T2 const & b_):a(a_),b(b_) {} 
-  domain_type domain() const { 
-   size_t n1 = a.domain().lengths()[1], n2 = b.domain().lengths()[0];
-   if (n1==0) n1 = b.domain().lengths()[0]; // a is a scalar
-   if (n2==0) n2 = a.domain().lengths()[1]; // b is a scalar
-   return domain_type(mini_vector<size_t,2>( n1,n2));
+  T1 const & a; T2 const & b; matrix_add_sub_impl (T1 const & a_, T2 const & b_):a(a_),b(b_) {
+   if (a.domain().lengths() != b.domain().lengths()) TRIQS_RUNTIME_ERROR << "Size mismatch in adding/substracting matrices"<< a.domain().lengths()<<b.domain().lengths();
   } 
+  domain_type domain() const { return a.domain(); } 
+  value_type operator[](mini_vector<size_t,2> const & key) const { return _op<ProtoTag,value_type>::invoke(a[key],b[key]);}
+  value_type operator()(size_t i, size_t j) const { return _op<ProtoTag,value_type>::invoke(a(i,j),b(i,j));}
+ }; 
+
+ template<typename ProtoTag, typename T1, typename T2> struct matrix_sca_add_sub_impl { 
+  typedef typename T1::value_type V1; typedef typename T2::value_type V2; typedef BOOST_TYPEOF_TPL( V1() + V2()) value_type;
+  typedef matrix_domain_type domain_type;
+  T1 const & a; T2 const & b; matrix_sca_add_sub_impl (T1 const & a_, T2 const & b_):a(a_),b(b_) {} 
+  domain_type domain() const { return a.domain(); }
   value_type operator[](mini_vector<size_t,2> const & key) const { return  _op<ProtoTag,value_type>::invoke(a[key],b[key]);}
   value_type operator()(size_t i, size_t j) const { return _op<ProtoTag,value_type>::invoke(a(i,j),b(i,j));}
+ };
+
+ template<typename ProtoTag, typename T1, typename T2> struct matrix_sca_mul_div_impl { 
+  typedef typename T1::value_type V1; typedef typename T2::value_type V2; typedef BOOST_TYPEOF_TPL( V1() + V2()) value_type;
+  typedef matrix_domain_type domain_type;
+  T1 const & a; T2 const & b; matrix_sca_mul_div_impl (T1 const & a_, T2 const & b_):a(a_),b(b_) {} 
+  domain_type domain() const { return a.domain(); } 
+  //value_type operator[](mini_vector<size_t,2> const & key) const { return  _op<ProtoTag,value_type>::invoke(a[key],b[mini_vector<size_t,2>()]);}
+  //value_type operator()(size_t i, size_t j) const { return _op<ProtoTag,value_type>::invoke(a(i,j),b(0,0));}
+  value_type operator[](mini_vector<size_t,2> const & key) const { return  _op<ProtoTag,value_type>::invoke(a[key],proto::value(b));}
+  value_type operator()(size_t i, size_t j) const { return _op<ProtoTag,value_type>::invoke(a(i,j),proto::value(b));}
  }; 
 
  // to be splitted with switch ....
@@ -83,14 +97,22 @@ template<typename T> struct wrap_vector {
   proto::when< dC_ScalarGrammar,wrap_scalar<proto::_value>(proto::_value)>
   ,proto::when< BasicMatrixTypeGrammar,proto::_value>
   //,proto::when< BasicVectorTypeGrammar,wrap_vector<proto::_value>(proto::_value)>
-  ,proto::when< proto::plus <MatrixGrammar,MatrixGrammar>,TypeAndDomain<p_tag::plus,_left,_right> (_left,_right)>
-  ,proto::when< proto::minus <MatrixGrammar,MatrixGrammar>,TypeAndDomain<p_tag::minus,_left,_right> (_left,_right)>
   ,proto::or_<
-  proto::when< proto::multiplies<dC_ScalarGrammar,MatrixGrammar>,TypeAndDomain< p_tag::multiplies,_left,_right> (_left,_right)>
-  ,proto::when< proto::multiplies<MatrixGrammar,dC_ScalarGrammar>,TypeAndDomain< p_tag::multiplies,_left,_right> (_left,_right)>
+  proto::when< proto::plus <dC_ScalarGrammar,MatrixGrammar>,matrix_sca_add_sub_impl<p_tag::plus,_right,_left> (_right,_left)>
+  ,proto::when< proto::plus <MatrixGrammar,dC_ScalarGrammar>,matrix_sca_add_sub_impl<p_tag::plus,_left,_right> (_left,_right)>
+  ,proto::when< proto::plus <MatrixGrammar,MatrixGrammar>,matrix_add_sub_impl<p_tag::plus,_left,_right> (_left,_right)>
+  >
+  ,proto::or_<
+  proto::when< proto::minus <dC_ScalarGrammar,MatrixGrammar>,matrix_sca_add_sub_impl<p_tag::minus,_right,_left> (_right,_left)>
+  ,proto::when< proto::minus <MatrixGrammar,dC_ScalarGrammar>,matrix_sca_add_sub_impl<p_tag::minus,_left,_right> (_left,_right)>
+  ,proto::when< proto::minus <MatrixGrammar,MatrixGrammar>,matrix_add_sub_impl<p_tag::minus,_left,_right> (_left,_right)>
+  >
+  ,proto::or_<
+  proto::when< proto::multiplies<dC_ScalarGrammar,MatrixGrammar>,matrix_sca_mul_div_impl< p_tag::multiplies,_right,_left> (_right,_left)>
+  ,proto::when< proto::multiplies<MatrixGrammar,dC_ScalarGrammar>,matrix_sca_mul_div_impl< p_tag::multiplies,_left,_right> (_left,_right)>
   ,proto::when< proto::multiplies<MatrixGrammar,MatrixGrammar>,linalg::matmul_impl<_left,_right> (_left,_right)>
->
-  ,proto::when< proto::divides<MatrixGrammar,dC_ScalarGrammar>,TypeAndDomain< p_tag::divides,_left,_right> (_left,_right)>
+  >
+  ,proto::when< proto::divides<MatrixGrammar,dC_ScalarGrammar>,matrix_sca_mul_div_impl< p_tag::divides,_left,_right> (_left,_right)>
   ,proto::when< proto::negate<MatrixGrammar>, MatrixGrammar(proto::_child0)>
   > {};
 
@@ -119,18 +141,6 @@ template<typename T> struct wrap_vector {
  template< typename T, typename Opt> struct MatrixDomain::as_child< const vector<T,Opt> > : 
   MatrixDomain::proto_base_domain::template as_expr< const vector_view<T,Opt> >{};
 
- /*
- //   Evaluation context
- template<typename KeyType, typename ReturnType>
- struct MatrixEvalCtx : proto::callable_context< MatrixEvalCtx<KeyType,ReturnType> const > {
- typedef ReturnType result_type;
- KeyType const & key;
- MatrixEvalCtx(KeyType const & key_) : key(key_) {}
- template<typename T>// overrule just the terminals which have array interface.
- typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
- operator ()(p_tag::terminal, T const & t) const { return t[key]; }
- };
- */
  //   Expression
  template<typename Expr> struct MatrixExpr : Tag::expression, proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> { 
   typedef proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> base_type;

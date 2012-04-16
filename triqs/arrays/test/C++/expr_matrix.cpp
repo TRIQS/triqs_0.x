@@ -26,9 +26,11 @@
 #include <boost/proto/debug.hpp>
 #include "./python_stuff.hpp"
 #include <iostream>
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 using namespace std;
 using namespace triqs::arrays;
+namespace tqa = triqs::arrays;
 using namespace indexmaps;
 using namespace storages;
 
@@ -71,6 +73,12 @@ int main(int argc, char **argv) {
   
   cout<<" matrix( Af * (Bf + Cf) )"<<matrix<double>(Af*(Bf+ Cf))<<endl;
 
+  TEST( A);  
+  TEST ( tqa::eval( 2*A ));
+  TEST ( A+ 2);
+  TEST ( tqa::eval(A+2 ));
+  TEST ( tqa::eval(1 + A ));
 
+  // matrix <long> AA(3,3); TEST( tqa::eval(A+ 2* AA)); // exception because of size...
  return 0;
 }

@@ -103,6 +103,8 @@ namespace triqs { namespace arrays {
    return true;
   }
 
+ template <typename T, int R> bool operator !=(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) { return (!(v1==v2));}
+   
  template <typename T1, typename T2, int Rank> 
   T1 dot_product(mini_vector<T1,Rank> const & v1, mini_vector<T2,Rank> const & v2) {
    T1 res=0;
@@ -158,14 +160,12 @@ namespace triqs { namespace arrays {
    BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
 #undef IMPL
 
-
- 
-}}//namespace triqs::arrays 
-
 template <typename T, int Rank> 
 std::ostream & operator << ( std::ostream & out, triqs::arrays::mini_vector<T,Rank> const & v ) {return out<<v.to_string();}
 template <typename T, int Rank> 
 std::stringstream & operator << ( std::stringstream & out, triqs::arrays::mini_vector<T,Rank> const & v ) { out<<v.to_string(); return out;}
+
+}}//namespace triqs::arrays 
 
 //namespace boost { namespace tuples { 
 
