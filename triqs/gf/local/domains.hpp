@@ -37,36 +37,63 @@ namespace triqs { namespace gf {
 
  namespace meshes { 
 
-  struct tail{
+  class tail{
+   size_t order_;
+
+   public:
    typedef std::complex<double> gf_result_type;
-   static const bool has_tail = false;
    typedef size_t index_type;
+   
+   tail(size_t Order=5) : order_(Order) {}
+   
+   // size_t order() const { return order_;}
+   
+   static const bool has_tail = false;
    static const bool mesh_tail = false;
-   const size_t order;
-   size_t len() const{ return order;}
-   tail(size_t order_=5) : order(order_) {}
+   
+   size_t len() const{ return order_;}
   };
 
-  struct matsubara_freq : domains::matsubara_freq {
-   const size_t n_max; 
+  //--------------------------------------------------------
+
+  class matsubara_freq : domains::matsubara_freq {
+   size_t n_max_; 
+
+   public:
+   typedef std::complex<double> gf_result_type;
+   typedef size_t index_type;
+
+   matsubara_freq (Statistic s=Fermion, size_t N_max=1025, size_t tail_expansion_order=5 ): 
+    n_max_( N_max), statistic(s), mesh_tail(tail_expansion_order) {}
+
+   //size_t n_max() const { return n_max_;}
    Statistic statistic;
+
    static const bool has_tail = true;
    tail mesh_tail;
-   typedef std::complex<double> gf_result_type;
-   typedef size_t index_type;
-   size_t len() const{ return n_max;}
-   matsubara_freq (Statistic s=Fermion, size_t n_max_=1025, size_t tail_expansion_order=5 ): 
-    n_max( n_max_), statistic(s), mesh_tail(tail_expansion_order) {}
+
+   size_t len() const{ return n_max_;}
   };
 
-  struct matsubara_time : domains::matsubara_freq {
-   const size_t n_time_slices; 
-   Statistic statistic;
-   static const bool has_tail = true;
+  //--------------------------------------------------------
+
+  class matsubara_time : domains::matsubara_freq {
+   size_t n_time_slices_;
+ 
+   public: 
    typedef double gf_result_type;
    typedef size_t index_type;
-   size_t len() const{ return n_time_slices;}
-   matsubara_time (size_t n_time_slices_, Statistic s): n_time_slices( n_time_slices_), statistic(s) {}
+   
+   matsubara_time (size_t N_time_slices, Statistic s): n_time_slices_( N_time_slices), statistic(s) {}
+   
+   //size_t n_time_slices() const { return n_time_slices_;}
+   
+   Statistic statistic;
+   
+   static const bool has_tail = true;
+   tail mesh_tail;
+   
+   size_t len() const{ return n_time_slices_;}
   };
 
   

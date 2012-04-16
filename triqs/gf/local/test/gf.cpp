@@ -10,16 +10,14 @@ int main() {
  std::vector<std::vector<std::string> > ind(1); 
  ind[0].push_back("1");ind[0].push_back("2"); ind.push_back(ind[0]);
 
- typedef local::gf<meshes::matsubara_freq,false> Gf_type;
- typedef local::gf<meshes::matsubara_freq,true> Gf_view_type;
- 
-Gf_type G1; // empty
+ typedef local::gf<meshes::matsubara_freq> Gf_type;
+ typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
+
+ Gf_type G1; // empty
  TEST( G1( 0) ) ;
- 
+
  Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind);
- 
- // should not compile and does not
- //Gf_view_type Ge(2,2, meshes::matsubara_freq(Fermion), ind,ind);
+ Gf_type Gc(2,2, meshes::matsubara_freq(Fermion), ind);
 
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
@@ -40,7 +38,7 @@ Gf_type G1; // empty
 
  G(om_) = 1/(om_ + 2.3);
 
-  TEST( Gv(om_) ) ;
+ TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
  // tail 
@@ -48,5 +46,11 @@ Gf_type G1; // empty
  TEST( t( 0) ) ;
 
  TEST( Gv2.tail_view()( 0) ) ;
-  
+
+ // copy 
+ Gc = G;
+ TEST( G( 0) ) ;
+ TEST( Gc( 0) ) ;
+
+
 }
