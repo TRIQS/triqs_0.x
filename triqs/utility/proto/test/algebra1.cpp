@@ -48,7 +48,7 @@ namespace impl {
  template <typename Expr> struct The_Expr;
 
  typedef triqs::utility::proto::algebra::grammar_generator<my_algebra_desc,is_a_vector>::type grammar;
- typedef triqs::utility::proto::algebra::domain<grammar,The_Expr,false>                       domain;
+ typedef triqs::utility::proto::domain<grammar,The_Expr,false>                       domain;
 
  template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{
   typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;

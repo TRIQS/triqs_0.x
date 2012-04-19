@@ -28,24 +28,8 @@ template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {}
 // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
 template <typename T> struct is_scalar_or_element   : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
-
-namespace tupa=triqs::utility::proto::algebra;
-
-template <typename Expr> struct The_Expr;  // the expression
-
-typedef tupa::grammar_generator<tupa::algebra_function_desc,is_a_m_f, is_scalar_or_element>::type grammar; // the grammar
-
-typedef tupa::domain<grammar,The_Expr,true>  domain; // the domain 
-
-template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{ // impl the expression
- typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;
- The_Expr( Expr const & expr = Expr() ) : basetype ( expr ) {}
- typedef typename boost::result_of<grammar(Expr) >::type _G;
- typename triqs::utility::proto::call_result_type<_G,size_t>::type operator() (size_t n) const { return grammar()(*this)(n); }
- friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
-};
-
-BOOST_PROTO_DEFINE_OPERATORS(is_a_m_f, domain);
+// This macro declare the algebra of algebra-valued functions...
+TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (is_a_m_f, is_scalar_or_element);
 
 int main() { 
 
