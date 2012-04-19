@@ -192,32 +192,7 @@ triqs::utility::proto::algebra::algebra_function_desc,type_identification_trait,
 > _D##type_identification_trait;\
 BOOST_PROTO_DEFINE_OPERATORS(type_identification_trait, _D##type_identification_trait::mydomain );
 
-
-/*
-#define TRIQS_DEFINE_EXPR_FROM_GRAMMAR(Grammar, NAMESPACE) \
-namespace NAMESPACE {\
-template <typename Expr> struct The_Expr;\
-typedef triqs::utility::proto::domain<Grammar,The_Expr,true>  domain;\
-template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, domain>{\
-typedef boost::proto::extends<Expr, The_Expr<Expr>, domain> basetype;\
-The_Expr( Expr const & expr = Expr() ) : basetype ( expr ) {}\
-typedef typename boost::result_of<Grammar(Expr) >::type _G;\
-typename triqs::utility::proto::call_result_type<_G,size_t>::type operator() (size_t n) const { return Grammar()(*this)(n); }\
-friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }\
-};\
-}
-*/
-//typename grammar_generator<algebra_function_desc,type_identification_trait, scalar_identification_trait>::type 
-
-#define TRIQS_DEFINE_ALGEBRA_VALUED_FNT_ALG1(type_identification_trait,scalar_identification_trait)\
- typedef triqs::utility::proto::algebra::grammar_generator<triqs::utility::proto::algebra::algebra_function_desc,type_identification_trait, scalar_identification_trait>::type _Grammar;\
-TRIQS_DEFINE_EXPR_FROM_GRAMMAR( _Grammar, ZOZO);\
-BOOST_PROTO_DEFINE_OPERATORS(type_identification_trait, typename ZOZO::domain );
-
-
-
 }}}
-
 
 #undef OP_NAME
 #undef OP_OP
