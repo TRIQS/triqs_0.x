@@ -220,11 +220,23 @@ namespace triqs { namespace gf { namespace local {
 
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
- 
+ /*
 #define AUX(r,data,DOM)\
  template <typename G> struct BOOST_PP_CAT(is_gf_,DOM) : boost::is_base_of< tag::is_gf<meshes::DOM>, G> {};\
  TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (BOOST_PP_CAT(is_gf_,DOM), is_scalar_or_element);
  
+ BOOST_PP_SEQ_FOR_EACH(AUX, nil , TRIQS_LOCAL_GF_DOMAIN_LIST);
+#undef AUX
+*/
+
+template< typename DomainType> struct expr_templ { 
+ // identification trait
+ template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {};
+ typedef typename tup::algebra::grammar_generator< tup::algebra::algebra_function_desc,is_gf, is_scalar_or_element >::type grammar;
+ typedef tup::domain_and_expression_generator< grammar > _D;
+};
+
+#define AUX(r,data,DOM)  BOOST_PROTO_DEFINE_OPERATORS(expr_templ<meshes::DOM>::is_gf, expr_templ<meshes::DOM>::_D::expr_domain);
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , TRIQS_LOCAL_GF_DOMAIN_LIST);
 #undef AUX
 
@@ -239,42 +251,50 @@ namespace triqs { namespace gf { namespace local {
   template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return l.domain(); }
  };
 
- /***************************************************************************
-  *    Implementation of tails 
-  ***************************************************************************/
- /*class high_frequency_expansion_view : public impl::gf_impl<meshes::tail,true> {
-  typedef impl::gf_impl<meshes::tail,true> base_type;
-  public :
-  template<typename GfType> high_frequency_expansion_view(GfType const & x): base_type(x) {};
-  template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
-  template<typename RHS> high_frequency_expansion_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
-  std::ostream & print_for_lazy(std::ostream & out) const { return out<<"high_frequency_expansion_view";}
-  //int order_min() const { return this->domain().order_min();} 
-  //int order_max() const { return this->domain().order_max();} 
- };
+/*  struct dom_transfo_desc { 
 
- class high_frequency_expansion : public impl::gf_impl<meshes::tail,false> {
-  typedef impl::gf_impl<meshes::tail,false> base_type;
-  public : 
-  high_frequency_expansion():base_type() {} 
-  high_frequency_expansion (size_t N1, size_t N2, base_type::domain_type const & domain_, base_type::indices_type const & indices_) : 
-   base_type(N1,N2,domain_,indices_) {}
-  template<typename GfType> high_frequency_expansion(GfType const & x): base_type(x) {}
-  template<typename RHS> high_frequency_expansion & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; }
-  //int order_min() const { return this->domain().order_min();} 
-  //int order_max() const { return this->domain().order_max();} 
+  template<typename S> struct scalar {
+   S s; scalar( S const & x) : s(x) {}
+   typedef void domain_type;
+   meshes::tail domain () const { return ;}
+  };
+
+  template<typename ProtoTag, typename L, typename R> struct binary_node  { 
+   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
+   typedef typename L::domain_type domain_type;
+   template <typename T> struct call_rtype {
+    typedef tup::_binary_ops_<ProtoTag, typename tup::call_result_type<L,T>::type , typename tup::call_result_type<R,T>::type  > ops_type;
+    typedef typename ops_type::result_type type;
+   };
+   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg),r(arg));}
+   meshes::tail domain () const { return l.domain();} // assert here domain are equal
+  }; 
+
+  template<typename L> struct negate  { 
+   L const & l; negate (L const & l_):l(l_) {} 
+   template <typename T> struct call_rtype {
+    typedef tup::_unary_ops_<p_tag::negate, typename tup::call_result_type<L,T>::type > ops_type;
+    typedef typename ops_type::result_type type;
+   };
+   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg));}
+   meshes::tail domain () const { return l.domain();}
+  };
+  
  };
 */
 
- // a trait to identity the tail
- template <typename G> struct is_tail : boost::is_base_of< tag::is_gf<meshes::tail>, G> {};
 
+// template<typename T> DomainType get_domain(T const & x) { return x.domain();}
+
+ /***************************************************************************
+  *    Implementation of tail algebra which is specific 
+  *    Since I need to reimplement the algebra anyway, I add domain to it...
+  ***************************************************************************/
  typedef tqa::matrix_view<std::complex<double> , tqa::Option::Fortran> tail_result_type;
+ 
+ template <typename G> struct is_tail : boost::is_base_of< tag::is_gf<meshes::tail>, G> {}; // a trait to identity the tail
 
- /* -------------------------------------------
-  *  Structure of algebra for algebra valued functions
-  * ------------------------------------------ */
- struct tail_algebra_function_desc { 
+ struct tail_algebra_function_desc { // the "description" of the algebra operations, cf ... 
 
   template<typename S> struct scalar {
    S s; scalar( S const & x) : s(x) {}
@@ -325,31 +345,26 @@ namespace triqs { namespace gf { namespace local {
   }
  };
 
+ // specialize the / operation.... TO DO  
  template< typename L,typename R> struct tail_algebra_function_desc::binary_node<p_tag::divides,L,R>  { 
   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
   template<typename T> tail_result_type operator() (T const & arg) const {return l(arg)/r(arg);}
  };
 
- //TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG_WITH_DESC (is_tail, is_scalar_or_element, tail_algebra_function_desc);
-
  namespace impl { 
-  template <typename Expr> struct tail_Expr;
-
+  template <typename Expr> struct tail_expr;
   typedef triqs::utility::proto::algebra::grammar_generator<tail_algebra_function_desc,is_tail>::type grammar;
-  typedef triqs::utility::proto::domain<grammar,tail_Expr,false>  tail_domain;
-
-  template<typename Expr> struct tail_Expr : boost::proto::extends<Expr, tail_Expr<Expr>, tail_domain>{
-   tail_Expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_Expr<Expr>, tail_domain>  ( expr ) {}
+  typedef triqs::utility::proto::domain<grammar,tail_expr,false>  tail_domain;
+  
+  template<typename Expr> struct tail_expr : boost::proto::extends<Expr, tail_expr<Expr>, tail_domain>{
+   tail_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_expr<Expr>, tail_domain>  ( expr ) {}
    typedef typename boost::result_of<grammar(Expr) >::type _G;
    template<typename T> typename tup::call_result_type<_G,T>::type operator() (T const & x) const { return grammar()(*this)(x); }
    meshes::tail domain() const { return grammar()(*this).domain(); }
-   friend std::ostream &operator <<(std::ostream &sout, tail_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
-   //int order_min() const { return this->domain().order_min();} 
-   //int order_max() const { return this->domain().order_max();} 
+   friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra::print_ctx (sout)); }
   };
  }
  BOOST_PROTO_DEFINE_OPERATORS(is_tail, impl::tail_domain);
-
 
 }}}
 

@@ -62,10 +62,12 @@ int main() {
  
  domains::infty inf;
 
+ //meshes::matsubara_freq d = 
  TEST(G(inf)(0));
+
  TEST( ( G(inf) + G(inf) )  (0));
  TEST( ( G(inf) * G(inf) )  (0));
-// TEST( (G * Gc)( inf) ) ;
+ TEST( (G + Gc)( inf) ) ;
 
  //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
 }
