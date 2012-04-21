@@ -194,13 +194,16 @@ namespace triqs { namespace utility { namespace proto {
 
  };
 
-#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG(type_identification_trait,scalar_identification_trait)\
+#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG_WITH_DESC(type_identification_trait,scalar_identification_trait, ALG_DESC)\
  typedef triqs::utility::proto::domain_and_expression_generator<\
  triqs::utility::proto::algebra::grammar_generator<\
- triqs::utility::proto::algebra::algebra_function_desc,type_identification_trait, scalar_identification_trait\
+ ALG_DESC,type_identification_trait, scalar_identification_trait\
  >::type\
  > _D##type_identification_trait;\
  BOOST_PROTO_DEFINE_OPERATORS(type_identification_trait, _D##type_identification_trait::mydomain );
+
+#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG(type_identification_trait,scalar_identification_trait)\
+ TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG_WITH_DESC(type_identification_trait,scalar_identification_trait, triqs::utility::proto::algebra::algebra_function_desc)
 
 }}}
 
