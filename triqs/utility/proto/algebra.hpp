@@ -21,6 +21,9 @@
 #ifndef TRIQS_UTILITY_ALGEBRA_H
 #define TRIQS_UTILITY_ALGEBRA_H 
 
+#define BOOST_RESULT_OF_USE_DECLTYPE
+#include <boost/utility/result_of.hpp>
+
 #include <boost/type_traits/add_const.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -92,6 +95,25 @@ namespace triqs { namespace utility { namespace proto {
 
   template< typename OpsCompound, template<typename T> class is_element, template<typename T> class is_scalar = is_in_ZRC > 
    struct grammar_generator {
+
+    struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<is_element<proto::_value>()> > {}; 
+    struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar<proto::_value>()> > {}; 
+    struct Grammar : 
+     proto::or_<
+     proto::when< ScalarGrammar,                       typename OpsCompound::template scalar<proto::_value>(proto::_value) >
+     ,proto::when< LeafGrammar,                        proto::_value >
+     ,proto::when< proto::plus <Grammar,Grammar>,      typename OpsCompound::template plus<proto::_left,proto::_right > (proto::_left,proto::_right) >
+     ,proto::when< proto::minus <Grammar,Grammar>,     typename OpsCompound::template minus<proto::_left,proto::_right > (proto::_left,proto::_right)  >
+     ,proto::when< proto::multiplies<Grammar,Grammar>, typename OpsCompound::template multiplies<proto::_left,proto::_right > (proto::_left,proto::_right)>
+     ,proto::when< proto::divides<Grammar,Grammar>,    typename OpsCompound::template divides<proto::_left,proto::_right > (proto::_left,proto::_right)>
+     ,proto::when< proto::negate<Grammar >,            typename OpsCompound::template negate <proto::_left >(proto::_left) >
+     > {};
+
+    typedef Grammar type;
+   };
+
+  template< typename OpsCompound, template<typename T> class is_element, template<typename T> class is_scalar = is_in_ZRC > 
+   struct grammar_generator1 {
 
     struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<is_element<proto::_value>()> > {}; 
     struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar<proto::_value>()> > {}; 
