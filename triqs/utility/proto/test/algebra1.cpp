@@ -32,14 +32,14 @@ struct my_algebra_desc {
  // how to make the various operations 
  template<typename ProtoTag, typename L, typename R> struct binary_node {
   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {} 
-  double operator[](size_t i) const { return triqs::utility::proto::_ops_<ProtoTag, double,double>::invoke (l[i] , r[i]);}
+  double operator[](size_t i) const { return triqs::utility::proto::_binary_ops_<ProtoTag, double,double>::invoke (l[i] , r[i]);}
   size_t size() const {return std::max(l.size(),r.size());}
  };
 
  // how to make the unary -
  template<typename T> struct negate {
   T const & s; negate(T const & x) : s(x) {}
-  double operator[](size_t i) const { return s[i];}
+  double operator[](size_t i) const { return -s[i];}
   size_t size() const {return s.size();}
  };
 };

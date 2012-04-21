@@ -58,7 +58,7 @@ struct my_algebra_desc {
  // how to make the various operations 
  template<typename ProtoTag, typename L, typename R> struct binary_node {
   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {} 
-  double operator[](size_t i) const { return triqs::utility::proto::_ops_<ProtoTag, double,double>::invoke (l[i] , r[i]);}
+  double operator[](size_t i) const { return triqs::utility::proto::_binary_ops_<ProtoTag, double,double>::invoke (l[i] , r[i]);}
  };
 
  // how to make the unary -

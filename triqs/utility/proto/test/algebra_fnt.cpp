@@ -26,9 +26,9 @@ template <typename T> struct is_a_m_f                            : mpl::false_{}
 template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {};
 
 // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
-template <typename T> struct is_scalar_or_element   : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
+template <typename T> struct is_scalar_or_element : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
-// This macro declare the algebra of algebra-valued functions...
+// This macro declares the algebra of algebra-valued functions...
 TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (is_a_m_f, is_scalar_or_element);
 
 int main() { 
