@@ -144,7 +144,7 @@ template<typename T> struct wrap_vector {
  //   Expression
  template<typename Expr> struct MatrixExpr : Tag::expression, proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> { 
   typedef proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> base_type;
-  typedef typename boost::result_of<MatrixGrammar(Expr) >::type _T;
+  typedef typename boost::remove_reference<typename boost::result_of<MatrixGrammar(Expr) >::type>::type  _T;
   typedef typename _T::value_type value_type;
   typedef typename _T::domain_type domain_type;
   typedef typename domain_type::index_value_type key_type;

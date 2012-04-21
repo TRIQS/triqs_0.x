@@ -100,7 +100,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
  //   Expression
  template<typename Expr> struct ArrayExpr : Tag::expression, proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> { 
   typedef proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> base_type;
-  typedef typename boost::result_of<ArrayGrammar(Expr) >::type _T;
+  typedef typename boost::remove_reference<typename boost::result_of<ArrayGrammar(Expr) >::type>::type _T;
   typedef typename _T::value_type value_type;
   typedef typename _T::domain_type domain_type;
   typedef typename domain_type::index_value_type key_type;
