@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 
-namespace mpl = boost::mpl;
+namespace mpl = boost::mpl; namespace tup = triqs::utility::proto; 
 using triqs::arrays::matrix;
 using triqs::arrays::range;
 using triqs::arrays::array;
@@ -29,7 +29,13 @@ template <>           struct is_a_m_f<my_matrix_valued_function> : mpl::true_ {}
 template <typename T> struct is_scalar_or_element : mpl::or_< triqs::arrays::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
 // This macro declares the algebra of algebra-valued functions...
-TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (is_a_m_f, is_scalar_or_element);
+//TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (is_a_m_f, is_scalar_or_element);
+// second solution is better since I can reuse T for pattern matching...
+typedef tup::domain_and_expression_generator< tup::algebra::grammar_generator< tup::algebra::algebra_function_desc,is_a_m_f, is_scalar_or_element >::type  > _D;
+BOOST_PROTO_DEFINE_OPERATORS(is_a_m_f, _D::expr_domain);
+
+template<typename T> void print(T const & x) { std::cout << "any T"<<std::endl ;}
+template<typename A> void print(_D::The_Expr<A> const & x) { std::cout << "an expression "<< x << std::endl ;}
 
 int main() { 
 
@@ -47,6 +53,9 @@ int main() {
  TEST( triqs::arrays::eval ( ( 2*f1  +f2 ) (1)) );
 
  TEST( triqs::arrays::eval ( ( A*f1  +f2 ) (1)) );
+
+ print ( f1);
+ print ( f1 - f2);
 
 };
 

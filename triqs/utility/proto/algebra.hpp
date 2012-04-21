@@ -139,16 +139,14 @@ namespace triqs { namespace utility { namespace proto {
    }; 
   };
 
- } //namespace algebra
-
  /* -------------------------------------------
   *   Print context
   * ------------------------------------------ */
 
- struct AlgebraPrintCtx : proto::callable_context< AlgebraPrintCtx const > {
+ struct print_ctx : proto::callable_context< print_ctx const > {
   typedef std::ostream &result_type;
   result_type out;
-  AlgebraPrintCtx(std::ostream & out_):out(out_) {}
+  print_ctx(std::ostream & out_):out(out_) {}
   template <typename T>
    typename boost::enable_if<is_in_ZRC<T>, result_type>::type 
    operator ()(proto::tag::terminal, const T & A) const { return out<<A; }
@@ -161,6 +159,9 @@ namespace triqs { namespace utility { namespace proto {
   template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
+ } //namespace algebra
+
+ 
  /* ---------------------------------------------------------------------------------------------------
   * The domain can enforce copies or not...
   * --------------------------------------------------------------------------------------------------- */
@@ -183,16 +184,21 @@ namespace triqs { namespace utility { namespace proto {
 
  template<typename Grammar> struct domain_and_expression_generator { 
   template <typename Expr> struct The_Expr;  // the expression
-  typedef domain<Grammar,The_Expr,true>  mydomain; // the domain 
-  template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, mydomain>{ // impl the expression
-   typedef boost::proto::extends<Expr, The_Expr<Expr>, mydomain> basetype;
+  typedef domain<Grammar,The_Expr,true>  expr_domain; // the domain 
+  template<typename Expr> struct The_Expr : boost::proto::extends<Expr, The_Expr<Expr>, expr_domain>{ // impl the expression
+   typedef boost::proto::extends<Expr, The_Expr<Expr>, expr_domain> basetype;
    The_Expr( Expr const & expr = Expr() ) : basetype ( expr ) {}
    typedef typename boost::result_of<Grammar(Expr) >::type _G;
    template<typename T> typename call_result_type<_G,T>::type operator() (T const & x) const { return Grammar()(*this)(x); }
-   friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
+   friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::algebra::print_ctx (sout)); }
   };
 
  };
+
+#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG(type_identification_trait,scalar_identification_trait)\
+ BOOST_PROTO_DEFINE_OPERATORS(type_identification_trait, (triqs::utility::proto::domain_and_expression_generator<\
+ triqs::utility::proto::algebra::grammar_generator<triqs::utility::proto::algebra::algebra_function_desc,type_identification_trait, scalar_identification_trait >::type\
+ >::expr_domain ));
 
 #define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG_WITH_DESC(type_identification_trait,scalar_identification_trait, ALG_DESC)\
  typedef triqs::utility::proto::domain_and_expression_generator<\
@@ -202,7 +208,7 @@ namespace triqs { namespace utility { namespace proto {
  > _D##type_identification_trait;\
  BOOST_PROTO_DEFINE_OPERATORS(type_identification_trait, _D##type_identification_trait::mydomain );
 
-#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG(type_identification_trait,scalar_identification_trait)\
+#define TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG2(type_identification_trait,scalar_identification_trait)\
  TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG_WITH_DESC(type_identification_trait,scalar_identification_trait, triqs::utility::proto::algebra::algebra_function_desc)
 
 }}}

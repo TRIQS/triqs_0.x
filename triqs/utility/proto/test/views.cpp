@@ -83,7 +83,7 @@ namespace impl {
   double operator[] (size_t n) const { return grammar()(*this)[n]; }
   size_t size() const { return grammar()(*this).size(); }
 
-  friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::AlgebraPrintCtx (sout)); }
+  friend std::ostream &operator <<(std::ostream &sout, The_Expr<Expr> const &expr) { return boost::proto::eval(expr, triqs::utility::proto::algebra::print_ctx (sout)); }
  };
 }
 BOOST_PROTO_DEFINE_OPERATORS(is_a_vector, impl::domain);
