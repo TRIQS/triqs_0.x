@@ -37,9 +37,9 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
-
   tqa::matrix<double> Id; Id() = 1;
   G(om_) = (om_ + 2.3);
+  //G(om_) = (2.0 + om_ - 2.3);
   //G(om_) = 1/(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
 
@@ -57,12 +57,18 @@ int main() {
  TEST( G( 0) ) ;
  TEST( Gc( 0) ) ;
 
+ // operations on gf
+
  TEST( (G + 2.0* Gc)( 0) ) ;
+ TEST( (8.0*G + 2.0* Gc)( 0) ) ;
+ TEST( (8.0*G  - 2.0* Gc)( 0) ) ;
+ TEST( (G - Gc)( 0) ) ;
+ TEST( (G - 2.0* Gc)( 0) ) ;
  TEST( (G * Gc)( 0) ) ;
  
  domains::infty inf;
 
- meshes::matsubara_freq d = local::get_domain<meshes::matsubara_freq >( G + Gc);
+ //meshes::matsubara_freq d = local::get_domain<meshes::matsubara_freq >( G + 2*Gc);
  TEST(G(inf)(0));
 
  TEST( ( G(inf) + G(inf) )  (0));

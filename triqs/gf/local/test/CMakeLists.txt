@@ -1,3 +1,5 @@
+add_definitions(-std=c++0x )
+
 set (Build_Lazy_tests ${Build_Triqs_General_Tools_Test})
 if (Build_Lazy_tests)
 

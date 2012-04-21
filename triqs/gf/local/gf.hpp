@@ -21,6 +21,9 @@
 #ifndef TRIQS_GF_LOCAL_GF_H
 #define TRIQS_GF_LOCAL_GF_H 
 
+#define BOOST_RESULT_OF_USE_DECLTYPE
+#include <boost/utility/result_of.hpp>
+
 #include <boost/type_traits/is_complex.hpp> 
 #include <triqs/lazy/core.hpp>
 #include <triqs/arrays/array.hpp>
@@ -62,6 +65,7 @@ namespace triqs { namespace gf { namespace local {
     wrap_infty(TailViewType const & t): tail(t) {}
     operator domains::infty() const { return domains::infty();}
     typename TailViewType::const_result_type operator() ( typename TailViewType::arg0_type const & x) const { return tail(x);}
+    typedef meshes::tail domain_type;
    };
 
   /*------------------------------------------------------------------------------
@@ -218,51 +222,142 @@ namespace triqs { namespace gf { namespace local {
 
  // -------------------------------   Expression template for each domain --------------------------------------------------
 
+ typedef tqa::matrix_view<std::complex<double> , tqa::Option::Fortran> tail_result_type;
+ 
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
- /*
-#define AUX(r,data,DOM)\
- template <typename G> struct BOOST_PP_CAT(is_gf_,DOM) : boost::is_base_of< tag::is_gf<meshes::DOM>, G> {};\
- TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (BOOST_PP_CAT(is_gf_,DOM), is_scalar_or_element);
  
+ // algebra node description  
+ template< typename DomainType>
+  struct node_desc_impl {
+
+   struct no_domain{}; 
+   template<typename L, typename R>  static DomainType compute_domain (L const & dl, R const & dr) 
+    //{ if (!(dl==dr)) TRIQS_RUNTIME_ERROR <<"domain mismatch"; return dl; }
+   {  return dl; }
+   template<typename L> static DomainType compute_domain (L const & dl, no_domain) { return dl; }
+   template<typename R> static DomainType compute_domain (no_domain, R const & dr) { return dr; }
+
+   template<typename S> struct scalar {
+    S s; scalar( S const & x) : s(x) {}
+    template<typename T> S operator() (T) const {return s;}
+    typedef no_domain domain_type;
+    no_domain domain () const {} 
+   };
+   template<typename L, typename R> struct plus { 
+    L const & l; R const & r; plus (L const & l_, R const & r_):l(l_),r(r_) {}
+    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) + r(arg))  {return l(arg)+r(arg);}
+    typedef DomainType domain_type;
+    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+   }; 
+   template<typename L, typename R> struct minus { 
+    L const & l; R const & r; minus (L const & l_, R const & r_):l(l_),r(r_) {}
+    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) - r(arg))  {return l(arg)-r(arg);}
+    typedef DomainType domain_type;
+    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+   }; 
+
+   template<typename L, typename R> struct multiplies { 
+    L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) * r(arg))  {return l(arg)*r(arg);}
+    typedef DomainType domain_type;
+    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+   }; 
+
+   template<typename L, typename R> struct divides { 
+    L const & l; R const & r; divides (L const & l_, R const & r_):l(l_),r(r_) {}
+    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) / r(arg))  {return l(arg)/r(arg);}
+    typedef DomainType domain_type;
+    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+   }; 
+   template<typename L> struct negate  { 
+    L const & l; negate (L const & l_):l(l_) {} 
+    template<typename T> auto operator() (T const & arg) const -> decltype( - l(arg) )  {return - l(arg);}
+    typedef DomainType domain_type;
+    DomainType domain () const { return l.domain(); }
+   };
+  };
+ 
+ // a special case for tails
+ struct node_desc_impl_tail : node_desc_impl <meshes::tail> {
+
+  template<typename L, typename R> struct multiplies { 
+   L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+   typedef meshes::tail  domain_type;
+   meshes::tail domain () const { 
+    int omin = l.order_min()+r.order_min(); 
+    return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
+   } 
+   tail_result_type operator() (int n) const {
+    //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
+    //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
+    tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
+    const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
+    const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_min() );
+    std::cout<< kmin << "  "<<kmax<<std::endl;
+    for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l.domain().order_min() -k);}
+    return res;
+   }
+  };
+ };
+ 
+ // gathering everyone.... 
+ template<typename DomainType> struct node_desc : node_desc_impl <DomainType> {};
+ template<> struct node_desc<meshes::tail> :  node_desc_impl_tail {};
+
+ // now the boost::proto business... 
+ template< typename DomainType> struct expr_templ { 
+
+  // identification trait
+  template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {};
+
+  // grammar and domain and proto expression
+  template <typename Expr> struct gf_expr;
+  typedef typename tup::algebra::grammar_generator< node_desc<DomainType>,is_gf, is_scalar_or_element >::type grammar;
+  typedef tup::domain<grammar,gf_expr,true> gf_domain;
+
+  // implementing expression
+  template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_domain>{
+   gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_domain>  ( expr ) {}
+   typedef typename boost::remove_reference<typename boost::result_of<grammar(Expr) >::type>::type _G;
+   template<typename T> typename boost::result_of<_G(T)>::type operator() (T const & x) const { return grammar()(*this)(x); }
+   typename _G::domain_type domain() const { return grammar()(*this).domain(); }
+   friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra::print_ctx (sout)); }
+  };
+
+ };
+
+ // BOOST macro for all domains...
+#define AUX(r,data,DOM)  BOOST_PROTO_DEFINE_OPERATORS(expr_templ<meshes::DOM>::is_gf, expr_templ<meshes::DOM>::gf_domain);
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , TRIQS_LOCAL_GF_DOMAIN_LIST);
 #undef AUX
-*/
-
-template< typename DomainType> struct expr_templ { 
- // identification trait
- template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {};
- typedef typename tup::algebra::grammar_generator< tup::algebra::algebra_function_desc,is_gf, is_scalar_or_element >::type grammar;
- typedef tup::domain_and_expression_generator< grammar > _D;
-};
-
-#define AUX(r,data,DOM)  BOOST_PROTO_DEFINE_OPERATORS(expr_templ<meshes::DOM>::is_gf, expr_templ<meshes::DOM>::_D::expr_domain);
- BOOST_PP_SEQ_FOR_EACH(AUX, nil , TRIQS_LOCAL_GF_DOMAIN_LIST);
-#undef AUX
+ BOOST_PROTO_DEFINE_OPERATORS(expr_templ<meshes::tail>::is_gf, expr_templ<meshes::tail>::gf_domain);
 
  /***************************************************************************
   *   Computation of domain
   ***************************************************************************/
- template<typename DomainType, typename T> DomainType get_domain(T const & x) { return x.domain();}
+ template<typename DomainType, typename T> typename boost::disable_if <is_scalar_or_element<T>, DomainType>::type  get_domain(T const & x) { return x.domain();}
+ template<typename DomainType, typename T> typename boost::enable_if  <is_scalar_or_element<T>, DomainType>::type  get_domain(T const & x) { return DomainType();}
 
  template<typename DomainType>
- struct domain_ctx : boost::proto::callable_context< domain_ctx<DomainType> const > {
-  typedef DomainType result_type; typedef boost::proto::tag::terminal term_tag;
-  template <typename T> typename boost::enable_if <tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return result_type(); }
-  template <typename T> typename boost::disable_if<tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return A.domain();}
-  template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return get_domain<DomainType>(l); }
- };
+  struct domain_ctx : boost::proto::callable_context< domain_ctx<DomainType> const > {
+   typedef DomainType result_type; typedef boost::proto::tag::terminal term_tag;
+   template <typename T> result_type operator ()(term_tag, const T & A) const { return get_domain<DomainType>(A);}
+   //template <typename T> typename boost::enable_if <tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return get_domain_scalar<DomainType>(A);}
+   //template <typename T> typename boost::disable_if<tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return get_domain<DomainType>(A);}
+   template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return get_domain<DomainType>(l); }
+  };
 
- template<typename DomainType, typename A> DomainType get_domain(typename expr_templ<DomainType>::_D::template The_Expr<A> const & x) { 
+ template<typename DomainType, typename A> DomainType get_domain(typename expr_templ<DomainType>::template gf_expr<A> const & x) { 
   return boost::proto::eval(x, domain_ctx<DomainType>() ); }
 
  /***************************************************************************
   *    Implementation of tail algebra which is specific 
   *    Since I need to reimplement the algebra anyway, I add domain to it...
   ***************************************************************************/
- typedef tqa::matrix_view<std::complex<double> , tqa::Option::Fortran> tail_result_type;
- 
+
  template <typename G> struct is_tail : boost::is_base_of< tag::is_gf<meshes::tail>, G> {}; // a trait to identity the tail
+
 
  struct tail_algebra_function_desc { // the "description" of the algebra operations, cf ... 
 
@@ -283,6 +378,32 @@ template< typename DomainType> struct expr_templ {
    meshes::tail domain () const { return l.domain();} // assert here domain are equal
   }; 
 
+  // specialize the * operation....
+  template< typename L,typename R> struct binary_node<p_tag::multiplies,L,R>  { 
+   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
+   template <typename T> struct call_rtype { typedef tail_result_type type;};
+   meshes::tail domain () const { 
+    int omin = l.order_min()+r.order_min(); 
+    return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
+   } 
+   tail_result_type operator() (int n) const {
+    //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
+    //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
+    tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
+    const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
+    const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_min() );
+    std::cout<< kmin << "  "<<kmax<<std::endl;
+    for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l.domain().order_min() -k);}
+    return res;
+   }
+  };
+
+  // specialize the / operation.... TO DO  
+  template< typename L,typename R> struct binary_node<p_tag::divides,L,R>  { 
+   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
+   template<typename T> tail_result_type operator() (T const & arg) const {return l(arg)/r(arg);}
+  };
+
   template<typename L> struct negate  { 
    L const & l; negate (L const & l_):l(l_) {} 
    template <typename T> struct call_rtype {
@@ -292,40 +413,15 @@ template< typename DomainType> struct expr_templ {
    template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg));}
    meshes::tail domain () const { return l.domain();}
   };
-  
+
  };
 
- // specialize the * operation....
- template< typename L,typename R> struct tail_algebra_function_desc::binary_node<p_tag::multiplies,L,R>  { 
-  L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
-  template <typename T> struct call_rtype { typedef tail_result_type type;};
-  meshes::tail domain () const { 
-   int omin = l.order_min()+r.order_min(); 
-   return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
-  } 
-  tail_result_type operator() (int n) const {
-   //if (N1!=t.N1 || N2!=t.N2) TRIQS_RUNTIME_ERROR<<"Multiplication is valid only for similar tail shapes !";
-   //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
-   tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
-   const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
-   const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_min() );
-   std::cout<< kmin << "  "<<kmax<<std::endl;
-   for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l.domain().order_min() -k);}
-   return res;
-  }
- };
-
- // specialize the / operation.... TO DO  
- template< typename L,typename R> struct tail_algebra_function_desc::binary_node<p_tag::divides,L,R>  { 
-  L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
-  template<typename T> tail_result_type operator() (T const & arg) const {return l(arg)/r(arg);}
- };
 
  namespace impl { 
   template <typename Expr> struct tail_expr;
-  typedef triqs::utility::proto::algebra::grammar_generator<tail_algebra_function_desc,is_tail>::type grammar;
-  typedef triqs::utility::proto::domain<grammar,tail_expr,false>  tail_domain;
-  
+  typedef triqs::utility::proto::algebra::grammar_generator1<tail_algebra_function_desc,is_tail>::type grammar;
+  typedef triqs::utility::proto::domain<grammar,tail_expr,true>  tail_domain;
+
   template<typename Expr> struct tail_expr : boost::proto::extends<Expr, tail_expr<Expr>, tail_domain>{
    tail_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_expr<Expr>, tail_domain>  ( expr ) {}
    typedef typename boost::result_of<grammar(Expr) >::type _G;
@@ -334,7 +430,7 @@ template< typename DomainType> struct expr_templ {
    friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra::print_ctx (sout)); }
   };
  }
- BOOST_PROTO_DEFINE_OPERATORS(is_tail, impl::tail_domain);
+ // BOOST_PROTO_DEFINE_OPERATORS(is_tail, impl::tail_domain);
 
 }}}
 
