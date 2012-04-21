@@ -58,6 +58,14 @@ int main() {
  TEST( Gc( 0) ) ;
 
  TEST( (G + 2.0* Gc)( 0) ) ;
+ TEST( (G * Gc)( 0) ) ;
+ 
+ domains::infty inf;
+
+ TEST(G(inf)(0));
+ TEST( ( G(inf) + G(inf) )  (0));
+ TEST( ( G(inf) * G(inf) )  (0));
+// TEST( (G * Gc)( inf) ) ;
 
  //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
 }

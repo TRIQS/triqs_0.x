@@ -35,23 +35,26 @@ namespace triqs { namespace gf {
   struct infty{};
  }
 
+#define TRIQS_LOCAL_GF_DOMAIN_LIST (matsubara_freq)(matsubara_time)
+//#define TRIQS_LOCAL_GF_DOMAIN_LIST (matsubara_freq)(matsubara_time)(matsubara_legendre)(real_freq)(real_time)
+
  namespace meshes { 
 
   class tail{
-   size_t order_;
-
+   int omin,omax;
+ 
    public:
    typedef std::complex<double> gf_result_type;
-   typedef size_t index_type;
+   typedef int index_type;
    
-   tail(size_t Order=5) : order_(Order) {}
-   
-   // size_t order() const { return order_;}
+   tail(int OrderMin=-1, int OrderMax = 5) : omin(OrderMin), omax(OrderMax) {}
    
    static const bool has_tail = false;
    static const bool mesh_tail = false;
    
-   size_t len() const{ return order_;}
+   size_t len() const{ int r = omax - omin +1; assert(r>=0); return r;}
+   int order_min() const {return omin;}
+   int order_max() const {return omax;}
   };
 
   //--------------------------------------------------------
