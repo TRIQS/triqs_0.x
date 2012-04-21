@@ -188,16 +188,9 @@ namespace triqs { namespace gf { namespace local {
  template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true> {
   typedef impl::gf_impl<DomainType,true> base_type;
   public :
-
-  // gf (domain_type const & domain_, data_view_type const & data_, tail_view_type const & tail_, indices_type const & indices_) : 
-  // B(domain_,data_,tail_,indices_) {}
-
   template<typename GfType> gf_view(GfType const & x): base_type(x) {};
-
   template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
-
   template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
-
   std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
  };
 
@@ -208,16 +201,11 @@ namespace triqs { namespace gf { namespace local {
  template<typename DomainType> class gf : public impl::gf_impl<DomainType,false> {
   typedef impl::gf_impl<DomainType,false> base_type;
   public : 
-
   gf():base_type() {} 
-
   gf (size_t N1, size_t N2, typename base_type::domain_type const & domain_, typename base_type::indices_type const & indices_) : 
    base_type(N1,N2,domain_,indices_) {}
-
   template<typename GfType> gf(GfType const & x): base_type(x) {}
-
   template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
-
  };
 
  // -------------------------------   Expression template for each domain --------------------------------------------------
@@ -256,14 +244,12 @@ namespace triqs { namespace gf { namespace local {
     typedef DomainType domain_type;
     DomainType domain () const { return compute_domain(l.domain(),r.domain());}
    }; 
-
    template<typename L, typename R> struct multiplies { 
     L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
     template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) * r(arg))  {return l(arg)*r(arg);}
     typedef DomainType domain_type;
     DomainType domain () const { return compute_domain(l.domain(),r.domain());}
    }; 
-
    template<typename L, typename R> struct divides { 
     L const & l; R const & r; divides (L const & l_, R const & r_):l(l_),r(r_) {}
     template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) / r(arg))  {return l(arg)/r(arg);}
@@ -287,7 +273,8 @@ namespace triqs { namespace gf { namespace local {
    meshes::tail domain () const { 
     int omin = l.order_min()+r.order_min(); 
     return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
-   } 
+   }
+
    tail_result_type operator() (int n) const {
     //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
     //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
@@ -303,7 +290,7 @@ namespace triqs { namespace gf { namespace local {
  
  // gathering everyone.... 
  template<typename DomainType> struct node_desc : node_desc_impl <DomainType> {};
- template<> struct node_desc<meshes::tail> :  node_desc_impl_tail {};
+ template<> struct node_desc<meshes::tail> : node_desc_impl_tail {};
 
  // now the boost::proto business... 
  template< typename DomainType> struct expr_templ { 
@@ -332,25 +319,6 @@ namespace triqs { namespace gf { namespace local {
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , TRIQS_LOCAL_GF_DOMAIN_LIST);
 #undef AUX
  BOOST_PROTO_DEFINE_OPERATORS(expr_templ<meshes::tail>::is_gf, expr_templ<meshes::tail>::gf_domain);
-
- /***************************************************************************
-  *   Computation of domain
-  ***************************************************************************/
- template<typename DomainType, typename T> typename boost::disable_if <is_scalar_or_element<T>, DomainType>::type  get_domain(T const & x) { return x.domain();}
- template<typename DomainType, typename T> typename boost::enable_if  <is_scalar_or_element<T>, DomainType>::type  get_domain(T const & x) { return DomainType();}
-
- template<typename DomainType>
-  struct domain_ctx : boost::proto::callable_context< domain_ctx<DomainType> const > {
-   typedef DomainType result_type; typedef boost::proto::tag::terminal term_tag;
-   template <typename T> result_type operator ()(term_tag, const T & A) const { return get_domain<DomainType>(A);}
-   //template <typename T> typename boost::enable_if <tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return get_domain_scalar<DomainType>(A);}
-   //template <typename T> typename boost::disable_if<tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return get_domain<DomainType>(A);}
-   template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return get_domain<DomainType>(l); }
-  };
-
- template<typename DomainType, typename A> DomainType get_domain(typename expr_templ<DomainType>::template gf_expr<A> const & x) { 
-  return boost::proto::eval(x, domain_ctx<DomainType>() ); }
-
 
 }}}
 
