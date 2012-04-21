@@ -62,7 +62,7 @@ int main() {
  
  domains::infty inf;
 
- //meshes::matsubara_freq d = 
+ meshes::matsubara_freq d = local::get_domain<meshes::matsubara_freq >( G + Gc);
  TEST(G(inf)(0));
 
  TEST( ( G(inf) + G(inf) )  (0));

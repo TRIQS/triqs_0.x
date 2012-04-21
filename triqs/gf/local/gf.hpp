@@ -243,48 +243,18 @@ template< typename DomainType> struct expr_templ {
  /***************************************************************************
   *   Computation of domain
   ***************************************************************************/
+ template<typename DomainType, typename T> DomainType get_domain(T const & x) { return x.domain();}
+
  template<typename DomainType>
  struct domain_ctx : boost::proto::callable_context< domain_ctx<DomainType> const > {
   typedef DomainType result_type; typedef boost::proto::tag::terminal term_tag;
   template <typename T> typename boost::enable_if <tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return result_type(); }
   template <typename T> typename boost::disable_if<tup::is_in_ZRC<T>, result_type>::type operator ()(term_tag, const T & A) const { return A.domain();}
-  template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return l.domain(); }
+  template<typename TAG, typename L, typename R> result_type operator ()(TAG, L const &l, R const &r) const { return get_domain<DomainType>(l); }
  };
 
-/*  struct dom_transfo_desc { 
-
-  template<typename S> struct scalar {
-   S s; scalar( S const & x) : s(x) {}
-   typedef void domain_type;
-   meshes::tail domain () const { return ;}
-  };
-
-  template<typename ProtoTag, typename L, typename R> struct binary_node  { 
-   L const & l; R const & r; binary_node (L const & l_, R const & r_):l(l_),r(r_) {}
-   typedef typename L::domain_type domain_type;
-   template <typename T> struct call_rtype {
-    typedef tup::_binary_ops_<ProtoTag, typename tup::call_result_type<L,T>::type , typename tup::call_result_type<R,T>::type  > ops_type;
-    typedef typename ops_type::result_type type;
-   };
-   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg),r(arg));}
-   meshes::tail domain () const { return l.domain();} // assert here domain are equal
-  }; 
-
-  template<typename L> struct negate  { 
-   L const & l; negate (L const & l_):l(l_) {} 
-   template <typename T> struct call_rtype {
-    typedef tup::_unary_ops_<p_tag::negate, typename tup::call_result_type<L,T>::type > ops_type;
-    typedef typename ops_type::result_type type;
-   };
-   template<typename T> typename call_rtype<T>::type operator() (T const & arg) const {return call_rtype<T>::ops_type::invoke(l(arg));}
-   meshes::tail domain () const { return l.domain();}
-  };
-  
- };
-*/
-
-
-// template<typename T> DomainType get_domain(T const & x) { return x.domain();}
+ template<typename DomainType, typename A> DomainType get_domain(typename expr_templ<DomainType>::_D::template The_Expr<A> const & x) { 
+  return boost::proto::eval(x, domain_ctx<DomainType>() ); }
 
  /***************************************************************************
   *    Implementation of tail algebra which is specific 
