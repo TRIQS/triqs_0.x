@@ -31,7 +31,7 @@ template <typename T> struct is_scalar_or_element : mpl::or_< triqs::arrays::exp
 // This macro declares the algebra of algebra-valued functions...
 //TRIQS_PROTO_DEFINE_ALGEBRA_VALUED_FNT_ALG (is_a_m_f, is_scalar_or_element);
 // second solution is better since I can reuse T for pattern matching...
-typedef tup::domain_and_expression_generator< tup::algebra::grammar_generator< tup::algebra::algebra_function_desc,is_a_m_f, is_scalar_or_element >::type  > _D;
+typedef tup::domain_and_expression_generator< tup::algebra::grammar_generator1< tup::algebra::algebra_function_desc,is_a_m_f, is_scalar_or_element >::type  > _D;
 BOOST_PROTO_DEFINE_OPERATORS(is_a_m_f, _D::expr_domain);
 
 template<typename T> void print(T const & x) { std::cout << "any T"<<std::endl ;}
@@ -51,6 +51,14 @@ int main() {
 
  TEST( triqs::arrays::matrix<double> ( ( 2*f1  +f2 ) (1)) );
  TEST( triqs::arrays::eval ( ( 2*f1  +f2 ) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  - f2 ) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  + 8*f2 ) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  - f2  - f2) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  + 8*f2 + f2 ) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  - f2  - 3*f2) (1)) );
+ TEST( triqs::arrays::eval ( ( 2*f1  + 8*f2 + f2/2 ) (1)) );
+
+
 
  TEST( triqs::arrays::eval ( ( A*f1  +f2 ) (1)) );
 
