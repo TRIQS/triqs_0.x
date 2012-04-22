@@ -8,8 +8,9 @@ namespace tqa= triqs::arrays;
 
 int main() {
 
- std::vector<std::vector<std::string> > ind(1); 
- ind[0].push_back("1");ind[0].push_back("2"); ind.push_back(ind[0]);
+ //std::vector<std::vector<std::string> > ind(1); 
+ //ind[0].push_back("1");ind[0].push_back("2"); ind.push_back(ind[0]);
+ tqa::array<std::string,2> ind(2,2);
 
  typedef local::gf<meshes::matsubara_freq> Gf_type;
  typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
@@ -39,7 +40,7 @@ int main() {
 
   tqa::matrix<double> Id; Id() = 1;
   G(om_) = (om_ + 2.3);
-  //G(om_) = (2.0 + om_ - 2.3);
+  G(om_) = (2.0 + om_ - 2.3);
   //G(om_) = 1/(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
 
@@ -59,16 +60,16 @@ int main() {
 
  // operations on gf
 
- TEST( (G + 2.0* Gc)( 0) ) ;
- TEST( (8.0*G + 2.0* Gc)( 0) ) ;
- TEST( (8.0*G  - 2.0* Gc)( 0) ) ;
- TEST( (G - Gc)( 0) ) ;
- TEST( (G - 2.0* Gc)( 0) ) ;
- TEST( (G * Gc)( 0) ) ;
- 
+ for (int u=0; u<10; ++u) { 
+ TEST( (G + 2.0* Gc)( u) ) ;
+ TEST( (8.0*G + 2.0* Gc)( u) ) ;
+ TEST( (8.0*G  - 2.0* Gc)( u) ) ;
+ TEST( (G - Gc)( u) ) ;
+ TEST( (G - 2.0* Gc)( u) ) ;
+ TEST( (G * Gc)( u) ) ;
+ }
  domains::infty inf;
 
- //meshes::matsubara_freq d = local::get_domain<meshes::matsubara_freq >( G + 2*Gc);
  TEST(G(inf)(0));
 
  TEST( ( G(inf) + G(inf) )  (0));

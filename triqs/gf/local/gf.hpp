@@ -21,6 +21,7 @@
 #ifndef TRIQS_GF_LOCAL_GF_H
 #define TRIQS_GF_LOCAL_GF_H 
 
+// PUT AT THE TOP !!!!!
 #define BOOST_RESULT_OF_USE_DECLTYPE
 #include <boost/utility/result_of.hpp>
 
@@ -37,7 +38,7 @@
 namespace triqs { namespace gf { namespace local {
 
  namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl; using tqa::range;
- namespace tup = triqs::utility::proto; namespace p_tag= boost::proto::tag;
+ namespace tup = triqs::utility::proto; 
 
  namespace tag { template<typename DomainType> struct is_gf{};}
 
@@ -72,12 +73,11 @@ namespace triqs { namespace gf { namespace local {
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
   template<typename DomainType, bool IsView> class gf_impl : tag::is_gf<DomainType> {
-
+    friend class gf_impl<DomainType,!IsView>;
    public:
-
     typedef DomainType domain_type;
     typedef typename domain_type::gf_result_type value_element_type;
-    typedef std::vector<std::vector<std::string> > indices_type;
+    typedef tqa::array<std::string,2> indices_type;
 
     typedef gf_view<domain_type> view_type;
     typedef gf<domain_type>      non_view_type;
@@ -140,16 +140,15 @@ namespace triqs { namespace gf { namespace local {
 
     template<typename A, typename B> view_type slice(A a, B b) {
     range ra = range(a), rb = range(b); 
-     return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), slice_indices(indices(),ra,rb) )); 
+     return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) )); 
     }
     template<typename A, typename B> const view_type slice(A a, B b) const { 
      range ra = range(a), rb = range(b); 
-     return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), slice_indices(indices(),ra,rb) )); 
+     return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) ));      
     }
 
     template<typename RHS> void operator = (RHS const & rhs) { dom = rhs.domain(); data = rhs.data; tail= rhs.data; } 
 
-    // lazy_assignable // TO DO : the computation of the tail is not ready
     template<typename F> void set_from_function(F f) { 
      const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(1.0*u);
      compute_tail(tail,f); // the tail is only computed if it exists, or f maybe called for infty in undefined cases.
@@ -169,35 +168,12 @@ namespace triqs { namespace gf { namespace local {
 
     /// HDF5 saving ....
 
-   private : 
-    indices_type slice_indices(indices_type const & V, range const & R1, range const & R2){
-     indices_type res(2); res[0].reserve(R1.last() - R1.first() + 1); res[1].reserve(R2.last() - R2.first() + 1); 
-     for (size_t u =R1.first(); u<=R1.last(); ++u) res[0].push_back(V[0][u]);
-     for (size_t u =R2.first(); u<=R2.last(); ++u) res[1].push_back(V[1][u]);
-     return res;
-    }
-    friend class gf_impl<domain_type,!IsView>;
   };
 
  }// namespace impl 
 
  // ---------------------------------------------------------------------------------
- /**
-  * The View class of GF
-  */
- template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true> {
-  typedef impl::gf_impl<DomainType,true> base_type;
-  public :
-  template<typename GfType> gf_view(GfType const & x): base_type(x) {};
-  template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
-  template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
-  std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
- };
-
- // ---------------------------------------------------------------------------------
- /**
-  * The regular class of GF
-  */
+ ///The regular class of GF
  template<typename DomainType> class gf : public impl::gf_impl<DomainType,false> {
   typedef impl::gf_impl<DomainType,false> base_type;
   public : 
@@ -208,63 +184,74 @@ namespace triqs { namespace gf { namespace local {
   template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
  };
 
+ // ---------------------------------------------------------------------------------
+ /// The View class of GF
+ template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true> {
+  typedef impl::gf_impl<DomainType,true> base_type;
+  public :
+  template<typename GfType> gf_view(GfType const & x): base_type(x) {};
+  template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
+  template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+  std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
+ };
+
  // -------------------------------   Expression template for each domain --------------------------------------------------
 
- typedef tqa::matrix_view<std::complex<double> , tqa::Option::Fortran> tail_result_type;
- 
+ namespace proto=boost::proto;
+
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
- 
- // algebra node description  
- template< typename DomainType>
-  struct node_desc_impl {
 
-   struct no_domain{}; 
-   template<typename L, typename R>  static DomainType compute_domain (L const & dl, R const & dr) 
-    //{ if (!(dl==dr)) TRIQS_RUNTIME_ERROR <<"domain mismatch"; return dl; }
-   {  return dl; }
-   template<typename L> static DomainType compute_domain (L const & dl, no_domain) { return dl; }
-   template<typename R> static DomainType compute_domain (no_domain, R const & dr) { return dr; }
+ template< typename DomainType> struct node_desc_impl {// algebra node description  
 
-   template<typename S> struct scalar {
-    S s; scalar( S const & x) : s(x) {}
-    template<typename T> S operator() (T) const {return s;}
-    typedef no_domain domain_type;
-    no_domain domain () const {} 
-   };
-   template<typename L, typename R> struct plus { 
-    L const & l; R const & r; plus (L const & l_, R const & r_):l(l_),r(r_) {}
-    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) + r(arg))  {return l(arg)+r(arg);}
-    typedef DomainType domain_type;
-    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
-   }; 
-   template<typename L, typename R> struct minus { 
-    L const & l; R const & r; minus (L const & l_, R const & r_):l(l_),r(r_) {}
-    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) - r(arg))  {return l(arg)-r(arg);}
-    typedef DomainType domain_type;
-    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
-   }; 
-   template<typename L, typename R> struct multiplies { 
-    L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
-    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) * r(arg))  {return l(arg)*r(arg);}
-    typedef DomainType domain_type;
-    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
-   }; 
-   template<typename L, typename R> struct divides { 
-    L const & l; R const & r; divides (L const & l_, R const & r_):l(l_),r(r_) {}
-    template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) / r(arg))  {return l(arg)/r(arg);}
-    typedef DomainType domain_type;
-    DomainType domain () const { return compute_domain(l.domain(),r.domain());}
-   }; 
-   template<typename L> struct negate  { 
-    L const & l; negate (L const & l_):l(l_) {} 
-    template<typename T> auto operator() (T const & arg) const -> decltype( - l(arg) )  {return - l(arg);}
-    typedef DomainType domain_type;
-    DomainType domain () const { return l.domain(); }
-   };
+  struct no_domain{}; 
+  template<typename L, typename R>  static DomainType compute_domain (L const & dl, R const & dr) 
+   //{ if (!(dl==dr)) TRIQS_RUNTIME_ERROR <<"domain mismatch"; return dl; }
+  {  return dl; }
+  template<typename L> static DomainType compute_domain (L const & dl, no_domain) { return dl; }
+  template<typename R> static DomainType compute_domain (no_domain, R const & dr) { return dr; }
+
+  template<typename S> struct scalar {
+   S s; scalar( S const & x) : s(x) {}
+   template<typename T> S operator() (T) const {return s;}
+   typedef no_domain domain_type;
+   no_domain domain () const {} 
   };
- 
+  template<typename L, typename R> struct plus { 
+   L const & l; R const & r; plus (L const & l_, R const & r_):l(l_),r(r_) {}
+   template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) + r(arg))  {return l(arg)+r(arg);}
+   typedef DomainType domain_type;
+   DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+  }; 
+  template<typename L, typename R> struct minus { 
+   L const & l; R const & r; minus (L const & l_, R const & r_):l(l_),r(r_) {}
+   template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) - r(arg))  {return l(arg)-r(arg);}
+   typedef DomainType domain_type;
+   DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+  }; 
+  template<typename L, typename R> struct multiplies { 
+   L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+   template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) * r(arg))  {return l(arg)*r(arg);}
+   typedef DomainType domain_type;
+   DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+  }; 
+  template<typename L, typename R> struct divides { 
+   L const & l; R const & r; divides (L const & l_, R const & r_):l(l_),r(r_) {}
+   template<typename T> auto operator() (T const & arg) const -> decltype( l(arg) / r(arg))  {return l(arg)/r(arg);}
+   typedef DomainType domain_type;
+   DomainType domain () const { return compute_domain(l.domain(),r.domain());}
+  }; 
+  template<typename L> struct negate  { 
+   L const & l; negate (L const & l_):l(l_) {} 
+   template<typename T> auto operator() (T const & arg) const -> decltype( - l(arg) )  {return - l(arg);}
+   typedef DomainType domain_type;
+   DomainType domain () const { return l.domain(); }
+  };
+ };
+
  // a special case for tails
+ typedef tqa::matrix_view<std::complex<double> , tqa::Option::Fortran> tail_result_type;
+
  struct node_desc_impl_tail : node_desc_impl <meshes::tail> {
 
   template<typename L, typename R> struct multiplies { 
@@ -287,23 +274,41 @@ namespace triqs { namespace gf { namespace local {
    }
   };
  };
- 
+
  // gathering everyone.... 
  template<typename DomainType> struct node_desc : node_desc_impl <DomainType> {};
  template<> struct node_desc<meshes::tail> : node_desc_impl_tail {};
 
- // now the boost::proto business... 
- template< typename DomainType> struct expr_templ { 
-
-  // identification trait
-  template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {};
-
+ template< typename DomainType> struct expr_templ {  // now the boost::proto business... 
+  template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {}; // identification trait
   // grammar and domain and proto expression
   template <typename Expr> struct gf_expr;
+
+//-------------
+//#define OUT_OF_BOX
+#ifdef OUT_OF_BOX
+  typedef node_desc<DomainType> OpsCompound;
+  struct LeafGrammar   : proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
+    struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
+
+    struct Grammar : 
+     proto::or_<
+     proto::when< ScalarGrammar,                       typename OpsCompound::template scalar<proto::_value>(proto::_value) >
+     ,proto::when< LeafGrammar,                        proto::_value >
+     ,proto::when< proto::plus <Grammar,Grammar>,      typename OpsCompound::template plus<proto::_left,proto::_right > (proto::_left,proto::_right) >
+     ,proto::when< proto::minus <Grammar,Grammar>,     typename OpsCompound::template minus<proto::_left,proto::_right > (proto::_left,proto::_right)  >
+     ,proto::when< proto::multiplies<Grammar,Grammar>, typename OpsCompound::template multiplies<proto::_left,proto::_right > (proto::_left,proto::_right)>
+     ,proto::when< proto::divides<Grammar,Grammar>,    typename OpsCompound::template divides<proto::_left,proto::_right > (proto::_left,proto::_right)>
+     ,proto::when< proto::negate<Grammar >,            typename OpsCompound::template negate <proto::_left >(proto::_left) >
+     > {};
+
+
+  typedef Grammar grammar;
+#else
   typedef typename tup::algebra::grammar_generator< node_desc<DomainType>,is_gf, is_scalar_or_element >::type grammar;
+#endif
   typedef tup::domain<grammar,gf_expr,true> gf_domain;
 
-  // implementing expression
   template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_domain>{
    gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_domain>  ( expr ) {}
    typedef typename boost::remove_reference<typename boost::result_of<grammar(Expr) >::type>::type _G;
@@ -311,7 +316,6 @@ namespace triqs { namespace gf { namespace local {
    typename _G::domain_type domain() const { return grammar()(*this).domain(); }
    friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra::print_ctx (sout)); }
   };
-
  };
 
  // BOOST macro for all domains...
