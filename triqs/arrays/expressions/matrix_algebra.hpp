@@ -91,7 +91,9 @@ template<typename T> struct wrap_vector {
   value_type operator()(size_t i, size_t j) const { return _op<ProtoTag,value_type>::invoke(a(i,j),proto::value(b));}
  }; 
 
- // to be splitted with switch ....
+#define SWITCH_GRAMMAR
+#ifndef SWITCH_GRAMMAR
+
  struct MatrixGrammar : 
   proto::or_<
   proto::when< dC_ScalarGrammar,wrap_scalar<proto::_value>(proto::_value)>
@@ -115,6 +117,52 @@ template<typename T> struct wrap_vector {
   ,proto::when< proto::divides<MatrixGrammar,dC_ScalarGrammar>,matrix_sca_mul_div_impl< p_tag::divides,_left,_right> (_left,_right)>
   ,proto::when< proto::negate<MatrixGrammar>, MatrixGrammar(proto::_child0)>
   > {};
+
+#else 
+ struct MatrixGrammar;
+ struct MatrixGrammarCases { template <typename TAG> struct case_: proto::not_<proto::_>{}; };
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::terminal> :  
+  proto::or_<
+  proto::when< dC_ScalarGrammar,wrap_scalar<proto::_value>(proto::_value)>
+  ,proto::when< BasicMatrixTypeGrammar,proto::_value>
+  > {};
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::plus> :  
+  proto::or_<
+  proto::when< proto::plus <dC_ScalarGrammar,MatrixGrammar>,matrix_sca_add_sub_impl<p_tag::plus,_right,_left> (_right,_left)>
+  ,proto::when< proto::plus <MatrixGrammar,dC_ScalarGrammar>,matrix_sca_add_sub_impl<p_tag::plus,_left,_right> (_left,_right)>
+  ,proto::when< proto::plus <MatrixGrammar,MatrixGrammar>,matrix_add_sub_impl<p_tag::plus,_left,_right> (_left,_right)>
+  > {};
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::minus> :  
+  proto::or_<
+  proto::when< proto::minus <dC_ScalarGrammar,MatrixGrammar>,matrix_sca_add_sub_impl<p_tag::minus,_right,_left> (_right,_left)>
+  ,proto::when< proto::minus <MatrixGrammar,dC_ScalarGrammar>,matrix_sca_add_sub_impl<p_tag::minus,_left,_right> (_left,_right)>
+  ,proto::when< proto::minus <MatrixGrammar,MatrixGrammar>,matrix_add_sub_impl<p_tag::minus,_left,_right> (_left,_right)>
+  > {};
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::multiplies> :  
+  proto::or_<
+  proto::when< proto::multiplies<dC_ScalarGrammar,MatrixGrammar>,matrix_sca_mul_div_impl< p_tag::multiplies,_right,_left> (_right,_left)>
+  ,proto::when< proto::multiplies<MatrixGrammar,dC_ScalarGrammar>,matrix_sca_mul_div_impl< p_tag::multiplies,_left,_right> (_left,_right)>
+  ,proto::when< proto::multiplies<MatrixGrammar,MatrixGrammar>,linalg::matmul_impl<_left,_right> (_left,_right)>
+  > {};
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::divides> :  
+  proto::or_<
+  proto::when< proto::divides<MatrixGrammar,dC_ScalarGrammar>,matrix_sca_mul_div_impl< p_tag::divides,_left,_right> (_left,_right)>
+  > {};
+
+ template<> struct MatrixGrammarCases::case_<proto::tag::negate> :  
+  proto::or_<
+  proto::when< proto::negate<MatrixGrammar>, MatrixGrammar(proto::_child0)>
+  > {};
+
+ struct MatrixGrammar : proto::switch_<MatrixGrammarCases> {};
+
+#endif
+
 
  /* ---------------------------------------------------------------------------------------------------
   * Define the main expression template ArrayExpr, the domain and Grammar (implemented below)
