@@ -1,0 +1,41 @@
+((f1 - f2)) ---> (my_matrix_valued_function - my_matrix_valued_function)
+(f1(1)) ---> 
+[[1,0]
+ [0,-1]]
+((2.0* f1 ) (0)) ---> 2 * 
+[[0,0]
+ [0,-0]]
+((2* f1 + f2) (1)) ---> (2 * 
+[[1,0]
+ [0,-1]] + 
+[[10,0]
+ [0,-10]])
+(triqs::arrays::matrix<double> ( ( 2*f1 +f2 ) (1))) ---> 
+[[12,0]
+ [0,-12]]
+(triqs::arrays::eval ( ( 2*f1 +f2 ) (1))) ---> 
+[[12,0]
+ [0,-12]]
+(triqs::arrays::eval ( ( 2*f1 - f2 ) (1))) ---> 
+[[-8,0]
+ [0,8]]
+(triqs::arrays::eval ( ( 2*f1 + 8*f2 ) (1))) ---> 
+[[82,0]
+ [0,-82]]
+(triqs::arrays::eval ( ( 2*f1 - f2 - f2) (1))) ---> 
+[[-18,0]
+ [0,18]]
+(triqs::arrays::eval ( ( 2*f1 + 8*f2 + f2 ) (1))) ---> 
+[[92,0]
+ [0,-92]]
+(triqs::arrays::eval ( ( 2*f1 - f2 - 3*f2) (1))) ---> 
+[[-38,0]
+ [0,38]]
+(triqs::arrays::eval ( ( 2*f1 + 8*f2 + f2/2 ) (1))) ---> 
+[[87,0]
+ [0,-87]]
+(triqs::arrays::eval ( ( A*f1 +f2 ) (1))) ---> 
+[[12,0]
+ [0,-30]]
+any T
+an expression (my_matrix_valued_function - my_matrix_valued_function)
