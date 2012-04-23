@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -131,7 +130,7 @@ namespace triqs { namespace lattice_tools {
 		  for (size_t k=0;k<norb;k++){
 			  int a=int((eval(k,j)-epsmin)/deps);
 			  if(a==int(neps)) a=a-1;
-			  rho(l,a) += real(conj(evec(l,k,j))*evec(l,k,j));
+			  rho(a.l) += real(conj(evec(l,k,j))*evec(l,k,j));
 			  //dos(a) +=  real(conj(evec(l,k,j))*evec(l,k,j));
 		  }
 	  }
