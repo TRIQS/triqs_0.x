@@ -45,7 +45,7 @@ namespace triqs { namespace gf {
  
    public:
    typedef std::complex<double> gf_result_type;
-   typedef int index_type;
+   typedef size_t index_type;
    
    tail(int OrderMin=-1, int OrderMax = 5) : omin(OrderMin), omax(OrderMax) {}
    
