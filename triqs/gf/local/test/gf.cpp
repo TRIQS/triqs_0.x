@@ -3,7 +3,7 @@
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
 namespace tql= triqs::lazy;
-namespace tqa= triqs::arrays;
+//namespace tqa= triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
@@ -20,6 +20,7 @@ int main() {
 
  Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind);
  Gf_type Gc(2,2, meshes::matsubara_freq(Fermion), ind);
+ Gf_type G3(2,2, meshes::matsubara_freq(Fermion), ind);
 
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
@@ -38,10 +39,10 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
-  tqa::matrix<double> Id; Id() = 1;
-  G(om_) = (om_ + 2.3);
-  G(om_) = (2.0 + om_ - 2.3);
-  //G(om_) = 1/(om_ + 2.3);
+ tqa::matrix<double> Id; Id() = 1;
+ G(om_) = (om_ + 2.3);
+ //G(om_) = (2.0 + om_ - 2.3);
+ //G(om_) = 1/(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
 
  TEST( Gv(om_) ) ;
@@ -49,6 +50,8 @@ int main() {
 
  // tail 
  BOOST_AUTO( t, G.tail_view());
+ //local::gf<meshes::tail> t2 = t + 2.4;
+
  TEST( t( 0) ) ;
 
  TEST( Gv2.tail_view()( 0) ) ;
@@ -58,15 +61,19 @@ int main() {
  TEST( G( 0) ) ;
  TEST( Gc( 0) ) ;
 
+
  // operations on gf
+G3 = G + Gc;
+
+ auto m = local::dom_t()(G + Gc); 
 
  for (int u=0; u<10; ++u) { 
- TEST( (G + 2.0* Gc)( u) ) ;
- TEST( (8.0*G + 2.0* Gc)( u) ) ;
- TEST( (8.0*G  - 2.0* Gc)( u) ) ;
- TEST( (G - Gc)( u) ) ;
- TEST( (G - 2.0* Gc)( u) ) ;
- TEST( (G * Gc)( u) ) ;
+  TEST( (G + 2.0* Gc)( u) ) ;
+  TEST( (8.0*G + 2.0* Gc)( u) ) ;
+  TEST( (8.0*G  - 2.0* Gc)( u) ) ;
+  TEST( (G - Gc)( u) ) ;
+  TEST( (G - 2.0* Gc)( u) ) ;
+  TEST( (G * Gc)( u) ) ;
  }
  domains::infty inf;
 
