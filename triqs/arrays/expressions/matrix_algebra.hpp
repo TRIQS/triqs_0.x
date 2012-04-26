@@ -204,6 +204,7 @@ template<typename T> struct wrap_vector {
   domain_type domain() const { return MatrixGrammar()(*this).domain(); }
   size_t dim0() const { return this->domain().lengths()[0];} 
   size_t dim1() const { return this->domain().lengths()[1];} 
+  mini_vector<size_t,2> shape() const { return this->domain().lengths();} 
 
   value_type operator[] (key_type const &key) const { 
    return MatrixGrammar()(*this)[key];
