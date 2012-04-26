@@ -56,13 +56,6 @@ namespace triqs { namespace gf { namespace local {
 
   //template<typename LHS, typename RHS, typename Enable=void > struct assignment;
 
-  template<bool do_it, typename ReturnType, typename ConstructType> struct call_a_function_or_not { 
-   template<typename Arg, typename F> static ReturnType invoke(F f, Arg arg) { ConstructType res; res = f(arg); return res;}
-  };
-  template<typename ReturnType, typename ConstructType> struct call_a_function_or_not<false,ReturnType,ConstructType> { 
-   template<typename Arg, typename F> static ReturnType invoke(F f, Arg arg) { return ConstructType();}
-  };
-
   /*------------------------------------------------------------------------------
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
@@ -105,8 +98,9 @@ namespace triqs { namespace gf { namespace local {
    gf_impl(gf_impl const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){}
    gf_impl(gf_impl<MeshType,!IsView> const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
 
-   //does not make sens in the view case... better to suppress it...
-   //template<typename GfType> gf_impl(GfType const & x): dom(x.domain()), data(x(arg_range_type())), tail(call_at_infty(x,domains::infty())), ind(x.indices()){}
+   //does not make sense in the view case... The int is there to prevent any use as copy construction...
+   template<typename GfType> gf_impl(GfType const & x, int ) :
+    dom(x.domain()), data(x(arg_range_type())), tail(call_at_infty(x,domains::infty())), ind(x.indices()){}
 
    template<typename RHS> 
     void operator = (RHS const & rhs) { 
@@ -114,32 +108,15 @@ namespace triqs { namespace gf { namespace local {
      dom = rhs.domain(); 
      //const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
      data = rhs(arg_range_type()) ; 
-     tail= call_at_infty(rhs,domains::infty()); 
-    } 
+     fill_tail(rhs,tail);
+     //tail= call_at_infty(rhs,domains::infty()); 
+    }
 
-   /*
-      template<typename RHS> 
-      typename boost::enable_if_c<RHS::domain_type::has_tail>::type 
-      operator = (RHS const & rhs) { 
-      static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
-      dom = rhs.domain(); data = rhs(arg_range_type()) ;
-      std::cout  << "rhs(0)"<< rhs(0)<< std::endl ; 
-      const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) tail(u) = rhs(u);
-   //tail= call_at_infty(rhs,domains::infty()); 
-   } 
+   private: 
+   template<typename RHS> void fill_tail (RHS const & rhs, high_frequency_expansion & t) {t = rhs (domains::infty());}
+   template<typename RHS> void fill_tail (RHS const & rhs, high_frequency_expansion_view & t) {t = rhs (domains::infty());}
+   template<typename RHS> void fill_tail (RHS const & rhs, no_tail const &) {}
 
-   template<typename RHS> 
-   typename boost::disable_if_c<RHS::domain_type::has_tail>::type 
-   operator = (RHS const & rhs) { 
-   static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
-   dom = rhs.domain(); data = rhs(arg_range_type()) ; 
-   //tail= call_at_infty(rhs,domains::infty()); 
-   } 
-   */
-   private : 
-   template<typename Arg, typename F> tail_view_type call_at_infty(F const & f, Arg const & arg) { 
-    return call_a_function_or_not<domain_type::has_tail,tail_view_type,tail_non_view_type>::invoke(f,arg);
-   }
    public:
 
    mesh_type const & domain() const { return dom;}
@@ -231,24 +208,24 @@ namespace triqs { namespace gf { namespace local {
   // --------------------------- THE USER CLASSES ------------------------------------------------------
   ///The regular class of GF
   template<typename MeshType> class gf : public impl::gf_impl<MeshType,false>, public impl::cast_to_infty<MeshType> {
-   typedef impl::gf_impl<MeshType,false> base_type;
+   typedef impl::gf_impl<MeshType,false> B;
    public : 
-   gf():base_type() {} 
-   gf (size_t N1, size_t N2, typename base_type::mesh_type const & domain_, typename base_type::indices_type const & indices_) : 
-    base_type(N1,N2,domain_,indices_) {}
-   template<typename GfType> gf(GfType const & x): base_type(x) {}
-   template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+   gf():B() {} 
+   gf (size_t N1, size_t N2, typename B::mesh_type const & d, typename B::indices_type const & i):B(N1,N2,d,i) {}
+   template<typename GfType> gf(GfType const & x): B(x,0) {}
+   template<typename RHS> gf & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
   };
 
   // ---------------------------------------------------------------------------------
   ///The View class of GF
   template<typename MeshType> class gf_view : public impl::gf_impl<MeshType,true>, public impl::cast_to_infty<MeshType> {
-   typedef impl::gf_impl<MeshType,true> base_type;
+   typedef impl::gf_impl<MeshType,true> B;
    public :
-   template<typename GfType> gf_view(GfType const & x): base_type(x) {};
+   gf_view(gf_view const & g): B(g){}
+   gf_view(gf<MeshType> const & g): B(g){}
    // to be removed after changing to auto_assign
-   template<typename F> void set_from_function(F f) { base_type::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
-   template<typename RHS> gf_view & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
+   template<typename F> void set_from_function(F f) { B::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
+   template<typename RHS> gf_view & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
    std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
   };
 

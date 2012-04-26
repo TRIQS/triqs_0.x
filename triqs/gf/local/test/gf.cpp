@@ -51,6 +51,7 @@ int main() {
  TEST(G(0));
  TEST(G(inf)(0));
 
+#define SUITE
 #ifdef SUITE
 
  TEST( Gv(om_) ) ;
