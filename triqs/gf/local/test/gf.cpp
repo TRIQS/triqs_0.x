@@ -74,18 +74,15 @@ int main() {
  // operations on gf
  G3 = G + Gc;
 
- auto m = local::dom_t()(G + Gc); 
 
- /*
-    for (int u=0; u<10; ++u) { 
-    TEST( (G + 2.0* Gc)( u) ) ;
-    TEST( (8.0*G + 2.0* Gc)( u) ) ;
-    TEST( (8.0*G  - 2.0* Gc)( u) ) ;
-    TEST( (G - Gc)( u) ) ;
-    TEST( (G - 2.0* Gc)( u) ) ;
-    TEST( (G * Gc)( u) ) ;
-    }
-    */
+ for (int u=0; u<10; ++u) { 
+  TEST( (G + 2.0* Gc)( u) ) ;
+  TEST( (8.0*G + 2.0* Gc)( u) ) ;
+  TEST( (8.0*G  - 2.0* Gc)( u) ) ;
+  TEST( (G - Gc)( u) ) ;
+  TEST( (G - 2.0* Gc)( u) ) ;
+  TEST( (G * Gc)( u) ) ;
+ }
 
  TEST( G( 0) ) ;
  TEST(G(inf)(0));

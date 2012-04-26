@@ -52,6 +52,21 @@ namespace triqs { namespace arrays {
   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
 
 }}
+
+namespace triqs { 
+
+ template<typename MeshType> struct mesh_pt {
+  MeshType const & m;
+  typename MeshType::index_type i;
+  mesh_pt( MeshType const & mesh, typename MeshType::index_type const & index): m(mesh), i(index) {}
+  typedef typename MeshType::domain_type::element_type cast_type;
+  operator cast_type() const; // cast into the element type of the domain (e.g. real time, real frequency).
+ };
+
+ template<typename MeshType> 
+  mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
+}
+
 // --------------------------------------------------------------
 
 namespace triqs { namespace gf { namespace local {
@@ -64,10 +79,10 @@ namespace triqs { namespace gf { namespace local {
 
  template<typename MeshType> class gf;
  template<typename MeshType> class gf_view;
- typedef gf<meshes::tail>      high_frequency_expansion;
- typedef gf_view<meshes::tail> high_frequency_expansion_view;
+ typedef gf     <meshes::tail>      high_frequency_expansion;
+ typedef gf_view<meshes::tail>      high_frequency_expansion_view;
  template <typename G> struct is_gf:mpl::false_{}; // trait to identify local gf object. Default is false. Overriden later...
- 
+
  namespace impl {
 
   //template<typename LHS, typename RHS, typename Enable=void > struct assignment;
@@ -98,52 +113,14 @@ namespace triqs { namespace gf { namespace local {
    typedef tqa::array<std::string,2> indices_type;
 
    protected:
-   mesh_type dom;
+   mesh_type mymesh;
    data_type data;
    tail_type tail;
    indices_type ind;
 
-   gf_impl() {} // all arrays of zero size (empty)
-
-   gf_impl (size_t N1, size_t N2, mesh_type const & domain_, indices_type const & indices_) : 
-    dom(domain_), data(N1,N2,domain().size()), tail(N1,N2,domain().mesh_tail,indices_), ind(indices_){}
-
-   gf_impl (mesh_type const & d, data_view_type const & dat, tail_view_type const & t, indices_type const & ind_) : 
-    data(dat), dom(d), tail(t), ind(ind_){}
-
-   gf_impl(gf_impl const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){}
-   gf_impl(gf_impl<MeshType,!IsView> const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
-
-   //does not make sense in the view case... The int is there to prevent any use as copy construction...
-   template<typename GfType> gf_impl(GfType const & x, mpl::true_ ) : // with tail
-    dom(x.domain()), data(x(arg_range_type())), tail(x(domains::infty())), ind(x.indices()){}
-
-   template<typename GfType> gf_impl(GfType const & x, mpl::false_ ) : // without tail
-    dom(x.domain()), data(x(arg_range_type())), ind(x.indices()){}
-
-   template<typename RHS> void operator = (RHS const & rhs) { // first the general version  
-    static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
-    dom = rhs.domain();
-    BOOST_AUTO( sha , rhs(0).shape());
-    BOOST_AUTO( data_sh , tqa::make_shape(sha[0],sha[1],dom.size()));
-    tqa::resize_or_check_if_view( data, data_sh );
-    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
-    //data = rhs(arg_range_type()) ;// buggy because array algebra is not matrix algebra 
-    fill_tail(tail,rhs,domains::infty());
-   }
-
-   // quicker version for the class and the view 
-   void operator = (gf_impl const & rhs) { dom = rhs.domain(); data = rhs.data; tail = rhs.tail;}
-   void operator = (gf_impl<MeshType,!IsView> const & rhs) { dom = rhs.domain(); data = rhs.data; tail = rhs.tail;}
-
-   private: // fill_tail does the calculation only when it makes sense .... 
-   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
-   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion_view &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
-   template<typename Arg, typename RHS> void fill_tail (no_tail &t, RHS const & rhs, Arg const & args ) {}
-
    public:
-
-   mesh_type const & domain() const { return dom;}
+   domain_type const & domain() const { return mymesh.domain();}
+   mesh_type const & mesh() const { return mymesh;}
 
    data_view_type data_view()             { return data;} // redondant with (range()) ....
    const data_view_type data_view() const { return data;}
@@ -153,10 +130,56 @@ namespace triqs { namespace gf { namespace local {
 
    indices_type const & indices() const   { return ind;}
 
+   protected:
+   gf_impl() {} // all arrays of zero size (empty)
+
+   gf_impl (size_t N1, size_t N2, mesh_type const & mesh_, indices_type const & indices_) : 
+    mymesh(mesh_), data(N1,N2,mesh().size()), tail(N1,N2,mesh().mesh_tail,indices_), ind(indices_){}
+
+   gf_impl (mesh_type const & d, data_view_type const & dat, tail_view_type const & t, indices_type const & ind_) : 
+    data(dat), mymesh(d), tail(t), ind(ind_){}
+
+   gf_impl(gf_impl const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()){}
+   gf_impl(gf_impl<MeshType,!IsView> const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
+
+   //does not make sense in the view case... The int is there to prevent any use as copy construction...
+   template<typename GfType> gf_impl(GfType const & x, mpl::true_ ) : // with tail
+    mymesh(x.mesh()), data(x(arg_range_type())), tail(x(domains::infty())), ind(x.indices()){}
+
+   template<typename GfType> gf_impl(GfType const & x, mpl::false_ ) : // without tail
+    mymesh(x.mesh()), data(x(arg_range_type())), ind(x.indices()){}
+
+   template<typename RHS> void operator = (RHS const & rhs) { // first the general version  
+    static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
+    mymesh = rhs.mesh();
+    BOOST_AUTO( sha , rhs(0).shape());
+    BOOST_AUTO( data_sh , tqa::make_shape(sha[0],sha[1],mymesh.size()));
+    tqa::resize_or_check_if_view( data, data_sh );
+    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
+    //data = rhs(arg_range_type()) ;// buggy because array algebra is not matrix algebra 
+    fill_tail(tail,rhs,domains::infty());
+   }
+
+   // quicker version for the class and the view 
+   void operator = (gf_impl const & rhs) { mymesh = rhs.mesh(); data = rhs.data; tail = rhs.tail;}
+   void operator = (gf_impl<MeshType,!IsView> const & rhs) { mymesh = rhs.mesh(); data = rhs.data; tail = rhs.tail;}
+
+   private: // fill_tail does the calculation only when it makes sense .... 
+   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
+   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion_view &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
+   template<typename Arg, typename RHS> void fill_tail (no_tail &t, RHS const & rhs, Arg const & args ) {}
+
+   public:
+   template<typename F> void set_from_function(F f) { // mesh is invariant in this case... 
+    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = f(1.0*u);
+    fill_tail(tail, f ,tail_non_view_type(data.shape()[0], data.shape()[1],mesh().mesh_tail ,indices()));
+   }
+
    // useful ? In the concept ???
    //triqs::arrays::mini_vector<size_t,2> result_shape() const { return data(range(),range(),0).shape();}
 
    typedef typename mesh_type::index_type arg0_type;
+   typedef mesh_pt<mesh_type> mesh_pt_type;
    typedef typename mesh_type::range_type arg_range_type;
 
    typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       mv_type;
@@ -167,8 +190,11 @@ namespace triqs { namespace gf { namespace local {
    template<typename THIS> struct result<THIS(arg_range_type)> { typedef data_view_type type; };
    template<typename THIS> struct result<THIS(domains::infty)> { typedef tail_view_type type; };
 
-   mv_type       operator() ( arg0_type const & x)       { return data(range(),range(),x);}
-   const_mv_type operator() ( arg0_type const & x) const { return data(range(),range(),x);}
+   mv_type       operator() ( mesh_pt_type const & x)       { return data(range(),range(),x.i);}
+   const_mv_type operator() ( mesh_pt_type const & x) const { return data(range(),range(),x.i);}
+   
+   mv_type       operator() ( arg0_type const & i)       { return data(range(),range(),i);}
+   const_mv_type operator() ( arg0_type const & i) const { return data(range(),range(),i);}
 
    data_view_type       operator() ( arg_range_type const & R)       { return data(range(),range(),R);}
    const data_view_type operator() ( arg_range_type const & R) const { return data(range(),range(),R);}
@@ -180,19 +206,13 @@ namespace triqs { namespace gf { namespace local {
 
    template<typename A, typename B> view_type slice(A a, B b) {
     range ra = range(a), rb = range(b); 
-    return view_type( gf_impl<mesh_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) )); 
+    return view_type( gf_impl<mesh_type,true>(mymesh, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) )); 
    }
    template<typename A, typename B> const view_type slice(A a, B b) const { 
     range ra = range(a), rb = range(b); 
-    return view_type( gf_impl<mesh_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) ));      
+    return view_type( gf_impl<mesh_type,true>(mymesh, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) ));      
    }
 
-   template<typename F> void set_from_function(F f) { // domain is invariant in this case... 
-    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(1.0*u);
-    fill_tail(tail, f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
-   }
-
-   public:
    /// Save the Green function in i omega_n (as 2 columns).
    void save(std::string file,  bool accumulate=false) const {}
 
@@ -234,7 +254,7 @@ namespace triqs { namespace gf { namespace local {
    typedef impl::gf_impl<MeshType,false> B;
    public : 
    gf():B() {} 
-   gf (size_t N1, size_t N2, typename B::mesh_type const & d, typename B::indices_type const & i):B(N1,N2,d,i) {}
+   gf (size_t N1, size_t N2, typename B::mesh_type const & m, typename B::indices_type const & i):B(N1,N2,m,i) {}
    template<typename GfType> gf(GfType const & x): B(x,mpl::bool_<B::domain_type::has_tail>()) {}
    template<typename RHS> gf & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
   };
@@ -255,76 +275,179 @@ namespace triqs { namespace gf { namespace local {
   template <typename M> struct is_gf< gf<M> >:mpl::true_{};
   template <typename M> struct is_gf< gf_view<M> >:mpl::true_{};
 
-  // -------------------------------   Expression template for each domain --------------------------------------------------
+  // -------------------------------   Expression template for gf  --------------------------------------------------
 
   namespace proto=boost::proto;
 
   // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
   template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
-  struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
-  struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
+  namespace gf_expr_temp { 
 
-  struct gf_grammar : 
-   proto::or_<
-   ScalarGrammar , ElementGrammar
-   , proto::plus      <gf_grammar,gf_grammar>
-   , proto::minus     <gf_grammar,gf_grammar>
-   , proto::multiplies<gf_grammar,gf_grammar>
-   , proto::divides   <gf_grammar,gf_grammar>
-   , proto::negate    <gf_grammar >
-   > {};
+   struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
+   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
 
-  struct eval_transform : 
-   proto::or_<
-   proto::when<ScalarGrammar, proto::_value>
-   ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
-   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_transform > >
-   > {};
+   struct gf_grammar : 
+    proto::or_<
+    ScalarGrammar , ElementGrammar
+    , proto::plus      <gf_grammar,gf_grammar>
+    , proto::minus     <gf_grammar,gf_grammar>
+    , proto::multiplies<gf_grammar,gf_grammar>
+    , proto::divides   <gf_grammar,gf_grammar>
+    , proto::negate    <gf_grammar >
+    > {};
 
-  /*
-     struct node_desc_impl_tail : node_desc_impl <meshes::tail> {
+   struct eval_transform : 
+    proto::or_<
+    proto::when<ScalarGrammar, proto::_value>
+    ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_transform > >
+    > {};
 
-     template<typename L, typename R> struct multiplies { 
-     L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
-     typedef meshes::tail  mesh_type;
-     meshes::tail domain () const { 
-     int omin = l.order_min()+r.order_min(); 
-     return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
+   struct no_mesh{ typedef void domain_type;}; 
+   struct get_mesh {
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
+    template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.mesh();}
+   };
+
+   struct combine_mesh {
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
+    template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
+    template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
+    template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
+    template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
+     static_assert(boost::is_same<M1,M2>::value, "FATAL : two meshes of different type mixed in an expression");
+     return m1;
+    }
+   };
+
+   struct dom_t : 
+    proto::or_<
+    proto::when< ScalarGrammar, no_mesh() >
+    ,proto::when< ElementGrammar, get_mesh(proto::_value) >
+    ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
+    > {};
+
+   // grammar and domain and proto expression
+   template <typename Expr> struct gf_expr;
+   typedef tup::domain<gf_grammar,gf_expr,true> gf_expr_domain;
+
+   typedef eval_transform eval1;
+   template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
+    gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
+    typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
+    typedef typename mesh_type::domain_type domain_type;
+    mesh_type mesh() const { return dom_t()(*this); } 
+    template<typename T> 
+     typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {
+      static_assert(mesh_type::domain_type::has_tail || !(boost::is_same<T,meshes::tail>::value), "Error");
+      return eval1()(*this, bf::make_vector(x));
      }
-
-     tail_result_type operator() (int n) const {
-  //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
-  //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
-  tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
-  const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
-  const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_
-  min() );
-  std::cout<< kmin << "  "<<kmax<<std::endl;
-  for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l
-  .domain().order_min() -k);}
-  return res;
+    typedef tqa::array_view<std::string,2> indices_type;
+    indices_type indices() const { return indices_type::non_view_type();}
+    friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
+   };
   }
+  template <typename Expr> struct is_gf<gf_expr_temp::gf_expr< Expr > >:mpl::true_{};
+
+  BOOST_PROTO_DEFINE_OPERATORS(is_gf, gf_expr_temp::gf_expr_domain);
+
+
+  // -------------------------------   Expression template for high_frequency_expansion and view -----------------------
+#ifdef TAIL_EXPR
+
+  namespace tail_expr_templ { 
+
+   struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
+   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
+
+   struct gf_grammar : 
+    proto::or_<
+    ScalarGrammar , ElementGrammar
+    , proto::plus      <gf_grammar,gf_grammar>
+    , proto::minus     <gf_grammar,gf_grammar>
+    , proto::multiplies<gf_grammar,gf_grammar>
+    , proto::divides   <gf_grammar,gf_grammar>
+    , proto::negate    <gf_grammar >
+    > {};
+
+   struct eval_transform : 
+    proto::or_<
+    proto::when<ScalarGrammar, proto::_value>
+    ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
+    ,proto::when< proto::plus <dom_t,dom_t>,       proto::_default<eval_transform > >
+    ,proto::when< proto::minus <dom_t,dom_t>,      proto::_default<eval_transform > >
+    ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_transform > >
+    > {};
+
+   struct tail_mult { 
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
+    template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
+
+     return m1;
+    }
+   };
+
+
+   template<int Arity> struct eval_fnt;
+   template<> struct eval_fnt<1> {
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename F, typename AL> struct result<This(F,AL)>
+     : boost::result_of<typename boost::remove_reference<F>::type 
+     (typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type )> {};
+
+    template<typename F, typename AL>
+     typename boost::result_of<F(typename bf::result_of::at<AL const, mpl::int_<0> >::type)>::type 
+     operator ()(F const &f, AL const & al) const { return f(bf::at<mpl::int_<0> >(al)); }
+   };
+
+
+   tail_result_type operator() (int n) const {
+    //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
+    //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
+    tail_result_type::non_view_type res(l(l.mesh().order_min()).shape()[0], l(l.mesh().order_min()).shape()[1]); res()=0;
+    const int kmin = std::max(0, n - r.mesh().order_max() - l.mesh().order_min() );
+    const int kmax = std::min(l.mesh().order_max() - l.mesh().order_min(), n - r.mesh().order_min() - l.mesh().order_
+      min() );
+    std::cout<< kmin << "  "<<kmax<<std::endl;
+    for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.mesh().order_min() +k) * r( n- l
+      .mesh().order_min() -k);}
+    return res;
+   }
   };
-  };
-  */
+ };
+
+
+
+
+ template<typename L, typename R> struct multiplies { 
+  L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+  typedef meshes::tail  mesh_type;
+  meshes::tail domain () const { 
+   int omin = l.order_min()+r.order_min(); 
+   return meshes::tail(omin,omin + std::min(l.domain().len(),r.mesh().len()));
+  }
 
   struct no_mesh{ typedef void domain_type;}; 
-  //template<typename A, typename Enable=void> struct get_mesh_type { typedef no_mesh type;};
-  //template<typename A> struct get_mesh_type<A,typename boost::enable_if<is_gf<A> >::type > { typedef typename A::mesh_type;};
-
-  /*  struct get_mesh_scalar {
-      BOOST_PROTO_CALLABLE();
-      template<typename Sig> struct result;
-      template<typename This, typename X> struct result<This(X)> { typedef no_mesh type;};
-      template<typename X> typename operator ()(X) const { return no_mesh();}
-      };
-      */
   struct get_mesh {
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
    template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
-   template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.domain();}
+   template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.mesh();}
   };
 
   struct combine_mesh {
@@ -352,35 +475,26 @@ namespace triqs { namespace gf { namespace local {
    > {};
 
   // grammar and domain and proto expression
-  template <typename Expr> struct gf_expr;
-  typedef tup::domain<gf_grammar,gf_expr,true> gf_expr_domain;
+  template <typename Expr> struct tail_expr;
+  typedef tup::domain<gf_grammar,tail_expr,true> tail_expr_domain;
 
-  //typedef eval_transform<is_gf, is_scalar_or_element,eval_fnt<1> > eval1;
   typedef eval_transform eval1;
-  template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
-   gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
+  template<typename Expr> struct tail_expr : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>{
+   tail_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>  ( expr ) {}
    typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
    typedef typename mesh_type::domain_type domain_type;
-   mesh_type domain() const { return dom_t()(*this); } //, no_mesh()); }
-   template<typename T> 
-    typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {
-     static_assert(mesh_type::domain_type::has_tail || !(boost::is_same<T,meshes::tail>::value), "Error");
-     return eval1()(*this, bf::make_vector(x));
-    }
-   /*
-      typedef high_frequency_expansion tail_non_view_type; 
-      typedef typename tail_non_view_type::view_type tail_view_type; 
-      typedef tail_view_type tail_type;
-      */
-   //const tail_view_type operator() ( domains::infty const & x) const { return tail_non_view_type(eval1()(*this, bf::make_vector(domains::infty()))) ;}
-
+   mesh_type mesh() const { return dom_t()(*this); } 
+   template<typename T> typename boost::result_of<eval1(Expr,bf::vector<T>) >::type 
+    operator() (T const & x) const { return eval1()(*this, bf::make_vector(x)); }
    typedef tqa::array_view<std::string,2> indices_type;
    indices_type indices() const { return indices_type::non_view_type();}
-   friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
- };
- template <typename Expr> struct is_gf<gf_expr< Expr > >:mpl::true_{};
+   friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
+  };
+  template <typename Expr> struct is_gf<tail_expr< Expr > >:mpl::true_{};
 
- BOOST_PROTO_DEFINE_OPERATORS(is_gf, gf_expr_domain);
+  BOOST_PROTO_DEFINE_OPERATORS(is_tail, tail_expr_domain);
+ }
+#endif
 
 }}}
 

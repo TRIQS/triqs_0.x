@@ -33,11 +33,13 @@ namespace triqs { namespace gf {
   struct infty{}; // the point at infinity
 
   struct tail{
+   typedef int element_type;
    typedef std::complex<double> gf_result_type;
    static const bool has_tail = false;
   };
 
   struct matsubara_freq {
+   typedef int element_type;
    typedef std::complex<double> gf_result_type;
    double beta;
    statistic_enum statistic;
@@ -46,6 +48,7 @@ namespace triqs { namespace gf {
   };
 
   struct matsubara_time {
+   typedef double element_type;
    typedef double gf_result_type;
    double beta;
    statistic_enum statistic;
@@ -76,6 +79,7 @@ namespace triqs { namespace gf {
    static const bool has_tail = false;
    static const bool mesh_tail = false;
    
+   domain_type domain() const { return domain_type();}
    size_t size() const{ int r = omax - omin +1; assert(r>=0); return r;}
    int order_min() const {return omin;}
    int order_max() const {return omax;}
