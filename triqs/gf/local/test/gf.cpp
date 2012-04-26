@@ -6,6 +6,8 @@ namespace tql= triqs::lazy;
 //namespace tqa= triqs::arrays;
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
+std::complex<double> mul2 (std::complex<double> x) { return x*x;}
+
 int main() {
 
  //std::vector<std::vector<std::string> > ind(1); 
@@ -40,16 +42,22 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
- tqa::matrix<double> Id; Id() = 1;
- G(om_) = (om_ + 2.3);
+ std::cout  <<"-------------lazy assign ------------------"<<std::endl;
+ 
+ //tqa::matrix<double> Id; Id() = 1;
+ Gv(om_) = (om_ + 2.3);
+// Gv(om_) = (om_ + 2.3);
  //G(om_) = (2.0 + om_ - 2.3);
  //G(om_) = 1/(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
  TEST(G(0));
  TEST(G(inf)(0));
- Gv.set_from_function (om_ >> om_ + 2.3);
+
+ Gv.set_from_function (om_ >> 2.9 + om_ );
  TEST(G(0));
  TEST(G(inf)(0));
+
+ std::cout  <<"-------------------------------------"<<std::endl;
 
 #define SUITE
 #ifdef SUITE
@@ -74,7 +82,8 @@ int main() {
  // operations on gf
  G3 = G + Gc;
 
-
+//#define ALL_TEST
+#ifdef ALL_TEST
  for (int u=0; u<10; ++u) { 
   TEST( (G + 2.0* Gc)( u) ) ;
   TEST( (8.0*G + 2.0* Gc)( u) ) ;
@@ -83,7 +92,7 @@ int main() {
   TEST( (G - 2.0* Gc)( u) ) ;
   TEST( (G * Gc)( u) ) ;
  }
-
+#endif
  TEST( G( 0) ) ;
  TEST(G(inf)(0));
 

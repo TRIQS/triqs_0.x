@@ -34,7 +34,7 @@
 //#include <triqs/utility/proto/algebra.hpp>
 #include <triqs/arrays/expressions/matrix_algebra.hpp>
 #include <triqs/arrays/expressions/array_algebra.hpp>
-#include "./domains.hpp"
+#include "./meshes.hpp"
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/cat.hpp>
 
@@ -52,20 +52,6 @@ namespace triqs { namespace arrays {
   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
 
 }}
-
-namespace triqs { 
-
- template<typename MeshType> struct mesh_pt {
-  MeshType const & m;
-  typename MeshType::index_type i;
-  mesh_pt( MeshType const & mesh, typename MeshType::index_type const & index): m(mesh), i(index) {}
-  typedef typename MeshType::domain_type::element_type cast_type;
-  operator cast_type() const; // cast into the element type of the domain (e.g. real time, real frequency).
- };
-
- template<typename MeshType> 
-  mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
-}
 
 // --------------------------------------------------------------
 
@@ -131,7 +117,7 @@ namespace triqs { namespace gf { namespace local {
    indices_type const & indices() const   { return ind;}
 
    protected:
-   gf_impl() {} // all arrays of zero size (empty)
+   gf_impl() { } // all arrays of zero size (empty)
 
    gf_impl (size_t N1, size_t N2, mesh_type const & mesh_, indices_type const & indices_) : 
     mymesh(mesh_), data(N1,N2,mesh().size()), tail(N1,N2,mesh().mesh_tail,indices_), ind(indices_){}
@@ -139,8 +125,8 @@ namespace triqs { namespace gf { namespace local {
    gf_impl (mesh_type const & d, data_view_type const & dat, tail_view_type const & t, indices_type const & ind_) : 
     data(dat), mymesh(d), tail(t), ind(ind_){}
 
-   gf_impl(gf_impl const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()){}
-   gf_impl(gf_impl<MeshType,!IsView> const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
+   gf_impl(gf_impl const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()) {}
+   gf_impl(gf_impl<MeshType,!IsView> const & x): mymesh(x.mymesh), data(x.data), tail(x.tail), ind(x.indices()){ } // crucial 
 
    //does not make sense in the view case... The int is there to prevent any use as copy construction...
    template<typename GfType> gf_impl(GfType const & x, mpl::true_ ) : // with tail
@@ -155,7 +141,7 @@ namespace triqs { namespace gf { namespace local {
     BOOST_AUTO( sha , rhs(0).shape());
     BOOST_AUTO( data_sh , tqa::make_shape(sha[0],sha[1],mymesh.size()));
     tqa::resize_or_check_if_view( data, data_sh );
-    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
+    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(make_mesh_pt(mesh(),u));
     //data = rhs(arg_range_type()) ;// buggy because array algebra is not matrix algebra 
     fill_tail(tail,rhs,domains::infty());
    }
@@ -171,7 +157,7 @@ namespace triqs { namespace gf { namespace local {
 
    public:
    template<typename F> void set_from_function(F f) { // mesh is invariant in this case... 
-    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = f(1.0*u);
+    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = f(make_mesh_pt(mesh(),u));
     fill_tail(tail, f ,tail_non_view_type(data.shape()[0], data.shape()[1],mesh().mesh_tail ,indices()));
    }
 
@@ -179,7 +165,7 @@ namespace triqs { namespace gf { namespace local {
    //triqs::arrays::mini_vector<size_t,2> result_shape() const { return data(range(),range(),0).shape();}
 
    typedef typename mesh_type::index_type arg0_type;
-   typedef mesh_pt<mesh_type> mesh_pt_type;
+   typedef meshes::mesh_pt<mesh_type> mesh_pt_type;
    typedef typename mesh_type::range_type arg_range_type;
 
    typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       mv_type;
@@ -192,7 +178,7 @@ namespace triqs { namespace gf { namespace local {
 
    mv_type       operator() ( mesh_pt_type const & x)       { return data(range(),range(),x.i);}
    const_mv_type operator() ( mesh_pt_type const & x) const { return data(range(),range(),x.i);}
-   
+
    mv_type       operator() ( arg0_type const & i)       { return data(range(),range(),i);}
    const_mv_type operator() ( arg0_type const & i) const { return data(range(),range(),i);}
 
@@ -266,6 +252,8 @@ namespace triqs { namespace gf { namespace local {
    public :
    gf_view(gf_view const & g): B(g){}
    gf_view(gf<MeshType> const & g): B(g){}
+   gf_view(impl::gf_impl<MeshType,false> const & g): B(g){} // crucial since lazy_call will construct with this
+   gf_view(impl::gf_impl<MeshType,true> const & g): B(g){}  // if not provided, a copy of gf is first made to use 2n constructor !
    // to be removed after changing to auto_assign
    template<typename F> void set_from_function(F f) { B::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
    template<typename RHS> gf_view & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
@@ -362,8 +350,8 @@ namespace triqs { namespace gf { namespace local {
 
   // -------------------------------   Expression template for high_frequency_expansion and view -----------------------
 #ifdef TAIL_EXPR
- // not written
- //
+  // not written
+  //
   namespace tail_expr_templ { 
 
    struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
