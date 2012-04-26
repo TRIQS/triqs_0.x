@@ -38,6 +38,22 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/cat.hpp>
 
+// move it up in the array lib and document it  
+namespace triqs { namespace arrays { 
+
+ template< typename A> 
+  typename boost::enable_if<is_view_class<A> >::type 
+  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
+   if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
+  }
+
+ template< typename A> 
+  typename boost::enable_if<is_value_class<A> >::type 
+  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
+
+}}
+// --------------------------------------------------------------
+
 namespace triqs { namespace gf { namespace local {
 
  namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl; using tqa::range;
@@ -51,7 +67,7 @@ namespace triqs { namespace gf { namespace local {
  typedef gf<meshes::tail>      high_frequency_expansion;
  typedef gf_view<meshes::tail> high_frequency_expansion_view;
  template <typename G> struct is_gf:mpl::false_{}; // trait to identify local gf object. Default is false. Overriden later...
-
+ 
  namespace impl {
 
   //template<typename LHS, typename RHS, typename Enable=void > struct assignment;
@@ -99,23 +115,31 @@ namespace triqs { namespace gf { namespace local {
    gf_impl(gf_impl<MeshType,!IsView> const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
 
    //does not make sense in the view case... The int is there to prevent any use as copy construction...
-   template<typename GfType> gf_impl(GfType const & x, int ) :
-    dom(x.domain()), data(x(arg_range_type())), tail(call_at_infty(x,domains::infty())), ind(x.indices()){}
+   template<typename GfType> gf_impl(GfType const & x, mpl::true_ ) : // with tail
+    dom(x.domain()), data(x(arg_range_type())), tail(x(domains::infty())), ind(x.indices()){}
 
-   template<typename RHS> 
-    void operator = (RHS const & rhs) { 
-     static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
-     dom = rhs.domain(); 
-     //const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
-     data = rhs(arg_range_type()) ; 
-     fill_tail(rhs,tail);
-     //tail= call_at_infty(rhs,domains::infty()); 
-    }
+   template<typename GfType> gf_impl(GfType const & x, mpl::false_ ) : // without tail
+    dom(x.domain()), data(x(arg_range_type())), ind(x.indices()){}
 
-   private: 
-   template<typename RHS> void fill_tail (RHS const & rhs, high_frequency_expansion & t) {t = rhs (domains::infty());}
-   template<typename RHS> void fill_tail (RHS const & rhs, high_frequency_expansion_view & t) {t = rhs (domains::infty());}
-   template<typename RHS> void fill_tail (RHS const & rhs, no_tail const &) {}
+   template<typename RHS> void operator = (RHS const & rhs) { // first the general version  
+    static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
+    dom = rhs.domain();
+    BOOST_AUTO( sha , rhs(0).shape());
+    BOOST_AUTO( data_sh , tqa::make_shape(sha[0],sha[1],dom.size()));
+    tqa::resize_or_check_if_view( data, data_sh );
+    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
+    //data = rhs(arg_range_type()) ;// buggy because array algebra is not matrix algebra 
+    fill_tail(tail,rhs,domains::infty());
+   }
+
+   // quicker version for the class and the view 
+   void operator = (gf_impl const & rhs) { dom = rhs.domain(); data = rhs.data; tail = rhs.tail;}
+   void operator = (gf_impl<MeshType,!IsView> const & rhs) { dom = rhs.domain(); data = rhs.data; tail = rhs.tail;}
+
+   private: // fill_tail does the calculation only when it makes sense .... 
+   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
+   template<typename Arg, typename RHS> void fill_tail (high_frequency_expansion_view &t, RHS const & rhs, Arg const & args ) {t = rhs (args);}
+   template<typename Arg, typename RHS> void fill_tail (no_tail &t, RHS const & rhs, Arg const & args ) {}
 
    public:
 
@@ -130,7 +154,7 @@ namespace triqs { namespace gf { namespace local {
    indices_type const & indices() const   { return ind;}
 
    // useful ? In the concept ???
-   //triqs::arrays::mini_vector<size_t,2> result_shape() const { return data.shape();}
+   //triqs::arrays::mini_vector<size_t,2> result_shape() const { return data(range(),range(),0).shape();}
 
    typedef typename mesh_type::index_type arg0_type;
    typedef typename mesh_type::range_type arg_range_type;
@@ -138,10 +162,10 @@ namespace triqs { namespace gf { namespace local {
    typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       mv_type;
    typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_mv_type;
 
-   template<typename X> struct result;                      // implementing ResultOf concept
+   template<typename X> struct result;  // implementing ResultOf concept
    template<typename THIS> struct result<THIS(arg0_type)>      { typedef mv_type type; };
-   template<typename THIS> struct result<THIS(arg_range_type)> { typedef typedef data_view_type type; };
-   template<typename THIS> struct result<THIS(domains::infty)> { typedef typedef tail_view_type type; };
+   template<typename THIS> struct result<THIS(arg_range_type)> { typedef data_view_type type; };
+   template<typename THIS> struct result<THIS(domains::infty)> { typedef tail_view_type type; };
 
    mv_type       operator() ( arg0_type const & x)       { return data(range(),range(),x);}
    const_mv_type operator() ( arg0_type const & x) const { return data(range(),range(),x);}
@@ -165,10 +189,7 @@ namespace triqs { namespace gf { namespace local {
 
    template<typename F> void set_from_function(F f) { // domain is invariant in this case... 
     const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(1.0*u);
-    tail = call_at_infty(f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
-    //tail.set_from_function ( f (tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices())));
-    //std::cout  << f (tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices())) << std::endl ;
-    //std::cout  << tail(0) << std::endl;
+    fill_tail(tail, f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
    }
 
    public:
@@ -179,22 +200,24 @@ namespace triqs { namespace gf { namespace local {
    void load(std::string file){}
 
    /// HDF5 saving .... // shall we use boost::file_system for paths ???
-   friend void h5_write( H5::CommonFG file, std::string path, gf_impl const & g) {} 
-   friend void h5_read( H5::CommonFG file, std::string path, gf_impl & g) {} // exceptions will propagate from the array read/write... 
+   // NOT OK on gcc since CommonFG is abstract... Grrr....
+   //friend void h5_write( H5::CommonFG file, std::string path, gf_impl const & g) {} 
+   //friend void h5_read( H5::CommonFG file, std::string path, gf_impl & g) {} // exceptions will propagate from the array read/write... 
 
    private : 
    struct no_tail { // used in place of tail when there is none... an object that does .. no_tail 
     typedef no_tail view_type;
     typedef no_tail non_view_type;
     template<typename A, typename B> view_type slice(A a, B b) const { return no_tail();}
-    no_tail(...){}
     template<typename T1, typename T2, typename T3, typename T4> no_tail(T1,T2,T3,T4){}
+    template<typename T1> no_tail(T1){}
+    no_tail(...){}
     template<typename T> void operator=(T) {}
     template<typename T> void set_from_function(T) {}
     void save(std::string file,  bool accumulate=false) const {}
     void load(std::string file){}
-    friend void h5_write( H5::CommonFG file, std::string path, no_tail const & g) {} 
-    friend void h5_read( H5::CommonFG file, std::string path, no_tail & g) {} // exceptions will propagate from the array read/write... 
+    //friend void h5_write( H5::CommonFG file, std::string path, no_tail const & g) {} 
+    //friend void h5_read( H5::CommonFG file, std::string path, no_tail & g) {} // exceptions will propagate from the array read/write... 
    };
 
   };
@@ -212,7 +235,7 @@ namespace triqs { namespace gf { namespace local {
    public : 
    gf():B() {} 
    gf (size_t N1, size_t N2, typename B::mesh_type const & d, typename B::indices_type const & i):B(N1,N2,d,i) {}
-   template<typename GfType> gf(GfType const & x): B(x,0) {}
+   template<typename GfType> gf(GfType const & x): B(x,mpl::bool_<B::domain_type::has_tail>()) {}
    template<typename RHS> gf & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
   };
 
