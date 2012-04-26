@@ -297,11 +297,11 @@ namespace triqs { namespace gf { namespace local {
     , proto::negate    <gf_grammar >
     > {};
 
-   struct eval_transform : 
+   struct eval_t : 
     proto::or_<
     proto::when<ScalarGrammar, proto::_value>
     ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
-    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_transform > >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_t > >
     > {};
 
    struct no_mesh{ typedef void domain_type;}; 
@@ -315,11 +315,11 @@ namespace triqs { namespace gf { namespace local {
    struct combine_mesh {
     BOOST_PROTO_CALLABLE();
     template<typename Sig> struct result;
-    template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
-    template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
-    template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
-    template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
-    template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
+    template<typename This, typename TAG, typename M1, typename M2> struct result<This(TAG,M1,M2)> {typedef M2 type;};
+    template<typename This, typename TAG, typename M1> struct result<This(TAG,M1,no_mesh)> {typedef M1 type;};
+    template<typename M, typename TAG> M operator ()(TAG, no_mesh const & m1, M const & m2) const { return m2;}
+    template<typename M, typename TAG> M operator ()(TAG, M const & m1, no_mesh const & m2) const { return m1;}
+    template<typename M1, typename M2, typename TAG> M1 operator ()(TAG, M1 const & m1, M2 const & m2) const { 
      static_assert(boost::is_same<M1,M2>::value, "FATAL : two meshes of different type mixed in an expression");
      return m1;
     }
@@ -329,10 +329,10 @@ namespace triqs { namespace gf { namespace local {
     proto::or_<
     proto::when< ScalarGrammar, no_mesh() >
     ,proto::when< ElementGrammar, get_mesh(proto::_value) >
-    ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-    ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-    ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-    ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (proto::tag::plus(), dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (proto::tag::plus(), dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (proto::tag::plus(), dom_t(proto::_left), dom_t( proto::_right)) >
+    ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (proto::tag::plus(), dom_t(proto::_left), dom_t( proto::_right)) >
     ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
     > {};
 
@@ -340,7 +340,7 @@ namespace triqs { namespace gf { namespace local {
    template <typename Expr> struct gf_expr;
    typedef tup::domain<gf_grammar,gf_expr,true> gf_expr_domain;
 
-   typedef eval_transform eval1;
+   typedef eval_t eval1;
    template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
     gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
     typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
@@ -360,10 +360,10 @@ namespace triqs { namespace gf { namespace local {
 
   BOOST_PROTO_DEFINE_OPERATORS(is_gf, gf_expr_temp::gf_expr_domain);
 
-
   // -------------------------------   Expression template for high_frequency_expansion and view -----------------------
 #ifdef TAIL_EXPR
-
+ // not written
+ //
   namespace tail_expr_templ { 
 
    struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
@@ -379,124 +379,104 @@ namespace triqs { namespace gf { namespace local {
     , proto::negate    <gf_grammar >
     > {};
 
-   struct eval_transform : 
-    proto::or_<
-    proto::when<ScalarGrammar, proto::_value>
-    ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
-    ,proto::when< proto::plus <dom_t,dom_t>,       proto::_default<eval_transform > >
-    ,proto::when< proto::minus <dom_t,dom_t>,      proto::_default<eval_transform > >
-    ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-    ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-    ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
-    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_transform > >
-    > {};
+   typedef tqa::matrix<std::complex<double> > matrix_view_type;
 
    struct tail_mult { 
     BOOST_PROTO_CALLABLE();
     template<typename Sig> struct result;
-    template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
-    template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
+    template<typename This, typename L, typename R, typename AL> struct result<This(L,R,AL)> { typedef matrix_view_type type;}
+    template<typename R, typename L, typename AL>
+     matrix_view_type operator ()(L const &l, R const & r, AL const & al) const {
+      int n = bf::at<mpl::int_<0> >(al);//get n
+      //if (n1!=t.n1 || n2!=t.n2) TRIQS_RUNTIME_ERROR<<"multiplication is valid only for similar tail shapes !";
+      //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
+      matrix_view_type::non_view_type res(l(l.mesh().order_min()).shape()[0], l(l.mesh().order_min()).shape()[1]); res()=0;
+      const int kmin = std::max(0, n - r.mesh().order_max() - l.mesh().order_min() );
+      const int kmax = std::min(l.mesh().order_max() - l.mesh().order_min(), n - r.mesh().order_min() - l.mesh().order_
+	min() );
+      std::cout<< kmin << "  "<<kmax<<std::endl;
+      for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; 
+       res += l(l.mesh().order_min() +k) * r( n- l.mesh().order_min() -k);}
+       return res;
+     }
+   };
 
-     return m1;
+   struct eval_t : 
+    proto::or_<
+    proto::when<ScalarGrammar, proto::_value>
+    ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
+    ,proto::when< proto::plus <eval_t,eval_t>,       proto::_default<eval_t > >
+    ,proto::when< proto::minus <eval_t,eval_t>,      proto::_default<eval_t > >
+    ,proto::when< proto::multiplies <eval_t,eval_t>, tail_mult(proto::_left, proto::_right, proto::state) >
+    ,proto::when< proto::divides <eval_t,eval_t>,    proto::_default<eval_t > >
+    ,proto::when< proto::unary_expr<proto::_,eval_t >,  eval_t(proto::_left) >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_t > >
+    > {};
+
+   // computation of domain ....
+   template<typename L, typename R> struct multiplies { 
+    L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+    typedef meshes::tail  mesh_type;
+    meshes::tail domain () const { 
+     int omin = l.order_min()+r.order_min(); 
+     return meshes::tail(omin,omin + std::min(l.domain().len(),r.mesh().len()));
     }
-   };
 
+    struct no_mesh{ typedef void domain_type;}; 
+    struct get_mesh {
+     BOOST_PROTO_CALLABLE();
+     template<typename Sig> struct result;
+     template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
+     template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.mesh();}
+    };
 
-   template<int Arity> struct eval_fnt;
-   template<> struct eval_fnt<1> {
-    BOOST_PROTO_CALLABLE();
-    template<typename Sig> struct result;
-    template<typename This, typename F, typename AL> struct result<This(F,AL)>
-     : boost::result_of<typename boost::remove_reference<F>::type 
-     (typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type )> {};
+    struct combine_mesh {
+     BOOST_PROTO_CALLABLE();
+     template<typename Sig> struct result;
+     template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
+     template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
+     template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
+     template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
+     template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
+      static_assert(boost::is_same<M1,M2>::value, "FATAL : two meshes of different type mixed in an expression");
+      return m1;
+     }
+    };
 
-    template<typename F, typename AL>
-     typename boost::result_of<F(typename bf::result_of::at<AL const, mpl::int_<0> >::type)>::type 
-     operator ()(F const &f, AL const & al) const { return f(bf::at<mpl::int_<0> >(al)); }
-   };
+    struct dom_t : 
+     proto::or_<
+     proto::when< ScalarGrammar, no_mesh() >
+     ,proto::when< ElementGrammar, get_mesh(proto::_value) >
+     ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+     ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+     ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+     ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
+     ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
+     > {};
 
+    // grammar and domain and proto expression
+    template <typename Expr> struct tail_expr;
+    typedef tup::domain<gf_grammar,tail_expr,true> tail_expr_domain;
 
-   tail_result_type operator() (int n) const {
-    //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
-    //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
-    tail_result_type::non_view_type res(l(l.mesh().order_min()).shape()[0], l(l.mesh().order_min()).shape()[1]); res()=0;
-    const int kmin = std::max(0, n - r.mesh().order_max() - l.mesh().order_min() );
-    const int kmax = std::min(l.mesh().order_max() - l.mesh().order_min(), n - r.mesh().order_min() - l.mesh().order_
-      min() );
-    std::cout<< kmin << "  "<<kmax<<std::endl;
-    for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.mesh().order_min() +k) * r( n- l
-      .mesh().order_min() -k);}
-    return res;
+    typedef eval_t eval1;
+    template<typename Expr> struct tail_expr : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>{
+     tail_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>  ( expr ) {}
+     typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
+     typedef typename mesh_type::domain_type domain_type;
+     mesh_type mesh() const { return dom_t()(*this); } 
+     template<typename T> typename boost::result_of<eval1(Expr,bf::vector<T>) >::type 
+      operator() (T const & x) const { return eval1()(*this, bf::make_vector(x)); }
+     typedef tqa::array_view<std::string,2> indices_type;
+     indices_type indices() const { return indices_type::non_view_type();}
+     friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
+    };
+    template <typename Expr> struct is_gf<tail_expr< Expr > >:mpl::true_{};
+
+    BOOST_PROTO_DEFINE_OPERATORS(is_tail, tail_expr_domain);
    }
-  };
- };
-
-
-
-
- template<typename L, typename R> struct multiplies { 
-  L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
-  typedef meshes::tail  mesh_type;
-  meshes::tail domain () const { 
-   int omin = l.order_min()+r.order_min(); 
-   return meshes::tail(omin,omin + std::min(l.domain().len(),r.mesh().len()));
-  }
-
-  struct no_mesh{ typedef void domain_type;}; 
-  struct get_mesh {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
-   template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.mesh();}
-  };
-
-  struct combine_mesh {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
-   template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
-   template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
-   template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
-   template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
-    static_assert(boost::is_same<M1,M2>::value, "FATAL : two meshes of different type mixed in an expression");
-    return m1;
-   }
-  };
-
-  struct dom_t : 
-   proto::or_<
-   proto::when< ScalarGrammar, no_mesh() >
-   ,proto::when< ElementGrammar, get_mesh(proto::_value) >
-   ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
-   > {};
-
-  // grammar and domain and proto expression
-  template <typename Expr> struct tail_expr;
-  typedef tup::domain<gf_grammar,tail_expr,true> tail_expr_domain;
-
-  typedef eval_transform eval1;
-  template<typename Expr> struct tail_expr : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>{
-   tail_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, tail_expr<Expr>, tail_expr_domain>  ( expr ) {}
-   typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
-   typedef typename mesh_type::domain_type domain_type;
-   mesh_type mesh() const { return dom_t()(*this); } 
-   template<typename T> typename boost::result_of<eval1(Expr,bf::vector<T>) >::type 
-    operator() (T const & x) const { return eval1()(*this, bf::make_vector(x)); }
-   typedef tqa::array_view<std::string,2> indices_type;
-   indices_type indices() const { return indices_type::non_view_type();}
-   friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
-  };
-  template <typename Expr> struct is_gf<tail_expr< Expr > >:mpl::true_{};
-
-  BOOST_PROTO_DEFINE_OPERATORS(is_tail, tail_expr_domain);
- }
 #endif
 
-}}}
+  }}}
 
 #endif
 
