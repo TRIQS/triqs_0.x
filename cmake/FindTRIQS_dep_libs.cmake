@@ -301,4 +301,7 @@ else(MPI_FOUND)
  MESSAGE(FATAL_ERROR "This code requires MPI")
 endif(MPI_FOUND)
 
-#
+# GMP
+find_package(GMP)
+
+
