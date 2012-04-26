@@ -43,11 +43,11 @@ namespace triqs { namespace gf { namespace local {
  namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl; using tqa::range;
  namespace bf = boost::fusion; namespace tup = triqs::utility::proto; 
 
- //namespace tag { template<typename DomainType> struct is_gf{};}
- //template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<DomainType>, G> {}; // identification trait
+ //namespace tag { template<typename MeshType> struct is_gf{};}
+ //template <typename G> struct is_gf : boost::is_base_of< tag::is_gf<MeshType>, G> {}; // identification trait
 
- template<typename DomainType> class gf;
- template<typename DomainType> class gf_view;
+ template<typename MeshType> class gf;
+ template<typename MeshType> class gf_view;
  typedef gf<meshes::tail>      high_frequency_expansion;
  typedef gf_view<meshes::tail> high_frequency_expansion_view;
  template <typename G> struct is_gf:mpl::false_{}; // trait to identify local gf object. Default is false. Overriden later...
@@ -56,16 +56,24 @@ namespace triqs { namespace gf { namespace local {
 
   //template<typename LHS, typename RHS, typename Enable=void > struct assignment;
 
+  template<bool do_it, typename ReturnType, typename ConstructType> struct call_a_function_or_not { 
+   template<typename Arg, typename F> static ReturnType invoke(F f, Arg arg) { ConstructType res; res = f(arg); return res;}
+  };
+  template<typename ReturnType, typename ConstructType> struct call_a_function_or_not<false,ReturnType,ConstructType> { 
+   template<typename Arg, typename F> static ReturnType invoke(F f, Arg arg) { return ConstructType();}
+  };
+
   /*------------------------------------------------------------------------------
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
-  template<typename DomainType, bool IsView> class gf_impl { //: tag::is_gf<DomainType> {
-   friend class gf_impl<DomainType,!IsView>;
+  template<typename MeshType, bool IsView> class gf_impl { //: tag::is_gf<MeshType> {
+   friend class gf_impl<MeshType,!IsView>;
    struct no_tail;
    public:
-   typedef DomainType domain_type;
-   typedef gf_view<domain_type> view_type;
-   typedef gf<domain_type>      non_view_type;
+   typedef MeshType mesh_type;
+   typedef typename mesh_type::domain_type domain_type;
+   typedef gf_view<mesh_type> view_type;
+   typedef gf<mesh_type>      non_view_type;
    typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
 
    typedef typename domain_type::gf_result_type value_element_type;
@@ -81,39 +89,60 @@ namespace triqs { namespace gf { namespace local {
    typedef tqa::array<std::string,2> indices_type;
 
    protected:
-   domain_type dom;
+   mesh_type dom;
    data_type data;
    tail_type tail;
    indices_type ind;
 
    gf_impl() {} // all arrays of zero size (empty)
 
-   gf_impl (size_t N1, size_t N2, domain_type const & domain_, indices_type const & indices_) : 
+   gf_impl (size_t N1, size_t N2, mesh_type const & domain_, indices_type const & indices_) : 
     dom(domain_), data(N1,N2,domain().size()), tail(N1,N2,domain().mesh_tail,indices_), ind(indices_){}
 
-   gf_impl (domain_type const & d, data_view_type const & dat, tail_view_type const & t, indices_type const & ind_) : 
+   gf_impl (mesh_type const & d, data_view_type const & dat, tail_view_type const & t, indices_type const & ind_) : 
     data(dat), dom(d), tail(t), ind(ind_){}
 
-   //gf_impl(gf_impl const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){}
+   gf_impl(gf_impl const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){}
+   gf_impl(gf_impl<MeshType,!IsView> const & x): dom(x.dom), data(x.data), tail(x.tail), ind(x.indices()){} // crucial 
 
-   //template<typename GfType> gf_impl(GfType const & x): dom(x.domain()), data(x.data_view()), tail(x.tail_view()), ind(x.indices()){}
-   //template<typename GfType> gf_impl(GfType const & x): dom(x.domain()), data(x(arg_range_type())), tail(x(domains::infty())), ind(x.indices()){}
-   template<typename GfType> gf_impl(GfType const & x): dom(x.domain()), data(x(arg_range_type())), tail(call_at_infty<tail_view_type>(x)), ind(x.indices()){}
+   //does not make sens in the view case... better to suppress it...
+   //template<typename GfType> gf_impl(GfType const & x): dom(x.domain()), data(x(arg_range_type())), tail(call_at_infty(x,domains::infty())), ind(x.indices()){}
 
-   template<typename RHS> void operator = (RHS const & rhs) { 
-    static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
-    dom = rhs.domain(); data = rhs(arg_range_type()) ; tail= call_at_infty<tail_view_type>(rhs); //(domains::infty()); 
+   template<typename RHS> 
+    void operator = (RHS const & rhs) { 
+     static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
+     dom = rhs.domain(); 
+     //const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = rhs(u);
+     data = rhs(arg_range_type()) ; 
+     tail= call_at_infty(rhs,domains::infty()); 
+    } 
+
+   /*
+      template<typename RHS> 
+      typename boost::enable_if_c<RHS::domain_type::has_tail>::type 
+      operator = (RHS const & rhs) { 
+      static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
+      dom = rhs.domain(); data = rhs(arg_range_type()) ;
+      std::cout  << "rhs(0)"<< rhs(0)<< std::endl ; 
+      const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) tail(u) = rhs(u);
+   //tail= call_at_infty(rhs,domains::infty()); 
    } 
 
+   template<typename RHS> 
+   typename boost::disable_if_c<RHS::domain_type::has_tail>::type 
+   operator = (RHS const & rhs) { 
+   static_assert(is_gf<RHS>::value, "The object does not have the local gf concept");
+   dom = rhs.domain(); data = rhs(arg_range_type()) ; 
+   //tail= call_at_infty(rhs,domains::infty()); 
+   } 
+   */
    private : 
-   template<typename TailViewType, typename F> TailViewType call_at_infty(F const & f) { return typename TailViewType::non_view_type( f(domains::infty()));}
-   template<typename TailViewType, typename F> TailViewType call_at_infty(F const & f, TailViewType const & arg) { return typename TailViewType::non_view_type( f(arg));}
-   template<typename F> no_tail call_at_infty(F const & f) { return no_tail();}
-   template<typename F> no_tail call_at_infty(F const & f,no_tail const &) { return no_tail();}
-
+   template<typename Arg, typename F> tail_view_type call_at_infty(F const & f, Arg const & arg) { 
+    return call_a_function_or_not<domain_type::has_tail,tail_view_type,tail_non_view_type>::invoke(f,arg);
+   }
    public:
 
-   domain_type const & domain() const { return dom;}
+   mesh_type const & domain() const { return dom;}
 
    data_view_type data_view()             { return data;} // redondant with (range()) ....
    const data_view_type data_view() const { return data;}
@@ -126,8 +155,8 @@ namespace triqs { namespace gf { namespace local {
    // useful ? In the concept ???
    //triqs::arrays::mini_vector<size_t,2> result_shape() const { return data.shape();}
 
-   typedef typename domain_type::index_type arg0_type;
-   typedef typename domain_type::range_type arg_range_type;
+   typedef typename mesh_type::index_type arg0_type;
+   typedef typename mesh_type::range_type arg_range_type;
 
    typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       mv_type;
    typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_mv_type;
@@ -150,26 +179,20 @@ namespace triqs { namespace gf { namespace local {
 
    template<typename A, typename B> view_type slice(A a, B b) {
     range ra = range(a), rb = range(b); 
-    return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) )); 
+    return view_type( gf_impl<mesh_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) )); 
    }
    template<typename A, typename B> const view_type slice(A a, B b) const { 
     range ra = range(a), rb = range(b); 
-    return view_type( gf_impl<domain_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) ));      
+    return view_type( gf_impl<mesh_type,true>(dom, data (ra,rb, range()), tail.slice(a,b), indices()(ra,rb) ));      
    }
 
    template<typename F> void set_from_function(F f) { // domain is invariant in this case... 
     const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) this->data(range(),range(),u) = f(1.0*u);
-    //tail = call_at_infty(f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
-    //compute_tail(tail,f); // the tail is only computed if it exists, or f maybe called for infty in undefined cases.
+    tail = call_at_infty(f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
+    //tail.set_from_function ( f (tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices())));
+    //std::cout  << f (tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices())) << std::endl ;
+    //std::cout  << tail(0) << std::endl;
    }
-   private:
-   template<typename F> void compute_tail(gf_impl<meshes::tail, IsView> & t, F f) {
-    // if f is only defined for domain::infty, the cast operator added in tail will do the job... 
-    t = call_at_infty(f ,tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
-    //t = f( tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices()));
-    //t = f( wrap_infty<tail_view_type,domain_type>( tail_non_view_type(data.shape()[0], data.shape()[1],domain().mesh_tail ,indices())));
-   }
-   template<typename F> void compute_tail(no_tail & t, F f) {}
 
    public:
    /// Save the Green function in i omega_n (as 2 columns).
@@ -191,23 +214,27 @@ namespace triqs { namespace gf { namespace local {
     template<typename T1, typename T2, typename T3, typename T4> no_tail(T1,T2,T3,T4){}
     template<typename T> void operator=(T) {}
     template<typename T> void set_from_function(T) {}
+    void save(std::string file,  bool accumulate=false) const {}
+    void load(std::string file){}
+    friend void h5_write( H5::CommonFG file, std::string path, no_tail const & g) {} 
+    friend void h5_read( H5::CommonFG file, std::string path, no_tail & g) {} // exceptions will propagate from the array read/write... 
    };
 
   };
 
   // derive from this to add a cast operator to infty only for tail... 
-  template<typename DomainType> struct cast_to_infty  {}; 
+  template<typename MeshType> struct cast_to_infty  {}; 
   template<> struct cast_to_infty<meshes::tail>  { operator domains::infty() const { return domains::infty();} };
 
   }// namespace impl 
 
   // --------------------------- THE USER CLASSES ------------------------------------------------------
   ///The regular class of GF
-  template<typename DomainType> class gf : public impl::gf_impl<DomainType,false>, public impl::cast_to_infty<DomainType> {
-   typedef impl::gf_impl<DomainType,false> base_type;
+  template<typename MeshType> class gf : public impl::gf_impl<MeshType,false>, public impl::cast_to_infty<MeshType> {
+   typedef impl::gf_impl<MeshType,false> base_type;
    public : 
    gf():base_type() {} 
-   gf (size_t N1, size_t N2, typename base_type::domain_type const & domain_, typename base_type::indices_type const & indices_) : 
+   gf (size_t N1, size_t N2, typename base_type::mesh_type const & domain_, typename base_type::indices_type const & indices_) : 
     base_type(N1,N2,domain_,indices_) {}
    template<typename GfType> gf(GfType const & x): base_type(x) {}
    template<typename RHS> gf & operator = (RHS const & rhs) { base_type::operator = (rhs); return *this; } 
@@ -215,8 +242,8 @@ namespace triqs { namespace gf { namespace local {
 
   // ---------------------------------------------------------------------------------
   ///The View class of GF
-  template<typename DomainType> class gf_view : public impl::gf_impl<DomainType,true>, public impl::cast_to_infty<DomainType> {
-   typedef impl::gf_impl<DomainType,true> base_type;
+  template<typename MeshType> class gf_view : public impl::gf_impl<MeshType,true>, public impl::cast_to_infty<MeshType> {
+   typedef impl::gf_impl<MeshType,true> base_type;
    public :
    template<typename GfType> gf_view(GfType const & x): base_type(x) {};
    // to be removed after changing to auto_assign
@@ -235,7 +262,6 @@ namespace triqs { namespace gf { namespace local {
   // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
   template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
-
   struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
 
@@ -249,7 +275,6 @@ namespace triqs { namespace gf { namespace local {
    , proto::negate    <gf_grammar >
    > {};
 
-
   struct eval_transform : 
    proto::or_<
    proto::when<ScalarGrammar, proto::_value>
@@ -258,35 +283,35 @@ namespace triqs { namespace gf { namespace local {
    > {};
 
   /*
- struct node_desc_impl_tail : node_desc_impl <meshes::tail> {
+     struct node_desc_impl_tail : node_desc_impl <meshes::tail> {
 
-  template<typename L, typename R> struct multiplies { 
-   L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
-   typedef meshes::tail  domain_type;
-   meshes::tail domain () const { 
-    int omin = l.order_min()+r.order_min(); 
-    return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
-   }
+     template<typename L, typename R> struct multiplies { 
+     L const & l; R const & r; multiplies (L const & l_, R const & r_):l(l_),r(r_) {}
+     typedef meshes::tail  mesh_type;
+     meshes::tail domain () const { 
+     int omin = l.order_min()+r.order_min(); 
+     return meshes::tail(omin,omin + std::min(l.domain().len(),r.domain().len()));
+     }
 
-   tail_result_type operator() (int n) const {
-    //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
-    //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
-    tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
-    const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
-    const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_
-min() );
-    std::cout<< kmin << "  "<<kmax<<std::endl;
-    for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l
-.domain().order_min() -k);}
-    return res;
-   }
+     tail_result_type operator() (int n) const {
+  //if (n1!=t.n1 || n2!=t.n2) triqs_runtime_error<<"multiplication is valid only for similar tail shapes !";
+  //if (new_ordermin < OrderMinMIN) TRIQS_RUNTIME_ERROR<<"The multiplication makes the new tail have a too small OrderMin";
+  tail_result_type::non_view_type res(l(l.domain().order_min()).shape()[0], l(l.domain().order_min()).shape()[1]); res()=0;
+  const int kmin = std::max(0, n - r.domain().order_max() - l.domain().order_min() );
+  const int kmax = std::min(l.domain().order_max() - l.domain().order_min(), n - r.domain().order_min() - l.domain().order_
+  min() );
+  std::cout<< kmin << "  "<<kmax<<std::endl;
+  for (int k = kmin; k <= kmax; ++k)  { std::cout <<" k = "<< res<<std::endl; res += l(l.domain().order_min() +k) * r( n- l
+  .domain().order_min() -k);}
+  return res;
+  }
   };
- };
-*/
+  };
+  */
 
-  struct no_mesh{}; 
+  struct no_mesh{ typedef void domain_type;}; 
   //template<typename A, typename Enable=void> struct get_mesh_type { typedef no_mesh type;};
-  //template<typename A> struct get_mesh_type<A,typename boost::enable_if<is_gf<A> >::type > { typedef typename A::domain_type;};
+  //template<typename A> struct get_mesh_type<A,typename boost::enable_if<is_gf<A> >::type > { typedef typename A::mesh_type;};
 
   /*  struct get_mesh_scalar {
       BOOST_PROTO_CALLABLE();
@@ -298,8 +323,8 @@ min() );
   struct get_mesh {
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
-   template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::domain_type type;};
-   template<typename X> typename X::domain_type  operator ()(X const & x) const { return x.domain();}
+   template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
+   template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.domain();}
   };
 
   struct combine_mesh {
@@ -307,7 +332,6 @@ min() );
    template<typename Sig> struct result;
    template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
    template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
-   //template<typename This, typename M1, typename M2> struct result<This(M1,M2)> : mpl::if_<boost::is_same<M1,no_mesh>, M2, M1> {};
    template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
    template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
    template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
@@ -335,10 +359,21 @@ min() );
   typedef eval_transform eval1;
   template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
    gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
-   typedef typename boost::result_of<dom_t(Expr) >::type domain_type;
-   domain_type domain() const { return dom_t()(*this); } //, no_mesh()); }
+   typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
+   typedef typename mesh_type::domain_type domain_type;
+   mesh_type domain() const { return dom_t()(*this); } //, no_mesh()); }
    template<typename T> 
-    typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {return eval1()(*this, bf::make_vector(x));}
+    typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {
+     static_assert(mesh_type::domain_type::has_tail || !(boost::is_same<T,meshes::tail>::value), "Error");
+     return eval1()(*this, bf::make_vector(x));
+    }
+   /*
+      typedef high_frequency_expansion tail_non_view_type; 
+      typedef typename tail_non_view_type::view_type tail_view_type; 
+      typedef tail_view_type tail_type;
+      */
+   //const tail_view_type operator() ( domains::infty const & x) const { return tail_non_view_type(eval1()(*this, bf::make_vector(domains::infty()))) ;}
+
    typedef tqa::array_view<std::string,2> indices_type;
    indices_type indices() const { return indices_type::non_view_type();}
    friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
@@ -347,7 +382,7 @@ min() );
 
  BOOST_PROTO_DEFINE_OPERATORS(is_gf, gf_expr_domain);
 
- }}}
+}}}
 
 #endif
 

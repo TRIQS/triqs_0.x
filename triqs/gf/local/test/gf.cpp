@@ -14,6 +14,7 @@ int main() {
 
  typedef local::gf<meshes::matsubara_freq> Gf_type;
  typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
+ domains::infty inf;
 
  Gf_type G1; // empty
  TEST( G1( 0) ) ;
@@ -44,6 +45,13 @@ int main() {
  //G(om_) = (2.0 + om_ - 2.3);
  //G(om_) = 1/(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
+ TEST(G(0));
+ TEST(G(inf)(0));
+ Gv.set_from_function (om_ >> om_ + 2.3);
+ TEST(G(0));
+ TEST(G(inf)(0));
+
+#ifdef SUITE
 
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
@@ -63,25 +71,31 @@ int main() {
 
 
  // operations on gf
-G3 = G + Gc;
+ G3 = G + Gc;
 
  auto m = local::dom_t()(G + Gc); 
 
- for (int u=0; u<10; ++u) { 
-  TEST( (G + 2.0* Gc)( u) ) ;
-  TEST( (8.0*G + 2.0* Gc)( u) ) ;
-  TEST( (8.0*G  - 2.0* Gc)( u) ) ;
-  TEST( (G - Gc)( u) ) ;
-  TEST( (G - 2.0* Gc)( u) ) ;
-  TEST( (G * Gc)( u) ) ;
- }
- domains::infty inf;
+ /*
+    for (int u=0; u<10; ++u) { 
+    TEST( (G + 2.0* Gc)( u) ) ;
+    TEST( (8.0*G + 2.0* Gc)( u) ) ;
+    TEST( (8.0*G  - 2.0* Gc)( u) ) ;
+    TEST( (G - Gc)( u) ) ;
+    TEST( (G - 2.0* Gc)( u) ) ;
+    TEST( (G * Gc)( u) ) ;
+    }
+    */
 
+ TEST( G( 0) ) ;
  TEST(G(inf)(0));
 
  TEST( ( G(inf) + G(inf) )  (0));
  TEST( ( G(inf) * G(inf) )  (0));
  TEST( (G + Gc)( inf) ) ;
 
+ //TEST( (G + 2.3)(0));
+ TEST( (t + 2.3)(0));
  //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
+
+#endif
 }

@@ -26,18 +26,38 @@ namespace triqs { namespace gf {
 
  namespace tqa= triqs::arrays;
 
- enum Statistic {Boson,Fermion};
+ enum statistic_enum {Boson,Fermion};
 
  namespace domains {
-  struct matsubara_freq{};
-  struct matsubara_time{};
+
+  struct infty{}; // the point at infinity
+
+  struct tail{
+   typedef std::complex<double> gf_result_type;
+   static const bool has_tail = false;
+  };
+
+  struct matsubara_freq {
+   typedef std::complex<double> gf_result_type;
+   double beta;
+   statistic_enum statistic;
+   matsubara_freq (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
+   static const bool has_tail = true;
+  };
+
+  struct matsubara_time {
+   typedef double gf_result_type;
+   double beta;
+   statistic_enum statistic;
+   matsubara_time (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
+   static const bool has_tail = true;
+  };
+
   struct matsubara_legendre{};
   struct real_freq {};
   struct real_time {};
-  struct infty{};
  }
 
-#define TRIQS_LOCAL_GF_DOMAIN_LIST (matsubara_freq)(matsubara_time)(tail)
 //#define TRIQS_LOCAL_GF_DOMAIN_LIST (matsubara_freq)(matsubara_time)(matsubara_legendre)(real_freq)(real_time)
 
  namespace meshes { 
@@ -46,6 +66,7 @@ namespace triqs { namespace gf {
    int omin,omax;
  
    public:
+   typedef domains::tail domain_type;
    typedef std::complex<double> gf_result_type;
    typedef size_t index_type;
    typedef tqa::range range_type;
@@ -62,32 +83,33 @@ namespace triqs { namespace gf {
 
   //--------------------------------------------------------
 
-  class matsubara_freq : domains::matsubara_freq {
-   size_t n_max_; 
-
-   public:
+  struct matsubara_freq {
+ 
+   typedef domains::matsubara_freq domain_type;
    typedef std::complex<double> gf_result_type;
    typedef size_t index_type;
    typedef tqa::range range_type;
 
-   matsubara_freq (Statistic s=Fermion, size_t N_max=1025, size_t tail_expansion_order=5 ): 
-    n_max_( N_max), statistic(s), mesh_tail(tail_expansion_order) {}
+   matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025, size_t tail_expansion_order=5 ): 
+    mesh_tail(tail_expansion_order), _dom(Beta,s), n_max_(N_max) {}
 
-   //size_t n_max() const { return n_max_;}
-   Statistic statistic;
-
-   static const bool has_tail = true;
    tail mesh_tail;
-
+   
+   domain_type const & domain() const { return _dom;}
    size_t size() const{ return n_max_;}
+
+   protected:
+   domain_type _dom;
+   size_t n_max_; 
   };
 
   //--------------------------------------------------------
-
-  class matsubara_time : domains::matsubara_freq {
+/*
+  class matsubara_time {
    size_t n_time_slices_;
  
    public: 
+   typedef domains::matsubara_time domain_type;
    typedef double gf_result_type;
    typedef size_t index_type;
    
@@ -103,7 +125,7 @@ namespace triqs { namespace gf {
    size_t size() const{ return n_time_slices_;}
   };
 
-  
+  */
  }
 
 }}
