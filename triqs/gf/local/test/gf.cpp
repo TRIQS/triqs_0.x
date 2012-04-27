@@ -21,9 +21,10 @@ int main() {
  Gf_type G1; // empty
  TEST( G1( 0) ) ;
 
- Gf_type G(2,2, meshes::matsubara_freq(Fermion), ind);
- Gf_type Gc(2,2, meshes::matsubara_freq(Fermion), ind);
- Gf_type G3(2,2, meshes::matsubara_freq(Fermion), ind);
+ double beta =1;
+ Gf_type G(2,2, meshes::matsubara_freq(beta,Fermion), ind);
+ Gf_type Gc(2,2, meshes::matsubara_freq(beta,Fermion), ind);
+ Gf_type G3(2,2, meshes::matsubara_freq(beta,Fermion), ind);
 
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
