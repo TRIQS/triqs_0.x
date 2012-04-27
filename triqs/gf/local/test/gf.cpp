@@ -53,7 +53,8 @@ int main() {
  TEST(G(0));
  TEST(G(inf)(0));
 
- Gv.set_from_function (om_ >> 2.9 + om_ );
+ //Gv.set_from_function (om_ >> 2.9 + om_ );
+ triqs_nvl_auto_assign(Gv,om_ >> 2.9 + om_ );
  TEST(G(0));
  TEST(G(inf)(0));
 

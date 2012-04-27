@@ -75,7 +75,7 @@ namespace triqs { namespace gf { namespace local {
   /*------------------------------------------------------------------------------
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
-  template<typename MeshType, bool IsView> class gf_impl { 
+  template<typename MeshType, bool IsView> class gf_impl : triqs::lazy::tag::auto_assign  { 
    friend class gf_impl<MeshType,!IsView>;
    struct no_tail;
    public:
@@ -155,9 +155,10 @@ namespace triqs { namespace gf { namespace local {
    template<typename Arg, typename RHS> void fill_tail (no_tail &t, RHS const & rhs, Arg const & args ) {}
 
    public:
-   template<typename F> void set_from_function(F f) { // mesh is invariant in this case... 
-    const size_t Nmax = this->data.shape()[2]; for (size_t u=0; u<Nmax; ++u) data(range(),range(),u) = f(make_mesh_pt(mesh(),u));
-    fill_tail(tail, f ,tail_non_view_type(data.shape()[0], data.shape()[1],mesh().mesh_tail ,indices()));
+   //template<typename F> void set_from_function(F f) { // mesh is invariant in this case... 
+   template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { // mesh is invariant in this case... 
+    const size_t Nmax = x.data.shape()[2]; for (size_t u=0; u<Nmax; ++u) x.data(range(),range(),u) = f(make_mesh_pt(x.mesh(),u));
+    x.fill_tail(x.tail, f ,tail_non_view_type(x.data.shape()[0], x.data.shape()[1],x.mesh().mesh_tail ,x.indices()));
    }
 
    // useful ? In the concept ???
@@ -255,9 +256,9 @@ namespace triqs { namespace gf { namespace local {
    gf_view(impl::gf_impl<MeshType,false> const & g): B(g){} // crucial since lazy_call will construct with this
    gf_view(impl::gf_impl<MeshType,true> const & g): B(g){}  // if not provided, a copy of gf is first made to use 2n constructor !
    // to be removed after changing to auto_assign
-   template<typename F> void set_from_function(F f) { B::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
+   //template<typename F> void set_from_function(F f) { B::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
    template<typename RHS> gf_view & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
-   std::ostream & print_for_lazy(std::ostream & out) const { return out<<"gf_view";}
+   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
   };
 
   // -------------------------------   Expression template for gf  --------------------------------------------------
