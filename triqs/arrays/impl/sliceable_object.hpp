@@ -26,6 +26,8 @@
 #include <boost/mpl/equal_to.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 
 namespace triqs { namespace arrays { 
 
@@ -36,7 +38,8 @@ namespace triqs { namespace arrays {
 	  template <class V, int R, class Opt2, class Vtag> class ViewFactory,
 	  template<typename IndexMapType2, typename SliceArgs> class Slicer,
 	  class Derived > 
-	   class sliceable_object  { 
+	   class sliceable_object   
+	   {
 	    public : 
 	     static const unsigned int rank = IndexMapType::domain_type::rank;
 
@@ -93,6 +96,8 @@ namespace triqs { namespace arrays {
 	     typename result_of_call<true,boost::tuple<> >::type operator()() const { return self(); } 
 	     typename result_of_call<false,boost::tuple<> >::type operator()() { return self(); } 
 
+#ifndef TRIQS_HAS_LAZY_EXPRESSIONS
+
 #ifdef TRIQS_ARRAYS_USE_VARIADIC_TEMPLATES 
 	     template<typename... Args>      
 	      result_of_call<true,TupleFromVariadic<Args>::type >::type 
@@ -102,22 +107,60 @@ namespace triqs { namespace arrays {
 	      result_of_call<false,TupleFromVariadic<Args>::type >::type 
 	      operator()(Args...  args) { return eval_( TupleFromVariadic<Args>(args) );}
 #else 
-	     // What a clear code ! when will variadic templates be at last available ??
-#define AUX(z,p,unused) BOOST_PP_COMMA_IF(p) T##p const & x##p 
 #define IMPL(z, NN, unused)                                \
-	     template<BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), typename T)>\
-	     typename result_of_call<true,boost::tuple<BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T)> >::type\
-	     operator()(BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil)) const {\
-	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), x) ));}\
-	     template<BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), typename T)>\
-	     typename result_of_call<false,boost::tuple<BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T)> >::type\
-	     operator()(BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil)) {\
-	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), x) ));}
-	     BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
+	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
+	     typename result_of_call<true,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type\
+	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) const {\
+	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}\
+	     \
+	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
+	     typename result_of_call<false,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type\
+	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) {\
+	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}
+	     BOOST_PP_REPEAT_FROM_TO(1,BOOST_PP_INC(ARRAY_NRANK_MAX) , IMPL, nil);
 #undef IMPL
-#undef AUX
 #endif
 
+#else 
+	     // Another implementation for the case where we have the lazy expressions ON
+#define AUX(z,p,unused) BOOST_PP_COMMA_IF(p) boost::ref(arg##p)
+#define IMPL(z, NN, unused)                                \
+	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
+	     typename boost::disable_if< \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy<T, > BOOST_PP_INTERCEPT) >, \
+	     typename result_of_call<true,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type  >::type\
+	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) const {\
+	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}\
+	     \
+	     template<BOOST_PP_ENUM_PARAMS(NN, typename T)>\
+	     typename boost::disable_if< \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy<T, > BOOST_PP_INTERCEPT) >, \
+	     typename result_of_call<false,boost::tuple<BOOST_PP_ENUM_PARAMS(NN, T)> >::type >::type\
+	     operator()(BOOST_PP_ENUM_BINARY_PARAMS (NN,T, const & x)) {\
+	      return eval_( boost::make_tuple(BOOST_PP_ENUM_PARAMS(NN, x) ));}
+
+	     BOOST_PP_REPEAT_FROM_TO(1,BOOST_PP_INC(ARRAY_NRANK_MAX) , IMPL, nil);
+#undef IMPL
+#ifndef NEWNEW	     
+#define IMPL(z, NN, unused)                                \
+	     template< BOOST_PP_ENUM_PARAMS(NN, typename T) > \
+	     typename boost::enable_if< \
+	     boost::mpl::or_<  BOOST_PP_ENUM_BINARY_PARAMS(NN, triqs::lazy::is_lazy<T, > BOOST_PP_INTERCEPT) >, \
+	     typename boost::proto::result_of::make_expr< boost::proto::tag::function, triqs::lazy::FntDomain , \
+	     typename ViewFactory<ValueType,rank, Opt , ViewTag >::type,   \
+	     BOOST_PP_ENUM_BINARY_PARAMS(NN,T,const & BOOST_PP_INTERCEPT)>::type  >::type  \
+	     operator()( BOOST_PP_ENUM_BINARY_PARAMS(NN,T,const & arg) ) const { \
+	      return boost::proto::make_expr<boost::proto::tag::function, triqs::lazy::FntDomain>( \
+		typename ViewFactory<ValueType,rank, Opt , ViewTag >::type (self() )  , \
+		BOOST_PP_REPEAT(NN,AUX,nil)  );\
+	     }
+
+	     BOOST_PP_REPEAT_FROM_TO(1,BOOST_PP_INC(ARRAY_NRANK_MAX) , IMPL, nil);
+
+#undef IMPL
+
+#endif
+#endif
 	   };// end class
 
 }}//namespace triqs::arrays 

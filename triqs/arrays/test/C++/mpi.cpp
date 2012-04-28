@@ -24,7 +24,6 @@
 #include "./src/array.hpp"
 #include <boost/mpi.hpp>
 #include "./src/expressions/array_algebra.hpp"
-//#include "./src/expressions/arithmetic.hpp"
 #include "./python_stuff.hpp"
 #include <iostream>
 #include <sstream>

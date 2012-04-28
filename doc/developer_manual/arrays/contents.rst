@@ -1,26 +1,33 @@
 Array library
 ****************
 
+.. warning::
+    This library is beta.
+
+    This manual is not finished: work in progress.
+
+
 .. highlight:: c
 
-.. warning::
-
-    This library is still a prototype, of alpha quality.  
-
-
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :numbered:
 
    introduction
    getting_started
+   view_or_not_view
    basic_classes
    slicing
+   shape
+   debug 
    assignment
    algebras
-   STL
+   foreach
    functional
-   Interop_Python
+   STL
    H5
+   Interop_Python
    IO
    blas_lapack
+   FAQ
    design/contents 

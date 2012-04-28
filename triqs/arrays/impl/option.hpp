@@ -91,7 +91,7 @@ namespace triqs { namespace arrays {
     typedef typename mpl::at<s,key>::type T;
     typedef typename boost::mpl::if_< boost::is_same<T,mpl::void_> , def, T>::type type;
    };
-    
+
   template <class T1=void, class T2=void, class T3=void, class T4=void> 
    struct options { 
 
@@ -125,8 +125,7 @@ namespace triqs { namespace arrays {
     typedef typename at2<opt_list, _InitTag, Tag::no_init >::type InitTag;
 #endif
 #endif
-    };
-
+   };
 
   typedef options<Tag::C> C;
   typedef options<Tag::Fortran> Fortran;
@@ -134,21 +133,18 @@ namespace triqs { namespace arrays {
 
   using indexmaps::cuboid_map; namespace IndexOrder = indexmaps::IndexOrder;
 
-   // compute the indexmap from the dimension and the IndexOrderTag.
-   template<int D, typename P, bool BC> struct dim_iotag_2_imap { 
-    static_assert( (Tag::check<Permutations::perm_tag,P>::value), "IndexOrderTag must be Tag::C, Tag::Fortran or a Permutation");
-    static_assert( (Permutations::length<P>::value==D), "Error : dimension and size of the permutation must be equal");
-    typedef cuboid_map<IndexOrder::custom<P>, BC > type;
-   };
-   template<int D, bool BC> struct dim_iotag_2_imap<D,Tag::C,BC> { typedef cuboid_map<IndexOrder::C<D>, BC >  type;};
-   //template<int D> struct dim_iotag_2_imap<D,use_default,BC> { typedef cuboid_map<IndexOrder::C<D> >  type;};
-   template<int D, bool BC> struct dim_iotag_2_imap<D,Tag::Fortran,BC> { typedef cuboid_map<IndexOrder::Fortran<D>, BC >  type;};
+  // compute the indexmap from the dimension and the IndexOrderTag.
+  template<int D, typename P, bool BC> struct dim_iotag_2_imap { 
+   static_assert( (Tag::check<Permutations::perm_tag,P>::value), "IndexOrderTag must be Tag::C, Tag::Fortran or a Permutation");
+   static_assert( (Permutations::length<P>::value==D), "Error : dimension and size of the permutation must be equal");
+   typedef cuboid_map<IndexOrder::custom<P>, BC > type;
+  };
+  template<int D, bool BC> struct dim_iotag_2_imap<D,Tag::C,BC> { typedef cuboid_map<IndexOrder::C<D>, BC >  type;};
+  //template<int D> struct dim_iotag_2_imap<D,use_default,BC> { typedef cuboid_map<IndexOrder::C<D> >  type;};
+  template<int D, bool BC> struct dim_iotag_2_imap<D,Tag::Fortran,BC> { typedef cuboid_map<IndexOrder::Fortran<D>, BC >  type;};
 
   // given Rank and Opt, return the IndexMap
   template<int R, class Opt>  struct R_Opt_2_IM : dim_iotag_2_imap< R, typename Opt::IndexOrderTag, Opt::BoundCheck > {};
-  
-  //overrule for Fortran<1> -> C<1> // broken
-  //template<class Opt>  struct R_Opt_2_IM<1,Opt> : dim_iotag_2_imap< 1, Tag::C, Opt::BoundCheck > {};
 
   // inverse function : from an IM, an Opt, compute the new Opt such that it would give this indexmap
   template<class IM> struct IM_2_Ordertag;

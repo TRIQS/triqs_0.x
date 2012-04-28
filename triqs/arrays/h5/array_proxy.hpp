@@ -228,7 +228,8 @@ namespace triqs { namespace arrays {
     template< typename ISP>// put in the file...
      void operator=(ISP const & X) { 
       try { 
-       typename result_of::cache<false,Tag::C, ISP >::type C(X);
+       BOOST_AUTO(C,  make_const_cache_C_order(X));
+       //typename result_of::cache<false,Tag::C, ISP >::type C(X);
        DataSet dataset = file_group()->openDataSet( name().c_str() );
        dataset.write( h5::data(C.view()), h5::data_type_mem(C.view()),h5::data_space(C.view()),indexmap().template dataspace<T_is_complex>()); 
       } 
@@ -241,7 +242,8 @@ namespace triqs { namespace arrays {
       h5::resize_or_check(lhs,  indexmap().domain().lengths());
       try { 
        DataSet dataset = file_group()->openDataSet( name().c_str() );
-       typename result_of::cache<true,Tag::C, LHS >::type C(lhs);
+       BOOST_AUTO(C,  make_cache_C_order(lhs));
+       //typename result_of::cache<true,Tag::C, LHS >::type C(lhs);
        dataset.read( h5::data(C.view()), h5::data_type_mem(C.view()), h5::data_space(C.view()),
 	 indexmap().template dataspace<T_is_complex>() ); 
       }

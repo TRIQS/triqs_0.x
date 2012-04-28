@@ -24,7 +24,6 @@
 
 #include "./src/expressions/map.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
-//#include "./src/expressions/arithmetic.hpp"
 #include <iostream>
 #include <algorithm>
 

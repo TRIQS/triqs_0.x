@@ -24,6 +24,12 @@
 #define TRIQS_ARRAYS_COMPOUND_ASSIGN2_H_
 #include "./assignment.hpp"
 
+#define TRIQS_DEFINE_COMPOUND_OPERATORS(MYTYPE)\
+  template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { compound_assignment<MYTYPE,RHS,'A'>(*this,rhs); return *this;  }\
+  template<typename RHS> MYTYPE & operator -=(RHS const & rhs) { compound_assignment<MYTYPE,RHS,'S'>(*this,rhs); return *this;  }\
+  template<typename RHS> MYTYPE & operator *=(RHS const & rhs) { compound_assignment<MYTYPE,RHS,'M'>(*this,rhs); return *this;  }\
+  template<typename RHS> MYTYPE & operator /=(RHS const & rhs) { compound_assignment<MYTYPE,RHS,'D'>(*this,rhs); return *this;  }
+
 namespace triqs { namespace arrays { 
 
  namespace details { template<typename LHS, typename RHS, char OP, typename Enable = void>  struct comp_assign_impl; }

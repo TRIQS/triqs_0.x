@@ -72,14 +72,11 @@ Constructors of matrix_views
 Automatic construction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-matrix_view are normally automatically constructed by : 
-
-* :ref:`Slicing`, e.g. :: 
+matrix_view are normally automatically constructed by making (partial) views, ref:`Slicing`, e.g. :: 
  
    matrix<int> A(2,2);
    A(range(),2) ; // --> this makes a view...
-
-
+   A() ;          // --> this makes a view over the full array
 
 
 Explicit construction 
@@ -88,7 +85,7 @@ Explicit construction
 To explicitly make a view of an matrix, use make_view or () ::
 
    matrix<int> A(2,2);
-   make_view(A) //-> a view...
+   make_view(A)        //-> a view...
    make_view(A) = 13 ; // to assign e.g. 
    A() = 13;           // idem
 

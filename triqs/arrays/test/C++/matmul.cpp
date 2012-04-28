@@ -21,6 +21,7 @@
  ******************************************************************************/
 
 #include "./python_stuff.hpp"
+#include "./src/matrix.hpp"
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
 

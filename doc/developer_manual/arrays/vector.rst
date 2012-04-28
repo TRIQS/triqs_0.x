@@ -70,13 +70,11 @@ Constructors of vector_views
 Automatic construction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-vector_view are normally automatically constructed by : 
-
-* :ref:`Slicing`, e.g. :: 
+vector_view are normally automatically constructed by making (partial) views, ref:`Slicing`, e.g. :: 
  
-   vector<int> A(2,2);
+   tqa::vector<int> A(2,2);
    A(range(),2) ; // --> this makes a view...
-
+   A() ;          // --> this makes a view over the full array
 
 
 Explicit construction 

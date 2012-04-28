@@ -1,6 +1,0 @@
-Debugging
-================
-
-
-* Init of arrays....
-

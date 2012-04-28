@@ -44,6 +44,7 @@ Constructors of array
   array()                                     - Empty array of size 0
   array(size_t, ...., size_t)                 - From the dimensions [number of parameters checked at compile time]. 
                                                 Does **NOT** initialize the array elements to 0 ! (see compile time option)
+                                                Use my_array() =0 to do it explicitely.
   array(cuboid_domain<rank> const &)          - New array with the corresponding domain 
   array(const array &)                        - Copy construction
   array(PyObject * X)                         - Construct a new array from the Python object X. 
@@ -57,6 +58,11 @@ Constructors of array
                                               - X must have the appropriate domain (checked at compile time).
                                               - Constructs a new array of domain X.domain() and fills it with evaluation of X.  
   ==========================================  ===========================================================================================
+
+.. warning:: 
+   The constructor from the dimensions does **NOT** initialize the matrix to 0
+   (because it may not be optimal).
+   If needed, do it explicitely by (a if the array) `a()=0`;
 
 
 * Examples :: 
@@ -75,10 +81,6 @@ Constructors of array
    // if Obj is boost::python object
    array<double,2> A (Obj.ptr());
 
-.. warning:: 
-
-   By default, the constructor does **NOT** initialize the array to 0.  If needed, do it explicitely by `a()=0`;
-
 
 .. _array_constructors:
 
@@ -88,12 +90,11 @@ Constructors of array_views
 Automatic construction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-array_view are normally automatically constructed by : 
-
-* :ref:`Slicing`, e.g. :: 
+array_view are normally automatically constructed by making (partial) views, ref:`Slicing`, e.g. :: 
  
    array<int,2> A(2,2);
    A(range(),2) ; // --> this makes a view...
+   A() ;          // --> this makes a view over the full array
 
 Explicit construction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -101,7 +102,7 @@ Explicit construction
 To explicitly make a view of an array, use make_view or the ()::
 
    array<int,2> A(2,2);
-   make_view(A) //-> a view...
+   make_view(A);       //-> a view...
    make_view(A) = 13 ; // to assign e.g. 
    A() = 13;           // same thing...
 

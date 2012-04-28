@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/providers.hpp"
+#include "impl/compound_assign.hpp"
 #include "vector.hpp"
 
 namespace triqs { namespace arrays {
@@ -48,32 +48,6 @@ namespace triqs { namespace arrays {
   template<int D> struct tag_from_index_order<IndexOrder::C<D> > { typedef Tag::C type; };
   template<int D> struct tag_from_index_order<IndexOrder::Fortran<D> > { typedef Tag::Fortran type; };
 
-  // in this class, factor out the implementation of common code to matrix and matrix_view, but specific to matrices
-  // hence it is not in the indexmap_storage_pair class : e.g. dim, transpose, etc...
-  // I use CRTP
-  template <typename ValueType, typename Opt, typename Derived  >
-   struct matrix_common :
-    Tag::matrix_algebra_expression_terminal, 
-    public providers::compound_assign_ops<Derived>
-  {
-   size_t dim0() const { Derived const & self = static_cast<Derived const & >(*this); return self.shape()[0];} 
-   size_t dim1() const { Derived const & self = static_cast<Derived const & >(*this); return self.shape()[1];} 
-
-   static const char order = order_as_char<typename Opt::IndexOrderTag>::val;   
-   typedef matrix_view<ValueType, Option::options<typename details::flip_order<order>::type, typename Opt::StorageTag > > transpose_return_type;
-
-   bool is_square() const { return (this->dim0() == this->dim1());}
-   transpose_return_type transpose() const {
-    typedef typename transpose_return_type::indexmap_type im_type;
-    typedef Permutations::permutation<1,0> P;
-    Derived const & self = static_cast<Derived const & >(*this);
-    return transpose_return_type( 
-      im_type(eval_permutation<P>(self.indexmap().lengths()), eval_permutation<P>(self.indexmap().strides()),
-       self.indexmap().start_shift()),
-      self.storage()); 
-   }
-  };
-
  }// details ********************************************************
 
  // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
@@ -81,25 +55,35 @@ namespace triqs { namespace arrays {
   typedef typename boost::mpl::if_c<R == 1, vector_view<V,Opt >, matrix_view<V,Opt > >::type type;
  };
 
+ #define _IMPL_MATRIX_COMMON \
+  size_t dim0() const { return this->shape()[0];}\
+  size_t dim1() const { return this->shape()[1];}\
+  bool is_square() const { return dim0() == dim1();}\
+  \
+  static const char order = details::order_as_char<typename Opt::IndexOrderTag>::val;\
+  typedef matrix_view<ValueType, Option::options<typename details::flip_order<order>::type, typename Opt::StorageTag > > transpose_return_type;\
+  transpose_return_type transpose() const {\
+   typedef typename transpose_return_type::indexmap_type im_type; typedef Permutations::permutation<1,0> P;\
+   return transpose_return_type( im_type(eval_permutation<P>(this->indexmap().lengths()), eval_permutation<P>(this->indexmap().strides()),\
+      this->indexmap().start_shift()), this->storage());\
+  }
+
+#define _IMPL_ISP_TYPE(V,Opt) details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
+
  template <typename ValueType, typename Opt >
-  class matrix_view : 
-   Tag::matrix_view,
-   public details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view >,
-   public details::matrix_common<ValueType,Opt,matrix_view<ValueType,Opt> >
- {
-  public :
-   typedef details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > BaseType;
-   typedef  matrix_view<ValueType,Opt> view_type;
-   typedef  matrix<ValueType,Opt> non_view_type;
-   typedef  Opt opt_type;
+  class matrix_view : Tag::matrix_view, Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
+   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+   public :
+   typedef matrix_view<ValueType,Opt> view_type;
+   typedef matrix<ValueType,Opt>      non_view_type;
+   typedef void has_view_type_tag;
+   typedef Opt opt_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S>
-    matrix_view (typename BaseType::indexmap_type const & Ind,S const & Mem): BaseType(Ind, Mem) {}
+   template<typename S> matrix_view (typename impl_type::indexmap_type const & Ind,S const & Mem): impl_type(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
-   template<typename ISP>
-    matrix_view(const ISP & X): BaseType(X.indexmap(),X.storage()) {}
+   template<typename ISP> matrix_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -109,43 +93,43 @@ namespace triqs { namespace arrays {
 #endif
 
    /// Copy construction
-   matrix_view( matrix_view const & X): BaseType(X.indexmap(),X.storage()) {}
+   matrix_view( matrix_view const & X): impl_type(X.indexmap(),X.storage()) {}
 
    /** Assignement.  The size of the array MUST match exactly.  */
    template<typename RHS> matrix_view & operator=(const RHS & X) {assignment(*this,X); return *this; }
 
    matrix_view & operator=(matrix_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
 
- };
+   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
+   _IMPL_MATRIX_COMMON;
+  };
 
  //--------------------------------------------------
 
  template <typename ValueType, typename Opt >
-  class matrix: Tag::matrix, 
-  public matrix_view<ValueType,Opt>::BaseType,
-  public details::matrix_common<ValueType,Opt,matrix_view<ValueType,Opt> >
- {
-  public :
-   typedef typename matrix_view<ValueType,Opt>::BaseType BaseType;
-   typedef typename BaseType::value_type value_type;
-   typedef typename BaseType::storage_type storage_type;
-   typedef typename BaseType::indexmap_type indexmap_type;
+  class matrix: Tag::matrix,Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
+   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+   public :
+   typedef typename impl_type::value_type value_type;
+   typedef typename impl_type::storage_type storage_type;
+   typedef typename impl_type::indexmap_type indexmap_type;
    typedef matrix_view<ValueType,Opt> view_type;
    typedef matrix<ValueType,Opt> non_view_type;
+   typedef void has_view_type_tag;
    typedef Opt opt_type;
 
    /// Empty matrix.
-   matrix():BaseType(indexmap_type(),storage_type()) {}
+   matrix():impl_type(indexmap_type(),storage_type()) {}
 
-   matrix(size_t dim1, size_t dim2) : BaseType(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
+   matrix(size_t dim1, size_t dim2) : impl_type(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
 
    /** Makes a true (deep) copy of the data. */
-   matrix(const matrix & X): BaseType(X.indexmap(),X.storage().clone()) {}
+   matrix(const matrix & X): impl_type(X.indexmap(),X.storage().clone()) {}
 
    /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
    template <typename T> 
     matrix(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     BaseType(indexmap_type(X.domain())) { assignment(*this,X); }
+     impl_type(indexmap_type(X.domain())) { assignment(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -158,10 +142,10 @@ namespace triqs { namespace arrays {
     * Resizes the matrix. NB : all references to the storage is invalidated.
     * Does not initialize the matrix by default
     */
-   matrix & resize (size_t n1, size_t n2) { BaseType::resize(typename BaseType::domain_type (mini_vector<size_t,2>(n1,n2))); return *this; }
+   matrix & resize (size_t n1, size_t n2) { impl_type::resize(typename impl_type::domain_type (mini_vector<size_t,2>(n1,n2))); return *this;}
 
    /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
-   matrix & operator=(const matrix & X) { BaseType::resize_and_clone_data(X); return *this; }
+   matrix & operator=(const matrix & X) { impl_type::resize_and_clone_data(X); return *this; }
 
    /** 
     * Assignement resizes the matrix.  All references to the storage are therefore invalidated.
@@ -170,13 +154,16 @@ namespace triqs { namespace arrays {
    template<typename RHS> 
     matrix & operator=(const RHS & X) { 
      static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
-     BaseType::resize(X.domain());
+     impl_type::resize(X.domain());
      assignment(*this,X);
      return *this; 
     }
 
- };//matrix class
-
+   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix);
+   _IMPL_MATRIX_COMMON;
+  };//matrix class
+#undef _IMPL_MATRIX_COMMON
+#undef _IMPL_ISP_TYPE
  namespace details { 
 
   template <typename T, int R> 
@@ -242,8 +229,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
   };
 
  template <typename ValueType, typename Opt, typename Id >
-  struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: 
-  adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
+  struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
 
 }}}} // namespace detail, namespace binding, namespace numeric, namespace boost
 #endif

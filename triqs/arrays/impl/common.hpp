@@ -22,6 +22,7 @@
 
 #ifndef TRIQS_ARRAYS_IMPL_COMMON_H
 #define TRIQS_ARRAYS_IMPL_COMMON_H
+#define TRIQS_ARRAYS_ALREADY_INCLUDED
 
 // including python first remove some warning
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT

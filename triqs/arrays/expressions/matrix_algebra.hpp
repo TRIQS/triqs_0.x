@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -39,7 +38,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace matrix_al
  typedef indexmaps::cuboid_domain<2> matrix_domain_type;
 
  template<typename T> struct wrap_scalar { 
-  typedef T value_type; T const & val;
+  typedef T value_type; T val;
   typedef matrix_domain_type domain_type;
   wrap_scalar( T const &x ): val(x) {}
   domain_type domain() const { return domain_type();}
@@ -94,22 +93,43 @@ template<typename T> struct wrap_vector {
   ,proto::when< proto::negate<MatrixGrammar>, MatrixGrammar(proto::_child0)>
   > {};
 
+ /* ---------------------------------------------------------------------------------------------------
+  * Define the main expression template ArrayExpr, the domain and Grammar (implemented below)
+  * NB : it modifies the PROTO Domain to make *COPIES* of all objects.
+  * We escape the copy of array by specializing the template below (end of file)
+  * ---> to be rediscussed.
+  * cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+  --------------------------------------------------------------------------------------------------- */
  template<typename Expr> struct MatrixExpr;
- struct MatrixDomain : proto::domain<proto::generator<MatrixExpr>, MatrixGrammar> {};
+ struct MatrixDomain : proto::domain<proto::generator<MatrixExpr>, MatrixGrammar> {
+  template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
+ };
 
+ //For matrices and vectors, special treatment : the regular classes are replaced by the corresponding const view
+ template< typename T, typename Opt> struct MatrixDomain::as_child< matrix<T,Opt> > : 
+  MatrixDomain::proto_base_domain::template as_expr< const matrix_view<T,Opt> >{};
+
+ template< typename T, typename Opt> struct MatrixDomain::as_child< const matrix<T,Opt> > : 
+  MatrixDomain::proto_base_domain::template as_expr< const matrix_view<T,Opt> >{};
+
+ template< typename T, typename Opt> struct MatrixDomain::as_child< vector<T,Opt> > : 
+  MatrixDomain::proto_base_domain::template as_expr< const vector_view<T,Opt> >{};
+
+ template< typename T, typename Opt> struct MatrixDomain::as_child< const vector<T,Opt> > : 
+  MatrixDomain::proto_base_domain::template as_expr< const vector_view<T,Opt> >{};
+
+ /*
  //   Evaluation context
  template<typename KeyType, typename ReturnType>
-  struct MatrixEvalCtx : proto::callable_context< MatrixEvalCtx<KeyType,ReturnType> const > {
-   typedef ReturnType result_type;
-   KeyType const & key;
-   MatrixEvalCtx(KeyType const & key_) : key(key_) {}
-   template<typename T>// overrule just the terminals which have array interface.
-    typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
-    operator ()(p_tag::terminal, T const & t) const { return t[key]; }
-
-
-  };
-
+ struct MatrixEvalCtx : proto::callable_context< MatrixEvalCtx<KeyType,ReturnType> const > {
+ typedef ReturnType result_type;
+ KeyType const & key;
+ MatrixEvalCtx(KeyType const & key_) : key(key_) {}
+ template<typename T>// overrule just the terminals which have array interface.
+ typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
+ operator ()(p_tag::terminal, T const & t) const { return t[key]; }
+ };
+ */
  //   Expression
  template<typename Expr> struct MatrixExpr : Tag::expression, proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> { 
   typedef proto::extends<Expr, MatrixExpr<Expr>, MatrixDomain> base_type;
@@ -119,32 +139,28 @@ template<typename T> struct wrap_vector {
   typedef typename domain_type::index_value_type key_type;
   typedef size_t index_type;
   static const int rank = _T::domain_type::rank; static_assert((rank==2), "2 indices expected"); 
- 
-  _T transfo;
-  MatrixExpr( Expr const & expr = Expr() ) : base_type( expr ),transfo(MatrixGrammar()(*this)) {}
- 
-  domain_type domain() const { return transfo.domain(); }
-  //domain_type domain() const { return MatrixGrammar()(*this).domain(); }
+
+  MatrixExpr( Expr const & expr = Expr() ) : base_type( expr ) {} 
+
+  domain_type domain() const { return MatrixGrammar()(*this).domain(); }
   size_t dim0() const { return this->domain().lengths()[0];} 
   size_t dim1() const { return this->domain().lengths()[1];} 
 
   value_type operator[] (key_type const &key) const { 
-   return transfo[key];
-   //return MatrixGrammar()(*this)[key];
+   return MatrixGrammar()(*this)[key];
    //return proto::eval(*this, MatrixEvalCtx<key_type ,value_type> (key)); 
   }
- 
+
   value_type operator()(index_type const & i1, index_type const & i2) const { return (*this)[mini_vector<size_t,2>(i1,i2)]; }
- 
-  friend std::ostream &operator <<(std::ostream &sout, MatrixExpr<Expr> const &expr) { return proto::eval(expr, AlgebraPrintCtx (sout)); }
+
+  friend std::ostream &operator <<(std::ostream &sout, MatrixExpr<Expr> const &expr){return proto::eval(expr,AlgebraPrintCtx(sout));}
  };
 }}
 
 BOOST_PROTO_DEFINE_OPERATORS(expressions::matrix_algebra::IsMatrix, expressions::matrix_algebra::MatrixDomain);
 //BOOST_PROTO_DEFINE_OPERATORS(expressions::matrix_algebra::IsMatrixOrVector, expressions::matrix_algebra::MatrixDomain);
 
-template<typename Expr > matrix_view <typename Expr::value_type>
-eval( Expr const & e) { return matrix<typename Expr::value_type>(e);}
+template<typename Expr > matrix_view <typename Expr::value_type> eval( Expr const & e) { return matrix<typename Expr::value_type>(e);}
 
 }}//namespace triqs::arrays 
 
