@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   C= std::plus<matrix<long> >()(A,B);
   cout<<" C = A+B =  "<<C<<endl;
 
-  // array division
+  // matrix multiplication
   matrix<double> Af (2,2), Bf(2,2),Cf(2,2);
   Af = A; Bf = B; Bf(0,0) = 1; Cf()=0;
   cout<<" Af = "<<Af<<endl;
@@ -73,12 +73,17 @@ int main(int argc, char **argv) {
   
   cout<<" matrix( Af * (Bf + Cf) )"<<matrix<double>(Af*(Bf+ Cf))<<endl;
 
-  TEST( A);  
-  TEST ( tqa::eval( 2*A ));
-  TEST ( A+ 2);
-  TEST ( tqa::eval(A+2 ));
-  TEST ( tqa::eval(1 + A ));
+  TEST (A);  
+  TEST (tqa::make_matrix( 2*A ));
+  TEST (A+ 2);
+  TEST (tqa::make_matrix(A+2 ));
+  TEST (make_matrix(1 + A ));
 
-  // matrix <long> AA(3,3); TEST( tqa::eval(A+ 2* AA)); // exception because of size...
+  //  test the vector ops : scalar * vector, vector + vector, ...
+  tqa::vector<double> V(3); V(0) = 1; V(1)= 2; V(2) = 3;
+  tqa::vector<double> V2(3); V2(0) = 10; V2(1)= 20; V2(2) = 30;
+  TEST (tqa::make_vector( V2 + 2.0 *V));
+  
+  // matrix <long> AA(3,3); TEST( tqa::make_matrix(A+ 2* AA)); // exception because of size...
  return 0;
 }

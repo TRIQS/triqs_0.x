@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -29,23 +28,8 @@
 #include "../vector.hpp"
 #include <boost/numeric/bindings/blas/level2/gemv.hpp>
 
-namespace triqs { namespace arrays { 
- namespace linalg { namespace details { template<typename MT, typename VT> struct mat_vec_mul_impl; }}  // impl below
- namespace result_of { template<typename MT, typename VT> struct mat_vec_mul {  typedef linalg::details::mat_vec_mul_impl<MT,VT> type;}; }
-}}
-
-template<typename MT, typename VT>
-typename boost::enable_if< boost::mpl::and_<triqs::arrays::is_matrix_or_view<MT>, triqs::arrays::is_vector_or_view<VT> >, 
-	 triqs::arrays::linalg::details::mat_vec_mul_impl<MT,VT> >::type
-operator* (MT const & a, VT const & b) { 
- return triqs::arrays::linalg::details::mat_vec_mul_impl<MT,VT>(a,b); 
-}
-
 namespace triqs { namespace arrays { namespace linalg {
 
- template<typename MT, typename VT> details::mat_vec_mul_impl<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return details::mat_vec_mul_impl<MT,VT>(a,b); }
-
- namespace details { //------------- IMPLEMENTATION -----------------------------------
 
   template<typename MT, typename VT> 
    class mat_vec_mul_impl : Tag::expression_terminal, Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
@@ -95,8 +79,12 @@ namespace triqs { namespace arrays { namespace linalg {
    };
   template<typename MT, typename VT> 
    std::ostream & operator<<(std::ostream & out, mat_vec_mul_impl<MT,VT> const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
- }
 
-}}}//namespace linalg::triqs::arrays 
+  template<typename MT, typename VT> mat_vec_mul_impl<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return mat_vec_mul_impl<MT,VT>(a,b); }
+
+}// linalg
+namespace result_of { template<typename MT, typename VT> struct mat_vec_mul {  typedef linalg::mat_vec_mul_impl<MT,VT> type;}; }
+
+}}//namespace triqs::arrays 
 #endif
 

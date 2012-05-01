@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -119,7 +118,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
 BOOST_PROTO_DEFINE_OPERATORS(expressions::array_algebra::IsArray, expressions::array_algebra::ArrayDomain);
 
 template<typename Expr > array_view <typename Expr::value_type, Expr::domain_type::rank>
-eval( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}
+make_array( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}
 
 }}//namespace triqs::arrays
 

@@ -26,6 +26,7 @@
 #include <boost/numeric/bindings/blas/level3/gemm.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <triqs/utility/proto/tools.hpp>
 
 namespace triqs { namespace arrays { 
  namespace linalg {
@@ -46,6 +47,10 @@ namespace triqs { namespace arrays {
      typedef typename A::domain_type  domain_type;
      typedef typename domain_type::index_value_type index_value_type;
      A const & a; B const & b;
+     // should be this for putting in expr... redo the cache....
+     //typename A::view_type a; typename  B::view_type  b;
+     //typename utility::proto::const_view_type_if_exists_else_type<A>::type a;
+     //typename utility::proto::const_view_type_if_exists_else_type<B>::type b;
      mutable matrix_cache< A,matrix_cache_policy::const_copy, value_type> Ca;
      mutable matrix_cache< B,matrix_cache_policy::const_copy, value_type> Cb;
 
@@ -106,7 +111,7 @@ namespace triqs { namespace arrays {
       }
 
     };// class matmul_impl
-  
+
   template<typename A, typename B> 
    std::ostream & operator<<(std::ostream & out, matmul_impl<A,B> const & x){ return out<<"matmul("<<x.a<<","<<x.b<<")";}
 

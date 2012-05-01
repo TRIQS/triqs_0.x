@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
 
  cout<< " A " << A<<endl<<endl;
  cout<< " B " << B<<endl<<endl;
- cout<<" abs(B+B) = "<<eval(Abs(B+B)) <<endl<<endl;
- cout<<" A+10*B = "<<eval(A+10*B) <<endl<<endl;
- cout<<" Abs(A+10*B) = "<<eval(Abs(A+10*B)) <<endl<<endl;
- cout<<" Max(A,10*B)"<< eval(Max(A,10*B))<<endl<<endl;
+ cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<endl<<endl;
+ cout<<" A+10*B = "<<make_matrix(A+10*B) <<endl<<endl;
+ cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<endl<<endl;
+ cout<<" Max(A,10*B)"<< make_matrix(Max(A,10*B))<<endl<<endl;
  return 0;
 }

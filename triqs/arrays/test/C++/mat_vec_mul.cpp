@@ -26,8 +26,6 @@
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
-#include "./src/linalg/matmul.hpp"
-#include "./src/linalg/mat_vec_mul.hpp"
 #include "./src/linalg/inverse.hpp"
 #include "./src/linalg/determinant.hpp"
 #include <iostream>
