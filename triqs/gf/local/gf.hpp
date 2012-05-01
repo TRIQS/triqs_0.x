@@ -75,7 +75,7 @@ namespace triqs { namespace gf { namespace local {
   /*------------------------------------------------------------------------------
    * The implementation class for both the view and the regular gf class
    *-----------------------------------------------------------------------------*/
-  template<typename MeshType, bool IsView> class gf_impl : triqs::lazy::tag::auto_assign  { 
+  template<typename MeshType, bool IsView> class gf_impl  { 
    friend class gf_impl<MeshType,!IsView>;
    struct no_tail;
    public:
@@ -155,6 +155,7 @@ namespace triqs { namespace gf { namespace local {
    template<typename Arg, typename RHS> void fill_tail (no_tail &t, RHS const & rhs, Arg const & args ) {}
 
    public:
+   TRIQS_NVL_HAS_AUTO_ASSIGN(); 
    //template<typename F> void set_from_function(F f) { // mesh is invariant in this case... 
    template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { // mesh is invariant in this case... 
     const size_t Nmax = x.data.shape()[2]; for (size_t u=0; u<Nmax; ++u) x.data(range(),range(),u) = f(make_mesh_pt(x.mesh(),u));
@@ -259,6 +260,7 @@ namespace triqs { namespace gf { namespace local {
    //template<typename F> void set_from_function(F f) { B::set_from_function(f);} // bug of autodetection in triqs::lazy on gcc   
    template<typename RHS> gf_view & operator = (RHS const & rhs) { B::operator = (rhs); return *this; } 
    friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
+   friend std::ostream & operator << (std::ostream & out, gf_view const & x) { return out<<"gf_view";}
   };
 
   // -------------------------------   Expression template for gf  --------------------------------------------------
@@ -266,7 +268,7 @@ namespace triqs { namespace gf { namespace local {
   namespace proto=boost::proto;
 
   // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
-  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::expressions::matrix_algebra::IsMatrix<T>, triqs::utility::proto::is_in_ZRC<T> > {};
+  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::is_matrix_expr<T>, triqs::utility::proto::is_in_ZRC<T> > {};
 
   namespace gf_expr_temp { 
 
