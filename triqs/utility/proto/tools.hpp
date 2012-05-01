@@ -39,7 +39,6 @@
 #include <boost/fusion/container/vector.hpp>
 #include <boost/fusion/container/generation/make_vector.hpp>
 
-
 namespace triqs { namespace utility { namespace proto { 
  namespace mpl = boost::mpl; namespace proto = boost::proto; namespace p_tag= proto::tag;
  namespace bf = boost::fusion;
@@ -53,7 +52,6 @@ namespace triqs { namespace utility { namespace proto {
   /* -------------------------------------------
    *   Print context
    * ------------------------------------------ */
-
   struct algebra_print_ctx : proto::callable_context< algebra_print_ctx const > {
    typedef std::ostream &result_type;
    result_type out;
@@ -63,7 +61,8 @@ namespace triqs { namespace utility { namespace proto {
     operator ()(proto::tag::terminal, const T & A) const { return out<<A; }
    template <typename T>
     typename boost::disable_if<is_in_ZRC<T>, result_type>::type 
-    operator ()(proto::tag::terminal, const T & A) const { return out<< triqs::utility::typeid_name(A); }
+    operator ()(proto::tag::terminal, const T & A) const {return formal_print(out,A); }
+// return out<< triqs::utility::typeid_name(A); }
    template<typename L, typename R> result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
    template<typename L, typename R> result_type operator ()(proto::tag::minus, L const &l, R const &r) const { return out << '(' << l << " - " << r << ')'; }
    template<typename L, typename R> result_type operator ()(proto::tag::multiplies, L const &l, R const &r) const { return out << l << " * " << r; }
