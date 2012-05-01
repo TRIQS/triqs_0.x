@@ -24,31 +24,11 @@
 #define BOOST_RESULT_OF_USE_DECLTYPE
 #include <boost/utility/result_of.hpp>
 
-#include <boost/type_traits/add_const.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/typeof/typeof.hpp>
-#include <boost/proto/core.hpp>
-#include <boost/proto/context.hpp>
-#include <boost/proto/transform/arg.hpp>
-#include <boost/proto/transform.hpp>
-#include <boost/proto/domain.hpp>
-//#include <boost/preprocessor/repetition/repeat.hpp>
-//#include <boost/preprocessor/repetition/repeat_from_to.hpp>
-//#include <boost/preprocessor/facilities/intercept.hpp>
-#include <boost/preprocessor/seq/for_each.hpp>
-//#include <boost/preprocessor/punctuation/comma.hpp>
-//#include <boost/preprocessor/arithmetic/sub.hpp>
-#include <complex>
-#include "triqs/utility/typeid_name.hpp"
-#include <assert.h>
+#include "./tools.hpp"
 
 namespace triqs { namespace utility { namespace proto { 
 
  namespace mpl = boost::mpl; namespace proto = boost::proto; namespace p_tag= proto::tag;
-
- template<typename T> struct is_in_ZRC : boost::is_arithmetic<T>  {};
- template<> struct is_in_ZRC<bool> : mpl::true_ {};
- template<typename T> struct is_in_ZRC<std::complex<T> > :  mpl::true_ {};
 
  // technical : evaluation of arithmetic operators
  template<typename TAG, typename A, typename B> struct _binary_ops_;
@@ -84,8 +64,6 @@ namespace triqs { namespace utility { namespace proto {
 #undef OP_OP
 #undef BINARY_OP_LIST
 #undef UNARY_OP_LIST
-
- template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
 
  template <typename T, typename A0> struct call_result_type { 
   typedef BOOST_TYPEOF_TPL (pseudo_default_construct<T>() (pseudo_default_construct<A0>())) type;
@@ -226,25 +204,6 @@ namespace triqs { namespace utility { namespace proto {
  } //namespace algebra
 
 
- /* ---------------------------------------------------------------------------------------------------
-  * The domain can enforce copies or not...
-  * --------------------------------------------------------------------------------------------------- */
-
- template<typename T, typename Void =void> struct const_view_type_if_exists_else_type {typedef T type;}; 
- template<typename T> struct const_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
- // template<typename T> struct const_view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
-
- template< typename Grammar, template<typename Expr> class The_Expr, bool CopyOrViewInsteadOfRef> struct domain;
-
- template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : proto::domain<proto::generator<The_Expr>, Grammar> { };
- //If true it modifies the PROTO Domain to make *COPIES* of ALL objects.
- //cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
- //Objects which have a view type are however NOT copied, the copy is replaced by a VIEW.
- template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,true> : proto::domain<proto::generator<The_Expr>, Grammar> {
-  //template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
-  template< typename T > struct as_child : 
-   domain<Grammar,The_Expr,true>::proto_base_domain::template as_expr< typename boost::add_const<typename const_view_type_if_exists_else_type <T>::type >::type > {};
- };
 
  template<typename Grammar> struct domain_and_expression_generator { 
   template <typename Expr> struct The_Expr;  // the expression
