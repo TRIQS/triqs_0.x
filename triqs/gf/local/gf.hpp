@@ -37,13 +37,6 @@
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/cat.hpp>
 
-// to be moved up in the array lib and documented   
-namespace triqs { namespace arrays { 
-
- }}
-
-// --------------------------------------------------------------
-
 namespace triqs { namespace gf { namespace local {
 
  namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl; using tqa::range;
