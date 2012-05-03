@@ -18,10 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_EXPRESSION_MAT_VEC_MUL_H
 #define TRIQS_ARRAYS_EXPRESSION_MAT_VEC_MUL_H
-
+#include "../qcache.hpp"
 #include <boost/type_traits/is_same.hpp>
 #include <boost/typeof/typeof.hpp>
 #include "../matrix.hpp"
@@ -30,60 +29,71 @@
 
 namespace triqs { namespace arrays { namespace linalg {
 
+ template<typename MT, typename VT> 
+  class mat_vec_mul_lazy : Tag::expression_terminal, Tag::has_special_assign, 
+  Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
 
-  template<typename MT, typename VT> 
-   class mat_vec_mul_impl : Tag::expression_terminal, Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
+   typedef typename MT::value_type V1;
+   typedef typename VT::value_type V2;
+   static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
 
-    static_assert( (is_matrix_or_view<MT>::value), "mat_vec_mul : the first argument must be a matrix"); 
-    static_assert( (is_vector_or_view<VT>::value), "mat_vec_mul : the second argument must be a vector"); 
-    typedef typename MT::value_type V1;
-    typedef typename VT::value_type V2;
-    static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
+   public:
+   typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type;
+   typedef typename VT::domain_type  domain_type;
+   typedef typename utility::proto::const_view_type_if_exists_else_type<MT>::type M_type;
+   typedef typename utility::proto::const_view_type_if_exists_else_type<VT>::type V_type;
+   const M_type M; const V_type V;
 
-    public:
-    typedef BOOST_TYPEOF_TPL( V1() + V2()) value_type;
-    typedef typename VT::domain_type  domain_type;
-    typedef typename domain_type::index_value_type index_value_type;
-    MT const & M; VT const & V;
+   private: 
+   typedef vector<value_type> vector_type;
 
-    private: 
-    typedef typename VT::non_view_type vector_type;
-    mutable boost::shared_ptr<vector_type> result;
-    mutable bool init;
-    void compute() const { 
-     result.reset(new vector_type(M.dim0()));
-     boost::numeric::bindings::blas::gemv(1, M, V, 0, *result);
-     init =true;
+   struct internal_data {
+    vector_type R;
+    internal_data(mat_vec_mul_lazy const & P): R( P.a.size(), P.b.dim1()) {
+     const_qcache<M_type> Cm(P.M); const_qcache<V_type> Cv(P.V);
+     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0, R);
+    }
+   };
+   friend struct internal_data;
+   mutable boost::shared_ptr<internal_data> _ip;
+   void activate() const { if (!_ip) _ip= boost::make_shared<internal_data>(*this);}
+
+   public:
+   mat_vec_mul_lazy( MT const & M_, VT const & V_):M(M_),V(V_){
+    if (M.dim1() != V.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< M<<" "<< V; 
+   }
+
+   domain_type domain() const { return indexmaps::cuboid_domain<1>(mini_vector<size_t,1>(M.size()));}
+   size_t size() const { return M.dim0();} 
+
+   template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _ip->R [key]; }
+
+   template<typename LHS> 
+    void assign_invoke (LHS & lhs) const {// Optimized implementation of =
+     static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
+     const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
+     resize_or_check_if_view(lhs,make_shape(size()));
+     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0, lhs);
     }
 
-    public:
-    mat_vec_mul_impl( MT const & M_, VT const & V_):M(M_),V(V_),init(false){}
-    domain_type domain() const { return indexmaps::cuboid_domain<1>(mini_vector<size_t,1>(M.dim0()));}
-    value_type operator[] (index_value_type const & key) const { if (!init) compute(); return (*result) [key]; }
+   template<typename LHS> void assign_add_invoke (LHS & lhs) const { assign_comp_impl(lhs,1.0);}
+   template<typename LHS> void assign_sub_invoke (LHS & lhs) const { assign_comp_impl(lhs,-1.0);}
 
-    template<typename LHS> 
-     void assign_invoke (LHS & lhs) const { // Optimized implementation of =
-      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
-      boost::numeric::bindings::blas::gemv(1, M, V, 0, lhs);
-     }
-    template<typename LHS> 
-     void assign_add_invoke (LHS & lhs) const { // Optimized implementation of +=
-      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
-      boost::numeric::bindings::blas::gemv(1, M, V, 1, lhs);
-     }
-    template<typename LHS> 
-     void assign_sub_invoke (LHS & lhs) const { //Optimized implementation of -=
-      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view");
-      boost::numeric::bindings::blas::gemv(1, M, V, -1, lhs);
-     }
-   };
-  template<typename MT, typename VT> 
-   std::ostream & operator<<(std::ostream & out, mat_vec_mul_impl<MT,VT> const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
+   private:   
+   template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
+    static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
+    if (lhs.size() != size()) TRIQS_RUNTIME_ERROR<< "mat_vec_mul : -=/-= operator : size mismatch in M*V "<< lhs.size()<<" vs "<< size(); 
+    const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
+    boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), S, lhs);
+   }
+   
+   friend std::ostream & operator<<(std::ostream & out, mat_vec_mul_lazy const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
+  };
 
-  template<typename MT, typename VT> mat_vec_mul_impl<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return mat_vec_mul_impl<MT,VT>(a,b); }
+ template<typename MT, typename VT> mat_vec_mul_lazy<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return mat_vec_mul_lazy<MT,VT>(a,b); }
 
 }// linalg
-namespace result_of { template<typename MT, typename VT> struct mat_vec_mul {  typedef linalg::mat_vec_mul_impl<MT,VT> type;}; }
+//namespace result_of { template<typename MT, typename VT> struct mat_vec_mul {  typedef linalg::mat_vec_mul_lazy<MT,VT> type;}; }
 
 }}//namespace triqs::arrays 
 #endif

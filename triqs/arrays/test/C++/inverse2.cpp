@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
@@ -64,7 +62,6 @@ int main(int argc, char **argv) {
  cout<< " and det = "<< double(determinant(W))<<endl<<endl;
  Wi = inverse(W);
  cout<< " Wi= "<< Wi<<endl<<endl;
- //return 0;
 
  triqs::arrays::matrix<double,Option::Fortran > should_be_one(W*Wi);
   for (int i =0; i<3; ++i)

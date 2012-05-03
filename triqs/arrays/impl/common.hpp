@@ -78,7 +78,8 @@ namespace boost { namespace serialization { class access;}}
 #define TRIQS_ARRAYS_DEBUG_CHECK(Cond,Error) 
 #endif
 
-
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
@@ -165,6 +166,22 @@ namespace triqs { namespace arrays {
 
  /// Makes a clone
  template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
+
+ /// Is the data contiguous
+ //template<typename A> bool is_contiguous(A const &);
+ template<typename A> typename boost::enable_if<is_value_class<A>,bool>::type is_contiguous ( A ) {return true;}
+ template<typename A> typename boost::enable_if<is_view_class<A>,bool>::type is_contiguous ( A const & v) 
+ {return v.indexmap().is_contiguous();}
+
+ template< typename A> 
+  typename boost::enable_if<is_view_class<A> >::type 
+  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
+   if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
+  }
+
+ template< typename A> 
+  typename boost::enable_if<is_value_class<A> >::type 
+  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
 
 }}//namespace triqs::arrays
 #endif

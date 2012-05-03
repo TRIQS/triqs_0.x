@@ -34,8 +34,8 @@ namespace triqs { namespace arrays {
   operator* (M1 const & a, M2 const & b) { return triqs::arrays::linalg::matmul_lazy<M1,M2>(a,b); }
 
  template<typename M, typename V> // matrix * vector
-  typename boost::enable_if< mpl::and_<is_matrix_or_view<M>, is_vector_or_view<V> >, linalg::mat_vec_mul_impl<M,V> >::type
-  operator* (M const & m, V const & v) { return linalg::mat_vec_mul_impl<M,V>(m,v); }
+  typename boost::enable_if< mpl::and_<is_matrix_or_view<M>, is_vector_or_view<V> >, linalg::mat_vec_mul_lazy<M,V> >::type
+  operator* (M const & m, V const & v) { return linalg::mat_vec_mul_lazy<M,V>(m,v); }
   
  template<typename Expr> struct matrix_expr;
  template<typename Expr> struct vector_expr;

@@ -118,6 +118,12 @@ namespace triqs { namespace arrays {
     */
    vector & resize (size_t L) { impl_type::resize(typename impl_type::domain_type(mini_vector<size_t,1>(L))); return *this; }
 
+   /** 
+    * Resizes the vector. NB : all references to the storage is invalidated.
+    * Does not initialize the vector by default: to resize and init, do resize(IND).init()
+    */
+   vector & resize (const indexmaps::cuboid_domain<impl_type::rank> & l) { impl_type::resize(l); return *this; }
+
    /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
    vector & operator=(const vector & X) { impl_type::resize_and_clone_data(X); return *this; }
 

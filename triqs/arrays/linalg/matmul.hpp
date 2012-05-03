@@ -40,34 +40,37 @@ namespace triqs { namespace arrays { namespace linalg {
     public:
     typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type;
     typedef typename A::domain_type  domain_type;
-    typedef typename domain_type::index_value_type index_value_type;
     typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
     typedef typename utility::proto::const_view_type_if_exists_else_type<B>::type B_type;
-    A_type a; B_type b;
+    const A_type a; const B_type b;
 
     private: 
     typedef matrix<value_type> matrix_type;
-    mutable boost::shared_ptr<matrix_type> result;
-    mutable bool init;
-    void compute() const { 
-     const_qcache<A_type> Ca(a); const_qcache<B_type> Cb(b);
-     result.reset(new matrix_type(a.dim0(),  b.dim1()));
-     std::cerr<<" -------------------\n matmul : compute"<<std::endl;
-     std::cerr<<" a = "<< Ca() << "b = "<< Cb () <<std::endl;
-     boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, *result);
-     std::cerr<<" a * b = "<< *result <<std::endl;
-     init =true;
-    }
+
+    struct internal_data {
+     matrix_type R;
+     internal_data(matmul_lazy const & P): R( P.a.dim0(), P.b.dim1()) {
+      const_qcache<A_type> Ca(P.a); const_qcache<B_type> Cb(P.b);
+      std::cerr<<" -------------------\n matmul : compute"<<std::endl;
+      std::cerr<<" a = "<< Ca() << "b = "<< Cb () <<std::endl;
+      boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, R);
+      std::cerr<<" a * b = "<< R <<std::endl;
+     }
+    };
+    friend struct internal_data;
+    mutable boost::shared_ptr<internal_data> _ip;
+    void activate() const { if (!_ip) _ip= boost::make_shared<internal_data>(*this);}
 
     public:
-    matmul_lazy( A const & a_, B const & b_):a(a_),b(b_),init(false){
+    matmul_lazy( A const & a_, B const & b_):a(a_),b(b_){ 
      if (a.dim1() != b.dim0()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in A*B "<< a<<" "<< b; 
     }
 
     domain_type domain() const { return indexmaps::cuboid_domain<2>(mini_vector<size_t,2>(a.dim0(), b.dim1()));}
-    size_t dim0() const { return a.dim0();} size_t dim1() const { return b.dim1();} 
+    size_t dim0() const { return a.dim0();} 
+    size_t dim1() const { return b.dim1();} 
 
-    template<typename KeyType> value_type operator[] (KeyType const & key) const { if (!init) compute(); return (*result) [key]; }
+    template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _ip->R [key]; }
 
     template<typename LHS> 
      void assign_invoke (LHS & lhs) const {// Optimized implementation of =
@@ -75,7 +78,8 @@ namespace triqs { namespace arrays { namespace linalg {
       const_qcache<A_type> Ca(a); const_qcache<B_type> Cb(b);
       std::cerr<<" -------------------\n matmul : assign_invoke"<<std::endl;
       std::cerr<<" a = "<< Ca() << "b = "<< Cb () <<std::endl;
-      lhs.resize(dim0(),dim1());
+      resize_or_check_if_view(lhs,make_shape(dim0(),dim1()));
+      //lhs.resize(dim0(),dim1());
       boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, lhs);
       std::cerr<<" a * b = "<< lhs <<std::endl;
      }
@@ -83,7 +87,7 @@ namespace triqs { namespace arrays { namespace linalg {
     template<typename LHS> void assign_add_invoke (LHS & lhs) const { assign_comp_impl(lhs,1.0);}
     template<typename LHS> void assign_sub_invoke (LHS & lhs) const { assign_comp_impl(lhs,-1.0);}
 
-    private:   
+     private:   
     template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix"); 
      if (lhs.dim0() != dim0()) 
@@ -94,11 +98,12 @@ namespace triqs { namespace arrays { namespace linalg {
      boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), S, lhs);
     }
 
-    friend std::ostream & operator<<(std::ostream & out, matmul_lazy<A,B> const & x){return out<<"matmul("<<x.a<<","<<x.b<<")";}
+    friend std::ostream & operator<<(std::ostream & out, matmul_lazy<A,B> const & x){return out<<x.a<<" * "<<x.b;}
+    //friend std::ostream & operator<<(std::ostream & out, matmul_lazy<A,B> const & x){return out<<"matmul("<<x.a<<","<<x.b<<")";}
 
-   };// class matmul_lazy
+    };// class matmul_lazy
 
- template<typename A, typename B> matmul_lazy<A,B> matmul (A const & a, B const & b) { return matmul_lazy<A,B>(a,b); }
+    template<typename A, typename B> matmul_lazy<A,B> matmul (A const & a, B const & b) { return matmul_lazy<A,B>(a,b); }
 
-}}}//namespace triqs::arrays::linalg
+   }}}//namespace triqs::arrays::linalg
 #endif

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,9 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef EXPRESSION_INVERSE_H
-#define EXPRESSION_INVERSE_H
+#ifndef TRIQS_ARRAYS_LINALG_INVERSE_H
+#define TRIQS_ARRAYS_LINALG_INVERSE_H
 
 #include <boost/type_traits/is_same.hpp>
 #include <boost/typeof/typeof.hpp>

@@ -26,8 +26,9 @@
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
-#include "./src/linalg/inverse.hpp"
-#include "./src/linalg/determinant.hpp"
+#include "./src/linalg/det_and_inverse.hpp"
+//#include "./src/linalg/inverse.hpp"
+//#include "./src/linalg/determinant.hpp"
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
 
@@ -38,7 +39,7 @@ namespace lapack = boost::numeric::bindings::lapack;
 namespace bindings= boost::numeric::bindings;
 
 using linalg::inverse;
-using linalg::inverse_and_compute_det;
+//using linalg::inverse_and_compute_det;
 using linalg::determinant;
 
 template<typename Expr >
@@ -63,7 +64,8 @@ int main(int argc, char **argv) {
  cout<< inverse(W) << " = "<< triqs::arrays::matrix<double,Option::Fortran >  (inverse(W))<<endl<<endl;
  cout<< inverse(W) << " = "<< triqs::arrays::matrix<double >  (inverse(W))<<endl<<endl;
  
- cout<< " and det = "<< inverse_and_compute_det(W).determinant()<<endl<<endl;
+ cout<< " and det = "<< double(determinant(W))<<endl<<endl;
+ //cout<< " and det = "<< inverse_and_compute_det(W).determinant()<<endl<<endl;
  Wi = inverse(W);
  cout<< " Wi= "<< Wi<<endl<<endl;
  
