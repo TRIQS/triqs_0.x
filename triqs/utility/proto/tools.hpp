@@ -90,6 +90,30 @@ namespace triqs { namespace utility { namespace proto {
  };
 
  /* ---------------------------------------------------------------------------------------------------
+  * Simple transform to make * and /
+  * --------------------------------------------------------------------------------------------------- */
+
+  struct multiplies_t { 
+   BOOST_PROTO_CALLABLE();
+   template<typename Sig> struct result;
+   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
+    typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
+    typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
+   };
+   template<typename A, typename B> typename result<multiplies_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a*b; }
+  };
+
+  struct divides_t { 
+   BOOST_PROTO_CALLABLE();
+   template<typename Sig> struct result;
+   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
+    typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
+    typedef BOOST_TYPEOF_TPL( T1() / T2()) type;
+   };
+   template<typename A, typename B> typename result<divides_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a/b; }
+  };
+
+  /* ---------------------------------------------------------------------------------------------------
   * A transform to evaluate ...
   * --------------------------------------------------------------------------------------------------- */
 
