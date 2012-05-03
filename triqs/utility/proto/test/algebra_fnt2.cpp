@@ -139,7 +139,7 @@ int main() {
  TEST( tqa::make_matrix ( ( 2*f1  + 8*f2 + f2/2 ) (1)) );
  
  // BUggy for the moment because of matmul to be generalized/...
- //TEST( tqa::make_matrix ( ( A*f1  +f2 ) (1)) );
+ TEST( tqa::make_matrix ( ( A*f1  +f2 ) (1)) );
 
  print ( f1);
  print ( f1 - f2);
