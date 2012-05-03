@@ -157,6 +157,8 @@ namespace triqs { namespace gf { namespace local {
 
    template<typename X> struct result;  // implementing ResultOf concept
    template<typename THIS> struct result<THIS(arg0_type)>      { typedef mv_type type; };
+   //template<typename THIS> struct result<THIS(int)>      { typedef mv_type type; };
+   //template<typename THIS, typename T> struct result<THIS(T)>            { typedef mv_type type; };
    template<typename THIS> struct result<THIS(arg_range_type)> { typedef data_view_type type; };
    template<typename THIS> struct result<THIS(domains::infty)> { typedef tail_view_type type; };
 
@@ -291,7 +293,7 @@ namespace triqs { namespace gf { namespace local {
     template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
     template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
     template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
-     static_assert(boost::is_same<M1,M2>::value, "FATAL : two meshes of different type mixed in an expression");
+     static_assert((boost::is_same<M1,M2>::value), "FATAL : two meshes of different type mixed in an expression");
      return m1;
     }
    };
