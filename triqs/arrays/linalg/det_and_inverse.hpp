@@ -26,6 +26,7 @@
 #include <boost/utility/enable_if.hpp>
 #include "../impl/common.hpp"
 #include "../qcache.hpp"
+#include "triqs/utility/proto/tools.hpp"
 //#include "../vector.hpp"
 #include <boost/numeric/bindings/lapack/computational/getrf.hpp>
 #include <boost/numeric/bindings/lapack/computational/getri.hpp>
