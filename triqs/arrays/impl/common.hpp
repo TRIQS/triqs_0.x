@@ -113,6 +113,10 @@ namespace triqs { namespace arrays {
 
  template <typename T> struct is_expression : Tag::check<Tag::expression,T> {};
 
+ template<typename T> struct is_matrix_expr : Tag::check<Tag::matrix_algebra_expression_terminal,T> {}; 
+ template<typename T> struct is_vector_expr : Tag::check<Tag::vector_algebra_expression_terminal,T> {}; 
+ template<typename T> struct is_matrix_or_vector_expr : boost::mpl::or_<is_matrix_expr<T>, is_vector_expr<T> > {};
+
  template<typename T> struct has_immutable_array_interface : 
   boost::mpl::or_<
   Tag::check<Tag::has_immutable_array_interface,T>, 

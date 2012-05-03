@@ -29,13 +29,9 @@ namespace triqs { namespace arrays {
 
  namespace bf = boost::fusion; namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
  
- template<typename T> struct is_matrix_expr : Tag::check<Tag::matrix_algebra_expression_terminal,T> {}; 
- template<typename T> struct is_vector_expr : Tag::check<Tag::vector_algebra_expression_terminal,T> {}; 
- template<typename T> struct is_matrix_or_vector_expr : boost::mpl::or_<is_matrix_expr<T>, is_vector_expr<T> > {};
-
  template<typename M1, typename M2> // matrix * matrix
-  typename boost::enable_if< mpl::and_<is_matrix_expr<M1>, is_matrix_expr<M2> >, linalg::matmul_impl<M1,M2> >::type
-  operator* (M1 const & a, M2 const & b) { return triqs::arrays::linalg::matmul_impl<M1,M2>(a,b); }
+  typename boost::enable_if< mpl::and_<is_matrix_expr<M1>, is_matrix_expr<M2> >, linalg::matmul_lazy<M1,M2> >::type
+  operator* (M1 const & a, M2 const & b) { return triqs::arrays::linalg::matmul_lazy<M1,M2>(a,b); }
 
  template<typename M, typename V> // matrix * vector
   typename boost::enable_if< mpl::and_<is_matrix_or_view<M>, is_vector_or_view<V> >, linalg::mat_vec_mul_impl<M,V> >::type
