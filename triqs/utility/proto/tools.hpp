@@ -108,7 +108,7 @@ namespace triqs { namespace utility { namespace proto {
    template<typename Sig> struct result;
    template<typename This, typename A,  typename B> struct result<This(A,B)> { 
     typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
-    typedef BOOST_TYPEOF_TPL( T1() / T2()) type;
+    typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
    };
    template<typename A, typename B> typename result<divides_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a/b; }
   };
@@ -123,7 +123,7 @@ namespace triqs { namespace utility { namespace proto {
   template<typename Sig> struct result;
   template<typename This, typename F, typename AL> struct result<This(F,AL)>
    : boost::result_of<typename boost::remove_reference<F>::type 
-   (typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type )> {};
+   (typename boost::remove_reference<typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type>::type )> {};
 
   template<typename F, typename AL>
    typename boost::result_of<F(typename bf::result_of::at<AL const, mpl::int_<0> >::type)>::type 

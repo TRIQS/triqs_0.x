@@ -144,8 +144,8 @@ int main() {
  print ( f1);
  print ( f1 - f2);
 
- auto e = 2*f1  + 8*f2;
- auto l = accumulator_transform<myaccu>()(e, bf::nil() );
- std::cerr  << triqs::utility::typeid_name(l) <<std::endl;
+ //auto e = 2*f1  + 8*f2;
+ //auto l = accumulator_transform<myaccu>()(e, bf::nil() );
+ //std::cerr  << triqs::utility::typeid_name(l) <<std::endl;
 
 };
