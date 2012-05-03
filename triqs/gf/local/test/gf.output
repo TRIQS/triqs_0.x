@@ -85,7 +85,7 @@
 [[(2.9,0),(0,0)]
  [(0,0),(2.9,0)]]
 
-((G + Gc)( inf)) ---> (triqs::gf::local::gf_view<triqs::gf::meshes::tail> + triqs::gf::local::gf_view<triqs::gf::meshes::tail>)
+((G + Gc)( inf)) ---> (gf_view + gf_view)
 
 ((t + 2.3)(0)) ---> (
 [[(2.9,0),(0,0)]

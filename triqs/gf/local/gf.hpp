@@ -40,17 +40,7 @@
 // to be moved up in the array lib and documented   
 namespace triqs { namespace arrays { 
 
- template< typename A> 
-  typename boost::enable_if<is_view_class<A> >::type 
-  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
-   if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
-  }
-
- template< typename A> 
-  typename boost::enable_if<is_value_class<A> >::type 
-  resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
-
-}}
+ }}
 
 // --------------------------------------------------------------
 
