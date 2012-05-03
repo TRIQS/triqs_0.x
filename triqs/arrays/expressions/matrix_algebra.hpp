@@ -40,7 +40,7 @@ namespace triqs { namespace arrays {
  template<typename Expr> struct matrix_expr;
  template<typename Expr> struct vector_expr;
 
- namespace detail_expr_matvec{ // expressions { namespace matrix_vector_algebra { 
+ namespace detail_expr_matvec{ 
 
   using boost::enable_if; using boost::enable_if_c; using proto::_left; using proto::_right; 
   using proto::_value; namespace p_tag= proto::tag; using boost::remove_reference;
@@ -91,26 +91,6 @@ namespace triqs { namespace arrays {
     typename result<eval_mv(M,AL)>::type operator ()(M const & m, AL const & al) const { return m[bf::at<mpl::int_<0> >(al)]; }
   };
 
-  struct mult_t { // a transform that multiplies (? proto::multiplies has a pb : incomplete type error later in matrix_expr
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
-    typedef typename remove_reference<A>::type T1; typedef typename remove_reference<B>::type T2;
-    typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
-   };
-   template<typename A, typename B> typename result<mult_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a*b; }
-  };
-
-  struct divides_t { 
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
-    typedef typename remove_reference<A>::type T1; typedef typename remove_reference<B>::type T2;
-    typedef BOOST_TYPEOF_TPL( T1() / T2()) type;
-   };
-   template<typename A, typename B> typename result<divides_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a/b; }
-  };
-
   struct eval_t;
   struct eval_t_cases { template <typename TAG> struct case_: proto::not_<proto::_>{}; };
   template<> struct eval_t_cases::case_<proto::tag::terminal> :  
@@ -123,11 +103,11 @@ namespace triqs { namespace arrays {
   template<> struct eval_t_cases::case_<proto::tag::minus> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
   template<> struct eval_t_cases::case_<proto::tag::multiplies> :  
    proto::or_<
-   proto::when< proto::multiplies<ScalarGrammar,eval_t>,  mult_t (_value(_left),eval_t(_right)) > 
+   proto::when< proto::multiplies<ScalarGrammar,eval_t>,  tup::multiplies_t (_value(_left),eval_t(_right)) > 
    //proto::when< proto::multiplies<ScalarGrammar,eval_t>,  proto::_default<proto::multiplies<_value(_left),eval_t(_right)> >  > 
-   ,proto::when< proto::multiplies<eval_t,ScalarGrammar>, mult_t (_value(_right),eval_t(_left))  > 
+   ,proto::when< proto::multiplies<eval_t,ScalarGrammar>, tup::multiplies_t (_value(_right),eval_t(_left))  > 
    > {};
-  template<> struct eval_t_cases::case_<proto::tag::divides>:proto::when< proto::divides<eval_t,ScalarGrammar>, divides_t(eval_t(_left),_value(_right))>{};
+  template<> struct eval_t_cases::case_<proto::tag::divides>:proto::when< proto::divides<eval_t,ScalarGrammar>, tup::divides_t(eval_t(_left),_value(_right))>{};
   template<> struct eval_t_cases::case_<proto::tag::negate> : proto::when< proto::negate<eval_t>, eval_t(_left)> {};
   struct eval_t : proto::switch_<eval_t_cases> {};
 

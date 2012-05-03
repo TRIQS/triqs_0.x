@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_QCACHE_H
 #define TRIQS_ARRAYS_QCACHE_H
 #include "./matrix.hpp"
@@ -27,8 +26,7 @@
 #include <boost/mpl/if.hpp>
 namespace triqs { namespace arrays { 
 
- /*
-  * const_qcache.
+ /**
   * Given A, a matrix (or vector/array) it presents via the () operator
   *  - a const & to the matrix if A is a value class (matrix, vector, array, ..)
   *  - a const & to a new value class is A is a an expression 
@@ -85,7 +83,7 @@ namespace triqs { namespace arrays {
   exposed_type operator()() { if (need_copy && (!init)) prep(); return *(V);}
  };
 
- /*
+ /**
   * reflexive_qcache.
   * Given A, a value or a view, it presents via the () operator
   *  - a & to the matrix if A is a value class (matrix, vector, array, ..)

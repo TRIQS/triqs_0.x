@@ -29,6 +29,14 @@
 
 namespace triqs { namespace arrays { namespace linalg {
 
+ ///
+ template<typename MT, typename VT> class mat_vec_mul_lazy;
+ 
+ ///
+ template<typename MT, typename VT> mat_vec_mul_lazy<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return mat_vec_mul_lazy<MT,VT>(a,b); }
+ 
+ // ----------------- implementation -----------------------------------------
+ 
  template<typename MT, typename VT> 
   class mat_vec_mul_lazy : Tag::expression_terminal, Tag::has_special_assign, 
   Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
@@ -55,8 +63,8 @@ namespace triqs { namespace arrays { namespace linalg {
     }
    };
    friend struct internal_data;
-   mutable boost::shared_ptr<internal_data> _ip;
-   void activate() const { if (!_ip) _ip= boost::make_shared<internal_data>(*this);}
+   mutable boost::shared_ptr<internal_data> _id;
+   void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
 
    public:
    mat_vec_mul_lazy( MT const & M_, VT const & V_):M(M_),V(V_){
@@ -66,7 +74,7 @@ namespace triqs { namespace arrays { namespace linalg {
    domain_type domain() const { return indexmaps::cuboid_domain<1>(mini_vector<size_t,1>(M.size()));}
    size_t size() const { return M.dim0();} 
 
-   template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _ip->R [key]; }
+   template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
 
    template<typename LHS> 
     void assign_invoke (LHS & lhs) const {// Optimized implementation of =
@@ -86,15 +94,8 @@ namespace triqs { namespace arrays { namespace linalg {
     const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), S, lhs);
    }
-   
    friend std::ostream & operator<<(std::ostream & out, mat_vec_mul_lazy const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
   };
-
- template<typename MT, typename VT> mat_vec_mul_lazy<MT,VT> mat_vec_mul (MT const & a, VT const & b) { return mat_vec_mul_lazy<MT,VT>(a,b); }
-
-}// linalg
-//namespace result_of { template<typename MT, typename VT> struct mat_vec_mul {  typedef linalg::mat_vec_mul_lazy<MT,VT> type;}; }
-
-}}//namespace triqs::arrays 
+}}}//namespace triqs::arrays::linalg
 #endif
 

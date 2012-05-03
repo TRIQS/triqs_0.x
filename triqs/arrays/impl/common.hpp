@@ -169,8 +169,8 @@ namespace triqs { namespace arrays {
 
  /// Is the data contiguous
  //template<typename A> bool is_contiguous(A const &);
- template<typename A> typename boost::enable_if<is_value_class<A>,bool>::type is_contiguous ( A ) {return true;}
- template<typename A> typename boost::enable_if<is_view_class<A>,bool>::type is_contiguous ( A const & v) 
+ template<typename A> typename boost::enable_if<is_value_class<A>,bool>::type has_contiguous_data ( A ) {return true;}
+ template<typename A> typename boost::enable_if<is_view_class<A>,bool>::type has_contiguous_data ( A const & v) 
  {return v.indexmap().is_contiguous();}
 
  template< typename A> 
