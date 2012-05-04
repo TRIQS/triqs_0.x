@@ -20,11 +20,6 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_LOCAL_GF_H
 #define TRIQS_GF_LOCAL_GF_H 
-
-// PUT AT THE TOP !!!!!
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include <boost/utility/result_of.hpp>
-
 #include <boost/type_traits/is_complex.hpp> 
 #include <triqs/lazy/core.hpp>
 #include <triqs/arrays/array.hpp>
@@ -154,13 +149,6 @@ namespace triqs { namespace gf { namespace local {
 
    typedef tqa::matrix_view<value_element_type, arrays::Option::Fortran>       mv_type;
    typedef tqa::matrix_view<const value_element_type, arrays::Option::Fortran> const_mv_type;
-
-   template<typename X> struct result;  // implementing ResultOf concept
-   template<typename THIS> struct result<THIS(arg0_type)>      { typedef mv_type type; };
-   //template<typename THIS> struct result<THIS(int)>      { typedef mv_type type; };
-   //template<typename THIS, typename T> struct result<THIS(T)>            { typedef mv_type type; };
-   template<typename THIS> struct result<THIS(arg_range_type)> { typedef data_view_type type; };
-   template<typename THIS> struct result<THIS(domains::infty)> { typedef tail_view_type type; };
 
    mv_type       operator() ( mesh_pt_type const & x)       { return data(range(),range(),x.i);}
    const_mv_type operator() ( mesh_pt_type const & x) const { return data(range(),range(),x.i);}
