@@ -21,9 +21,6 @@
 #ifndef TRIQS_UTILITY_ALGEBRA_H
 #define TRIQS_UTILITY_ALGEBRA_H 
 
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include <boost/utility/result_of.hpp>
-
 #include "./tools.hpp"
 
 namespace triqs { namespace utility { namespace proto { 
@@ -42,20 +39,20 @@ namespace triqs { namespace utility { namespace proto {
 #define OP_OP(elem)   BOOST_PP_TUPLE_ELEM(2,1,elem)
 
  // a trick to avoid putting T() in the typeof type deduction ! This code is NEVER used 
- template<class T> typename boost::unwrap_reference<T>::type pseudo_default_construct() { 
+ template<class T> typename boost::unwrap_reference<T>::type pdc() { 
   typename boost::unwrap_reference<T>::type * x= NULL; assert(0); return *x; 
  }
 
 #define AUX(r, data, elem) \
  template<typename A, typename B> struct _binary_ops_<p_tag::OP_NAME(elem),A,B> {\
-  typedef BOOST_TYPEOF_TPL( pseudo_default_construct<A>() OP_OP(elem) pseudo_default_construct<B>()) result_type;\
+  typedef BOOST_TYPEOF_TPL( pdc<A>() OP_OP(elem) pdc<B>()) result_type;\
   static result_type invoke( A const &a , B const & b) { return a OP_OP(elem) b;} };
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , BINARY_OP_LIST); 
 #undef AUX
 
 #define AUX(r, data, elem) \
  template<typename A> struct _unary_ops_<p_tag::OP_NAME(elem),A> {\
-  typedef BOOST_TYPEOF_TPL( OP_OP(elem) pseudo_default_construct<A>()) result_type;\
+  typedef BOOST_TYPEOF_TPL( OP_OP(elem) pdc<A>()) result_type;\
   static result_type invoke( A const &a ) { return OP_OP(elem) a;} };
  BOOST_PP_SEQ_FOR_EACH(AUX, nil , UNARY_OP_LIST); 
 #undef AUX
@@ -66,7 +63,7 @@ namespace triqs { namespace utility { namespace proto {
 #undef UNARY_OP_LIST
 
  template <typename T, typename A0> struct call_result_type { 
-  typedef BOOST_TYPEOF_TPL (pseudo_default_construct<T>() (pseudo_default_construct<A0>())) type;
+  typedef BOOST_TYPEOF_TPL (pdc<T>() (pdc<A0>())) type;
  };
 
  namespace algebra { 

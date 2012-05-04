@@ -1,7 +1,3 @@
-// PUT AT THE TOP !!!!!
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include <boost/utility/result_of.hpp>
-
 #include <triqs/utility/proto/tools.hpp>
 #include <boost/type_traits/is_complex.hpp> 
 #include <triqs/arrays/array.hpp>
@@ -127,6 +123,10 @@ int main() {
 
  TEST( (f1 - f2));
  TEST(f1(1));
+ 
+ typedef struct triqs::arrays::matrix_expr<boost::proto::exprns_::basic_expr<boost::proto::tagns_::tag::terminal, boost::proto::argsns_::term<double>, 0l> > EE;
+ typedef EE::proto_derived_expr yy;
+ 
  TEST( (2.0* f1 ) (0));
  TEST( (2* f1 + f2) (1));
  TEST( tqa::make_matrix ( ( 2*f1  +f2 ) (1)) );

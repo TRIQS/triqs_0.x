@@ -21,9 +21,6 @@
 #ifndef TRIQS_UTILITY_PROTO_H
 #define TRIQS_UTILITY_PROTO_H
 
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include <boost/utility/result_of.hpp>
-
 #include <boost/type_traits/add_const.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -117,18 +114,48 @@ namespace triqs { namespace utility { namespace proto {
   * A transform to evaluate ...
   * --------------------------------------------------------------------------------------------------- */
 
+  // a trick to avoid putting T() in the typeof type deduction ! This code is NEVER used. It is a hack to avoid decltype....
+ template<class T> typename boost::remove_reference<typename boost::unwrap_reference<T>::type>::type * pseudo_default_construct() { 
+  typename boost::remove_reference<typename boost::unwrap_reference<T>::type>::type * x= NULL; assert(0); return x; 
+ }
+/*
+ // transform to eval the function call 
+#define AUX6(z,p,unused) (*(pseudo_default_construct<typename boost::remove_reference<A##p>::type>()))
+#define AUX(z, NN, unused) \
+ struct call_fnt_t##NN {\
+  BOOST_PROTO_CALLABLE();\
+  template<typename Sig> struct result;\
+  template<typename This, typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)> struct result<This(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))> {\
+   typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(NN,AUX6,nil))) type;\
+  };\
+  template<typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)>\
+  typename result<call_fnt_t##NN(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))>::type\
+  operator()(const F & f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(NN,A, const &a)) const { return f(BOOST_PP_ENUM_PARAMS(NN,a));}\
+ };
+ BOOST_PP_REPEAT(BOOST_PP_INC(TRIQS_LAZY_MAXNARGS_CALLABLE), AUX, nil)
+#undef AUX
+#undef AUX6
+*/
+
  template<int Arity> struct eval_fnt;
+
+#define AUX6(z,p,unused) (*(pseudo_default_construct<typename boost::remove_reference<A##p>::type>()))
  template<> struct eval_fnt<1> {
   BOOST_PROTO_CALLABLE();
   template<typename Sig> struct result;
-  template<typename This, typename F, typename AL> struct result<This(F,AL)>
-   : boost::result_of<typename boost::remove_reference<F>::type 
-   (typename boost::remove_reference<typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type>::type )> {};
+  //template<typename This, typename F, typename AL> struct result<This(F,AL)>
+  // : boost::result_of<typename boost::remove_reference<F>::type 
+  // (typename boost::remove_reference<typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type>::type )> {};
+  template<typename This, typename F, typename AL> struct result<This(F,AL)> {
+   typedef typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type A0;
+   typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(1,AUX6,nil))) type;
+  };
 
   template<typename F, typename AL>
-   typename boost::result_of<F(typename bf::result_of::at<AL const, mpl::int_<0> >::type)>::type 
+   typename result<eval_fnt(F,AL)>::type 
    operator ()(F const &f, AL const & al) const { return f(bf::at<mpl::int_<0> >(al)); }
  };
+#undef AUX6
 
 
 }}}
