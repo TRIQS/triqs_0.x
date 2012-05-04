@@ -33,6 +33,7 @@ using namespace triqs::arrays;
 namespace tqa = triqs::arrays;
 using namespace indexmaps;
 using namespace storages;
+#include "triqs/utility/typeid_name.hpp"
 
 int main(int argc, char **argv) {
 
@@ -83,7 +84,14 @@ int main(int argc, char **argv) {
   tqa::vector<double> V(3); V(0) = 1; V(1)= 2; V(2) = 3;
   tqa::vector<double> V2(3); V2(0) = 10; V2(1)= 20; V2(2) = 30;
   TEST (tqa::make_vector( V2 + 2.0 *V));
-  
+ 
+  // test the division by a matrix
+  TEST(Af);
+  TEST(1/Af);
+  TEST(make_matrix(2/Af));
+  TEST(make_matrix(Af/2));
+  TEST(make_matrix(Af/Af));
+
   // matrix <long> AA(3,3); TEST( tqa::make_matrix(A+ 2* AA)); // exception because of size...
  return 0;
 }

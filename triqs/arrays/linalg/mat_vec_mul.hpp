@@ -27,7 +27,7 @@
 #include "../vector.hpp"
 #include <boost/numeric/bindings/blas/level2/gemv.hpp>
 
-namespace triqs { namespace arrays { namespace linalg {
+namespace triqs { namespace arrays { 
 
  ///
  template<typename MT, typename VT> class mat_vec_mul_lazy;
@@ -96,6 +96,6 @@ namespace triqs { namespace arrays { namespace linalg {
    }
    friend std::ostream & operator<<(std::ostream & out, mat_vec_mul_lazy const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
   };
-}}}//namespace triqs::arrays::linalg
+}}//namespace triqs::arrays
 #endif
 

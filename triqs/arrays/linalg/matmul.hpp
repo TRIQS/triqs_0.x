@@ -26,7 +26,7 @@
 #include <triqs/utility/proto/tools.hpp>
 #include "../qcache.hpp"
 
-namespace triqs { namespace arrays { namespace linalg {
+namespace triqs { namespace arrays {
 
  ///
  template<typename A, typename B> class matmul_lazy;
@@ -102,5 +102,5 @@ namespace triqs { namespace arrays { namespace linalg {
 
    };// class matmul_lazy
 
-}}}//namespace triqs::arrays::linalg
+}}//namespace triqs::arrays
 #endif

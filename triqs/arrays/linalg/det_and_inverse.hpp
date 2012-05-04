@@ -31,7 +31,7 @@
 #include <boost/numeric/bindings/lapack/computational/getrf.hpp>
 #include <boost/numeric/bindings/lapack/computational/getri.hpp>
 
-namespace triqs { namespace arrays { namespace linalg { 
+namespace triqs { namespace arrays { 
 
  /// Error which occurs during the matrix inversion 
  class matrix_inverse_exception : public triqs::runtime_error {};
@@ -45,12 +45,12 @@ namespace triqs { namespace arrays { namespace linalg {
   * It keeps view of the object A if it a matrix, a copy if it is a formal expression.
   */ 
  template<typename A, class Enable = void> class inverse_lazy;
-
- /// Lazy inversion 
- template<class A> inverse_lazy<A> inverse (A const & a) { return inverse_lazy<A>(a); }
  
  ///
  template<typename A> struct determinant_lazy;
+ 
+ /// Lazy inversion 
+ template<class A> inverse_lazy<A> inverse (A const & a) { return inverse_lazy<A>(a); }
  
  /// Lazy computation of det
  template<typename A> determinant_lazy<A> determinant (A const & a) { return determinant_lazy<A>(a); }
@@ -106,7 +106,7 @@ namespace triqs { namespace arrays { namespace linalg {
    step=2;
    _compute_det(W); 
    info = boost::numeric::bindings::lapack::getri(W, ipiv);
-   std::cerr<<" after tri "<< W<<std::endl;
+   //std::cerr<<" after tri "<< W<<std::endl;
    if (info!=0) throw matrix_inverse_exception() << "Inverse/Det error : matrix is not invertible";
   }
  };
@@ -120,9 +120,13 @@ namespace triqs { namespace arrays { namespace linalg {
   typedef typename domain_type::index_value_type index_value_type;
   typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
   const A_type a;
-  inverse_lazy_impl(A const & a_):a (a_)  {}
+  inverse_lazy_impl(A const & a_):a (a_)  {
+     if (a.dim0() != a.dim1()) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< a.dim0()<<" x "<< a.dim1(); 
+  }
   domain_type domain() const { return a.domain(); } 
-  value_type operator[] (index_value_type const & key) const { activate();  _id->M [key]; }
+  size_t dim0() const { return a.dim0();} 
+  size_t dim1() const { return a.dim0();} 
+  value_type operator[] (index_value_type const & key) const { activate();  return _id->M [key]; }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute
@@ -162,23 +166,22 @@ namespace triqs { namespace arrays { namespace linalg {
  //------------------- det   ----------------------------------------
 
  template<typename A> struct determinant_lazy : Tag::expression_terminal, Tag::scalar_expression_terminal {
-   typedef typename A::value_type value_type;
-   typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
-   A_type a;
-   determinant_lazy(A const & a_):a(a_){}
-   operator value_type()  { activate(); return _id->det; }
-   friend std::ostream & operator<<(std::ostream & out, determinant_lazy const & x){ return out<<"determinant("<<x.a<<")";}
-   protected:
-   struct internal_data {
-    typedef typename A_type::non_view_type M_type;
-    M_type M; typename A::value_type det;
-    internal_data(determinant_lazy const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); det = worker.det();}
-   };
-   friend struct internal_data;
-   mutable boost::shared_ptr<internal_data> _id;
-   void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  typedef typename A::value_type value_type;
+  typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
+  A_type a;
+  determinant_lazy(A const & a_):a(a_){}
+  operator value_type()  { activate(); return _id->det; }
+  friend std::ostream & operator<<(std::ostream & out, determinant_lazy const & x){ return out<<"determinant("<<x.a<<")";}
+  protected:
+  struct internal_data {
+   typedef typename A_type::non_view_type M_type;
+   M_type M; typename A::value_type det;
+   internal_data(determinant_lazy const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); det = worker.det();}
   };
+  friend struct internal_data;
+  mutable boost::shared_ptr<internal_data> _id;
+  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+ };
 
-
-}}} // namespace triqs::arrays::linalg
+}} // namespace triqs::arrays
 #endif

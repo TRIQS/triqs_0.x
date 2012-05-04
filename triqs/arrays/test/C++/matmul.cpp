@@ -27,7 +27,6 @@
 
 using namespace std;
 using namespace triqs::arrays;
-using linalg::matmul;
 
 template<typename O1, typename O2, typename O3> void test(bool all =false)  { 
  matrix<double,O1> M1(2,2);

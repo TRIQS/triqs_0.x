@@ -24,19 +24,24 @@
 #include "../matrix.hpp"
 #include "../linalg/matmul.hpp"
 #include "../linalg/mat_vec_mul.hpp"
+#include "../linalg/inverse.hpp"
 
 namespace triqs { namespace arrays { 
 
  namespace bf = boost::fusion; namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
  
  template<typename M1, typename M2> // matrix * matrix
-  typename boost::enable_if< mpl::and_<is_matrix_expr<M1>, is_matrix_expr<M2> >, linalg::matmul_lazy<M1,M2> >::type
-  operator* (M1 const & a, M2 const & b) { return triqs::arrays::linalg::matmul_lazy<M1,M2>(a,b); }
+  typename boost::enable_if< mpl::and_<is_matrix_expr<M1>, is_matrix_expr<M2> >, matmul_lazy<M1,M2> >::type
+  operator* (M1 const & a, M2 const & b) { return matmul_lazy<M1,M2>(a,b); }
 
  template<typename M, typename V> // matrix * vector
-  typename boost::enable_if< mpl::and_<is_matrix_or_view<M>, is_vector_or_view<V> >, linalg::mat_vec_mul_lazy<M,V> >::type
-  operator* (M const & m, V const & v) { return linalg::mat_vec_mul_lazy<M,V>(m,v); }
-  
+  typename boost::enable_if< mpl::and_<is_matrix_expr<M>, is_vector_expr<V> >, mat_vec_mul_lazy<M,V> >::type
+  operator* (M const & m, V const & v) { return mat_vec_mul_lazy<M,V>(m,v); }
+ 
+ template<typename A, typename M> // anything / matrix ---> anything * inverse(matrix)
+  typename boost::lazy_enable_if< is_matrix_expr<M>, tup::type_of_mult<A, inverse_lazy <M> > >::type
+  operator/ (A const & a, M const & m) { return a * inverse(m);}
+ 
  template<typename Expr> struct matrix_expr;
  template<typename Expr> struct vector_expr;
 

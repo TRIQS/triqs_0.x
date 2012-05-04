@@ -57,3 +57,23 @@ Cuboid of rank 2 and dimensions (2 2)
 
 (tqa::make_vector( V2 + 2.0 *V)) ---> [12,24,36]
 
+(Af) ---> 
+[[0,1]
+ [10,11]]
+
+(1/Af) ---> 1 * inverse(
+[[0,1]
+ [10,11]])
+
+(make_matrix(2/Af)) ---> 
+[[-2.2,0.2]
+ [2,0]]
+
+(make_matrix(Af/2)) ---> 
+[[0,0.5]
+ [5,5.5]]
+
+(make_matrix(Af/Af)) ---> 
+[[1,0]
+ [0,1]]
+

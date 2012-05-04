@@ -24,7 +24,7 @@
 #define TRIQS_LINALG_CROSS_PRODUCT_H
 #include <triqs/utility/exceptions.hpp>
 
-namespace triqs { namespace arrays { namespace linalg { 
+namespace triqs { namespace arrays { 
 
  /** Cross product. Dim 3 only */
  template<typename VectorType>
@@ -38,7 +38,7 @@ namespace triqs { namespace arrays { namespace linalg {
    return r;
   }
 
-}}}//namespace triqs::arrays 
+}}//namespace triqs::arrays 
 
 #endif
 
