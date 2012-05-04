@@ -50,6 +50,7 @@ class Measure_acc_sign {
   MeasureNumber =ntot;
   if (c.rank()==0) { 
    MCSignType sign_qmc = acc_sign / MCSignType(ntot); 
+   std::cerr << "Average sign: " << abs(sign_qmc) << std::endl;
    if (abs(sign_qmc)<=1E-5) std::cerr << " MAJOR SIGN PB IN !"<<std::endl;
    if (abs(sign_qmc) < 0.01) std::cerr << "Very severe sign problem "<< sign_qmc<<std::endl;
   }  

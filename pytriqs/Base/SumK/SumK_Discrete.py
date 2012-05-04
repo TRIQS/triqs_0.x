@@ -21,8 +21,7 @@
 ################################################################################
 
 __all__= ['SumK_Discrete']
-from pytriqs.Base.GF_Local.GF import GF
-from pytriqs.Base.GF_Local import GF_Initializers
+from pytriqs.Base.GF_Local import *
 import pytriqs.Base.Utility.MPI as MPI
 from itertools import *
 import inspect
@@ -73,7 +72,7 @@ class SumK_Discrete :
 
     #-------------------------------------------------------------
 
-    def __call__ (self, Sigma, mu=0, eta = 0, Field = None, Res = None, SelectedBlocks = () ):
+    def __call__ (self, Sigma, mu=0, eta = 0, Field = None, Epsilon_Hat=None, Res = None, SelectedBlocks = ()):
 	""" 
 	- Computes :
 	   Res <- \[ \sum_k (\omega + \mu - Field - t(k) - Sigma(k,\omega)) \]
@@ -90,7 +89,9 @@ class SumK_Discrete :
 	      e.g. X can be a GF (with at least the SelectedBlocks), or a dictionnary BlockName -> array
 	      if the array has the same dimension as the GF blocks (for example to add a static Sigma).
 
-        - Field : Any k independant  Array_with_GF_Indices to be added to the GF 
+        - Field : Any k independant object to be added to the GF 
+
+        - Epsilon_Hat : a function of eps_k returning a matrix, the dimensions of Sigma
 
         - SelectedBlocks : The calculation is done with the SAME t(k) for all blocks. If this list is not None
 	  only the blocks in this list are calculated.
@@ -98,8 +99,8 @@ class SumK_Discrete :
 	       if SelectedBlocks ==None : 'up' and 'down' are calculated
 	       if SelectedBlocks == ['up'] : only 'up' is calculated. 'down' is 0.
 
-         """
-        if Field : assert isinstance(Field,Array_with_GF_Indices) , " Field must be a  Array_with_GF_Indices object. Cf Example"
+
+        """
         S = Sigma.View_SelectedBlocks(SelectedBlocks) if SelectedBlocks else Sigma
         Gres = Res if Res else Sigma.copy() 
         G = Gres.View_SelectedBlocks(SelectedBlocks) if SelectedBlocks else Gres
@@ -107,43 +108,38 @@ class SumK_Discrete :
         # check input
         assert self.Orthogonal_Basis, "Local_G : must be orthogonal. non ortho cases not checked."
         assert isinstance(G,GF), "G must be a GF"
-        assert list(set([ g.N1 for i,g in G])) == [self.Hopping.shape[1]],"G size and hopping size mismatch"
+        assert len(list(set([g.N1 for i,g in G]))) == 1
         assert self.BZ_weights.shape[0] == self.N_kpts(), "Internal Error"
+        no = list(set([g.N1 for i,g in G]))[0]
         Sigma_Nargs = len(inspect.getargspec(Sigma)[0]) if callable (Sigma) else 0
         assert Sigma_Nargs <=2 , "Sigma function is not of the correct type. See Documentation"
 
-        #init
+        # Initialize
         G.zero()
-        #tmp,tmp2 = GF(G),GF(G)
         tmp,tmp2 = G.copy(),G.copy()
-        mupat = mu * self.Mu_Pattern 
-        tmp <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
-        #tmp.Set_Omega()
-        ##tmp += tmp.Nblocks() * [ mupat ]
-        if Field : tmp -= Field 
+        mupat = mu * numpy.identity(no, numpy.complex_)
+        tmp <<= iOmega_n
+        if Field != None : tmp -= Field 
         if Sigma_Nargs==0: tmp -= Sigma  # substract Sigma once for all
 
         # Loop on k points...
         for w, k, eps_k in izip(*[MPI.slice_array(A) for A in [self.BZ_weights, self.BZ_Points, self.Hopping]]):
+
+            eps_hat = Epsilon_Hat(eps_k) if Epsilon_Hat else eps_k
             tmp2 <<= tmp
-            #tmp2.copy_from(tmp)
-            tmp2 -= tmp2.NBlocks * [eps_k -mupat ]
-            #tmp2.save("tmp2_w")
-            #Sigma.save("S_w")
+            tmp2 -= tmp2.NBlocks * [eps_hat - mupat]
 
             if Sigma_Nargs == 1: tmp2 -= Sigma (k)
             elif Sigma_Nargs ==2: tmp2 -= Sigma (k,eps_k)
+
             tmp2.invert()
             tmp2 *= w
             G += tmp2
-            #G.save("GG1")
-            #print mu,mupat,eps_k
-            #assert 0
-            #print G['up'][1,1]._data
+
         G <<= MPI.all_reduce(MPI.world,G,lambda x,y : x+y)
         MPI.barrier()
 
-        return Res
+        return Gres
 
     #-------------------------------------------------------------
 

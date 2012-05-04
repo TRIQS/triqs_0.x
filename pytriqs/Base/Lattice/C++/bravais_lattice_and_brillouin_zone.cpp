@@ -76,7 +76,7 @@ namespace triqs { namespace lattice_tools {
     if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 2 vectors of unit are not independent";
     units_(2,range()) = uy /delta;
   }
- cerr<<" Units = "<< units_<<endl; 
+ //cerr<<" Units = "<< units_<<endl; 
  }
 
  R_view_type bravais_lattice::lattice_to_real_coordinates(R_type const & x) const {
@@ -95,7 +95,7 @@ namespace triqs { namespace lattice_tools {
   K_reciprocal(0,range()) = linalg::cross_product(Units(1,range()),Units(2,range())) / delta;
   K_reciprocal(1,range()) = linalg::cross_product(Units(2,range()),Units(0,range())) / delta;
   K_reciprocal(2,range()) = linalg::cross_product(Units(0,range()),Units(1,range())) / delta;
-  for (size_t i =0; i< lattice().dim();i++) std::cerr << " K_reciprocal(" << i << ")/(2pi) =  " << K_reciprocal(i,range())<< std::endl;
+  //for (size_t i =0; i< lattice().dim();i++) std::cerr << " K_reciprocal(" << i << ")/(2pi) =  " << K_reciprocal(i,range())<< std::endl;
   const double pi = acos(-1.0);
   K_reciprocal = K_reciprocal*2*pi;
   K_reciprocal_inv =  linalg::inverse(K_reciprocal);
