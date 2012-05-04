@@ -31,6 +31,7 @@
 #include "./meshes.hpp"
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include "triqs/utility/complex_ops.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
