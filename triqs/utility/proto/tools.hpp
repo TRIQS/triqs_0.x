@@ -46,25 +46,24 @@ namespace triqs { namespace utility { namespace proto {
 
  template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
 
-  /* -------------------------------------------
-   *   Print context
-   * ------------------------------------------ */
-  struct algebra_print_ctx : proto::callable_context< algebra_print_ctx const > {
-   typedef std::ostream &result_type;
-   result_type out;
-   algebra_print_ctx(std::ostream & out_):out(out_) {}
-   template <typename T>
-    typename boost::enable_if<is_in_ZRC<T>, result_type>::type 
-    operator ()(proto::tag::terminal, const T & A) const { return out<<A; }
-   template <typename T>
-    typename boost::disable_if<is_in_ZRC<T>, result_type>::type 
-    operator ()(proto::tag::terminal, const T & A) const {return formal_print(out,A); }
-// return out<< triqs::utility::typeid_name(A); }
-   template<typename L, typename R> result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
-   template<typename L, typename R> result_type operator ()(proto::tag::minus, L const &l, R const &r) const { return out << '(' << l << " - " << r << ')'; }
-   template<typename L, typename R> result_type operator ()(proto::tag::multiplies, L const &l, R const &r) const { return out << l << " * " << r; }
-   template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
-  };
+ /* -------------------------------------------
+  *   Print context
+  * ------------------------------------------ */
+ struct algebra_print_ctx : proto::callable_context< algebra_print_ctx const > {
+  typedef std::ostream &result_type;
+  result_type out;
+  algebra_print_ctx(std::ostream & out_):out(out_) {}
+  template <typename T>
+   typename boost::enable_if<is_in_ZRC<T>, result_type>::type 
+   operator ()(proto::tag::terminal, const T & A) const { return out<<A; }
+  template <typename T>
+   typename boost::disable_if<is_in_ZRC<T>, result_type>::type 
+   operator ()(proto::tag::terminal, const T & A) const {return formal_print(out,A); }
+  template<typename L, typename R> result_type operator ()(proto::tag::plus, L const &l, R const &r) const { return out << '(' << l << " + " << r << ')'; }
+  template<typename L, typename R> result_type operator ()(proto::tag::minus, L const &l, R const &r) const { return out << '(' << l << " - " << r << ')'; }
+  template<typename L, typename R> result_type operator ()(proto::tag::multiplies, L const &l, R const &r) const { return out << l << " * " << r; }
+  template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
+ };
 
  /* ---------------------------------------------------------------------------------------------------
   * The domain can enforce copies or not...
@@ -90,71 +89,75 @@ namespace triqs { namespace utility { namespace proto {
   * Simple transform to make * and /
   * --------------------------------------------------------------------------------------------------- */
 
-  struct multiplies_t { 
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
-    typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
-    typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
-   };
-   template<typename A, typename B> typename result<multiplies_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a*b; }
-  };
-
-  struct divides_t { 
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename A,  typename B> struct result<This(A,B)> { 
-    typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
-    typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
-   };
-   template<typename A, typename B> typename result<divides_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a/b; }
-  };
-
-  /* ---------------------------------------------------------------------------------------------------
-  * A transform to evaluate ...
-  * --------------------------------------------------------------------------------------------------- */
-
-  // a trick to avoid putting T() in the typeof type deduction ! This code is NEVER used. It is a hack to avoid decltype....
+ // a trick to avoid putting T() in the typeof type deduction ! This code is NEVER used. It is a hack to avoid decltype....
  template<class T> typename boost::remove_reference<typename boost::unwrap_reference<T>::type>::type * pseudo_default_construct() { 
   typename boost::remove_reference<typename boost::unwrap_reference<T>::type>::type * x= NULL; assert(0); return x; 
  }
-/*
+
+ template<typename A,  typename B> 
+  struct type_of_mult{
+   typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
+   typedef BOOST_TYPEOF_TPL( (*(pseudo_default_construct<T1>())) * (*(pseudo_default_construct<T2>()))) type;
+  };
+
+ struct multiplies_t { 
+  BOOST_PROTO_CALLABLE();
+  template<typename Sig> struct result;
+  template<typename This, typename A,  typename B> struct result<This(A,B)> : type_of_mult<A,B> {}; 
+  template<typename A, typename B> typename result<multiplies_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a*b; }
+ };
+
+ struct divides_t { 
+  BOOST_PROTO_CALLABLE();
+  template<typename Sig> struct result;
+  template<typename This, typename A,  typename B> struct result<This(A,B)> { 
+   typedef typename boost::remove_reference<A>::type T1; typedef typename boost::remove_reference<B>::type T2;
+   typedef BOOST_TYPEOF_TPL( T1() * T2()) type;
+  };
+  template<typename A, typename B> typename result<divides_t(A,B)>::type  operator ()(A const & a, B const & b) const { return a/b; }
+ };
+
+ /* ---------------------------------------------------------------------------------------------------
+  * A transform to evaluate ...
+  * --------------------------------------------------------------------------------------------------- */
+
+ /*
  // transform to eval the function call 
 #define AUX6(z,p,unused) (*(pseudo_default_construct<typename boost::remove_reference<A##p>::type>()))
 #define AUX(z, NN, unused) \
- struct call_fnt_t##NN {\
-  BOOST_PROTO_CALLABLE();\
-  template<typename Sig> struct result;\
-  template<typename This, typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)> struct result<This(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))> {\
-   typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(NN,AUX6,nil))) type;\
-  };\
-  template<typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)>\
-  typename result<call_fnt_t##NN(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))>::type\
-  operator()(const F & f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(NN,A, const &a)) const { return f(BOOST_PP_ENUM_PARAMS(NN,a));}\
- };
- BOOST_PP_REPEAT(BOOST_PP_INC(TRIQS_LAZY_MAXNARGS_CALLABLE), AUX, nil)
+struct call_fnt_t##NN {\
+BOOST_PROTO_CALLABLE();\
+template<typename Sig> struct result;\
+template<typename This, typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)> struct result<This(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))> {\
+typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(NN,AUX6,nil))) type;\
+};\
+template<typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)>\
+typename result<call_fnt_t##NN(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))>::type\
+operator()(const F & f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(NN,A, const &a)) const { return f(BOOST_PP_ENUM_PARAMS(NN,a));}\
+};
+BOOST_PP_REPEAT(BOOST_PP_INC(TRIQS_LAZY_MAXNARGS_CALLABLE), AUX, nil)
 #undef AUX
 #undef AUX6
 */
 
- template<int Arity> struct eval_fnt;
+template<int Arity> struct eval_fnt;
 
 #define AUX6(z,p,unused) (*(pseudo_default_construct<typename boost::remove_reference<A##p>::type>()))
- template<> struct eval_fnt<1> {
-  BOOST_PROTO_CALLABLE();
-  template<typename Sig> struct result;
-  //template<typename This, typename F, typename AL> struct result<This(F,AL)>
-  // : boost::result_of<typename boost::remove_reference<F>::type 
-  // (typename boost::remove_reference<typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type>::type )> {};
-  template<typename This, typename F, typename AL> struct result<This(F,AL)> {
-   typedef typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type A0;
-   typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(1,AUX6,nil))) type;
-  };
-
-  template<typename F, typename AL>
-   typename result<eval_fnt(F,AL)>::type 
-   operator ()(F const &f, AL const & al) const { return f(bf::at<mpl::int_<0> >(al)); }
+template<> struct eval_fnt<1> {
+ BOOST_PROTO_CALLABLE();
+ template<typename Sig> struct result;
+ //template<typename This, typename F, typename AL> struct result<This(F,AL)>
+ // : boost::result_of<typename boost::remove_reference<F>::type 
+ // (typename boost::remove_reference<typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type>::type )> {};
+ template<typename This, typename F, typename AL> struct result<This(F,AL)> {
+  typedef typename bf::result_of::at< typename boost::remove_reference<AL>::type , mpl::int_<0> >::type A0;
+  typedef BOOST_TYPEOF_TPL ( (*(pseudo_default_construct<const F>())) (BOOST_PP_ENUM(1,AUX6,nil))) type;
  };
+
+ template<typename F, typename AL>
+  typename result<eval_fnt(F,AL)>::type 
+  operator ()(F const &f, AL const & al) const { return f(bf::at<mpl::int_<0> >(al)); }
+};
 #undef AUX6
 
 
