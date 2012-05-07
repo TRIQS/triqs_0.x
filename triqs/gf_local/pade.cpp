@@ -20,8 +20,7 @@
  *
  ******************************************************************************/
 
-#include "GF_Bloc_ImFreq.hpp"
-#include "GF_Bloc_ReFreq.hpp"
+#include "pade.hpp"
 
 // This implementation is based on a Fortran code written by
 // A. Poteryaev <Alexander.Poteryaev _at_ cpht.polytechnique.fr>
@@ -29,11 +28,12 @@
 // The original algorithm is described in
 // H. J. Vidberg, J. W. Serene. J. Low Temp. Phys. 29, 3-4, 179 (1977)
 
-void define_pade_coefficients(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &u_in,
-                              Array<COMPLEX,1> &a)
+Pade_approximant::Pade_approximant(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &u_in) :
+    z_in(z_in)
 {
     int N = z_in.size();
-
+    a.resize(N);
+    
     Array<COMPLEX,2> g(N,N);
     g = 0;
     g(0,Range::all()) = u_in;
@@ -47,7 +47,7 @@ void define_pade_coefficients(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,
     a = g(i,i);
 }
 
-COMPLEX pade_substitute(const Array<COMPLEX,1> &a, const Array<COMPLEX,1> &z_in, COMPLEX e)
+COMPLEX Pade_approximant::operator()(COMPLEX e) const
 {
     COMPLEX A1(0);
     COMPLEX A2 = a(0);
@@ -63,6 +63,7 @@ COMPLEX pade_substitute(const Array<COMPLEX,1> &a, const Array<COMPLEX,1> &z_in,
 
     return A2/B2;
 }
+
 
 void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Frequencies, double Freq_Offset)
 {
@@ -92,13 +93,13 @@ void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Freque
                 u_in(i) = (i < N ? Gw.data_const(n1,n2,i) : Gw.tail.eval(z_in(i))(n1,n2));
             }
 
-            define_pade_coefficients(z_in,u_in,a);
+            Pade_approximant PA(z_in,u_in);
 
             int Ne = Ge.mesh.len();
             Ge.zero();
             for (int i=0; i < Ne; ++i) {
                 COMPLEX e = Ge.mesh[i] + I*Freq_Offset;
-                Ge.data(n1,n2,i) = pade_substitute(a,z_in,e);
+                Ge.data(n1,n2,i) = PA(e);
             }
         }
 }
