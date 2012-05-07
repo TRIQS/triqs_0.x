@@ -24,7 +24,7 @@
 //#include "high_frequency_expansion.hpp"
 
 namespace triqs { namespace gf { namespace local {
-
+ 
  namespace tag { struct is_any_gf{}; template<typename MeshType> struct is_gf: is_any_gf {}; struct is_tail{}; }
  template <typename G> struct is_gf   : boost::is_base_of< tag::is_any_gf, G> {}; // identification trait
  template <typename G> struct is_tail : boost::is_base_of< tag::is_tail  , G> {}; // identification trait
@@ -120,6 +120,9 @@ namespace triqs { namespace gf { namespace local {
    > {};
 
   struct no_mesh{ typedef void domain_type;}; 
+
+//#define V1 
+#ifdef V1
   struct get_mesh {
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
@@ -151,6 +154,28 @@ namespace triqs { namespace gf { namespace local {
    ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
    > {};
 
+#else
+
+  struct combine_mesh {
+   BOOST_PROTO_CALLABLE();
+   template<typename Sig> struct result;
+   template<typename This, typename X, typename S> struct result<This(X,S)> {typedef typename tup::remove_const_and_ref<X>::type::mesh_type type;};
+   template<typename X> typename X::mesh_type operator ()(X const & x, no_mesh ) const { return x.mesh();}
+   template<typename X, typename M> typename X::mesh_type operator ()(X const & x, M const & m ) const { 
+    //static_assert((boost::is_same<M1,M2>::value), "FATAL : two meshes of different type mixed in an expression");
+    // run time check 
+    return x.mesh();
+   }
+  };
+  struct dom_t : 
+   proto::or_<
+   proto::when < ScalarGrammar, proto::_state >
+   ,proto::when< ElementGrammar, combine_mesh (proto::_value, proto::_state) >
+   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, dom_t >() >
+   > {};
+
+#endif
+
   // grammar and domain and proto expression
   template <typename Expr> struct gf_expr;
   typedef tup::domain<gf_grammar,gf_expr,true> gf_expr_domain;
@@ -158,9 +183,9 @@ namespace triqs { namespace gf { namespace local {
   typedef eval_t eval1;
   template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
    gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
-   typedef typename boost::result_of<dom_t(Expr) >::type mesh_type;
+   typedef typename boost::result_of<dom_t(Expr,no_mesh) >::type mesh_type;
    typedef typename mesh_type::domain_type domain_type;
-   mesh_type mesh() const { return dom_t()(*this); } 
+   mesh_type mesh() const { return dom_t()(*this,no_mesh()); } 
    template<typename T> 
     typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {
      static_assert(mesh_type::domain_type::has_tail || !(boost::is_same<T,meshes::tail>::value), "Error");
