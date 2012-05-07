@@ -70,7 +70,11 @@ namespace triqs { namespace arrays {
      static typename boost::disable_if<storages::raw_copy_possible<S1,S2>, bool >::type
      rcp_impl(S1 & s1, S2 const & s2) { return false;} 
 
-    void operator()(value_type & p, index_value_type const & key) { p=rhs[key];}
+    void operator()(value_type & p, index_value_type const & key) { 
+     const_cast<typename boost::remove_const<value_type>::type &>(p)=rhs[key];}
+    // hack : to be cleaned. When construction array<const T>(from expression, it does not work properly.
+    // to fix more generally. Pb occurred in gf.
+
     void invoke ()  {
 #ifdef TRIQS_ARRAYS_TRACE_ASSIGN
      std::cerr<<" assign for ISP"<<std::endl;
