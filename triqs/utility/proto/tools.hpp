@@ -68,6 +68,8 @@ namespace triqs { namespace utility { namespace proto {
   template<typename L, typename R> result_type operator ()(proto::tag::divides, L const &l, R const &r) const { return out << l << " / " << r; }
  };
 
+ template< typename T> std::ostream & print_algebra (std::ostream &sout, T const &x) {return proto::eval(x, algebra_print_ctx (sout));}
+
  /* ---------------------------------------------------------------------------------------------------
   * The domain can enforce copies or not...
   * --------------------------------------------------------------------------------------------------- */
@@ -76,6 +78,18 @@ namespace triqs { namespace utility { namespace proto {
  template<typename T> struct const_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
  // template<typename T> struct const_view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
 
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain_with_ref: proto::domain<proto::generator<The_Expr>, Grammar> {};
+
+ //If true it modifies the PROTO Domain to make *COPIES* of ALL objects.
+ //cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
+ //Objects which have a view type are however NOT copied, the copy is replaced by a VIEW.
+ template< typename Grammar, template<typename Expr> class The_Expr> struct domain_with_copy : proto::domain<proto::generator<The_Expr>, Grammar> {
+  //template< typename T > struct as_child : proto::domain<proto::generator<The_Expr>, Grammar>::proto_base_domain::template as_expr< T > {};
+  template< typename T > struct as_child : 
+   domain_with_copy<Grammar,The_Expr>::proto_base_domain::template as_expr< typename boost::add_const<typename const_view_type_if_exists_else_type <T>::type >::type > {};
+ };
+
+ // compat . to be removed 
  template< typename Grammar, template<typename Expr> class The_Expr, bool CopyOrViewInsteadOfRef> struct domain;
 
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain<Grammar,The_Expr,false> : proto::domain<proto::generator<The_Expr>, Grammar> { };
@@ -87,6 +101,7 @@ namespace triqs { namespace utility { namespace proto {
   template< typename T > struct as_child : 
    domain<Grammar,The_Expr,true>::proto_base_domain::template as_expr< typename boost::add_const<typename const_view_type_if_exists_else_type <T>::type >::type > {};
  };
+
 
  /* ---------------------------------------------------------------------------------------------------
   * Simple transform to make * and /
