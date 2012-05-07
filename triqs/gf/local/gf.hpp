@@ -21,12 +21,11 @@
 #ifndef TRIQS_GF_LOCAL_GF_H
 #define TRIQS_GF_LOCAL_GF_H
 #include "matrix_valued_fnt_on_mesh.hpp"
-//#include "high_frequency_expansion.hpp"
 
 namespace triqs { namespace gf { namespace local {
  
  namespace tag { struct is_any_gf{}; template<typename MeshType> struct is_gf: is_any_gf {}; struct is_tail{}; }
- template <typename G> struct is_gf   : boost::is_base_of< tag::is_any_gf, G> {}; // identification trait
+ template <typename G> struct LocalGf   : boost::is_base_of< tag::is_any_gf, G> {}; // identification trait
  template <typename G> struct is_tail : boost::is_base_of< tag::is_tail  , G> {}; // identification trait
 
  template<typename MeshType> class gf;
@@ -50,6 +49,8 @@ namespace triqs { namespace gf { namespace local {
    public : 
    gf():B() {} 
    gf (size_t N1, size_t N2, typename B::mesh_type const & m):B(N1,N2,m) {}
+   gf(gf const & g): B(g){}
+   gf(gf_view<MeshType> const & g): B(g){} // for clarity only, the next construct could handle every case...
    template<typename GfType> gf(GfType const & x): B(x,0) {}
 
    typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
@@ -76,9 +77,6 @@ namespace triqs { namespace gf { namespace local {
    gf_view(gf_view const & g): B(g){}
    gf_view(gf<MeshType> const & g): B(g){}
 
-   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
-   friend std::ostream & operator << (std::ostream & out, gf_view const & x) { return out<<"gf_view";}
-
    typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
    typedef gf_view<MeshType> view_type;
    typedef gf<MeshType>      non_view_type;
@@ -88,21 +86,21 @@ namespace triqs { namespace gf { namespace local {
 
    template<typename A, typename B> const view_type slice(A a, B b) const { return view_type(*this,a,b); } 
    template<typename A, typename B> friend view_type slice(gf_view const & g, A a, B b) { return g.slice(a,b); } 
+   
+   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
+   friend std::ostream & operator << (std::ostream & out, gf_view const & x) { return out<<"gf_view";}
   };
 
  // -------------------------------   Expression template for gf  --------------------------------------------------
 
- namespace proto=boost::proto;
+ namespace gf_expr_detail { 
+  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
+  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::is_matrix_expr<T>, tup::is_in_ZRC<T> > {};
 
- // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
- template <typename T> struct is_scalar_or_element : mpl::or_< tqa::is_matrix_expr<T>, triqs::utility::proto::is_in_ZRC<T> > {};
-
- namespace gf_expr_temp { 
-
-  struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<is_gf<proto::_value>()> > {}; 
+  struct ElementGrammar: proto::and_< proto::terminal<proto::_>, proto::if_<LocalGf<proto::_value>()> > {}; 
   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
 
-  struct gf_grammar : 
+  struct gf_grammar : // the grammar of gf
    proto::or_<
    ScalarGrammar , ElementGrammar
    , proto::plus      <gf_grammar,gf_grammar>
@@ -112,92 +110,54 @@ namespace triqs { namespace gf { namespace local {
    , proto::negate    <gf_grammar >
    > {};
 
-  struct eval_t : 
+  struct eval_t : // evaluation of an expression  
    proto::or_<
    proto::when<ScalarGrammar, proto::_value>
    ,proto::when<ElementGrammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<eval_t > >
    > {};
 
-  struct no_mesh{ typedef void domain_type;}; 
+  //------ computation of the mesh of the expression ----
 
-//#define V1 
-#ifdef V1
-  struct get_mesh {
+  struct no_mesh{}; // absence of mesh (for scalar)
+
+  struct combine_mesh_t { // a transform that combine the mesh of a node with the State
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
-   template<typename This, typename X> struct result<This(X)> { typedef typename boost::remove_reference<X>::type::mesh_type type;};
-   template<typename X> typename X::mesh_type  operator ()(X const & x) const { return x.mesh();}
-  };
-
-  struct combine_mesh {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename M1, typename M2> struct result<This(M1,M2)> {typedef M2 type;};
-   template<typename This, typename M1> struct result<This(M1,no_mesh)> {typedef M1 type;};
-   template<typename M> M operator ()(no_mesh const & m1, M const & m2) const { return m2;}
-   template<typename M> M operator ()(M const & m1, no_mesh const & m2) const { return m1;}
-   template<typename M1, typename M2> M1 operator ()(M1 const & m1, M2 const & m2) const { 
-    static_assert((boost::is_same<M1,M2>::value), "FATAL : two meshes of different type mixed in an expression");
-    return m1;
-   }
-  };
-
-  struct dom_t : 
-   proto::or_<
-   proto::when< ScalarGrammar, no_mesh() >
-   ,proto::when< ElementGrammar, get_mesh(proto::_value) >
-   ,proto::when< proto::plus <dom_t,dom_t>,       combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::minus <dom_t,dom_t>,      combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::multiplies <dom_t,dom_t>, combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::divides <dom_t,dom_t>,    combine_mesh (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::unary_expr<proto::_,dom_t >,  dom_t(proto::_left) >
-   > {};
-
-#else
-
-  struct combine_mesh {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename X, typename S> struct result<This(X,S)> {typedef typename tup::remove_const_and_ref<X>::type::mesh_type type;};
+   template<typename This, typename X, typename S> struct result<This(X,S)> {
+    typedef typename tup::remove_const_and_ref<X>::type::mesh_type type;
+    typedef typename tup::remove_const_and_ref<S>::type S2;
+    static_assert((mpl::or_<boost::is_same<S2,no_mesh>, boost::is_same<type,S2> >::value), "FATAL : two meshs of different type mixed in an expression");   
+   };
    template<typename X> typename X::mesh_type operator ()(X const & x, no_mesh ) const { return x.mesh();}
    template<typename X, typename M> typename X::mesh_type operator ()(X const & x, M const & m ) const { 
-    //static_assert((boost::is_same<M1,M2>::value), "FATAL : two meshes of different type mixed in an expression");
-    // run time check 
+    //if (!(x.mesh() == m)) TRIQS_RUNTIME_ERROR << "Domain mismatch in expressions"; // run time check 
     return x.mesh();
    }
   };
-  struct dom_t : 
+
+  struct mesh_t : // the transform that computes the mesh recursively using a fold and a State initialized to no_mesh
    proto::or_<
    proto::when < ScalarGrammar, proto::_state >
-   ,proto::when< ElementGrammar, combine_mesh (proto::_value, proto::_state) >
-   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, dom_t >() >
+   ,proto::when< ElementGrammar, combine_mesh_t (proto::_value, proto::_state) >
+   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, mesh_t >() >
    > {};
-
-#endif
 
   // grammar and domain and proto expression
   template <typename Expr> struct gf_expr;
-  typedef tup::domain<gf_grammar,gf_expr,true> gf_expr_domain;
+  typedef tup::domain_with_copy<gf_grammar,gf_expr> gf_expr_domain;
 
-  typedef eval_t eval1;
-  template<typename Expr> struct gf_expr : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>{
-   gf_expr( Expr const & expr = Expr() ) : boost::proto::extends<Expr, gf_expr<Expr>, gf_expr_domain>  ( expr ) {}
-   typedef typename boost::result_of<dom_t(Expr,no_mesh) >::type mesh_type;
-   typedef typename mesh_type::domain_type domain_type;
-   mesh_type mesh() const { return dom_t()(*this,no_mesh()); } 
-   template<typename T> 
-    typename boost::result_of<eval1(Expr,bf::vector<T>) >::type operator() (T const & x) const {
-     static_assert(mesh_type::domain_type::has_tail || !(boost::is_same<T,meshes::tail>::value), "Error");
-     return eval1()(*this, bf::make_vector(x));
-    }
-   typedef tqa::array_view<std::string,2> indices_type;
-   indices_type indices() const { return indices_type::non_view_type();}
-   friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return boost::proto::eval(expr, tup::algebra_print_ctx (sout)); }
+  template<typename Expr> struct gf_expr : proto::extends<Expr, gf_expr<Expr>, gf_expr_domain> {
+   gf_expr( Expr const & expr = Expr() ) : proto::extends<Expr, gf_expr<Expr>, gf_expr_domain> (expr) {}
+   typedef typename boost::result_of<mesh_t(Expr,no_mesh) >::type mesh_type;
+   mesh_type mesh() const {return mesh_t()(*this,no_mesh());} 
+   template<typename T> typename boost::result_of<eval_t(Expr,bf::vector<T>)>::type 
+    operator()(T const & x) const {return eval_t()(*this,bf::make_vector(x));}
+   friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return tup::print_algebra(sout,expr);} 
   };
  }
- template <typename Expr> struct is_gf<gf_expr_temp::gf_expr< Expr > >:mpl::true_{};
+ template <typename Expr> struct LocalGf<gf_expr_detail::gf_expr< Expr > >:mpl::true_{};
 
- BOOST_PROTO_DEFINE_OPERATORS(is_gf, gf_expr_temp::gf_expr_domain);
+ BOOST_PROTO_DEFINE_OPERATORS(LocalGf, gf_expr_detail::gf_expr_domain);
 }}}
 #endif
