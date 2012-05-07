@@ -45,6 +45,9 @@ namespace triqs { namespace utility { namespace proto {
  template<typename T> struct is_in_ZRC<std::complex<T> > :  mpl::true_ {};
 
  template <typename T> std::ostream & formal_print(std::ostream & out, T const & x) { return out<<x;}
+ 
+ // to be moved in the genral lib  
+ template<typename T> struct remove_const_and_ref : boost::remove_const<typename boost::remove_reference<T>::type> {};
 
  /* -------------------------------------------
   *   Print context
