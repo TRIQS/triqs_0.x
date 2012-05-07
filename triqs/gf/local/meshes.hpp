@@ -43,7 +43,7 @@ namespace triqs { namespace gf { namespace meshes {
   MeshType const & m;
   typename MeshType::index_type i;
   mesh_pt( MeshType const & mesh, typename MeshType::index_type const & index): m(mesh), i(index) {}
-  typedef typename MeshType::domain_type::element_type cast_type;
+  typedef typename MeshType::domain_type::embedded_point_type cast_type;
   operator cast_type() const { return m.embed(i);} // cast into the element type of the domain (e.g. real time, real frequency).
   cast_type casted() const { return m.embed(i);}
   // I need to explicitely redefine the 4 basic operations...
@@ -60,16 +60,18 @@ namespace triqs { namespace gf { namespace meshes {
  template<typename MeshType> 
   mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
 
+ struct default_tag{};
+
  class tail{
   int omin,omax;
 
   public:
+  typedef size_t index_type;
   typedef domains::tail domain_type;
   typedef std::complex<double> gf_result_type;
-  typedef size_t index_type;
   typedef tqa::range range_type;
 
-  tail(int OrderMin=-1, int OrderMax = 5) : omin(OrderMin), omax(OrderMax) {}
+  tail(int OrderMin=-1, int OrderMax = 7) : omin(OrderMin), omax(OrderMax) {}
 
   static const bool has_tail = false;
   static const bool mesh_tail = false;
@@ -77,10 +79,15 @@ namespace triqs { namespace gf { namespace meshes {
   domain_type domain() const { return domain_type();}
   size_t size() const{ int r = omax - omin +1; assert(r>=0); return r;}
   mesh_pt<tail> operator[](index_type i) const { return make_mesh_pt(*this,i);}
-  domain_type::element_type embed(index_type n) const {return omin + int(n);}
+  domain_type::embedded_point_type embed(index_type n) const {return omin + int(n);}
 
   int order_min() const {return omin;}
   int order_max() const {return omax;}
+  template<typename F> typename F::mv_type interpolate( F const & f, domain_type::point_type const & n) const { 
+   if (n<omin) TRIQS_RUNTIME_ERROR<<" n <omin";
+   if (n<=omax) return f((*this)[n-omin]);
+   return typename F::mv_type::non_view_type();
+  } 
  };
 
  //--------------------------------------------------------
@@ -92,8 +99,8 @@ namespace triqs { namespace gf { namespace meshes {
   typedef long index_type;
   typedef tqa::range range_type;
 
-  matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025, size_t tail_expansion_order=5 ): 
-   mesh_tail(tail_expansion_order), _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
+  matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): 
+   mesh_tail(), _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
 
   tail mesh_tail;
 
@@ -101,7 +108,11 @@ namespace triqs { namespace gf { namespace meshes {
   size_t size() const{ return n_max_;}
 
   mesh_pt<matsubara_freq> operator[](index_type i) const { return make_mesh_pt(*this,i);}
-  domain_type::element_type embed(index_type n) const {return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
+  domain_type::embedded_point_type embed(index_type n) const {return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
+ 
+  template<typename F> typename F::mv_type interpolate( F const & f, domain_type::point_type const & n) const {  
+   return f((*this)[n]);
+  } // here complex n -> -n and the tail : protection ...
 
   protected:
   domain_type _dom;

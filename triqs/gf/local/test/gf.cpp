@@ -1,3 +1,5 @@
+//#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+
 #include <triqs/gf/local/gf.hpp>
 
 //using namespace triqs::gf::local;
@@ -76,6 +78,7 @@ int main() {
  BOOST_AUTO( t, G(inf));
  //local::gf<meshes::tail> t2 = t + 2.4;
 
+ TEST(t.mesh().order_min()); 
  TEST( t( 0) ) ;
 
  TEST( Gv2(inf)( 0) ) ;

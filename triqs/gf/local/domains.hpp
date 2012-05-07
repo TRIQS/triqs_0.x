@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_GF_LOCAL_DOMAIN_H
 #define TRIQS_GF_LOCAL_DOMAIN_H
 
@@ -33,13 +32,15 @@ namespace triqs { namespace gf {
   struct infty{}; // the point at infinity
 
   struct tail{
-   typedef int element_type;
+   typedef int point_type;
+   typedef int embedded_point_type;
    typedef std::complex<double> gf_result_type;
    static const bool has_tail = false;
   };
 
   struct matsubara_freq {
-   typedef std::complex<double> element_type;
+   typedef long                 point_type;
+   typedef std::complex<double> embedded_point_type;
    typedef std::complex<double> gf_result_type;
    double beta;
    statistic_enum statistic;
@@ -48,7 +49,8 @@ namespace triqs { namespace gf {
   };
 
   struct matsubara_time {
-   typedef double element_type;
+   typedef double point_type;
+   typedef double embedded_point_type;
    typedef double gf_result_type;
    double beta;
    statistic_enum statistic;
