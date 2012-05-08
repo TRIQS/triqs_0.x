@@ -28,23 +28,36 @@
 // The original algorithm is described in
 // H. J. Vidberg, J. W. Serene. J. Low Temp. Phys. 29, 3-4, 179 (1977)
 
-Pade_approximant::Pade_approximant(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &u_in) :
+Pade_approximant::Pade_approximant(const Array<COMPLEX,1> & z_in, const Array<COMPLEX,1> & u_in) :
     z_in(z_in)
 {
     int N = z_in.size();
     a.resize(N);
+  
+    // Change the default precision of GMP floats.
+    gmp::mp_bitcnt_t old_prec = gmp::mpf_get_default_prec();
+    gmp::mpf_set_default_prec(GMP_default_prec);  // How do we determine it?
+ 
+    Array<MP_COMPLEX,2> g(N,N);
+    g = MP_COMPLEX(.0);
+    g(0,Range::all()) = cast<MP_COMPLEX>(u_in);
+ 
+    MP_COMPLEX MP_1(1.0);
     
-    Array<COMPLEX,2> g(N,N);
-    g = 0;
-    g(0,Range::all()) = u_in;
-
     for(int p=1; p<N; ++p)
         for(int j=p; j<N; ++j){
-            g(p,j) = (g(p-1,p-1) - g(p-1,j))/((z_in(j)-z_in(p-1))*g(p-1,j));
+            MP_COMPLEX x(g(p-1,p-1)/g(p-1,j) - MP_1);
+            MP_COMPLEX y(z_in(j)-z_in(p-1));
+            g(p,j) = x/y;
         }
 
-    firstIndex i;
-    a = g(i,i);
+    for(int j=0; j<N; ++j){
+        MP_COMPLEX gj(g(j,j));
+        a(j) = COMPLEX(real(gj).get_d(),imag(gj).get_d());
+    }
+    
+    // Restore the precision.
+    gmp::mpf_set_default_prec(old_prec);
 }
 
 COMPLEX Pade_approximant::operator()(COMPLEX e) const
@@ -63,7 +76,6 @@ COMPLEX Pade_approximant::operator()(COMPLEX e) const
 
     return A2/B2;
 }
-
 
 void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Frequencies, double Freq_Offset)
 {

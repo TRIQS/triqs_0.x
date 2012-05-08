@@ -26,8 +26,14 @@
 #include "GF_Bloc_ImFreq.hpp"
 #include "GF_Bloc_ReFreq.hpp"
 
+namespace gmp{
+#include <gmpxx.h>
+}
+
+typedef std::complex<gmp::mpf_class> MP_COMPLEX;
+
 class Pade_approximant {
-    
+
     Array<COMPLEX,1> z_in; // Input complex frequency points 
     Array<COMPLEX,1> a; // Pade coefficients
     
@@ -35,6 +41,8 @@ class Pade_approximant {
     
     Pade_approximant(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &u_in);
     COMPLEX operator()(COMPLEX e) const; // Calculate the value of the approximant at a given point
+    
+    static const int GMP_default_prec = 256;    // Precision of GMP floats to use during a Pade coefficients calculation.
 };
 
 void pade (GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Frequencies, double Freq_Offset);
