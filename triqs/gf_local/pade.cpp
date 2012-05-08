@@ -20,8 +20,7 @@
  *
  ******************************************************************************/
 
-#include "GF_Bloc_ImFreq.hpp"
-#include "GF_Bloc_ReFreq.hpp"
+#include "pade.hpp"
 
 // This implementation is based on a Fortran code written by
 // A. Poteryaev <Alexander.Poteryaev _at_ cpht.polytechnique.fr>
@@ -29,25 +28,39 @@
 // The original algorithm is described in
 // H. J. Vidberg, J. W. Serene. J. Low Temp. Phys. 29, 3-4, 179 (1977)
 
-void define_pade_coefficients(const Array<COMPLEX,1> &z_in, const Array<COMPLEX,1> &u_in,
-                              Array<COMPLEX,1> &a)
+Pade_approximant::Pade_approximant(const Array<COMPLEX,1> & z_in, const Array<COMPLEX,1> & u_in) :
+    z_in(z_in)
 {
     int N = z_in.size();
-
-    Array<COMPLEX,2> g(N,N);
-    g = 0;
-    g(0,Range::all()) = u_in;
-
+    a.resize(N);
+  
+    // Change the default precision of GMP floats.
+    gmp::mp_bitcnt_t old_prec = gmp::mpf_get_default_prec();
+    gmp::mpf_set_default_prec(GMP_default_prec);  // How do we determine it?
+ 
+    Array<MP_COMPLEX,2> g(N,N);
+    g = MP_COMPLEX(.0);
+    g(0,Range::all()) = cast<MP_COMPLEX>(u_in);
+ 
+    MP_COMPLEX MP_1(1.0);
+    
     for(int p=1; p<N; ++p)
         for(int j=p; j<N; ++j){
-            g(p,j) = (g(p-1,p-1) - g(p-1,j))/((z_in(j)-z_in(p-1))*g(p-1,j));
+            MP_COMPLEX x(g(p-1,p-1)/g(p-1,j) - MP_1);
+            MP_COMPLEX y(z_in(j)-z_in(p-1));
+            g(p,j) = x/y;
         }
 
-    firstIndex i;
-    a = g(i,i);
+    for(int j=0; j<N; ++j){
+        MP_COMPLEX gj(g(j,j));
+        a(j) = COMPLEX(real(gj).get_d(),imag(gj).get_d());
+    }
+    
+    // Restore the precision.
+    gmp::mpf_set_default_prec(old_prec);
 }
 
-COMPLEX pade_substitute(const Array<COMPLEX,1> &a, const Array<COMPLEX,1> &z_in, COMPLEX e)
+COMPLEX Pade_approximant::operator()(COMPLEX e) const
 {
     COMPLEX A1(0);
     COMPLEX A2 = a(0);
@@ -92,13 +105,13 @@ void pade(GF_Bloc_ImFreq const & Gw, GF_Bloc_ReFreq & Ge, int N_Matsubara_Freque
                 u_in(i) = (i < N ? Gw.data_const(n1,n2,i) : Gw.tail.eval(z_in(i))(n1,n2));
             }
 
-            define_pade_coefficients(z_in,u_in,a);
+            Pade_approximant PA(z_in,u_in);
 
             int Ne = Ge.mesh.len();
             Ge.zero();
             for (int i=0; i < Ne; ++i) {
                 COMPLEX e = Ge.mesh[i] + I*Freq_Offset;
-                Ge.data(n1,n2,i) = pade_substitute(a,z_in,e);
+                Ge.data(n1,n2,i) = PA(e);
             }
         }
 }
