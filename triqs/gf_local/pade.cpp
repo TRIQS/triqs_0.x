@@ -35,7 +35,8 @@ Pade_approximant::Pade_approximant(const Array<COMPLEX,1> & z_in, const Array<CO
     a.resize(N);
   
     // Change the default precision of GMP floats.
-    gmp::mp_bitcnt_t old_prec = gmp::mpf_get_default_prec();
+    // MF: I have put an unsigned long instead of gmp::mp_bitcnt_t here so that it's compatible with GMP >= 4.3
+    unsigned long old_prec = gmp::mpf_get_default_prec();
     gmp::mpf_set_default_prec(GMP_default_prec);  // How do we determine it?
  
     Array<MP_COMPLEX,2> g(N,N);
