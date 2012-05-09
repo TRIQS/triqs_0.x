@@ -25,7 +25,9 @@
 
 #include "GF_Bloc_Base.hpp"
 #include "fourier.hpp"
-#include "pade.hpp"
+#ifdef USE_PADE
+  #include "pade.hpp"
+#endif
 
 class GF_Bloc_ReFreq : public GF_Bloc_Base<COMPLEX> 
 {
@@ -49,19 +51,4 @@ public:
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
