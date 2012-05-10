@@ -52,11 +52,11 @@ int main() {
 
  std::cout  <<"-------------lazy assign ------------------"<<std::endl;
  
- //tqa::matrix<double> Id; Id() = 1;
- Gv(om_) = (om_ + 2.3);
+// tqa::matrix<double> Id; Id() = 1;
+ //Gv(om_) = (om_ + 2.3);
 // Gv(om_) = (om_ + 2.3);
- //G(om_) = (2.0 + om_ - 2.3);
- //G(om_) = 1/(om_ + 2.3);
+ G(om_) = (2.0 + om_ - 2.3);
+ //G(om_) = 1./(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
  TEST(G(0));
  TEST(G(inf)(0));
