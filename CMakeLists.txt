@@ -139,21 +139,19 @@ endif(BOOST_SOURCE_DIR)
 # link libs for shared libs or for pytriqs 
 #------------------------
 
-SET( TRIQS_LINK_LIBS 
+SET(TRIQS_LINK_LIBS 
  ${BLITZ_LIBRARY}
  ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} 
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}
  ${LAPACK_LIBS}
- ${GMP_LIBRARIES}
- ${GMPXX_LIBRARIES}
- )
+)
 
 #------------------------
 # General triqs libraries
 #------------------------
+
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
-SET( TRIQS_LINK_LIBS triqs ${TRIQS_LINK_LIBS})
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES TRIQS_LINK_LIBS)

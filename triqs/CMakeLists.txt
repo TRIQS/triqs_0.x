@@ -2,6 +2,8 @@
 link_libraries(${PYTHON_LIBRARY})
 include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 
+option(Use_Pade "Compile Pade tools?" OFF)
+
 # All the sources
 SET (ALLSOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/MersenneRNG.cpp
@@ -13,7 +15,6 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/stack_trace.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/blitzext/blitz_op.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/fourier.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/pade.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_Base.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImFreq.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/GF_Bloc_ImLegendre.cpp
@@ -24,6 +25,13 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/MeshGF.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/TailGF.cpp
 )
+
+if (Use_Pade)
+  set (ALLSOURCES ${ALLSOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/pade.cpp)
+  add_definitions(-DUSE_PADE)
+  find_package(GMP)
+  SET (TRIQS_LINK_LIBS ${TRIQS_LINK_LIBS} ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
+endif (Use_Pade)
 
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 

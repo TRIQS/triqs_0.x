@@ -1,4 +1,3 @@
-SET( TRIQS_LINK_LIBS triqs ${TRIQS_LINK_LIBS})
 SET(ExecutableName "pytriqs" ) 
 
 if (TRIQS_BUILD_STATIC)
@@ -32,9 +31,9 @@ if (TRIQS_BUILD_STATIC)
 
  # what should I link ? 
  GET_PROPERTY(LIBS_TO_LINK  GLOBAL  PROPERTY LIBS_TO_LINK)
- target_link_libraries( ${ExecutableName} ${LIBS_TO_LINK}  ${TRIQS_LINK_LIBS})
+ target_link_libraries( ${ExecutableName} ${LIBS_TO_LINK} ${TRIQS_LINK_LIBS} triqs)
  if (IPYTHON_AVAIL) 
-  target_link_libraries( i${ExecutableName} ${LIBS_TO_LINK} ${TRIQS_LINK_LIBS})
+  target_link_libraries( i${ExecutableName} ${LIBS_TO_LINK} ${TRIQS_LINK_LIBS} triqs)
  endif (IPYTHON_AVAIL) 
 
  # which modules did I build in ?

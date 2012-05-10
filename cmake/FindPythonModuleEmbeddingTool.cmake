@@ -18,7 +18,7 @@ else (TRIQS_BUILD_STATIC)
  set_property (GLOBAL APPEND PROPERTY PYTHON_DYNAMIC_MODULES_LIST ${ModuleName})
  add_library(${ModuleName} MODULE ${ARGN}  )
  set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
- target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS}) 
+ target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
  install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
  set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
  STRING(REPLACE "/" "." MODPATH ${ModuleDest})

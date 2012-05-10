@@ -21,11 +21,11 @@
 ################################################################################
 
 from pytriqs.Base.Archive import *
-from pytriqs.Base.GF_Local import GF_Initializers,GF,GFBloc_ImFreq
-from pytriqs.Base.Lattice1.TBLattice import *
-from pytriqs.Base.SumK1.SumK_Discrete_From_Lattice import *
+from pytriqs.Base.GF_Local import GF_Initializers,GF,GFBloc_ImFreq,inverse
+from pytriqs.Base.Lattice.SuperLattice import TBSuperLattice as SuperLattice
+from pytriqs.Base.Lattice.TightBinding import TBLattice as Lattice
+from pytriqs.Base.SumK.SumK_Discrete_From_Lattice import *
 from pytriqs.Base.DMFT.Loop_Generic import *
-from pytriqs.Base.Utility.myUtils import inverse
 import pytriqs.Base.Utility.MPI as MPI
 
 #
@@ -45,11 +45,10 @@ from pytriqs.Solvers.HybridizationExpansion.Models import Solver_2x2_Para_Hubbar
 S = Solver_2x2_Para_Hubbard(Beta = Beta, U_interact = 4.0)
 # I can change some parameter in the S. namespace, overruling the defaults
 # I could even change them from iteration to iteration in the loop below.
-S.N_Cycles  = 3000
+S.N_Cycles = 3000
 S.N_Warmup_Cycles = 0
 S.Length_Cycle = 10
 S.N_Legendre_Coeffs = 30
-#S.Proba_Move =0.0
 
 # Lattice and Super-Lattice 
 t   = -1.00             # First neighbour Hopping

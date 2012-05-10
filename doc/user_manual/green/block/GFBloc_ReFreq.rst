@@ -53,7 +53,10 @@ Examples
 Note that `g` is a **retarded** Green's function.
 
 
-The next example demonstrates how a real frequency Green's function can be reconstructed from an imaginary frequency counterpart using setFromPadeOf() method.
+The next example demonstrates how a real frequency Green's function can be
+reconstructed from an imaginary frequency counterpart using setFromPadeOf()
+method. Note that in order to use this method you need to activate the
+``Use_Pade`` option when you run cmake (``cmake -DUse_Pade=ON``).
 
 .. plot:: green/block/green_pade.py
    :include-source:
