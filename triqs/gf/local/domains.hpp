@@ -35,7 +35,7 @@ namespace triqs { namespace gf {
    typedef int point_type;
    typedef int embedded_point_type;
    typedef std::complex<double> gf_result_type;
-   static const bool has_tail = false;
+   //static const bool has_tail = false;
   };
 
   struct matsubara_freq {
@@ -45,7 +45,8 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_freq (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   static const bool has_tail = true;
+   //static const bool has_tail = true;
+   bool operator == (matsubara_freq D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
   struct matsubara_time {
@@ -55,7 +56,7 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_time (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   static const bool has_tail = true;
+   //static const bool has_tail = true;
   };
 
   struct matsubara_legendre{};

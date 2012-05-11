@@ -68,9 +68,9 @@ namespace triqs { namespace gf { namespace meshes {
   public:
   typedef size_t index_type;
   typedef domains::tail domain_type;
-  typedef std::complex<double> gf_result_type;
+  // typedef std::complex<double> gf_result_type;
   typedef tqa::range range_type;
-
+  typedef bool slice_arg_type;
   tail(int OrderMin=-1, int OrderMax = 7) : omin(OrderMin), omax(OrderMax) {}
 
   static const bool has_tail = false;
@@ -83,12 +83,7 @@ namespace triqs { namespace gf { namespace meshes {
 
   int order_min() const {return omin;}
   int order_max() const {return omax;}
-  template<typename F> typename F::mv_type interpolate( F const & f, domain_type::point_type const & n) const { 
-   if (n<omin) TRIQS_RUNTIME_ERROR<<" n <omin";
-   if (n<=omax) return f((*this)[n-omin]);
-   return typename F::mv_type::non_view_type();
-  } 
- };
+  };
 
  //--------------------------------------------------------
 
@@ -98,6 +93,7 @@ namespace triqs { namespace gf { namespace meshes {
   typedef std::complex<double> gf_result_type;
   typedef long index_type;
   typedef tqa::range range_type;
+  typedef arrays::range slice_arg_type;
 
   matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): 
    mesh_tail(), _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
@@ -113,6 +109,8 @@ namespace triqs { namespace gf { namespace meshes {
   template<typename F> typename F::mv_type interpolate( F const & f, domain_type::point_type const & n) const {  
    return f((*this)[n]);
   } // here complex n -> -n and the tail : protection ...
+
+  friend bool operator == (matsubara_freq M1, matsubara_freq M2) { return ((M1._dom == M2._dom) && (M1.n_max_ ==M2.n_max_) );}
 
   protected:
   domain_type _dom;

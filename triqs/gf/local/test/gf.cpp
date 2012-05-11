@@ -36,7 +36,7 @@ int main() {
  TEST( G( 0) ) ;
 
  //Gf_view_type Gv2 = slice(G,0,0);
- Gf_view_type Gv2 = G.slice(0,0);
+ Gf_view_type Gv2 = G.slice(range(0),range(0));
  TEST( Gv2( 0) ) ;
  Gv2(0) = 10;
  TEST( Gv2( 0) ) ;
@@ -54,8 +54,8 @@ int main() {
  
 // tqa::matrix<double> Id; Id() = 1;
  //Gv(om_) = (om_ + 2.3);
-// Gv(om_) = (om_ + 2.3);
- G(om_) = (2.0 + om_ - 2.3);
+ Gv(om_) = (om_ + 2.3);
+// G(om_) = (2.0 + om_ - 2.3);
  //G(om_) = 1./(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
  TEST(G(0));
