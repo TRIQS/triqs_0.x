@@ -44,7 +44,7 @@ namespace triqs { namespace arrays {
   * It can be copied at no cost
   * It keeps view of the object A if it a matrix, a copy if it is a formal expression.
   */ 
- template<typename A, class Enable = void> class inverse_lazy;
+ template<typename A, class Enable = void> struct inverse_lazy;
  
  ///
  template<typename A> struct determinant_lazy;

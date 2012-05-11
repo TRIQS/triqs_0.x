@@ -57,12 +57,12 @@ namespace triqs { namespace arrays {
  template<typename DataType, typename CacheType> 
   class const_cache<DataType,CacheType,true> {
    protected: 
+   mutable bool init;
    typedef typename get_orig<DataType>::type original_view_type;// view type if a regular class, regular type if an expression
    original_view_type  original_view;
    typedef typename CacheType::view_type final_view_type;
    mutable boost::shared_ptr< CacheType > copy;
    mutable boost::shared_ptr< final_view_type > view_ptr;
-   mutable bool init;
    final_view_type * prep() const { 
     if (!init) {
 #ifdef TRIQS_ARRAYS_CACHE_COPY_VERBOSE

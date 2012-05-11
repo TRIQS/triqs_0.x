@@ -65,7 +65,8 @@ namespace triqs { namespace arrays {
      index_system (DataSpace const & ds, bool is_complex) { 
       int rf = ds.getSimpleExtentNdims();
       if ( rf != rank_full  + (is_complex ? 1 : 0) ) TRIQS_RUNTIME_ERROR <<  "H5 : dimension error";
-      int ndims = ds.getSimpleExtentDims( &lens_[0], NULL);
+      //int ndims = ds.getSimpleExtentDims( &lens_[0], NULL);
+      ds.getSimpleExtentDims( &lens_[0], NULL);
       for (size_t i =0; i<rank; ++i) { dims[i] = lens_[i]; stri_[i] = 1; off_[i]= 0; }
       total_lens_=dims;
       mydomain = domain_type (dims);

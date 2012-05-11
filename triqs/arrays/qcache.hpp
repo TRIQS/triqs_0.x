@@ -37,7 +37,7 @@ namespace triqs { namespace arrays {
   *  [Rational : in simple case, like A =matrix, it allows to keep only a const &, which is quicker
   *
   */
- template<typename A, typename Enable=void> struct const_qcache;
+ template<typename A, typename Enable=void> class const_qcache;
 
  template<typename A> class const_qcache< A, typename boost::enable_if<is_value_class<A> >::type> : boost::noncopyable { 
   A const & x;
@@ -94,7 +94,7 @@ namespace triqs { namespace arrays {
   *  [Rational : in simple case, like A =matrix, it allows to keep only a &, which is quicker
   *
   */
- template<typename A, typename Enable=void> struct reflexive_qcache;
+ template<typename A, typename Enable=void> class reflexive_qcache;
 
  template<typename A> class reflexive_qcache< A, typename boost::enable_if<is_value_class<A> >::type> : boost::noncopyable { 
   A & x;

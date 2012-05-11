@@ -26,6 +26,7 @@
 #define AS_STRING(X) AS_STRING2(X)
 #define AS_STRING2(X) #X
 
+#include <Python.h>
 #include "./src/python/converters.hpp"
 
 extern "C" { void initmpi();}; 

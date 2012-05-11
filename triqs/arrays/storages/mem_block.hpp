@@ -50,7 +50,8 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
    static void import_numpy_array() { 
     static bool init = false;
     //if (init) { std::cerr<<" memblock import arry : already done"<<std::endl; return;}
-    int _r = _import_array();assert(_r==0);
+    int _r = _import_array();
+    if (_r!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy ";
     //std::cerr<<" memblock import array done"<<std::endl;
     init = true;
    }

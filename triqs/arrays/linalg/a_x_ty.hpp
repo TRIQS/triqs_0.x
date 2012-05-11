@@ -30,7 +30,7 @@
 
 namespace triqs { namespace arrays { 
 
- namespace linalg { namespace details { template<typename ScalarType, typename VectorType1, typename VectorType2> struct a_x_ty_impl; }}  // impl below
+ namespace linalg { namespace details { template<typename ScalarType, typename VectorType1, typename VectorType2> class a_x_ty_impl; }}  // impl below
  namespace result_of { template<typename ScalarType,typename VectorType1, typename VectorType2> struct a_x_ty { 
   typedef linalg::details::a_x_ty_impl<ScalarType,VectorType1,VectorType2> type;}; 
  }

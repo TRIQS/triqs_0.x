@@ -83,7 +83,8 @@ namespace triqs {
       if (rank != Rank) TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : the array has rank = "
        <<Rank<<" while the array stored in the hdf5 file has rank = "<<rank;
       mini_vector<hsize_t,Rank> dims_out;
-      int ndims = dataspace.getSimpleExtentDims( &dims_out[0], NULL);
+      //int ndims = dataspace.getSimpleExtentDims( &dims_out[0], NULL);
+      dataspace.getSimpleExtentDims( &dims_out[0], NULL);
       mini_vector<size_t,ArrayType::rank > d2; for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
       resize_or_check(A, d2 ); 
       if (C_reorder) { 

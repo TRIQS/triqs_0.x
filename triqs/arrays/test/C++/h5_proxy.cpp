@@ -33,7 +33,7 @@ void test(std::string filename, T init) {
 
  h5::H5File file( filename.c_str(), H5F_ACC_TRUNC );
 
- const size_t N = 12, bufsize = 5, d= 2;
+ const size_t N = 12, d= 2;
 
  array<T,2> A(d,d+1), A2(d,d+1);
  array<T,3> A_stack_keep(N,d,d+1), A_stack_compare(N,d,d+1);
