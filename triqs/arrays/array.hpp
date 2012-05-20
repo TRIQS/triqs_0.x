@@ -145,5 +145,9 @@ namespace triqs { namespace arrays {
   };//array class
 }}//namespace triqs::arrays
 
+#ifdef TRIQS_HAS_LAZY_EXPRESSIONS
+#include <triqs/lazy/adapters/array.hpp>
+#endif
+
 #endif
 

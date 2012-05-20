@@ -115,7 +115,7 @@ namespace triqs { namespace arrays {
 
  // an implementation class to gather the common part to matrix and expression....
  template<typename A> struct inverse_lazy_impl : Tag::matrix_algebra_expression_terminal, Tag::has_immutable_array_interface {
-  typedef typename A::value_type value_type;
+  typedef typename boost::remove_const<typename A::value_type>::type value_type;
   typedef typename A::domain_type domain_type;
   typedef typename domain_type::index_value_type index_value_type;
   typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
@@ -125,14 +125,16 @@ namespace triqs { namespace arrays {
   }
   domain_type domain() const { return a.domain(); } 
   size_t dim0() const { return a.dim0();} 
-  size_t dim1() const { return a.dim0();} 
+  size_t dim1() const { return a.dim1();} 
   value_type operator[] (index_value_type const & key) const { activate();  return _id->M [key]; }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute
-   typedef typename A_type::non_view_type M_type;
+   //typedef typename A_type::non_view_type M_type;
+   typedef matrix<value_type> M_type;
+   typedef matrix_view<value_type> M_view_type;
    M_type M;
-   internal_data(inverse_lazy_impl const & P):M(P.a){det_and_inverse_worker<A_type> worker(M); worker.inverse();}
+   internal_data(inverse_lazy_impl const & P):M(P.a){det_and_inverse_worker<M_view_type> worker(M); worker.inverse();}
   };
   friend struct internal_data;
   mutable boost::shared_ptr<internal_data> _id;

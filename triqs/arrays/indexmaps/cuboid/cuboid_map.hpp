@@ -76,6 +76,12 @@ namespace triqs { namespace arrays {
      cuboid_map(lengths_type const & Lengths, strides_type const & strides, std::ptrdiff_t start_shift ): 
       mydomain(Lengths), strides_(strides), start_shift_(start_shift){ }
 
+     /// Construction from another cuboid_map with the same order (used in grouping indices)
+     template<typename IO> cuboid_map (cuboid_map<IO,CheckBounds> const & C):
+      mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()) {
+      static_assert( (Permutations::is_equal<typename IO::perm,typename IndexOrderType::perm>::value), "Internal error");
+      }
+
      /// 
      bool is_contiguous() const {   
       const size_t last_index = IndexOrderType::template memory_rank_to_index<rank-1>::value; 

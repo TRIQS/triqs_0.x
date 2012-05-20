@@ -32,7 +32,7 @@
 #include <exception> 
 
 /// Maximum dimension of the arrays
-#define ARRAY_NRANK_MAX 5
+#define ARRAY_NRANK_MAX 10
 
 #ifdef __GNUC__
 #define restrict __restrict__ 

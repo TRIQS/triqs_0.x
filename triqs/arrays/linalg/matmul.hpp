@@ -40,8 +40,8 @@ namespace triqs { namespace arrays {
    Tag::matrix_algebra_expression_terminal,Tag::expression_terminal, 
    Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
 
-    typedef typename A::value_type V1;
-    typedef typename B::value_type V2;
+    typedef typename boost::remove_const<typename A::value_type>::type V1;
+    typedef typename boost::remove_const<typename B::value_type>::type V2;
     static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
 
     public:
