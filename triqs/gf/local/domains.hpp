@@ -30,14 +30,14 @@ namespace triqs { namespace gf {
  namespace domains {
 
   struct infty{}; // the point at infinity
-
+/*
   struct tail{
    typedef int point_type;
    typedef int embedded_point_type;
    typedef std::complex<double> gf_result_type;
    //static const bool has_tail = false;
   };
-
+*/
   struct matsubara_freq {
    typedef long                 point_type;
    typedef std::complex<double> embedded_point_type;
@@ -45,7 +45,7 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_freq (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   //static const bool has_tail = true;
+   static const bool has_tail = true;
    bool operator == (matsubara_freq D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
