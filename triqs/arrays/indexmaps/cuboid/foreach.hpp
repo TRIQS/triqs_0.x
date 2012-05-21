@@ -34,10 +34,7 @@
 
 namespace triqs { namespace arrays { namespace indexmaps { 
 
- typedef std::ptrdiff_t foreach_int_type; 
- // better to be signed here : 1) on some machine/compiler, it is a lot faster !
- // When used with NPL auto assign, e.g. A(i_,j_) = i -2*j, one needs signed arithmetics
- // The NPL adapters would convert, but this requires a conversion at each call....
+ typedef std::ptrdiff_t foreach_int_type;
  // typedef size_t foreach_int_type;
 
  template< class IndexMap, class Function, typename ValueType, typename Enable=void> struct foreach_impl;
@@ -99,6 +96,9 @@ namespace triqs { namespace arrays { namespace indexmaps {
 #undef AUX1
 #undef AUX2
 #undef PP
+ /* const mini_vector<size_t, IndexOrderType::rank> & l(CM.lengths());\
+    mini_vector<foreach_int_type, IndexOrderType::rank> const & s(CM.strides()), const & l(CM.lengths());\
+  *  for (get<p0>(t)=0; get<p0>(t)<get<p0>(l); ++get<p0>(t)) for (get<p1>(t)=0; get<p1>(t)<get<p1>(l); ++get<p1>(t))  */
 
 }}}//namespace
 #endif
