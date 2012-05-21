@@ -62,7 +62,7 @@ namespace triqs { namespace gf { namespace meshes {
 
  struct default_tag{};
 
-/* class tail{
+ class tail{
   int omin,omax;
 
   public:
@@ -84,7 +84,7 @@ namespace triqs { namespace gf { namespace meshes {
   int order_min() const {return omin;}
   int order_max() const {return omax;}
   };
-*/
+
  //--------------------------------------------------------
 
  struct matsubara_freq {
@@ -96,10 +96,9 @@ namespace triqs { namespace gf { namespace meshes {
   typedef arrays::range slice_arg_type;
 
   matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): 
-  // mesh_tail(), 
-   _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
+   mesh_tail(), _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
 
-  //tail mesh_tail;
+  tail mesh_tail;
 
   domain_type const & domain() const { return _dom;}
   size_t size() const{ return n_max_;}

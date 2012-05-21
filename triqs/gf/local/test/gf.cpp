@@ -4,15 +4,17 @@
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
-namespace tql= triqs::lazy;
+//namespace tql= triqs::lazy;
 //namespace tqa= triqs::arrays;
-using tqa::range;
-
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 std::complex<double> mul2 (std::complex<double> x) { return x*x;}
 
 int main() {
+
+ //std::vector<std::vector<std::string> > ind(1); 
+ //ind[0].push_back("1");ind[0].push_back("2"); ind.push_back(ind[0]);
+ //tqa::array<std::string,2> ind(2,2);
 
  typedef local::gf<meshes::matsubara_freq> Gf_type;
  typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
@@ -22,10 +24,14 @@ int main() {
  TEST( G1( 0) ) ;
 
  double beta =1;
- Gf_type G(2,2, meshes::matsubara_freq(beta,Fermion));
- Gf_type Gc(2,2, meshes::matsubara_freq(beta,Fermion));
- Gf_type G3(2,2, meshes::matsubara_freq(beta,Fermion));
+ Gf_type G(2,2, meshes::matsubara_freq(beta,Fermion));//, ind);
+ Gf_type Gc(2,2, meshes::matsubara_freq(beta,Fermion));//, ind);
+ Gf_type G3(2,2, meshes::matsubara_freq(beta,Fermion));//, ind);
 
+ /*Gf_type G(2,2, meshes::matsubara_freq(beta,Fermion), ind);
+ Gf_type Gc(2,2, meshes::matsubara_freq(beta,Fermion), ind);
+ Gf_type G3(2,2, meshes::matsubara_freq(beta,Fermion), ind);
+*/
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
 
@@ -50,7 +56,7 @@ int main() {
  //Gv(om_) = (om_ + 2.3);
  Gv(om_) = (om_ + 2.3);
 // G(om_) = (2.0 + om_ - 2.3);
-//G(om_) = 1.0/(om_ + 2.3);
+ //G(om_) = 1./(om_ + 2.3);
  //G(om_) = Id* (1/(om_ + 2.3) );
  TEST(G(0));
  TEST(G(inf)(0));
@@ -72,7 +78,7 @@ int main() {
  BOOST_AUTO( t, G(inf));
  //local::gf<meshes::tail> t2 = t + 2.4;
 
- TEST(t.order_min()); 
+ TEST(t.mesh().order_min()); 
  TEST( t( 0) ) ;
 
  TEST( Gv2(inf)( 0) ) ;
@@ -106,12 +112,6 @@ int main() {
 
  //TEST( (G + 2.3)(0));
  TEST( (t + 2.3)(0));
-
- TEST( t(-1));
- //TEST( (2 * inverse(t))(0));
-
- tqa::array<double,9> A(1,2,3,4,5,6,7,8,9);
- A()=0;
  //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
 
 #endif

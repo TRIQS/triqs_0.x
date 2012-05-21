@@ -146,8 +146,6 @@ namespace triqs { namespace gf { namespace local {
 
  // -----------  
 
- template<typename L, typename R> struct LocalTail<tail_mul_lazy<L,R> >::mpl::true_{};
- 
  template<typename T1, typename T2> 
   typename boost::enable_if< mpl::and_<LocalTail<T1>, LocalTail<T2> >, tail_mul_lazy<T1,T2> >::type
   operator* (T1 const & a, T2 const & b) { return tail_mul_lazy<T1,T2>(a,b); }
@@ -156,20 +154,17 @@ namespace triqs { namespace gf { namespace local {
 
  template<typename T> struct tail_inv_lazy { // should have the same concept as tail_expr
   typename tup::const_view_type_if_exists_else_type<T>::type t; 
-  tqa::mini_vector<size_t,2> sh;
-  tail_inv_lazy(tail_view const & t_):t(t_), sh(t(t.mesh().order_min()).shape()){}
+  tail_inv_lazy(tail_view const & t_):t(t_){}
 
   struct internal_data { // implementing the pattern LazyPreCompute
    tail t_inv;
-   template<typename Ta> internal_data(Ta const & t, tqa::mini_vector<size_t,2>  const & sh): 
-    t_inv(sh[0], sh[1], meshes::tail(- t.mesh().order_min(),- t.mesh().order_min() + t.mesh().size())) {
+   template<typename Ta> internal_data(Ta const & t): 
+    t_inv(t.shape()[0], t.shape()[1], meshes::tail(- t.mesh().order_min(),- t.mesh().order_min() + t.mesh().size())) {
      // compute the inverse
      // b_n = - a_0^{-1} * sum_{p=0}^{n-1} b_p a_{n-p} for n>0
      // b_0 = a_0^{-1}
      // b_min <= p <=b_max ;  a_min <= n-p <= a_max ---> n-a_max  <= p <= n-a_min 
      const int omin = t_inv.mesh().order_min(); const int omax = t_inv.mesh().order_max();
-     //std::cout<< " t0 "<< t.mesh().order_min()<< std::endl;
-     //std::cout<< " t0 "<< t(t.mesh().order_min()) << std::endl;
      t_inv(omin) = inverse(t(t.mesh().order_min()));
      for (int n=omin+1; n<=omax;n++) {
       const int pmin = std::max(omin, n - t.mesh().order_max() );
@@ -181,14 +176,12 @@ namespace triqs { namespace gf { namespace local {
   };
   friend struct internal_data;
   mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(t, sh);}
+  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(t);}
 
   mv_dcomplex_type operator ()(int n) const { activate(); return _id->t_inv(n); }
  };
 
  // -----------  
-
- template<typename T> struct LocalTail<tail_inv_lazy<T> >: mpl::true_{};
 
  template<typename T> typename boost::enable_if< LocalTail<T>, tail_inv_lazy <T> >::type 
   inverse (T const & t) { return tail_inv_lazy<T>(t);}
@@ -211,7 +204,7 @@ namespace triqs { namespace gf { namespace local {
   , proto::plus      <tail_grammar ,tail_grammar>
   , proto::minus     <tail_grammar ,tail_grammar>
   , proto::multiplies<tail_grammar ,tail_scalar_grammar>
-  , proto::multiplies<tail_scalar_grammar,tail_grammar>
+  , proto::multiplies<tail_scalar_grammar,tail_scalar_grammar>
   , proto::divides   <tail_grammar ,tail_scalar_grammar>
   , proto::negate    <tail_grammar >
   > {};
