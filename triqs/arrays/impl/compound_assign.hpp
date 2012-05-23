@@ -84,7 +84,8 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_ARRAYS_DEBUG
      if (!indexmaps::compatible_for_assignment(lhs.indexmap(), rhs.indexmap())) throw "Size mismatch";
 #endif
-     if ((indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap())) && rcp_impl(lhs.storage(),rhs.storage()) ) {} 
+     if ((indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap()))  &&
+       (lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {} 
      else {
 #ifndef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH 
       typename RHS::const_iterator it_rhs = rhs.begin();

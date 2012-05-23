@@ -28,6 +28,7 @@
 #endif
 
 //#include <boost/python/slice.hpp>
+#include <triqs/python_tools/converters.hpp>
 #include "../python/numpy_interface.hpp"
 #include <complex>
 #include <boost/preprocessor/seq/for_each.hpp>

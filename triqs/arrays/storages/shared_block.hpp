@@ -116,6 +116,7 @@ namespace triqs { namespace arrays {
     /// raw copy from another 
     template <class ValueType2> 
      void raw_copy_from(const shared_block<ValueType2> & X){
+      assert(this-> size() == X.size());
       static_assert( (details::const_check<ValueType,ValueType2>::value), "shared_block : can not create a block. type mismatch");      
       if (!empty()) (*sptr) = (*X.sptr);     
      }
