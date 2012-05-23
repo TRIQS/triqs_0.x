@@ -20,10 +20,10 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
 #include "./src/h5/simple_read_write.hpp"
-#include "./python_stuff.hpp"
 
 using namespace std;
 using namespace triqs::arrays;

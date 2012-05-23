@@ -19,6 +19,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
+#include <iostream>
 
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
@@ -36,8 +38,6 @@
 #include <boost/numeric/bindings/lapack/computational/getrf.hpp>
 #include <boost/numeric/bindings/lapack/computational/getri.hpp>
 
-#include "./python_stuff.hpp"
-#include <iostream>
 
 using namespace std;
 using namespace triqs::arrays;

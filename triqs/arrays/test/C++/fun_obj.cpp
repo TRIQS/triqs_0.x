@@ -19,6 +19,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 #include "./src/expressions/function_objects.hpp"
 

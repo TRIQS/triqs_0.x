@@ -19,12 +19,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
 #include "./src/expressions/matrix_algebra.hpp"
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
-#include "./python_stuff.hpp"
 #include <iostream>
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 

@@ -20,10 +20,10 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
 #include "./src/h5/array_stack.hpp"
 #include "./src/h5/simple_read_write.hpp"
 #include <iostream>
-#include "./python_stuff.hpp"
 #include "./src/impl/asserts.hpp"
 
 using namespace std;

@@ -19,11 +19,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./python_stuff.hpp"
 #include <iostream>
 
 using namespace std;

@@ -18,11 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 #include "./src/h5/array_proxy.hpp"
 #include "./src/h5/simple_read_write.hpp"
 #include <iostream>
-#include "./python_stuff.hpp"
 #include "./src/impl/asserts.hpp"
 
 using namespace std;

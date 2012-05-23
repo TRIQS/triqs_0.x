@@ -20,6 +20,9 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
+#include <iostream>
+
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
@@ -31,8 +34,6 @@
 #include "./src/linalg/a_x_ty.hpp"
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 
-#include "./python_stuff.hpp"
-#include <iostream>
 
 using namespace std;
 using namespace triqs::arrays;

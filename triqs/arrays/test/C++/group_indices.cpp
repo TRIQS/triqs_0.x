@@ -1,3 +1,4 @@
+#include "./python_stuff.hpp"
 #include <triqs/lazy/core.hpp>
 #include <triqs/arrays/indexmaps/cuboid/group_indices.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
