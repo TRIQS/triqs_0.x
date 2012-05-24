@@ -27,6 +27,7 @@ class AutoCompile(object):
         compiler = "clang++",
         link = "",
         include = "",
+        definitions = "",
       #  ld_library_path = "",
     )
     @classmethod
@@ -59,7 +60,7 @@ class CompileBlock(Directive):
         fil.write(code)
         fil.flush()
          
-        args = " %(compiler)s %(include)s %(link)s "%config + " " + fil.name
+        args = " %(compiler)s %(definitions)s %(include)s %(link)s "%config + " " + fil.name
         #print args
         import subprocess as S
         error = True
