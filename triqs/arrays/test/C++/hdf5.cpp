@@ -66,24 +66,24 @@ int main(int argc, char **argv) {
  cout<<" C= "<<C<<endl;
  cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<endl;
 
- h5::H5File file( "ess.h5", H5F_ACC_TRUNC );
- h5::write(file,"A",A);
- h5::write(file,"Af",Af);
- h5::write(file,"C",C);
- h5::write(file,"D",D);
+ H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+ h5_write(file,"A",A);
+ h5_write(file,"Af",Af);
+ h5_write(file,"C",C);
+ h5_write(file,"D",D);
 
  file.createGroup("G");
- h5::write(file,"G/A",A);
+ h5_write(file,"G/A",A);
 
- h5::Group G = file.openGroup("G");
- h5::write(G, "A2",A);
+ H5::Group G = file.openGroup("G");
+ h5_write(G, "A2",A);
 
- h5::read (file, "A",B);   cout<< "B = "<< B<<endl;
- h5::read (file, "Af",Bf); cout<< "Bf = "<< Bf<<endl;
- h5::read (file, "D",D2);  cout<< "D = "<< D2<<endl;
- h5::read (file, "C",C2);  cout<< "C = "<< C2<<endl;
+ h5_read (file, "A",B);   cout<< "B = "<< B<<endl;
+ h5_read (file, "Af",Bf); cout<< "Bf = "<< Bf<<endl;
+ h5_read (file, "D",D2);  cout<< "D = "<< D2<<endl;
+ h5_read (file, "C",C2);  cout<< "C = "<< C2<<endl;
 
- //array<long,1> E; h5::read (file, "A",E);   cout<< "E = "<< E<<endl;
+ //array<long,1> E; h5_read (file, "A",E);   cout<< "E = "<< E<<endl;
 
  } 
  catch( const char * err) { cout<<err<<endl;}
