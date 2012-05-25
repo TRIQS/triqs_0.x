@@ -96,9 +96,9 @@ namespace triqs { namespace arrays {
    matrix_view( matrix_view const & X): impl_type(X.indexmap(),X.storage()) {}
 
    /** Assignement.  The size of the array MUST match exactly.  */
-   template<typename RHS> matrix_view & operator=(const RHS & X) {assignment(*this,X); return *this; }
+   template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }
 
-   matrix_view & operator=(matrix_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
+   matrix_view & operator=(matrix_view const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }//cf array_view class comment
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
    _IMPL_MATRIX_COMMON;
@@ -129,7 +129,7 @@ namespace triqs { namespace arrays {
    /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
    template <typename T> 
     matrix(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { assignment(*this,X); }
+     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -161,7 +161,7 @@ namespace triqs { namespace arrays {
     matrix & operator=(const RHS & X) { 
      static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
      impl_type::resize(X.domain());
-     assignment(*this,X);
+     triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>());
      return *this; 
     }
 

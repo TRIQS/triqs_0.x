@@ -59,10 +59,10 @@ namespace triqs { namespace arrays {
 #endif
 
     /// Assignment. The size of the array MUST match exactly. 
-    template<typename RHS> array_view & operator=(RHS const & X) { assignment(*this,X); return *this; }
+    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }
 
     ///
-    array_view & operator=(array_view const & X) { assignment(*this,X); return *this; } //without this, the standard = is synthetized...
+    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; } //without this, the standard = is synthetized...
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
@@ -109,7 +109,7 @@ namespace triqs { namespace arrays {
     */
    template <typename T> 
     array(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { assignment(*this,X); }
+     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -136,7 +136,7 @@ namespace triqs { namespace arrays {
     array & operator=(const RHS & X) { 
      static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
      impl_type::resize(X.domain());
-     assignment(*this,X);
+     triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>());
      return *this; 
     }
   

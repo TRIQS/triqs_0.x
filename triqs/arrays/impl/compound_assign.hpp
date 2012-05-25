@@ -19,7 +19,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_COMPOUND_ASSIGN2_H_
 #define TRIQS_ARRAYS_COMPOUND_ASSIGN2_H_
 #include "./assignment.hpp"

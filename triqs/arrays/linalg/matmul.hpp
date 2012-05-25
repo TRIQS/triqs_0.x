@@ -77,12 +77,24 @@ namespace triqs { namespace arrays {
     template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
 
     // Optimized implementation of =, +=, -=
-    template<typename LHS> void assign_invoke (LHS & lhs) const {
-     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix"); 
+/*    template<typename LHS> void assign_invoke (LHS & lhs) const {
+     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
+    assert(0); 
      const_qcache<A_type> Ca(a); const_qcache<B_type> Cb(b);
      resize_or_check_if_view(lhs,make_shape(dim0(),dim1()));
      boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, lhs);
     }
+ */
+    template<typename LHS> 
+    friend void triqs_arrays_assign_delegation (LHS & lhs, matmul_lazy const & rhs, mpl::char_<'E'>)  {
+     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
+     // const_qcache<decltype(rhs.a)> Ca(rhs.a); 
+     const_qcache<typename matmul_lazy::A_type> Ca(rhs.a); 
+     const_qcache<typename matmul_lazy::B_type> Cb(rhs.b); // mettre le cache en func
+     resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
+     boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, lhs);
+    }
+
     template<typename LHS> void assign_add_invoke (LHS & lhs) const { assign_comp_impl(lhs,1.0);}
     template<typename LHS> void assign_sub_invoke (LHS & lhs) const { assign_comp_impl(lhs,-1.0);}
 

@@ -19,7 +19,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_ASSIGN2_H_
 #define TRIQS_ARRAYS_ASSIGN2_H_
 #include "iterator_adapter.hpp"
@@ -35,7 +34,7 @@ namespace triqs { namespace arrays {
  // puts the contents of RHS into LHS. LHS must be an indexmap_storage_pair
  // it is specialized in various cases for optimisation.
  template<typename LHS, typename RHS> 
-  void assignment (LHS & lhs, const RHS & rhs)  { details::assign_impl<LHS,RHS>(lhs,rhs).invoke();}
+  void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs, mpl::char_<'E'> )  { details::assign_impl<LHS,RHS>(lhs,rhs).invoke();}
 
  // -------- IMPLEMENTATION ----------------------------
 

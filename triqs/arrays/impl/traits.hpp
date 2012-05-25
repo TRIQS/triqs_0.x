@@ -1,0 +1,118 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2012 by O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#ifndef TRIQS_ARRAYS_IMPL_TRAITS_H
+#define TRIQS_ARRAYS_IMPL_TRAITS_H
+#include <boost/mpl/or.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/not.hpp>
+#include <boost/concept_check.hpp>
+#include <triqs/utility/concept_tools.hpp>
+
+namespace triqs { namespace arrays {
+
+ namespace mpl=boost::mpl; 
+
+ // The ImmutableArray concept 
+ TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableArray);
+
+ template <class X> struct BCC_ImmutableArray { 
+  BOOST_CONCEPT_USAGE(BCC_ImmutableArray)
+  {
+   typename X::mc_weight_type r = i.Try();  // this is e.g. for a QMC move  
+   r = i.Accept();
+   i.Reject();
+  }
+  private: X i;
+ };
+
+ // The ImmutableMatrix concept 
+ TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableMatrix);
+
+ template <class X> struct BCC_ImmutableMatrix{ 
+  BOOST_CONCEPT_USAGE(BCC_ImmutableMatrix)
+  {
+  }
+  private: X i;
+ };
+
+ // The ImmutableVector concept 
+ TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableVector);
+
+ template <class X> struct BCC_ImmutableVector { 
+  BOOST_CONCEPT_USAGE(BCC_ImmutableVector)
+  {
+  }
+  private: X i;
+ };
+
+ // technical trait of the lib to identify the implementation class ... to be moved in array, etc...
+ namespace Tag { struct array{}; struct array_view {}; struct C{}; struct Fortran{}; }
+ template <typename T> struct is_array : Tag::check<Tag::array,T> {};
+ template <typename T> struct is_array_view : Tag::check<Tag::array_view,T> {};
+ template <typename T> struct is_array_or_view : boost::mpl::or_< is_array<T>, is_array_view<T> > {};
+
+ namespace Tag { struct vector{}; struct vector_view {};}
+ template <typename T> struct is_vector : Tag::check<Tag::vector,T> {};
+ template <typename T> struct is_vector_view : Tag::check<Tag::vector_view,T> {};
+ template <typename T> struct is_vector_or_view : boost::mpl::or_< is_vector<T>, is_vector_view<T> > {};
+
+ namespace Tag { struct matrix_view {}; struct matrix {}; }
+ template <typename T> struct is_matrix : Tag::check<Tag::matrix,T> {};
+ template <typename T> struct is_matrix_view : Tag::check<Tag::matrix_view,T> {};
+ template <typename T> struct is_matrix_or_view : boost::mpl::or_< is_matrix<T>, is_matrix_view<T> > {};
+
+ template <class T> struct is_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
+ template <class T> struct is_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
+ template <class T> struct is_value_or_view_class : boost::mpl::or_< is_value_class<T>, is_view_class<T> > {};
+
+ // ?? TO BE SUPRRESSED after rework of assignment
+ template <typename T> struct is_expression : Tag::check<Tag::expression,T> {};
+
+ //
+ template<typename T> struct is_matrix_expr : Tag::check<Tag::matrix_algebra_expression_terminal,T> {}; 
+ template<typename T> struct is_vector_expr : Tag::check<Tag::vector_algebra_expression_terminal,T> {}; 
+ template<typename T> struct is_matrix_or_vector_expr : boost::mpl::or_<is_matrix_expr<T>, is_vector_expr<T> > {};
+
+ template<typename T> struct has_immutable_array_interface : 
+  boost::mpl::or_<
+  Tag::check<Tag::has_immutable_array_interface,T>, 
+  Tag::check<Tag::expression,T>, 
+  Tag::check<Tag::indexmap_storage_pair,T> > {}; 
+
+ template <typename T> struct has_special_assign : Tag::check<Tag::has_special_assign,T> {};
+
+ // a lhs is either a immutableArray, or has a special assign and has a domain
+ // It is understood that has_special_assign implies that has_a_domain
+ // Do we want to add explicitely a has_domain ??
+ template <typename T> struct is_array_assign_lhs : boost::mpl::or_< has_immutable_array_interface<T>, has_special_assign<T> >{};
+
+ // template<class S, class A> struct is_scalar_for : 
+ //  boost::mpl::if_<boost::is_arithmetic<typename A::value_type > , boost::is_arithmetic<S>,  boost::is_same<S,typename A::value_type > > {};
+
+ template <class S> struct is_scalar : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S> > {};
+ // too primitive ?
+ template<class S, class A> struct is_scalar_for : 
+  boost::mpl::if_<is_scalar<typename A::value_type > , is_scalar<S>,boost::is_same<S,typename A::value_type > >::type {};
+
+
+}}//namespace triqs::arrays
+#endif
+
