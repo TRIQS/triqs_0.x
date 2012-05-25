@@ -247,8 +247,6 @@ class _GFBloc_base_data_tail  :
             for om in range (d.shape[-1]) : 
                 d[:,:,om ] = numpy.dot(d[:,:,om], d2[:,:,om])
             t *= arg._tail
-            # Multiplication may change statistics 
-            self.mesh.Statistic = GF_Statistic(self.mesh.Statistic.real ^ arg.mesh.Statistic.real)
         elif Descriptors.is_scalar(arg): # a scalar
             d[:,:,:] *= arg
             # to be simplified when the *= scalar for tail will be added !
