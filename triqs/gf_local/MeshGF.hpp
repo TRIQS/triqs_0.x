@@ -55,7 +55,7 @@ public :
   MeshGF(const MeshGF & X);
   
   const double Beta; 
-  Statistic_GF Statistic;
+  const Statistic_GF Statistic;
   const Type_GF typeGF;     
   const int index_min, index_max; 
 
