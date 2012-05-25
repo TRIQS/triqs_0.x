@@ -81,6 +81,17 @@ class _GFBloc_base_data_tail  :
         new_g._tail.copyFrom(self._tail)
         new_g._data.array[:,:,:] = self._data.array[:,:,:]
         return new_g
+        
+    #-----------------------------------------------------
+        
+    def copy_with_new_stat(self,stat) :
+        new_g = self.__class__(IndicesL = self._IndicesL,
+                               IndicesR = self._IndicesR,
+                               Mesh = MeshGF(self.mesh,stat),
+                               Name = self.Name, Note = self.Note)
+        new_g._tail.copyFrom(self._tail)
+        new_g._data.array[:,:,:] = self._data.array[:,:,:]
+        return new_g        
 
     #-----------------------------------------------------
 
@@ -258,8 +269,12 @@ class _GFBloc_base_data_tail  :
         return self
 
     def __mul__(self,y):
-        c = self.copy()
-        try: c *= y
+        if hasattr(y,"_data") :
+            c = self.copy_with_new_stat(GF_Statistic.Boson if self.mesh.Statistic == y.mesh.Statistic else GF_Statistic.Fermion)
+        else:
+            c = self.copy()
+        try: 
+            c *= y
         except NotImplementedError: return NotImplemented
         return c
 

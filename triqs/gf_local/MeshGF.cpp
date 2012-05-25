@@ -48,6 +48,17 @@ MeshGF::MeshGF(const MeshGF & X) :
   iter = index_min;
 }
 
+MeshGF::MeshGF(const MeshGF & X, const Statistic_GF & stat) :
+  arr(X.arr.as_PyObjectPtrBorrowedRef()), //no copy, array is never changed in the class
+  Beta(X.Beta),
+  Statistic(stat),
+  typeGF(X.typeGF),
+  index_min(X.index_min),
+  index_max(X.index_max)
+{
+  iter = index_min;
+}
+
 double MeshGF::Bose_Fermi(double x) const {
     const double coupure=1e-12,cutoff=100;
     double  y=Beta*x;
