@@ -32,7 +32,9 @@
 #include <triqs/utility/exceptions.hpp>
 
 enum Type_GF {Imaginary_Frequency,Real_Frequency,Imaginary_Time,Real_Time,Imaginary_Legendre};
-enum Statistic_GF {Boson,Fermion};
+
+// Explicitly give the values consistent with 'XOR multiplication' of statistics.
+enum Statistic_GF {Boson=0,Fermion=1};
 
 /*
   Contains : 
