@@ -25,7 +25,7 @@
 #include "../array.hpp"
 namespace triqs { namespace arrays { namespace expressions { namespace array_algebra { 
 
-// template<typename T> struct IsArray : Tag::check<Tag::array_algebra_expression_terminal,T> {}; 
+// template<typename T> struct IsArray : boost::is_base_of<Tag::array_algebra_expression_terminal,T> {}; 
  struct BasicArrayTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableCuboidArray<proto::_value>()> > {}; 
 
  typedef indexmaps::cuboid_domain<0> CD0;

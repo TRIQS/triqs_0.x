@@ -86,17 +86,17 @@ namespace triqs { namespace arrays {
  template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
 
  /// Is the data contiguous
- template<typename A> typename boost::enable_if<is_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}
- template<typename A> typename boost::enable_if<is_view_class<A>, bool>::type has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
+ template<typename A> typename boost::enable_if<is_amv_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}
+ template<typename A> typename boost::enable_if<is_amv_view_class<A>, bool>::type has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
 
  template< typename A> 
-  typename boost::enable_if<is_view_class<A> >::type 
+  typename boost::enable_if<is_amv_view_class<A> >::type 
   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { 
    if (a.shape()!=sha) TRIQS_RUNTIME_ERROR<< "Size mismatch : view class shape = "<<a.shape() << " expected "<<sha;
   }
 
  template< typename A> 
-  typename boost::enable_if<is_value_class<A> >::type 
+  typename boost::enable_if<is_amv_value_class<A> >::type 
   resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
 
 }}//namespace triqs::arrays

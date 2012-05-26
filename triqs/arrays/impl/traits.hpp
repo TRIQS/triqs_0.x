@@ -64,44 +64,29 @@ namespace triqs { namespace arrays {
   }
   private: X i;
  };
-
- // technical trait of the lib to identify the implementation class ... to be moved in array, etc...
+ 
  namespace Tag { struct array{}; struct array_view {}; struct C{}; struct Fortran{}; }
- template <typename T> struct is_array : Tag::check<Tag::array,T> {};
- template <typename T> struct is_array_view : Tag::check<Tag::array_view,T> {};
+ template <typename T> struct is_array : boost::is_base_of<Tag::array,T> {};
+ template <typename T> struct is_array_view : boost::is_base_of<Tag::array_view,T> {};
  template <typename T> struct is_array_or_view : boost::mpl::or_< is_array<T>, is_array_view<T> > {};
 
  namespace Tag { struct vector{}; struct vector_view {};}
- template <typename T> struct is_vector : Tag::check<Tag::vector,T> {};
- template <typename T> struct is_vector_view : Tag::check<Tag::vector_view,T> {};
+ template <typename T> struct is_vector : boost::is_base_of<Tag::vector,T> {};
+ template <typename T> struct is_vector_view : boost::is_base_of<Tag::vector_view,T> {};
  template <typename T> struct is_vector_or_view : boost::mpl::or_< is_vector<T>, is_vector_view<T> > {};
 
  namespace Tag { struct matrix_view {}; struct matrix {}; }
- template <typename T> struct is_matrix : Tag::check<Tag::matrix,T> {};
- template <typename T> struct is_matrix_view : Tag::check<Tag::matrix_view,T> {};
+ template <typename T> struct is_matrix : boost::is_base_of<Tag::matrix,T> {};
+ template <typename T> struct is_matrix_view : boost::is_base_of<Tag::matrix_view,T> {};
  template <typename T> struct is_matrix_or_view : boost::mpl::or_< is_matrix<T>, is_matrix_view<T> > {};
 
-
- // CHANGE into is_amv_value_class .... TO DO 
- template <class T> struct is_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
- template <class T> struct is_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
- template <class T> struct is_value_or_view_class : boost::mpl::or_< is_value_class<T>, is_view_class<T> > {};
-
- template <typename T> struct has_special_assign : Tag::check<Tag::has_special_assign,T> {};
-
- // a lhs is either a immutableArray, or has a special assign and has a domain
- // It is understood that has_special_assign implies that has_a_domain
- // Do we want to add explicitely a has_domain ??
- template <typename T> struct is_array_assign_lhs : boost::mpl::or_< ImmutableArray<T>, has_special_assign<T> >{};
-
- // template<class S, class A> struct is_scalar_for : 
- //  boost::mpl::if_<boost::is_arithmetic<typename A::value_type > , boost::is_arithmetic<S>,  boost::is_same<S,typename A::value_type > > {};
+ template <class T> struct is_amv_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
+ template <class T> struct is_amv_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
+ template <class T> struct is_amv_value_or_view_class : boost::mpl::or_< is_amv_value_class<T>, is_amv_view_class<T> > {};
 
  template <class S> struct is_scalar : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S> > {};
- // too primitive ?
  template<class S, class A> struct is_scalar_for : 
   boost::mpl::if_<is_scalar<typename A::value_type > , is_scalar<S>,boost::is_same<S,typename A::value_type > >::type {};
-
 
 }}//namespace triqs::arrays
 #endif

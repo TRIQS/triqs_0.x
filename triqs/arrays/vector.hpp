@@ -25,7 +25,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/compound_assign.hpp"
+#include "impl/assignment.hpp"
 #include "impl/option.hpp"
 
 namespace triqs { namespace arrays {
@@ -62,9 +62,9 @@ namespace triqs { namespace arrays {
    vector_view(vector_view const & X): impl_type(X.indexmap(),X.storage()) {}
 
    /** Assignment.  The size of the array MUST match exactly.  */
-   template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }
+   template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
-   vector_view & operator=(vector_view const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }//cf array_view class comment
+   vector_view & operator=(vector_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
    size_t size() const { return this->shape()[0];}
 
@@ -109,8 +109,8 @@ namespace triqs { namespace arrays {
     *  - a expression : e.g. array<int, IndexOrder::C<1> > A( B+ 2*C);
     */
    template <typename T> 
-    vector(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); }
+    vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
    /** 
     * Resizes the vector. NB : all references to the storage is invalidated.
@@ -133,9 +133,9 @@ namespace triqs { namespace arrays {
     */
    template<typename RHS> 
     vector & operator=(const RHS & X) { 
-     static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
+     static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
      impl_type::resize(X.domain());
-     triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>());
+     triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
 
@@ -176,45 +176,105 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
 #include <boost/numeric/bindings/blas/level1/copy.hpp>
 #include <boost/numeric/bindings/blas/level1/axpy.hpp>
 #include <boost/numeric/bindings/blas/level1/swap.hpp>
-namespace triqs { namespace arrays { namespace details { 
+namespace triqs { namespace arrays { 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs) { boost::numeric::bindings::blas::copy(rhs,lhs); }
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { 
+   T a =  1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { 
+   T a = -1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type 
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) { 
+   T a = rhs; boost::numeric::bindings::blas::scal(a,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type 
+  triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) { 
+   T a = 1/rhs; boost::numeric::bindings::blas::scal(a,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs) { boost::numeric::bindings::blas::copy(rhs,lhs); }
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { 
+   T a =  1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_vector_or_view <RHS > >::type 
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { 
+   T a = -1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type 
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) { 
+   T a = rhs; boost::numeric::bindings::blas::scal(a,lhs);
+  } 
+
+ template<typename RHS, typename T, typename Opt> 
+  typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type 
+  triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) { 
+   T a = 1/rhs; boost::numeric::bindings::blas::scal(a,lhs);
+  } 
+
+
+ /*
+    namespace details { 
 
  // = for vector & vector_view.
  template<typename LHS, typename RHS> 
-  struct assign_impl<LHS ,RHS, typename boost::enable_if<boost::mpl::and_<is_vector_or_view<LHS>,is_vector_or_view <RHS > > >::type > { 
-   LHS & lhs; const RHS & rhs;
-   assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-   void invoke() { // std::cerr<<" vector view = with blas"<<std::endl;
-    boost::numeric::bindings::blas::copy(rhs,lhs);} 
-  };
+ struct assign_impl<LHS ,RHS, typename boost::enable_if<boost::mpl::and_<is_vector_or_view<LHS>,is_vector_or_view <RHS > > >::type > { 
+ LHS & lhs; const RHS & rhs;
+ assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+ void invoke() { // std::cerr<<" vector view = with blas"<<std::endl;
+ boost::numeric::bindings::blas::copy(rhs,lhs);} 
+ };
 
  // *= and /= for scalar RHS, for vector_view.
  template<typename LHS, typename RHS, char OP> 
-  struct comp_assign_impl<LHS,RHS,OP, 
-  typename boost::enable_if<boost::mpl::and_<_is_MD<OP>, is_scalar_for<RHS,LHS >, is_vector_or_view<LHS> > >::type > { 
-   LHS & lhs; const RHS & rhs;
-   comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-   void invoke() {  // std::cerr<<" vector *= with blas"<<std::endl;
-    typename LHS::value_type  a = (OP=='M' ? rhs : 1/rhs); boost::numeric::bindings::blas::scal(a,lhs);} 
-  };
+ struct comp_assign_impl<LHS,RHS,OP, 
+ typename boost::enable_if<boost::mpl::and_<_is_MD<OP>, is_scalar_for<RHS,LHS >, is_vector_or_view<LHS> > >::type > { 
+ LHS & lhs; const RHS & rhs;
+ comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+ void invoke() {  // std::cerr<<" vector *= with blas"<<std::endl;
+ typename LHS::value_type  a = (OP=='M' ? rhs : 1/rhs); boost::numeric::bindings::blas::scal(a,lhs);} 
+ };
 
  // += and -= for vector with blas
  template<typename LHS, typename RHS,char OP> 
-  struct comp_assign_impl<LHS,RHS,OP, 
-  typename boost::enable_if<boost::mpl::and_<_is_AS<OP>, is_vector_or_view <RHS >, is_vector_or_view<LHS>  > >::type > { 
-   LHS & lhs; const RHS & rhs;
-   comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-   void invoke() { //  std::cerr<<" vector += with blas"<<std::endl;
-    typename LHS::value_type a = (OP=='A' ? 1.0 : -1.0); boost::numeric::bindings::blas::axpy(a,rhs,lhs);} 
-  };
+ struct comp_assign_impl<LHS,RHS,OP, 
+ typename boost::enable_if<boost::mpl::and_<_is_AS<OP>, is_vector_or_view <RHS >, is_vector_or_view<LHS>  > >::type > { 
+ LHS & lhs; const RHS & rhs;
+ comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+ void invoke() { //  std::cerr<<" vector += with blas"<<std::endl;
+ typename LHS::value_type a = (OP=='A' ? 1.0 : -1.0); boost::numeric::bindings::blas::axpy(a,rhs,lhs);} 
+ };
 
-}
+ }
+ */
+ // swapping 2 vector 
+ template <typename V, typename S1, typename S2>
+  void swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
 
-// swapping 2 vector 
-template <typename V, typename S1, typename S2>
-void swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
-
-template <typename V, typename S1, typename S2>
-void swap(vector <V,S1> & x, vector<V,S2>  & y) { boost::numeric::bindings::blas::swap(x,y);} 
+ template <typename V, typename S1, typename S2>
+  void swap(vector <V,S1> & x, vector<V,S2>  & y) { boost::numeric::bindings::blas::swap(x,y);} 
 
 }}
 #endif

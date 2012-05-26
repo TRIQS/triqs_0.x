@@ -45,8 +45,7 @@ namespace triqs { namespace arrays {
   namespace details {
 
    template<typename ScalarType, typename VectorType1, typename VectorType2> 
-    class a_x_ty_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix), // TO BE DONE !!!! 
-     Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'> { 
+    class a_x_ty_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { // TO BE DONE !!!! 
      // first check that VectorType1 and VectorType2 are matrices. 
      static_assert( (is_vector_or_view<VectorType1>::value), "a_x_ty : the first argument must be a vector"); 
      static_assert( (is_vector_or_view<VectorType2>::value), "a_x_ty : the second argument must be a vector"); 
@@ -71,29 +70,30 @@ namespace triqs { namespace arrays {
 
      // Optimized implementation of =
      template<typename LHS> 
-      void assign_invoke (LHS & lhs) const { 
+      friend void triqs_arrays_assign_delegation (LHS & lhs, a_x_ty_impl const & rhs)  {
        static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
        lhs()=0;
-       boost::numeric::bindings::blas::ger(a, x, y,lhs);
+       boost::numeric::bindings::blas::ger(rhs.a, rhs.x, rhs.y,lhs);
       }
 
      //Optimized implementation of +=
      template<typename LHS> 
-      void assign_add_invoke (LHS & lhs) const { 
+      friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_impl const & rhs, mpl::char_<'A'>) {
+       //std::cerr<<" Using optimized += for  a_x_ty_impl"<< std::endl;
        static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-       boost::numeric::bindings::blas::ger(a, x, y,lhs);
+       boost::numeric::bindings::blas::ger(rhs.a, rhs.x, rhs.y,lhs);
       }
 
      //Optimized implementation of -=
      template<typename LHS> 
-      void assign_sub_invoke (LHS & lhs) const { 
+      friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_impl const & rhs, mpl::char_<'S'>) { 
        static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-       boost::numeric::bindings::blas::ger(-a, x, y,lhs);
+       boost::numeric::bindings::blas::ger(-rhs.a, rhs.x, rhs.y,lhs);
       }
 
+     friend std::ostream & operator<<(std::ostream & out, a_x_ty_impl const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
+
     };
-   template<typename S, typename VectorType1, typename VectorType2> 
-    std::ostream & operator<<(std::ostream & out, a_x_ty_impl<S,VectorType1,VectorType2> const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
   }
  } // linalg::details
 }} // namespace triqs_arrays 

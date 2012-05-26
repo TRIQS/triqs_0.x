@@ -38,8 +38,7 @@ namespace triqs { namespace arrays {
  // ----------------- implementation -----------------------------------------
  
  template<typename MT, typename VT> 
-  class mat_vec_mul_lazy :  TRIQS_MODEL_CONCEPT(ImmutableVector),
-   Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'> {
+  class mat_vec_mul_lazy :  TRIQS_MODEL_CONCEPT(ImmutableVector) { 
 
    typedef typename MT::value_type V1;
    typedef typename VT::value_type V2;
@@ -76,16 +75,18 @@ namespace triqs { namespace arrays {
 
    template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
 
-   template<typename LHS> 
-    void assign_invoke (LHS & lhs) const {// Optimized implementation of =
+   template<typename LHS> // Optimized implementation of =
+    friend void triqs_arrays_assign_delegation (LHS & lhs, mat_vec_mul_lazy const & rhs)  {
      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
-     const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
-     resize_or_check_if_view(lhs,make_shape(size()));
+     const_qcache<M_type> Cm(rhs.M); const_qcache<V_type> Cv(rhs.V);
+     resize_or_check_if_view(lhs,make_shape(rhs.size()));
      boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0, lhs);
     }
 
-   template<typename LHS> void assign_add_invoke (LHS & lhs) const { assign_comp_impl(lhs,1.0);}
-   template<typename LHS> void assign_sub_invoke (LHS & lhs) const { assign_comp_impl(lhs,-1.0);}
+   template<typename LHS> 
+    friend void triqs_arrays_compound_assign_delegation (LHS & lhs, mat_vec_mul_lazy const & rhs, mpl::char_<'A'>)  { rhs.assign_comp_impl(lhs,1.0);}
+   template<typename LHS> 
+    friend void triqs_arrays_compound_assign_delegation (LHS & lhs, mat_vec_mul_lazy const & rhs, mpl::char_<'S'>)  { rhs.assign_comp_impl(lhs,-1.0);}
 
    private:   
    template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 

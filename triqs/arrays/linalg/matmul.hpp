@@ -36,8 +36,7 @@ namespace triqs { namespace arrays {
  
  // ----------------- implementation -----------------------------------------
  
- template<typename A, typename B> class matmul_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix),  
-   Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'> { 
+ template<typename A, typename B> class matmul_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {  
     typedef typename boost::remove_const<typename A::value_type>::type V1;
     typedef typename boost::remove_const<typename B::value_type>::type V2;
     static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
@@ -84,25 +83,25 @@ namespace triqs { namespace arrays {
     }
  */
     template<typename LHS> 
-    friend void triqs_arrays_assign_delegation (LHS & lhs, matmul_lazy const & rhs, mpl::char_<'E'>)  {
+    friend void triqs_arrays_assign_delegation (LHS & lhs, matmul_lazy const & rhs)  {
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix");
-     // const_qcache<decltype(rhs.a)> Ca(rhs.a); 
-     const_qcache<typename matmul_lazy::A_type> Ca(rhs.a); 
-     const_qcache<typename matmul_lazy::B_type> Cb(rhs.b); // mettre le cache en func
+     const_qcache<A_type> Ca(rhs.a); const_qcache<B_type> Cb(rhs.b); 
      resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
      boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), 0.0, lhs);
     }
 
-    template<typename LHS> void assign_add_invoke (LHS & lhs) const { assign_comp_impl(lhs,1.0);}
-    template<typename LHS> void assign_sub_invoke (LHS & lhs) const { assign_comp_impl(lhs,-1.0);}
+    template<typename LHS> 
+     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, matmul_lazy const & rhs, mpl::char_<'A'>)  { rhs.assign_comp_impl(lhs,1.0);}
+    template<typename LHS> 
+     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, matmul_lazy const & rhs, mpl::char_<'S'>)  { rhs.assign_comp_impl(lhs,-1.0);}
 
     private:   
     template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix"); 
      if (lhs.dim0() != dim0()) 
-      TRIQS_RUNTIME_ERROR<< "Matmul : -= operator : first dimension mismatch in A*B "<< lhs.dim0()<<" vs "<< dim0(); 
+      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim0()<<" vs "<< dim0(); 
      if (lhs.dim1() != dim1()) 
-      TRIQS_RUNTIME_ERROR<< "Matmul : -= operator : first dimension mismatch in A*B "<< lhs.dim1()<<" vs "<< dim1(); 
+      TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim1()<<" vs "<< dim1(); 
      const_qcache<A_type> Ca(a); const_qcache<B_type> Cb(b);
      boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), S, lhs);
     }

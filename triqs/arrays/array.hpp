@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/compound_assign.hpp"
+#include "impl/assignment.hpp"
 #include "impl/option.hpp"
 
 namespace triqs { namespace arrays {
@@ -59,10 +59,10 @@ namespace triqs { namespace arrays {
 #endif
 
     /// Assignment. The size of the array MUST match exactly. 
-    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }
+    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
     ///
-    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; } //without this, the standard = is synthetized...
+    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
@@ -108,8 +108,8 @@ namespace triqs { namespace arrays {
     *  - a expression : e.g. array<int, IndexOrder::C<2> > A( B+ 2*C);
     */
    template <typename T> 
-    array(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); }
+    array(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -134,9 +134,9 @@ namespace triqs { namespace arrays {
     */
    template<typename RHS> 
     array & operator=(const RHS & X) { 
-     static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
+     static_assert(ImmutableArray<RHS>::value, "Assignment : RHS not supported");
      impl_type::resize(X.domain());
-     triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>());
+     triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
   

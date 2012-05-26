@@ -99,11 +99,11 @@ namespace triqs {
   }
 
   template <typename ArrayType, typename FileGroupType >
-   typename boost::enable_if<arrays::is_value_or_view_class<ArrayType> >::type 
+   typename boost::enable_if<arrays::is_amv_value_or_view_class<ArrayType> >::type 
    h5_read (FileGroupType file_or_group, std::string const & name,  ArrayType & A) { h5::read(file_or_group,name, A);} 
 
   template <typename ArrayType, typename FileGroupType >
-   typename boost::enable_if<arrays::is_value_or_view_class<ArrayType> >::type 
+   typename boost::enable_if<arrays::is_amv_value_or_view_class<ArrayType> >::type 
    h5_write (FileGroupType file_or_group, std::string const & name,  ArrayType const & A) { h5::write(file_or_group,name, A);} 
 
  }}

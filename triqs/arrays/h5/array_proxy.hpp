@@ -159,8 +159,7 @@ namespace triqs { namespace arrays {
 
   /// The array proxy
   template<typename ValueType, int Rank, int Rank_f = Rank >
-   class array_proxy : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray),
-    Tag::has_special_assign, 
+   class array_proxy : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), // WRONG ! IT does not yet implement [ ] 
     public sliceable_object <
     ValueType,
     h5::index_system<Rank,Rank_f>, 
@@ -238,18 +237,19 @@ namespace triqs { namespace arrays {
      }
 
     template<typename LHS> // from the file to the array or the array_view... 
-     void assign_invoke (LHS & lhs) const { 
-      static_assert((is_value_or_view_class<LHS>::value), "LHS is not a value or a view class "); 
-      h5::resize_or_check(lhs,  indexmap().domain().lengths());
+     friend void triqs_arrays_assign_delegation (LHS & lhs, array_proxy const & rhs)  {
+      static_assert((is_amv_value_or_view_class<LHS>::value), "LHS is not a value or a view class "); 
+      h5::resize_or_check(lhs,  rhs.indexmap().domain().lengths());
       try { 
-       DataSet dataset = file_group()->openDataSet( name().c_str() );
+       DataSet dataset = rhs.file_group()->openDataSet( rhs.name().c_str() );
        BOOST_AUTO(C,  make_cache_C_order(lhs));
        //typename result_of::cache<true,Tag::C, LHS >::type C(lhs);
        dataset.read( h5::data(C.view()), h5::data_type_mem(C.view()), h5::data_space(C.view()),
-	 indexmap().template dataspace<T_is_complex>() ); 
+	 rhs.indexmap().template dataspace<T_is_complex>() ); 
       }
       TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
      }
+
    protected:
     indexmap_type indexmap_;
     storage_type storage_;

@@ -48,7 +48,7 @@ namespace triqs { namespace arrays {
    template<class A>   
     result_type operator() (A const & a, typename A::value_type init = typename A::value_type() )  const { 
      fold_func_adaptor<typename A::value_type> func(f,init);
-     foreach(boost::ref(func),a);
+     indexmaps::foreach(boost::ref(func),a);
      return func.r;
     }
   };

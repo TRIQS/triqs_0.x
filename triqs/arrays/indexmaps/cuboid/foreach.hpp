@@ -60,7 +60,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
   *     to pass a reference, use boost::ref.
   */
  template <typename T, typename Function> 
-  typename boost::enable_if<Tag::check<Tag::indexmap_storage_pair,T> >::type 
+  typename boost::enable_if<boost::is_base_of<Tag::indexmap_storage_pair,T> >::type 
   foreach( Function F,T & x) { 
    typedef typename T::value_type v;
    typedef typename boost::mpl::if_<boost::is_const<T>, typename boost::add_const<v>::type,v>::type value_type;
@@ -69,8 +69,8 @@ namespace triqs { namespace arrays { namespace indexmaps {
   }
 
  template <typename Expr, typename Function> 
-  typename boost::disable_if<Tag::check<Tag::indexmap_storage_pair,Expr> >::type 
-//  typename boost::enable_if< Tag::check<Tag::expression,Expr> >::type 
+  typename boost::disable_if<boost::is_base_of<Tag::indexmap_storage_pair,Expr> >::type 
+//  typename boost::enable_if< boost::is_base_of<Tag::expression,Expr> >::type 
   foreach( Function F,Expr const & x) {
    for (typename Expr::domain_type::generator gen = x.domain().begin(); gen; ++gen) {
     boost::unwrap_ref(F)(x[*gen],*gen);

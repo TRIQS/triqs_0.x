@@ -24,10 +24,7 @@
 	
 namespace triqs { namespace arrays {
  namespace Tag {	
-  template<typename TAG, typename T> struct check: boost::is_base_of<TAG,T> {};
   struct indexmap_storage_pair{};
-  struct has_special_assign{}; 
-  template <char C> struct has_special_infix {}; 
   struct no_init {}; struct nan_inf_init {}; struct default_init {};   
   struct h5_array_proxy {};
  }

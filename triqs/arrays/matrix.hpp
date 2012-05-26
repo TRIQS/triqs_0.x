@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/compound_assign.hpp"
+#include "impl/assignment.hpp"
 #include "vector.hpp"
 
 namespace triqs { namespace arrays {
@@ -97,9 +97,9 @@ namespace triqs { namespace arrays {
    matrix_view( matrix_view const & X): impl_type(X.indexmap(),X.storage()) {}
 
    /** Assignement.  The size of the array MUST match exactly.  */
-   template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }
+   template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
 
-   matrix_view & operator=(matrix_view const & X) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); return *this; }//cf array_view class comment
+   matrix_view & operator=(matrix_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
    _IMPL_MATRIX_COMMON;
@@ -130,8 +130,8 @@ namespace triqs { namespace arrays {
 
    /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
    template <typename T> 
-    matrix(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>()); }
+    matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /**
@@ -161,9 +161,9 @@ namespace triqs { namespace arrays {
     */
    template<typename RHS> 
     matrix & operator=(const RHS & X) { 
-     static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
+     static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
      impl_type::resize(X.domain());
-     triqs_arrays_assign_delegation(*this,X,mpl::char_<'E'>());
+     triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
 
@@ -179,22 +179,39 @@ namespace triqs { namespace arrays {
 
   // assignment for scalar RHS // write a specific one if it is not a view : plain loop
   // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
-  template <typename V, typename Opt, typename RHS> 
-   struct assign_impl<matrix_view<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > { 
-    typedef matrix_view<V,Opt> LHS;
-    typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
-    LHS & lhs; const RHS & rhs;
-    assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-    void operator()(V & p, index_value_type const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
-    void invoke() { foreach(*this,lhs); } // if contiguous : plain loop else foreach...
+
+  template <typename V, typename RHS> struct __looper { 
+    RHS rhs;
+    __looper(const RHS & rhs_): rhs(rhs_) {}
+    template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
    };
 
-  template <typename V, typename Opt, typename RHS> 
-   struct assign_impl<matrix<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > : 
-   assign_impl<matrix_view<V,Opt>,RHS > {
-    typedef matrix<V,Opt> LHS;
-    assign_impl(LHS & lhs_, const RHS & rhs_): assign_impl<matrix_view<V,Opt>,RHS > (lhs_,rhs_){}
-   }; 
+  template<typename RHS, typename V, typename Opt> 
+   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+   triqs_arrays_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+
+  template<typename RHS, typename V, typename Opt> 
+   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+   triqs_arrays_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+
+  /* 
+     template <typename V, typename Opt, typename RHS> 
+     struct assign_impl<matrix_view<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > { 
+     typedef matrix_view<V,Opt> LHS;
+     typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
+     LHS & lhs; const RHS & rhs;
+     assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+     void operator()(V & p, index_value_type const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
+     void invoke() { foreach(*this,lhs); } // if contiguous : plain loop else foreach...
+     };
+
+     template <typename V, typename Opt, typename RHS> 
+     struct assign_impl<matrix<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > : 
+     assign_impl<matrix_view<V,Opt>,RHS > {
+     typedef matrix<V,Opt> LHS;
+     assign_impl(LHS & lhs_, const RHS & rhs_): assign_impl<matrix_view<V,Opt>,RHS > (lhs_,rhs_){}
+     }; 
+     */
 
  } //details
 }}//namespace triqs::arrays

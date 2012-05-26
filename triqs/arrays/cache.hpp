@@ -27,7 +27,7 @@ namespace triqs { namespace arrays {
 
  template<typename A1, typename A2, typename Enable =void > struct need_copy_ct : mpl::true_{};
 
- template<typename A1, typename A2> struct need_copy_ct<A1,A2, typename boost::enable_if<is_value_or_view_class<A1> >::type> : 
+ template<typename A1, typename A2> struct need_copy_ct<A1,A2, typename boost::enable_if<is_amv_value_or_view_class<A1> >::type> : 
   mpl::not_<indexmaps::IndexOrder::same_order<typename A1::indexmap_type::index_order_type, typename A2::indexmap_type::index_order_type> >{};
 
  template<typename DataType, typename CacheType, bool ct_need_copy = need_copy_ct<DataType,CacheType>::value > class const_cache;
@@ -51,7 +51,7 @@ namespace triqs { namespace arrays {
  // ----------------- implementation  ----------------------------------
 
  template<typename A1, typename Enable =void > struct get_orig { typedef A1 type;};
- template<typename A1> struct get_orig<A1,typename boost::enable_if<is_value_or_view_class<A1> >::type> { typedef typename A1::view_type type;};
+ template<typename A1> struct get_orig<A1,typename boost::enable_if<is_amv_value_or_view_class<A1> >::type> { typedef typename A1::view_type type;};
 
  // first case : copy is mandatory from compile time decision
  template<typename DataType, typename CacheType> 
@@ -95,7 +95,7 @@ namespace triqs { namespace arrays {
  // Non const case : just add the back copy in the destructor 
  template<typename DataType, typename CacheType> 
   class cache<DataType,CacheType,true> : const_cache<DataType,CacheType,true> { 
-   static_assert( is_value_or_view_class<DataType>::value, "non const cache only for regular classes and views, not expressions");
+   static_assert( is_amv_value_or_view_class<DataType>::value, "non const cache only for regular classes and views, not expressions");
    typedef typename CacheType::view_type final_view_type;
    public :
    explicit cache (DataType const & x): const_cache<DataType,CacheType,true>  (x) {}
@@ -110,7 +110,7 @@ namespace triqs { namespace arrays {
  // Non const case : just add the back copy in the destructor 
  template<typename DataType, typename CacheType> 
   class cache<DataType,CacheType,false> : const_cache<DataType,CacheType,false> { 
-   static_assert( is_value_or_view_class<DataType>::value, "non const cache only for regular classes and views, not expressions");
+   static_assert( is_amv_value_or_view_class<DataType>::value, "non const cache only for regular classes and views, not expressions");
    typedef typename CacheType::view_type final_view_type;
    public :
    explicit cache (DataType const & x): const_cache<DataType,CacheType,false>  (x) {}

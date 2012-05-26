@@ -130,10 +130,10 @@ namespace triqs { namespace arrays { namespace h5 {
  
  /********************   resize or check the size ****************************************************/
 
- template <typename A> ENABLE_IF( is_value_class<A>, void) 
+ template <typename A> ENABLE_IF( is_amv_value_class<A>, void) 
   resize_or_check ( A & a, mini_vector<size_t,A::rank> const & dimsf ) { a.resize( indexmaps::cuboid_domain<A::rank>( dimsf)); }
 
- template <typename A> ENABLE_IF( is_view_class<A>, void) 
+ template <typename A> ENABLE_IF( is_amv_view_class<A>, void) 
   resize_or_check ( A const & a, mini_vector<size_t,A::rank> const & dimsf ) { 
    if (a.indexmap().domain().lengths() != dimsf) TRIQS_RUNTIME_ERROR<<"Dimension error : the view can not be resized : " 
     << "\n in file  : "<< dimsf.to_string() 

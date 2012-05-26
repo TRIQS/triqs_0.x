@@ -149,13 +149,13 @@ namespace triqs { namespace arrays {
 
  // for matrix and matrix_views, we have more optimisation possible ....
  template<typename A>
-  struct inverse_lazy<A,typename boost::enable_if< is_matrix_or_view<A> >::type >:inverse_lazy_impl<A>, Tag::has_special_assign{
+  struct inverse_lazy<A,typename boost::enable_if< is_matrix_or_view<A> >::type >:inverse_lazy_impl<A>{
    inverse_lazy(A const & a):inverse_lazy_impl<A>(a) { }
 
-   template<typename MT> 
-    void assign_invoke (MT & lhs) const { // Optimized implementation of =
+   template<typename MT> // Optimized implementation of =
+    friend void triqs_arrays_assign_delegation (MT & lhs, inverse_lazy const & rhs)  {
      static_assert(is_matrix_or_view<MT>::value, "Internal error");
-     if ((MT::order  !=this->a.order)|| (lhs.data_start() != this->a.data_start()) || !(has_contiguous_data(lhs))) { this->activate(); lhs = this->_id->M;} 
+     if ((MT::order  !=rhs.a.order)|| (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
      else {// if M = inverse(M) with the SAME object, then we do not need to copy the data
       reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
       det_and_inverse_worker<typename MT::view_type> W(C());// the worker to make the inversion of the lhs... 
@@ -185,5 +185,5 @@ namespace triqs { namespace arrays {
   void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
  };
 
-}} // namespace triqs::arrays
+ }} // namespace triqs::arrays
 #endif
