@@ -187,7 +187,7 @@ namespace triqs { namespace gf { namespace local {
  // -------------------------------   Expression template for gf  --------------------------------------------------
 
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
- //template <typename T> struct is_scalar_or_element : mpl::or_< tqa::is_matrix_expr<T>, tup::is_in_ZRC<T> > {};
+ //template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, tup::is_in_ZRC<T> > {};
  struct gf_scalar_grammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
 
  struct gf_leaf_grammar: proto::and_< proto::terminal<proto::_>, proto::if_<LocalGf<proto::_value>()> > {}; 
