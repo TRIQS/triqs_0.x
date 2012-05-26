@@ -2,7 +2,7 @@
 #include <boost/type_traits/is_complex.hpp> 
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/expressions/matrix_algebra.hpp>
+#include <triqs/arrays/proto/matrix_algebra.hpp>
 //#include <triqs/arrays/expressions/array_algebra.hpp>
 #include <vector>
 #include <iostream>
