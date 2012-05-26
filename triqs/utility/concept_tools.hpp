@@ -20,12 +20,24 @@
  ******************************************************************************/
 #ifndef TRIQS_UTILITY_CONCEPT_TOOLS_H
 #define TRIQS_UTILITY_CONCEPT_TOOLS_H
+#include <boost/preprocessor/seq/enum.hpp>
 
-#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) typedef void __TRIQS_models_concept_##MyBeautifulConcept##_tag;
+//#define TRIQS_CONCEPT_TAG(MyBeautifulConcept) __TRIQS_models_concept_##MyBeautifulConcept##_tag
+#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) concept_tags::MyBeautifulConcept
 
-#define TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(MyBeautifulConcept) \
- template<typename T, typename Enable=void> struct MyBeautifulConcept : mpl::false_{};\
- template<typename T> struct MyBeautifulConcept<T, typename T::__TRIQS_models_concept_MyBeautifulConcept_tag> : mpl::true_{};
+#define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(MyBeautifulConcept) \
+ namespace concept_tags { struct MyBeautifulConcept{};}\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<concept_tags::MyBeautifulConcept, T> {};
+
+#define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MyBeautifulConcept,Rs) \
+ namespace concept_tags { struct MyBeautifulConcept: BOOST_PP_SEQ_ENUM(Rs) {};}\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<concept_tags::MyBeautifulConcept, T> {};
+
+//#define TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT1(MyBeautifulConcept) \
+// template<typename T, typename Enable=void> struct MyBeautifulConcept : mpl::false_{};\
+// template<typename T> struct MyBeautifulConcept<T, typename T::TRIQS_CONCEPT_TAG(MyBeautifulConcept)> : mpl::true_{};
+
+//#define TRIQS_REFINE_CONCEPT(C1, C2) template<typename T> struct C2<T, typename T::TRIQS_CONCEPT_TAG(C1)> : mpl::true_{};
 
 #ifdef TRIQS_COMPILE_TIME_DEBUG
 #define TRIQS_ASSERT_MODEL_CONCEPT(MyBeautifulConcept,T)  BOOST_CONCEPT_ASSERT((BCC_##MyBeautifulConcept<T>));
