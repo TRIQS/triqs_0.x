@@ -25,8 +25,8 @@
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/utility/proto/tools.hpp>
 #include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/expressions/matrix_algebra.hpp>
-#include <triqs/arrays/expressions/array_algebra.hpp>
+#include <triqs/arrays/proto/matrix_algebra.hpp>
+#include <triqs/arrays/proto/array_algebra.hpp>
 #include "./meshes.hpp"
 #include "triqs/utility/complex_ops.hpp"
 
