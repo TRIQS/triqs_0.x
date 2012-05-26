@@ -35,7 +35,7 @@ namespace triqs { namespace arrays {
 
  /** */
  template <typename ValueType, typename Opt >
-  class vector_view : Tag::vector_view, Tag::vector_algebra_expression_terminal,
+  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(ImmutableVector),
   public details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
  {
   public :
@@ -75,7 +75,7 @@ namespace triqs { namespace arrays {
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::vector_view> { typedef vector_view<V,Opt> type; };
 
  template <typename ValueType, typename Opt>
-  class vector: Tag::vector,Tag::vector_algebra_expression_terminal,
+  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(ImmutableVector),
   public vector_view<ValueType,Opt>::impl_type
  {
   public :

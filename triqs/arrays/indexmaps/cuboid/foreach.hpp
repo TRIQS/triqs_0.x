@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -70,7 +69,8 @@ namespace triqs { namespace arrays { namespace indexmaps {
   }
 
  template <typename Expr, typename Function> 
-  typename boost::enable_if<Tag::check<Tag::expression,Expr> >::type 
+  typename boost::disable_if<Tag::check<Tag::indexmap_storage_pair,Expr> >::type 
+//  typename boost::enable_if< Tag::check<Tag::expression,Expr> >::type 
   foreach( Function F,Expr const & x) {
    for (typename Expr::domain_type::generator gen = x.domain().begin(); gen; ++gen) {
     boost::unwrap_ref(F)(x[*gen],*gen);

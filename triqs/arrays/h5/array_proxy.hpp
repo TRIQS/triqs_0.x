@@ -159,8 +159,8 @@ namespace triqs { namespace arrays {
 
   /// The array proxy
   template<typename ValueType, int Rank, int Rank_f = Rank >
-   class array_proxy :
-    Tag::has_special_assign, //Tag::has_immutable_array_interface,
+   class array_proxy : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray),
+    Tag::has_special_assign, 
     public sliceable_object <
     ValueType,
     h5::index_system<Rank,Rank_f>, 
@@ -171,7 +171,7 @@ namespace triqs { namespace arrays {
     array_proxy<ValueType,Rank, Rank_f>
     >
   {
-   public : 
+   public :    
     typedef ValueType value_type;
     typedef std::pair< boost::shared_ptr<H5::CommonFG> ,std::string> storage_type; 
     static const bool T_is_complex = boost::is_complex<ValueType>::value;

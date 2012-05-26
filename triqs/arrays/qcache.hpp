@@ -48,7 +48,7 @@ namespace triqs { namespace arrays {
  };
 
  template<typename A> class const_qcache< A, 
-  typename boost::enable_if<mpl::and_<is_matrix_expr<A>, mpl::not_<is_matrix_or_view<A> > > >::type> : boost::noncopyable { 
+  typename boost::enable_if<mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > > >::type> : boost::noncopyable { 
    typedef matrix<typename A::value_type> X;
    X x;
    public:
@@ -58,7 +58,7 @@ namespace triqs { namespace arrays {
   };
 
  template<typename A> class const_qcache< A, 
-  typename boost::enable_if<mpl::and_<is_vector_expr<A>, mpl::not_<is_vector_or_view<A> > > >::type> : boost::noncopyable { 
+  typename boost::enable_if<mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > > >::type> : boost::noncopyable { 
    typedef vector<typename A::value_type> X;
    X x;
    public:

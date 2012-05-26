@@ -71,7 +71,8 @@ namespace triqs { namespace arrays {
 #define _IMPL_ISP_TYPE(V,Opt) details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
 
  template <typename ValueType, typename Opt >
-  class matrix_view : Tag::matrix_view, Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
+  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix),
+   public  _IMPL_ISP_TYPE(ValueType,Opt) {
    typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
    public :
    typedef matrix_view<ValueType,Opt> view_type;
@@ -107,7 +108,8 @@ namespace triqs { namespace arrays {
  //--------------------------------------------------
 
  template <typename ValueType, typename Opt >
-  class matrix: Tag::matrix,Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
+  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix),
+  public   _IMPL_ISP_TYPE(ValueType,Opt) {
    typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
    public :
    typedef typename impl_type::value_type value_type;

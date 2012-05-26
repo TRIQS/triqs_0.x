@@ -23,26 +23,12 @@
 #include <boost/type_traits/is_base_of.hpp>
 	
 namespace triqs { namespace arrays {
-
- //struct use_default {};
-
  namespace Tag {	
   template<typename TAG, typename T> struct check: boost::is_base_of<TAG,T> {};
-  
   struct indexmap_storage_pair{};
-  struct expression{};
-  struct expression_terminal{};
-  struct array_algebra_expression_terminal{};
-  struct matrix_algebra_expression_terminal{};
-  struct vector_algebra_expression_terminal{};
-  struct scalar_expression_terminal{};
-
   struct has_special_assign{}; 
   template <char C> struct has_special_infix {}; 
-
-  struct has_immutable_array_interface{};
   struct no_init {}; struct nan_inf_init {}; struct default_init {};   
-  
   struct h5_array_proxy {};
  }
 

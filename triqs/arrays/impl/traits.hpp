@@ -27,11 +27,10 @@
 #include <triqs/utility/concept_tools.hpp>
 
 namespace triqs { namespace arrays {
-
  namespace mpl=boost::mpl; 
 
  // The ImmutableArray concept 
- TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableArray);
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableArray);
 
  template <class X> struct BCC_ImmutableArray { 
   BOOST_CONCEPT_USAGE(BCC_ImmutableArray)
@@ -43,8 +42,11 @@ namespace triqs { namespace arrays {
   private: X i;
  };
 
+  // The ImmutableCuboidArray concept 
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableCuboidArray,(ImmutableArray));
+ 
  // The ImmutableMatrix concept 
- TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableMatrix);
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableArray));
 
  template <class X> struct BCC_ImmutableMatrix{ 
   BOOST_CONCEPT_USAGE(BCC_ImmutableMatrix)
@@ -54,7 +56,7 @@ namespace triqs { namespace arrays {
  };
 
  // The ImmutableVector concept 
- TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT(ImmutableVector);
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableArray));
 
  template <class X> struct BCC_ImmutableVector { 
   BOOST_CONCEPT_USAGE(BCC_ImmutableVector)
@@ -79,30 +81,18 @@ namespace triqs { namespace arrays {
  template <typename T> struct is_matrix_view : Tag::check<Tag::matrix_view,T> {};
  template <typename T> struct is_matrix_or_view : boost::mpl::or_< is_matrix<T>, is_matrix_view<T> > {};
 
+
+ // CHANGE into is_amv_value_class .... TO DO 
  template <class T> struct is_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
  template <class T> struct is_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
  template <class T> struct is_value_or_view_class : boost::mpl::or_< is_value_class<T>, is_view_class<T> > {};
-
- // ?? TO BE SUPRRESSED after rework of assignment
- template <typename T> struct is_expression : Tag::check<Tag::expression,T> {};
-
- //
- template<typename T> struct is_matrix_expr : Tag::check<Tag::matrix_algebra_expression_terminal,T> {}; 
- template<typename T> struct is_vector_expr : Tag::check<Tag::vector_algebra_expression_terminal,T> {}; 
- template<typename T> struct is_matrix_or_vector_expr : boost::mpl::or_<is_matrix_expr<T>, is_vector_expr<T> > {};
-
- template<typename T> struct has_immutable_array_interface : 
-  boost::mpl::or_<
-  Tag::check<Tag::has_immutable_array_interface,T>, 
-  Tag::check<Tag::expression,T>, 
-  Tag::check<Tag::indexmap_storage_pair,T> > {}; 
 
  template <typename T> struct has_special_assign : Tag::check<Tag::has_special_assign,T> {};
 
  // a lhs is either a immutableArray, or has a special assign and has a domain
  // It is understood that has_special_assign implies that has_a_domain
  // Do we want to add explicitely a has_domain ??
- template <typename T> struct is_array_assign_lhs : boost::mpl::or_< has_immutable_array_interface<T>, has_special_assign<T> >{};
+ template <typename T> struct is_array_assign_lhs : boost::mpl::or_< ImmutableArray<T>, has_special_assign<T> >{};
 
  // template<class S, class A> struct is_scalar_for : 
  //  boost::mpl::if_<boost::is_arithmetic<typename A::value_type > , boost::is_arithmetic<S>,  boost::is_same<S,typename A::value_type > > {};

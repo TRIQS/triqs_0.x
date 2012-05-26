@@ -84,7 +84,7 @@ namespace triqs { namespace arrays {
      if (!indexmaps::compatible_for_assignment(lhs.indexmap(), rhs.indexmap())) throw "Size mismatch";
 #endif
      if ((indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap()))  &&
-       (lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {} 
+       (lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {} // SUPPRESS THIS  !!!!! 
      else {
 #ifndef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH 
       typename RHS::const_iterator it_rhs = rhs.begin();
@@ -101,8 +101,11 @@ namespace triqs { namespace arrays {
 
   // assignment for expressions RHS
   template<typename LHS, typename RHS, char OP> 
-   struct comp_assign_impl<LHS,RHS,OP, typename boost::enable_if<is_expression<RHS> >::type > :
-   _ops_<typename LHS::value_type, typename RHS::value_type,OP> {    
+   struct comp_assign_impl<LHS,RHS,OP, typename boost::enable_if<boost::mpl::and_< ImmutableArray<RHS>, 
+   boost::mpl::not_<Tag::check<Tag::has_special_infix<OP>,RHS> >,
+   boost::mpl::not_< is_scalar_for<RHS,LHS > >,
+   boost::mpl::not_< is_isp<RHS,LHS> > > >::type > : //is_expression<RHS> >::type > {    
+    _ops_<typename LHS::value_type, typename RHS::value_type,OP> {    
     typedef typename LHS::value_type value_type;
     typedef typename LHS::indexmap_type indexmap_type;
     typedef typename indexmap_type::domain_type::index_value_type index_value_type;

@@ -114,7 +114,7 @@ namespace triqs { namespace arrays {
  //-----------------------------------------------------------
 
  // an implementation class to gather the common part to matrix and expression....
- template<typename A> struct inverse_lazy_impl : Tag::matrix_algebra_expression_terminal, Tag::has_immutable_array_interface {
+ template<typename A> struct inverse_lazy_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {
   typedef typename boost::remove_const<typename A::value_type>::type value_type;
   typedef typename A::domain_type domain_type;
   typedef typename domain_type::index_value_type index_value_type;
@@ -167,7 +167,7 @@ namespace triqs { namespace arrays {
 
  //------------------- det   ----------------------------------------
 
- template<typename A> struct determinant_lazy : Tag::expression_terminal, Tag::scalar_expression_terminal {
+ template<typename A> struct determinant_lazy  { // : { Tag::expression_terminal, Tag::scalar_expression_terminal {
   typedef typename A::value_type value_type;
   typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
   A_type a;

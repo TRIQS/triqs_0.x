@@ -25,8 +25,8 @@
 #include "../array.hpp"
 namespace triqs { namespace arrays { namespace expressions { namespace array_algebra { 
 
- template<typename T> struct IsArray : Tag::check<Tag::array_algebra_expression_terminal,T> {}; 
- struct BasicArrayTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<IsArray<proto::_value>()> > {}; 
+// template<typename T> struct IsArray : Tag::check<Tag::array_algebra_expression_terminal,T> {}; 
+ struct BasicArrayTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableCuboidArray<proto::_value>()> > {}; 
 
  typedef indexmaps::cuboid_domain<0> CD0;
 
@@ -92,12 +92,12 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
    KeyType const & key;
    ArrayEvalCtx(KeyType const & key_) : key(key_) {}
    template<typename T>// overrule just the terminals which have array interface.
-    typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
+    typename boost::enable_if< ImmutableArray<T>, result_type >::type 
     operator ()(p_tag::terminal, T const & t) const { return t[key]; }
   };
 
  //   Expression
- template<typename Expr> struct ArrayExpr : Tag::expression, proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> { 
+ template<typename Expr> struct ArrayExpr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> { 
   typedef proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> base_type;
   typedef typename boost::remove_reference<typename boost::result_of<ArrayGrammar(Expr) >::type>::type _T;
   typedef typename _T::value_type value_type;
@@ -105,7 +105,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
   typedef typename domain_type::index_value_type key_type;
   typedef size_t index_type;
   static const int rank = _T::domain_type::rank;
-  
+
   ArrayExpr( Expr const & expr = Expr() ) : base_type( expr ) {}
   domain_type domain() const { return ArrayGrammar()(*this).domain(); }
   value_type operator[] (key_type const &key) const { return proto::eval(*this, ArrayEvalCtx<key_type ,value_type> (key)); }
@@ -115,7 +115,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace array_alg
  };
 }}
 
-BOOST_PROTO_DEFINE_OPERATORS(expressions::array_algebra::IsArray, expressions::array_algebra::ArrayDomain);
+BOOST_PROTO_DEFINE_OPERATORS(ImmutableCuboidArray, expressions::array_algebra::ArrayDomain);
 
 template<typename Expr > array_view <typename Expr::value_type, Expr::domain_type::rank>
 make_array( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}

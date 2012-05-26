@@ -45,8 +45,8 @@ namespace triqs { namespace arrays {
   namespace details {
 
    template<typename ScalarType, typename VectorType1, typename VectorType2> 
-    class a_x_ty_impl : Tag::expression_terminal, Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>,  Tag::has_immutable_array_interface {
-
+    class a_x_ty_impl : TRIQS_MODEL_CONCEPT(ImmutableMatrix), // TO BE DONE !!!! 
+     Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'> { 
      // first check that VectorType1 and VectorType2 are matrices. 
      static_assert( (is_vector_or_view<VectorType1>::value), "a_x_ty : the first argument must be a vector"); 
      static_assert( (is_vector_or_view<VectorType2>::value), "a_x_ty : the second argument must be a vector"); 

@@ -45,8 +45,7 @@ namespace triqs { namespace arrays {
  namespace details { 
 
   template <typename IndexMapType, typename StorageType, typename Opt,  typename ViewTag > 
-   class indexmap_storage_pair : 
-    Tag::indexmap_storage_pair, Tag::expression_terminal,
+   class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray),
     public sliceable_object <
     typename StorageType::value_type,
     IndexMapType,
@@ -56,7 +55,8 @@ namespace triqs { namespace arrays {
     indexmaps::slicer,
     indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag>
     >
-  {     
+  {    
+    
    public : 
     typedef typename StorageType::value_type value_type;
     typedef StorageType storage_type;

@@ -32,10 +32,10 @@ namespace triqs { namespace arrays {
  template <typename ValueType, int Rank, typename Opt= Option::Default > class array;
  
  template <typename ValueType, int Rank, typename Opt>
-  class array_view : Tag::array_view, Tag::array_algebra_expression_terminal, 
+  class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray),  
   public details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view >{
    static_assert( Rank>0, " Rank must be >0");
-   public :
+   public :   
     typedef details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > impl_type;
     typedef typename impl_type::indexmap_type indexmap_type;
     typedef array_view<ValueType,Rank,Opt> view_type;
@@ -70,8 +70,8 @@ namespace triqs { namespace arrays {
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::array_view > { typedef array_view<V,R,Opt> type; };
 
  template <typename ValueType, int Rank, typename Opt>
-  class array: Tag::array, Tag::array_algebra_expression_terminal, 
-  public  array_view<ValueType,Rank,Opt>::impl_type { 
+  class array: Tag::array,  TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), 
+  public            array_view<ValueType,Rank,Opt>::impl_type { 
    typedef typename array_view<ValueType,Rank,Opt>::impl_type impl_type;
    public:
    typedef typename impl_type::value_type value_type;

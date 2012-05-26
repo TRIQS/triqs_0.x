@@ -38,8 +38,8 @@ namespace triqs { namespace arrays {
  // ----------------- implementation -----------------------------------------
  
  template<typename MT, typename VT> 
-  class mat_vec_mul_lazy : Tag::expression_terminal, Tag::has_special_assign, 
-  Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>, Tag::has_immutable_array_interface {
+  class mat_vec_mul_lazy :  TRIQS_MODEL_CONCEPT(ImmutableVector),
+   Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'> {
 
    typedef typename MT::value_type V1;
    typedef typename VT::value_type V2;

@@ -31,15 +31,15 @@ namespace triqs { namespace arrays {
  namespace bf = boost::fusion; namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
 
  template<typename M1, typename M2> // matrix * matrix
-  typename boost::enable_if< mpl::and_<is_matrix_expr<M1>, is_matrix_expr<M2> >, matmul_lazy<M1,M2> >::type
+  typename boost::enable_if< mpl::and_<ImmutableMatrix<M1>, ImmutableMatrix<M2> >, matmul_lazy<M1,M2> >::type
   operator* (M1 const & a, M2 const & b) { return matmul_lazy<M1,M2>(a,b); }
 
  template<typename M, typename V> // matrix * vector
-  typename boost::enable_if< mpl::and_<is_matrix_expr<M>, is_vector_expr<V> >, mat_vec_mul_lazy<M,V> >::type
+  typename boost::enable_if< mpl::and_<ImmutableMatrix<M>, ImmutableVector<V> >, mat_vec_mul_lazy<M,V> >::type
   operator* (M const & m, V const & v) { return mat_vec_mul_lazy<M,V>(m,v); }
 
  template<typename A, typename M> // anything / matrix ---> anything * inverse(matrix)
-  typename boost::lazy_enable_if< is_matrix_expr<M>, tup::type_of_mult<A, inverse_lazy <M> > >::type
+  typename boost::lazy_enable_if< ImmutableMatrix<M>, tup::type_of_mult<A, inverse_lazy <M> > >::type
   operator/ (A const & a, M const & m) { return a * inverse(m);}
 
  template<typename Expr> struct matrix_expr;
@@ -53,8 +53,8 @@ namespace triqs { namespace arrays {
   typedef indexmaps::cuboid_domain<2> matrix_domain_type;
 
   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<tup::is_in_ZRC<proto::_value>()> > {}; 
-  struct BasicVectorTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<is_vector_expr<proto::_value>()> > {}; 
-  struct BasicMatrixTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<is_matrix_expr<proto::_value>()> > {}; 
+  struct BasicVectorTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableVector<proto::_value>()> > {}; 
+  struct BasicMatrixTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableMatrix<proto::_value>()> > {}; 
 
   struct MatrixGrammar : 
    proto::or_<
@@ -180,7 +180,8 @@ namespace triqs { namespace arrays {
  }
 
  //   Expression for matrices
- template<typename Expr> struct matrix_expr : proto::extends<Expr, matrix_expr<Expr>, detail_expr_matvec::MatrixDomain>, Tag::expression { 
+ template<typename Expr> struct matrix_expr : 
+  TRIQS_MODEL_CONCEPT(ImmutableMatrix),       proto::extends<Expr, matrix_expr<Expr>, detail_expr_matvec::MatrixDomain> { 
   matrix_expr( Expr const & expr = Expr() ) : proto::extends<Expr, matrix_expr<Expr>, detail_expr_matvec::MatrixDomain> ( expr ) {} 
 
   typedef size_t index_type;
@@ -201,31 +202,32 @@ namespace triqs { namespace arrays {
  };
 
  //   Expression for vectors
- template<typename Expr> struct vector_expr : proto::extends<Expr, vector_expr<Expr>, detail_expr_matvec::VectorDomain>, Tag::expression { 
-  vector_expr( Expr const & expr = Expr() ) : proto::extends<Expr, vector_expr<Expr>, detail_expr_matvec::VectorDomain> ( expr ) {} 
+ template<typename Expr> struct vector_expr : 
+  TRIQS_MODEL_CONCEPT(ImmutableVector),        proto::extends<Expr, vector_expr<Expr>, detail_expr_matvec::VectorDomain> { 
+   vector_expr( Expr const & expr = Expr() ) : proto::extends<Expr, vector_expr<Expr>, detail_expr_matvec::VectorDomain> ( expr ) {} 
 
-  typedef size_t index_type;
-  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::dom_t(vector_expr) >::type>::type domain_type;
-  static const int rank = domain_type::rank; static_assert((rank==1)||(rank==0), "1 indice expected"); 
-  typedef typename domain_type::index_value_type key_type; 
-  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(vector_expr,bf::vector<key_type>) >::type>::type value_type;
+   typedef size_t index_type;
+   typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::dom_t(vector_expr) >::type>::type domain_type;
+   static const int rank = domain_type::rank; static_assert((rank==1)||(rank==0), "1 indice expected"); 
+   typedef typename domain_type::index_value_type key_type; 
+   typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(vector_expr,bf::vector<key_type>) >::type>::type value_type;
 
-  domain_type domain() const { return detail_expr_matvec::dom_t()(*this); }
-  mini_vector<size_t,1> shape() const { return this->domain().lengths();} 
-  size_t dim0() const { return this->domain().lengths()[0];} 
+   domain_type domain() const { return detail_expr_matvec::dom_t()(*this); }
+   mini_vector<size_t,1> shape() const { return this->domain().lengths();} 
+   size_t dim0() const { return this->domain().lengths()[0];} 
 
-  value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, bf::make_vector(key)); }
-  value_type operator()(index_type const & i1) const { return (*this)[mini_vector<size_t,1>(i1)]; }
+   value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, bf::make_vector(key)); }
+   value_type operator()(index_type const & i1) const { return (*this)[mini_vector<size_t,1>(i1)]; }
 
-  friend std::ostream &operator <<(std::ostream &sout, vector_expr<Expr> const &expr){return proto::eval(expr,tup::algebra_print_ctx (sout));}
- };
+   friend std::ostream &operator <<(std::ostream &sout, vector_expr<Expr> const &expr){return proto::eval(expr,tup::algebra_print_ctx (sout));}
+  };
 
- template<typename Expr> struct is_matrix_expr<matrix_expr<Expr> > : 
+ template<typename Expr> struct ImmutableMatrix<matrix_expr<Expr> > : 
   mpl::not_<boost::proto::matches<Expr,detail_expr_matvec::ScalarGrammar> >{}; // every expression but a single scalar
- template<typename Expr> struct is_vector_expr<vector_expr<Expr> > : mpl::true_{};
+ //template<typename Expr> struct ImmutableVector<vector_expr<Expr> > : mpl::true_{};
 
- BOOST_PROTO_DEFINE_OPERATORS(is_matrix_expr, detail_expr_matvec::MatrixDomain);
- BOOST_PROTO_DEFINE_OPERATORS(is_vector_expr, detail_expr_matvec::VectorDomain);
+ BOOST_PROTO_DEFINE_OPERATORS(ImmutableMatrix, detail_expr_matvec::MatrixDomain);
+ BOOST_PROTO_DEFINE_OPERATORS(ImmutableVector, detail_expr_matvec::VectorDomain);
 
  template<typename Expr > matrix_view <typename Expr::value_type> make_matrix( Expr const & e) { return matrix<typename Expr::value_type>(e);}
  template<typename Expr > vector_view <typename Expr::value_type> make_vector( Expr const & e) { return vector<typename Expr::value_type>(e);}

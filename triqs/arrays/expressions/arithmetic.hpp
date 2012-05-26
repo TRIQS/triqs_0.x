@@ -50,12 +50,12 @@ namespace triqs { namespace arrays { namespace expressions { namespace arithmeti
   >
  {};
 
- template<typename T> struct IsArray : Tag::check<Tag::expression_terminal,T> {}; 
+ //template<typename T> struct IsArray : Tag::check<Tag::expression_terminal,T> {}; 
 
  struct BasicArrayTypeGrammar :  
   proto::and_< 
   proto::terminal<proto::_>, 
-  proto::if_<IsArray<proto::_value>()> 
+  proto::if_<ImmutableCuboidArray<proto::_value>()> 
   >
  {}; 
 
@@ -135,7 +135,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace arithmeti
    KeyType const & key;
    ArrayEvalCtx(KeyType const & key_) : key(key_) {}
    template<typename T>// overrule just the terminals which have array interface.
-    typename boost::enable_if< has_immutable_array_interface<T>, result_type >::type 
+    typename boost::enable_if< ImmutableArray<T>, result_type >::type 
     operator ()(proto::tag::terminal, T const & t) const { return t[key]; }
   };
 
@@ -165,7 +165,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace arithmeti
   *   Expression
   * ------------------------------------------ */
  template<typename Expr>
-  struct ArrayExpr : Tag::expression, proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> {
+  struct ArrayExpr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> {
    typedef proto::extends<Expr, ArrayExpr<Expr>, ArrayDomain> base_type;
    ArrayExpr( Expr const & expr = Expr() ) : base_type( expr ) {}
 
@@ -204,7 +204,7 @@ namespace triqs { namespace arrays { namespace expressions { namespace arithmeti
 }}
 
 // This makes array and array_view proto terminals
-BOOST_PROTO_DEFINE_OPERATORS(expressions::arithmetic::IsArray, expressions::arithmetic::ArrayDomain);
+BOOST_PROTO_DEFINE_OPERATORS(ImmutableCuboidArray, expressions::arithmetic::ArrayDomain);
 
 // C++0x only ...  //template<typename Expr, typename ReturnType= array_view <typename Expr::value_type, Expr::domain_type::rank> >
 // ReturnType eval( Expr const & e) { return typename ReturnType::non_view_type(e);}

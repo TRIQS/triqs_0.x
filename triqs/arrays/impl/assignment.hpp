@@ -36,6 +36,14 @@ namespace triqs { namespace arrays {
  template<typename LHS, typename RHS> 
   void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs, mpl::char_<'E'> )  { details::assign_impl<LHS,RHS>(lhs,rhs).invoke();}
 
+
+  template<typename A,typename B> void assign_ops (A & a, B const & b, mpl::char_<'E'>) {a =b;}
+  template<typename A,typename B> void assign_ops (A & a, B const & b, mpl::char_<'A'>) {a+=b;}
+  template<typename A,typename B> void assign_ops (A & a, B const & b, mpl::char_<'S'>) {a-=b;}
+  template<typename A,typename B> void assign_ops (A & a, B const & b, mpl::char_<'M'>) {a*=b;}
+  template<typename A,typename B> void assign_ops (A & a, B const & b, mpl::char_<'D'>) {a/=b;}
+
+
  // -------- IMPLEMENTATION ----------------------------
 
 //#define TRIQS_ARRAYS_TRACE_ASSIGN
@@ -103,7 +111,10 @@ namespace triqs { namespace arrays {
 
   // assignment for expressions RHS
   template<typename LHS, typename RHS> 
-   struct assign_impl<LHS,RHS,typename boost::enable_if<is_expression<RHS> >::type > { 
+   struct assign_impl<LHS,RHS,typename boost::enable_if< boost::mpl::and_< ImmutableArray<RHS>, 
+   boost::mpl::not_< has_special_assign<RHS> >,
+   boost::mpl::not_< is_scalar_for<RHS,LHS > >,
+   boost::mpl::not_< is_isp<RHS,LHS> > > >::type > { //is_expression<RHS> >::type > { 
     typedef typename LHS::value_type value_type;
     typedef typename LHS::indexmap_type indexmap_type;
     typedef typename indexmap_type::domain_type::index_value_type index_value_type;
@@ -123,44 +134,44 @@ namespace triqs { namespace arrays {
     } 
    };
 
-  // assignment for scalar RHS // write a specific one if it is not a view : plain loop
-  // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
-  // it will be specialized in the matrix class.... Cf matrix class
-  template<typename LHS, typename RHS> 
-   struct assign_impl<LHS,RHS,typename boost::enable_if<is_scalar_for<RHS,LHS > >::type > { 
-    typedef typename LHS::value_type value_type;
-    typedef typename LHS::indexmap_type indexmap_type;
-    typedef typename indexmap_type::domain_type::index_value_type index_value_type;
-    LHS & lhs; const RHS & rhs;
-    assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-    void operator()(value_type & p, index_value_type const & key) const { p = rhs;}
-    void invoke() {  
+   // assignment for scalar RHS // write a specific one if it is not a view : plain loop
+   // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
+   // it will be specialized in the matrix class.... Cf matrix class
+   template<typename LHS, typename RHS> 
+    struct assign_impl<LHS,RHS,typename boost::enable_if<is_scalar_for<RHS,LHS > >::type > { 
+     typedef typename LHS::value_type value_type;
+     typedef typename LHS::indexmap_type indexmap_type;
+     typedef typename indexmap_type::domain_type::index_value_type index_value_type;
+     LHS & lhs; const RHS & rhs;
+     assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+     void operator()(value_type & p, index_value_type const & key) const { p = rhs;}
+     void invoke() {  
 #ifdef TRIQS_ARRAYS_TRACE_ASSIGN
-     std::cerr<<" scalar assign"<<std::endl;
+      std::cerr<<" scalar assign"<<std::endl;
 #endif
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH 
-     indexmaps::foreach(*this,lhs);  // if contiguous : plain loop else foreach...
+      indexmaps::foreach(*this,lhs);  // if contiguous : plain loop else foreach...
 #else
-     typename LHS::storage_type & S(lhs.storage());
-     for (typename LHS::indexmap_type::iterator it(lhs.indexmap());it; ++it)  S[*it] = rhs;  
+      typename LHS::storage_type & S(lhs.storage());
+      for (typename LHS::indexmap_type::iterator it(lhs.indexmap());it; ++it)  S[*it] = rhs;  
 #endif
-    }
-   };
+     }
+    };
 
-  // assignment for anything that has a special (optimized) method for assignment
-  template<typename LHS, typename RHS> 
-   struct assign_impl<LHS,RHS,typename boost::enable_if< has_special_assign<RHS> >::type > { 
-    LHS & lhs; const RHS & rhs;
-    assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-    void invoke ()  { 
+   // assignment for anything that has a special (optimized) method for assignment
+   template<typename LHS, typename RHS> 
+    struct assign_impl<LHS,RHS,typename boost::enable_if< has_special_assign<RHS> >::type > { 
+     LHS & lhs; const RHS & rhs;
+     assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
+     void invoke ()  { 
 #ifdef TRIQS_ARRAYS_TRACE_ASSIGN
-     std::cerr<<" special assign invoke "<<std::endl;
+      std::cerr<<" special assign invoke "<<std::endl;
 #endif
-     rhs.assign_invoke(lhs);
-    }
-   };
+      rhs.assign_invoke(lhs);
+     }
+    };
 
- }// details
-}}//namespace triqs::arrays 
+   }// details
+ }}//namespace triqs::arrays 
 #endif
 

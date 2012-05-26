@@ -43,7 +43,7 @@ namespace ExpressionTools {
    */
   namespace details { 
    template<typename Obj, typename Expr> 
-    struct map_impl : Tag::expression, Tag::array_algebra_expression_terminal {
+    struct map_impl : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
      typedef typename Expr::value_type   value_type;
      typedef typename Expr::domain_type  domain_type;
      Expr const & a;Obj const & obj;std::string name;
@@ -66,7 +66,7 @@ namespace ExpressionTools {
   namespace details { 
 
    template<typename Expr> 
-    struct transpose_impl : Tag::expression, Tag::array_algebra_expression_terminal {
+    struct transpose_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
      typedef typename Expr::value_type   value_type;
      typedef typename Expr::domain_type  domain_type;
      Expr const & a;
@@ -81,7 +81,7 @@ namespace ExpressionTools {
 
 
    template<class Expr, template <class Expr2> class Transfo>
-    struct transfo_impl : Transfo<Expr>,  Tag::expression, Tag::array_algebra_expression_terminal { 
+    struct transfo_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) ,Transfo<Expr> { //,  Tag::expression, Tag::array_algebra_expression_terminal { 
      Expr const & a; transfo_impl( Expr const & a_):a(a_){}
      typedef Transfo<Expr> T;
      typename T::domain_type domain() const { return T::domain(a);}
@@ -97,7 +97,7 @@ namespace ExpressionTools {
 
   template<typename Expr> 
    struct transpose_  {
-    static_assert(  has_immutable_array_interface<Expr>::value, "transpose_ : the type of the template argument is incorrect, it does not support ArrayImmutableInterface");
+    static_assert(  ImmutableArray<Expr>::value, "transpose_ : the type of the template argument is incorrect, it does not model ImmutableArray");
     // static checks here on Expr
     static std::string name() { return "Transpose";}
     typedef typename Expr::value_type   value_type;

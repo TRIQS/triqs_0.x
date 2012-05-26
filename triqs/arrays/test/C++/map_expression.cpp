@@ -40,6 +40,8 @@ int main(int argc, char **argv) {
  triqs::arrays::matrix<double,Option::Fortran > A(3,3),B(3,3);
  A() = -2;
 
+//    static_assert( (ImmutableArray<triqs::arrays::matrix<double,Option::Fortran > >::value), "map1 22222222: A does not have ImmutableArray");
+ 
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
   { A(i,j) = i+2*j+1; B(i,j) = i-j;}

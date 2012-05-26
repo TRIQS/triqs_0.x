@@ -36,7 +36,7 @@ namespace triqs { namespace arrays {
   F f;
   
   template<typename A> 
-   class map1_result : Tag::expression_terminal, Tag::has_immutable_array_interface, Tag::expression {
+   class map1_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
     public:
      typedef typename F::result_type value_type;
      typedef typename A::domain_type domain_type;
@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
    };
 
   template<class A, class B> 
-   class map2_result : Tag::expression_terminal, Tag::has_immutable_array_interface, Tag::expression {
+   class map2_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
     public:
      typedef typename F::result_type value_type;
      typedef typename A::domain_type domain_type;
@@ -68,7 +68,7 @@ namespace triqs { namespace arrays {
   template< class A >
    typename boost::enable_if_c< (F::arity==1), map1_result<A> >::type 
    operator()(A const & a) { 
-    static_assert( (has_immutable_array_interface<A>::value), "map1 : A does not have has_immutable_array_interface");
+    static_assert( (ImmutableArray<A>::value), "map1 : A does not have ImmutableArray");
     static_assert( (argcheck< typename F::arg1_type , typename A::value_type>::value), "type mismatch");
     return map1_result<A>(f,a);
    } 
@@ -76,8 +76,8 @@ namespace triqs { namespace arrays {
   template< class A, class B >
    typename boost::enable_if_c< (F::arity==2), map2_result<A,B> >::type 
    operator()(A const & a, B const & b) { 
-    static_assert( (has_immutable_array_interface<A>::value), "map1 : A does not have has_immutable_array_interface");
-    static_assert( (has_immutable_array_interface<B>::value), "map1 : B does not have has_immutable_array_interface");
+    static_assert( (ImmutableArray<A>::value), "map1 : A does not have ImmutableArray");
+    static_assert( (ImmutableArray<B>::value), "map1 : B does not have ImmutableArray");
     static_assert( (argcheck< typename F::arg1_type , typename A::value_type>::value), "type mismatch");
     static_assert( (argcheck< typename F::arg2_type , typename A::value_type>::value), "type mismatch");
     static_assert( (boost::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
