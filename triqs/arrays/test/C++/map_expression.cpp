@@ -19,17 +19,15 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
-#include "./src/expressions/map.hpp"
+#include "./src/functional/map.hpp"
 #include "./src/proto/matrix_algebra.hpp"
 #include <iostream>
 #include <algorithm>
 
 using namespace std;
 using namespace triqs::arrays;
-using namespace triqs::arrays::function_object;
 
 template<class T> T mmax(T const & x, T const &  y) { return std::max(x,y);}
 
@@ -40,17 +38,12 @@ int main(int argc, char **argv) {
  triqs::arrays::matrix<double,Option::Fortran > A(3,3),B(3,3);
  A() = -2;
 
-//    static_assert( (ImmutableArray<triqs::arrays::matrix<double,Option::Fortran > >::value), "map1 22222222: A does not have ImmutableArray");
- 
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
   { A(i,j) = i+2*j+1; B(i,j) = i-j;}
 
- //auto Abs = map( static_cast< double (*)(double)> (std::abs) );
- triqs::arrays::result_of::map<double (*)(double)>::type  Abs = map( static_cast< double (*)(double)> (std::abs) );
-
- //auto Max = map( mmax<double> );
- triqs::arrays::result_of::map<double (*)(const double&, const double&)>::type Max = map( mmax<double> );
+ BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
+ BOOST_AUTO( Max ,  map( boost::function<double(double,double)>(mmax<double>) ) );
 
  cout<< " A " << A<<endl<<endl;
  cout<< " B " << B<<endl<<endl;

@@ -3,8 +3,6 @@
 #include <triqs/arrays/indexmaps/cuboid/group_indices.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
-
 /*
    struct to_vec_ {
    std::ostream & out; to_vec_ (std::ostream & out_):out(out_){}

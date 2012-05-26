@@ -22,25 +22,16 @@
 
 #include "./python_stuff.hpp"
 
-#include "./src/expressions/fold.hpp"
-#include "./src/expressions/map.hpp"
+#include "./src/functional/fold.hpp"
+#include "./src/functional/map.hpp"
 #include "./src/proto/matrix_algebra.hpp"
+#include "./src/algorithms.hpp"
 #include <iostream>
-#include <functional>
 
 using namespace std;
 using namespace triqs::arrays;
 
-#include "./src/expressions/min_max.hpp"
-#include "./src/expressions/sum_prod.hpp"
-
-// template<class T> T mmax(T const & x, T const &  y) { return std::max(x,y);}
-//auto max_element = fold ( mmax<double>); 
-// non C++0x version : 
-// result_of::fold<double (*)(const double&, const double&)>::type max_element = fold ( mmax<double>); 
-
-//auto Abs = map( static_cast< double (*)(double)> (std::abs) );
-triqs::arrays::result_of::map<double (*)(double)>::type  Abs = map( static_cast< double (*)(double)> (std::abs) );
+BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
 
 int main(int argc, char **argv) {
 

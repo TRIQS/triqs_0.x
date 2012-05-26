@@ -26,7 +26,6 @@
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
 #include <iostream>
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 using namespace std;
 using namespace triqs::arrays;

@@ -19,9 +19,10 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef PYTHON_STUFF_H
 #define PYTHON_STUFF_H
+
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
 
 #ifndef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
 inline void init_python_stuff(int argc, char **argv) { 

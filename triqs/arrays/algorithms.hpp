@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,14 +18,23 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef TRIQS_ARRAYS_EXPRESSION_SUMPROD_H
-#define TRIQS_ARRAYS_EXPRESSION_SUMPROD_H
+#ifndef TRIQS_ARRAYS_ALGORITHMS_H
+#define TRIQS_ARRAYS_ALGORITHMS_H
 #include <algorithm>
 #include <functional>
-#include "./fold.hpp"
+#include "./functional/fold.hpp"
 
 namespace triqs { namespace arrays {
+
+ template<class A>
+  typename A::value_type max_element(A const &a) { 
+   return fold ( std::max<typename A::value_type const & >)  ( a, a[typename A::domain_type::index_value_type()]);
+  }
+
+ template<class A>
+  typename A::value_type min_element(A const &a) { 
+   return fold ( std::min<typename A::value_type const & >)  ( a, a[typename A::domain_type::index_value_type()]);
+  }
 
  template <class A>
   typename A::value_type sum(A const & a) { return fold ( std::plus<typename A::value_type>())  (a); }

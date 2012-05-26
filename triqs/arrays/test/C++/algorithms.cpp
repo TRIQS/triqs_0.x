@@ -18,23 +18,33 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_ASSERTS_H
-#define TRIQS_ARRAYS_ASSERTS_H
-#include "../proto/array_algebra.hpp"
-#include "../functional/map.hpp"
-#include "../algorithms.hpp"
+#include "./python_stuff.hpp"
 
-namespace triqs { namespace arrays {
+#include <triqs/arrays/algorithms.hpp>
+#include "./src/proto/matrix_algebra.hpp"
+#include <iostream>
 
- template<class T> inline double assert_abs(T z) { return std::abs(z);}
+namespace tqa = triqs::arrays;
 
- template<class ArrayType1, class ArrayType2 >
-  void assert_all_close( ArrayType1 const & A, ArrayType2 const & B, double precision) {
-   typedef typename ArrayType1::value_type F;
-   BOOST_AUTO(  Abs , map( boost::function<double(F)> (assert_abs<F>) ));
-   if ( max_element (Abs(A-B)) > precision) TRIQS_RUNTIME_ERROR<<"assert_all_close error : "<<A<<"\n"<<B;
-  }
+int main(int argc, char **argv) {
+ init_python_stuff(argc,argv);
+ 
+ tqa::matrix<double, tqa::Option::Fortran > A(3,3),B(3,3);
 
-}}
-#endif
+ A() = -2;
 
+ for (int i =0; i<3; ++i)
+  for (int j=0; j<3; ++j)
+  { A(i,j) = i+2*j+1; B(i,j) = i-j;}
+
+ TEST(A);
+ TEST(max_element(A));
+ TEST(sum(A));
+ TEST(B);
+ TEST(min_element(B));
+ TEST(sum(B));
+ TEST(make_matrix(A+10*B));
+ TEST(max_element(A+10*B));
+
+ return 0;
+}

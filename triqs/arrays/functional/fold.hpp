@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2012 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,12 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_EXPRESSION_FOLD_H
 #define TRIQS_ARRAYS_EXPRESSION_FOLD_H 
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/remove_reference.hpp>
-#include "./function_objects.hpp"
+#include <boost/function.hpp>
 #include "../array.hpp"
 
 namespace triqs { namespace arrays {
@@ -56,14 +54,8 @@ namespace triqs { namespace arrays {
  template<class F> fold_worker<F> fold (F const & f) { return fold_worker<F>(f);}
 
  template<typename R, typename A1> 
-  fold_worker< function_object::from_regular_function< R (*)(A1,A1) > >
-  fold (R (*f)(A1,A1)) { return fold( function_object::make_from_regular_function(f)); }
-
- namespace result_of { 
-  template<class F> struct fold { typedef fold_worker<F> type;};
- template<typename R, typename A1> 
-   struct fold<R (*)(A1,A1) > { typedef  fold_worker< function_object::from_regular_function< R (*)(A1,A1) > > type;};
- }
+  fold_worker< boost::function<R(A1,A1)> >
+  fold (R (*f)(A1,A1)) { return fold( boost::function<R(A1,A1)>(f)); } 
 
 }}//namespace triqs::arrays
 

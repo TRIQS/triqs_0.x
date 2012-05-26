@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,30 +20,41 @@
  ******************************************************************************/
 #include "./python_stuff.hpp"
 
-#include "./src/expressions/function_objects.hpp"
-
-/**
- * Examples
- */
+#include "./src/mapped_functions.hpp"
+#include "./src/matrix.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include <iostream>
-using namespace std;
-using namespace triqs::arrays::function_object;
 
-// simple function 
-double f(int i){ return i + 0.5;}
+namespace tqa = triqs::arrays;
 
-// template function
-template <class T> T g(T x) { return x+1;} 
-template<typename T> struct dressed_g : from_function_template<T,T,g> {};
+template<typename T> void test() { 
+ tqa::matrix<T, tqa::Option::Fortran > A(3,3),B(3,3);
+ A() = -2;
 
-// template class
-template <class T> struct S { T operator()(T x) { return x+1;} };
-template <class T> struct dressed_S : from_class_template<T,S> { dressed_S():from_class_template<T,S>(*this) {} };
+ for (int i =0; i<3; ++i)
+  for (int j=0; j<3; ++j)
+  { A(i,j) = i+2*j+1; B(i,j) = i-j;}
 
-int main() { 
+ T s = 10;
+ TEST(A);
+ TEST(make_matrix(pow(A,2)));
+ TEST(make_matrix(cosh(A)));
+ TEST(B);
+ TEST(abs(B));
+ TEST(make_matrix(abs(B)));
+ TEST(make_matrix(abs(B+B)));
+ TEST(make_matrix(A+ s*B));
+ TEST(make_matrix(abs(A+s*B)));
 
- cout<< make_from_regular_function(f)(0)<<endl;
- cout<< dressed_g<double>() (2) <<endl;
- cout<< dressed_S<double>()(2)<<endl;
+}
 
+int main(int argc, char **argv) {
+
+ init_python_stuff(argc,argv);
+ test<int>();
+ test<long>();
+ test<double>();
+ test<std::complex<double> >();
+
+ return 0;
 }
