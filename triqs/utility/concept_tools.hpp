@@ -20,24 +20,22 @@
  ******************************************************************************/
 #ifndef TRIQS_UTILITY_CONCEPT_TOOLS_H
 #define TRIQS_UTILITY_CONCEPT_TOOLS_H
-#include <boost/preprocessor/seq/enum.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/seq/for_each_i.hpp>
 
-//#define TRIQS_CONCEPT_TAG(MyBeautifulConcept) __TRIQS_models_concept_##MyBeautifulConcept##_tag
-#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) concept_tags::MyBeautifulConcept
+#define TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) concept_tag__##MyBeautifulConcept
+
+#define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept)
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(MyBeautifulConcept) \
- namespace concept_tags { struct MyBeautifulConcept{};}\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<concept_tags::MyBeautifulConcept, T> {};
+ struct TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) {};\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) , T> {};
+
+#define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX(r, data, i, elem) BOOST_PP_COMMA_IF(i) TRIQS_CONCEPT_TAGNAME(elem) 
 
 #define TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MyBeautifulConcept,Rs) \
- namespace concept_tags { struct MyBeautifulConcept: BOOST_PP_SEQ_ENUM(Rs) {};}\
- template<typename T> struct MyBeautifulConcept : boost::is_base_of<concept_tags::MyBeautifulConcept, T> {};
-
-//#define TRIQS_DEFINE_CONCEPT_ASSOCIATED_TRAIT1(MyBeautifulConcept) \
-// template<typename T, typename Enable=void> struct MyBeautifulConcept : mpl::false_{};\
-// template<typename T> struct MyBeautifulConcept<T, typename T::TRIQS_CONCEPT_TAG(MyBeautifulConcept)> : mpl::true_{};
-
-//#define TRIQS_REFINE_CONCEPT(C1, C2) template<typename T> struct C2<T, typename T::TRIQS_CONCEPT_TAG(C1)> : mpl::true_{};
+ struct TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) : BOOST_PP_SEQ_FOR_EACH_I (TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R_AUX,nil,Rs) {};\
+ template<typename T> struct MyBeautifulConcept : boost::is_base_of<TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept), T> {};
 
 #ifdef TRIQS_COMPILE_TIME_DEBUG
 #define TRIQS_ASSERT_MODEL_CONCEPT(MyBeautifulConcept,T)  BOOST_CONCEPT_ASSERT((BCC_##MyBeautifulConcept<T>));
