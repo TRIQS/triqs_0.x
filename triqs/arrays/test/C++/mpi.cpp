@@ -24,7 +24,7 @@
 // on icc, mpi must come before boost::proto expression of arithmetic.... messy
 #include "./src/array.hpp"
 #include <boost/mpi.hpp>
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 #include <sstream>
 

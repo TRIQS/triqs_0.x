@@ -32,7 +32,7 @@ using namespace storages;
 #include "./src/matrix.hpp"
 //#include "./src/vector.hpp"
 
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
  

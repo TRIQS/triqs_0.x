@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #define TRIQS_ARRAYS_CACHE_COPY_VERBOSE
 #include "./src/cache.hpp"
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
 using namespace std;

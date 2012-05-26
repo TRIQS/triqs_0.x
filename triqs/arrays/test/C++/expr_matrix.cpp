@@ -22,7 +22,7 @@
 #include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
 #include <iostream>

@@ -23,7 +23,7 @@
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/det_and_inverse.hpp"
 #include "./src/linalg/matmul.hpp"
 #include <iostream>

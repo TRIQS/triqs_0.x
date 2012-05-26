@@ -25,7 +25,7 @@
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/inverse.hpp"
 #include "./src/linalg/determinant.hpp"
 #include <iostream>

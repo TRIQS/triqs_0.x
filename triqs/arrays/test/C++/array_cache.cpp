@@ -23,7 +23,7 @@
 #include "./src/array.hpp"
 #define TRIQS_ARRAYS_CACHE_VERBOSE
 #include "./src/impl/cache.hpp"
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
 using namespace std;

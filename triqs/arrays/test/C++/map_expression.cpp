@@ -23,7 +23,7 @@
 #include "./python_stuff.hpp"
 
 #include "./src/expressions/map.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include <iostream>
 #include <algorithm>
 

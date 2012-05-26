@@ -23,7 +23,7 @@
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
 using namespace std;

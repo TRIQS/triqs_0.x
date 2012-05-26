@@ -22,7 +22,7 @@
 
 #ifndef TRIQS_ARRAYS_ASSERTS_H
 #define TRIQS_ARRAYS_ASSERTS_H
-#include "../expressions/array_algebra.hpp"
+#include "../proto/array_algebra.hpp"
 #include "../expressions/map.hpp"
 #include "../expressions/min_max.hpp"
 
