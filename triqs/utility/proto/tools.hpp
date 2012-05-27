@@ -31,6 +31,7 @@
 #include <boost/proto/domain.hpp>
 #include <complex>
 #include "triqs/utility/typeid_name.hpp"
+#include <triqs/utility/view_tools.hpp>
 #include <assert.h>
 
 #include <boost/fusion/container/vector.hpp>
@@ -73,10 +74,6 @@ namespace triqs { namespace utility { namespace proto {
  /* ---------------------------------------------------------------------------------------------------
   * The domain can enforce copies or not...
   * --------------------------------------------------------------------------------------------------- */
-
- template<typename T, typename Void =void> struct const_view_type_if_exists_else_type {typedef T type;}; 
- template<typename T> struct const_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
- // template<typename T> struct const_view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
 
  template< typename Grammar, template<typename Expr> class The_Expr> struct domain_with_ref: proto::domain<proto::generator<The_Expr>, Grammar> {};
 
