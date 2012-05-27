@@ -53,20 +53,20 @@ int main(int argc, char **argv) {
  cout<<"Ac = "<<Ac<<endl;
 
  cout<<"----------"<<endl;
- cout<<"Expr = "<< make_const_cache_C_order(2*A).view() <<endl;
+ cout<<"Expr = "<< make_const_cache(2*A, Option::C() ).view() <<endl;
 
  cout<<"----------"<<endl;
- cout<<"A F->C = "<< make_const_cache_C_order(A).view() <<endl;
+ cout<<"A F->C = "<< make_const_cache(A, Option::C()).view() <<endl;
 
  cout<<"----------"<<endl;
- cout<<"A C->C = "<< make_const_cache_C_order(Ac).view() <<endl;
+ cout<<"A C->C = "<< make_const_cache(Ac, Option::C()).view() <<endl;
 
  cout<<"----------"<<endl;
- f(make_cache_C_order(Ac),287);
+ f(make_cache(Ac, Option::C()),287);
  cout<<"Ac = "<<Ac<<endl;
 
  cout<<"----------"<<endl;
- f(make_cache_C_order(A),287);
+ f(make_cache(A, Option::C() ),287);
  cout<<"A = "<<A<<endl;
 
  cout<<"----------"<<endl;
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
  cout<<"A = "<<A<<endl;
  cout<<"Ac = "<<Ac<<endl;
 
- f(make_cache_C_order(V),156);
+ f(make_cache(V, Option::C()),156);
  cout<<"A = "<<A<<endl;
  cout<<"Ac = "<<Ac<<endl;
 

@@ -47,8 +47,8 @@ namespace triqs { namespace arrays {
    public:
    typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type;
    typedef typename VT::domain_type  domain_type;
-   typedef typename utility::proto::const_view_type_if_exists_else_type<MT>::type M_type;
-   typedef typename utility::proto::const_view_type_if_exists_else_type<VT>::type V_type;
+   typedef typename const_view_type_if_exists_else_type<MT>::type M_type;
+   typedef typename const_view_type_if_exists_else_type<VT>::type V_type;
    const M_type M; const V_type V;
 
    private: 

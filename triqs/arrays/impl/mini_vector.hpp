@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_MINI_VECTOR_H 
 #define TRIQS_ARRAYS_MINI_VECTOR_H 
 #include <iostream>
@@ -95,6 +93,8 @@ namespace triqs { namespace arrays {
     return fs.str();
    }
 
+   friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<v.to_string();}
+   friend std::stringstream & operator << ( std::stringstream & out, mini_vector const & v ) { out<<v.to_string(); return out;}
   }; // class mini_vector
 
  template <typename T, int R> 
@@ -104,7 +104,7 @@ namespace triqs { namespace arrays {
   }
 
  template <typename T, int R> bool operator !=(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) { return (!(v1==v2));}
-   
+
  template <typename T1, typename T2, int Rank> 
   T1 dot_product(mini_vector<T1,Rank> const & v1, mini_vector<T2,Rank> const & v2) {
    T1 res=0;
@@ -156,18 +156,10 @@ namespace triqs { namespace arrays {
  // generalize with preproc or variadic template
 #define IMPL(z, NN, unused)                                \
  template <typename T> mini_vector<T,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
-   { return mini_vector<T,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
-   BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
+ { return mini_vector<T,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
+ BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
 #undef IMPL
 
-template <typename T, int Rank> 
-std::ostream & operator << ( std::ostream & out, triqs::arrays::mini_vector<T,Rank> const & v ) {return out<<v.to_string();}
-template <typename T, int Rank> 
-std::stringstream & operator << ( std::stringstream & out, triqs::arrays::mini_vector<T,Rank> const & v ) { out<<v.to_string(); return out;}
-
 }}//namespace triqs::arrays 
-
-//namespace boost { namespace tuples { 
-
 #endif
 

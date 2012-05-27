@@ -23,7 +23,7 @@
 #include "./matrix.hpp"
 #include "./vector.hpp"
 #include <boost/scoped_ptr.hpp>
-#include <boost/mpl/if.hpp>
+//#include <boost/mpl/if.hpp>
 namespace triqs { namespace arrays { 
 
  /**
@@ -39,16 +39,16 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class const_qcache;
 
- template<typename A> class const_qcache< A, typename boost::enable_if<is_amv_value_class<A> >::type> : boost::noncopyable { 
-  A const & x;
-  public:
-  const_qcache(A const & x_):x(x_){}
-  typedef A const & exposed_type; 
-  exposed_type operator()() const {return x;}
- };
+ template<typename A> class const_qcache< A, ENABLE_IF((is_amv_value_class<A>)) > : boost::noncopyable { 
+   A const & x;
+   public:
+   const_qcache(A const & x_):x(x_){}
+   typedef A const & exposed_type; 
+   exposed_type operator()() const {return x;}
+  };
 
- template<typename A> class const_qcache< A, 
-  typename boost::enable_if<mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > > >::type> : boost::noncopyable { 
+ template<typename A> class const_qcache< A, ENABLE_IF((mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >)) > : 
+  boost::noncopyable { 
    typedef matrix<typename A::value_type> X;
    X x;
    public:
@@ -57,8 +57,8 @@ namespace triqs { namespace arrays {
    exposed_type operator()() const {return x;}
   };
 
- template<typename A> class const_qcache< A, 
-  typename boost::enable_if<mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > > >::type> : boost::noncopyable { 
+ /*template<typename A> class const_qcache< A, ENABLE_IF((mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >)) > :
+  boost::noncopyable { 
    typedef vector<typename A::value_type> X;
    X x;
    public:
@@ -66,21 +66,33 @@ namespace triqs { namespace arrays {
    typedef typename X::view_type const & exposed_type; 
    exposed_type operator()() const {return x;}
   };
+*/
+ template<typename A> class const_qcache< A, ENABLE_IF((is_amv_view_class<A>))> : boost::noncopyable { 
+  const bool need_copy;
+  A keeper;
+  struct internal_data {
+   typename A::non_view_type copy_data;
+   A view;
+   internal_data(const_qcache const & P) : copy_data(P.keeper), view(copy_data) {
+#ifdef TRIQS_ARRAYS_CACHE_COPY_VERBOSE
+    std::cerr<< " Cache : copy made "<< std::endl;
+    std::cerr<< " -- TRACE = --" << std::endl << triqs::utility::stack_trace() << std::endl;
+#endif
+   }
+  };
+  friend struct internal_data;   
+  mutable boost::scoped_ptr<internal_data> _id;   
+  internal_data & id() const { assert(need_copy); if (!_id) _id.reset(new internal_data(*this)); return *_id;}
 
- template<typename A> class const_qcache< A, typename boost::enable_if<is_amv_view_class<A> >::type> : boost::noncopyable { 
-  typedef typename A::non_view_type data_type;
-  boost::scoped_ptr< data_type  > data;
-  boost::scoped_ptr< A > V_ptr;
-  bool need_copy, init;
-  A orig; A * V;
-  void prep(){data.reset(new data_type(*V)); V_ptr.reset(new A(*data)); V=V_ptr.get(); init=true; } 
+  protected:
+  void back_update() { if (_id) keeper = _id->copy_data; } // copy data back (for derivative, but but mechanism here).
+  A & view() { return (need_copy ? id().view : keeper);}
+  A const & view() const{ return (need_copy ? id().view : keeper);}
+
   public :
-  explicit const_qcache(A const & x): need_copy (!( x.indexmap().is_contiguous())), init(false), orig(x), V(&orig){
-   if (need_copy) std::cerr<< " I need a copy "<< std::endl;
-  }
-  const_qcache(const_qcache const &c):need_copy(c.need_copy),init(false),orig(c.orig),V(&orig) {}
-  typedef A exposed_type; 
-  exposed_type operator()() { if (need_copy && (!init)) prep(); return *(V);}
+  explicit const_qcache(A const & x): need_copy (!(has_contiguous_data(x))), keeper(x) {}
+  typedef const A exposed_type; 
+  exposed_type operator()() const { return view();}
  };
 
  /**
@@ -96,7 +108,7 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class reflexive_qcache;
 
- template<typename A> class reflexive_qcache< A, typename boost::enable_if<is_amv_value_class<A> >::type> : boost::noncopyable { 
+ template<typename A> class reflexive_qcache <A, ENABLE_IF((is_amv_value_class<A>))> : boost::noncopyable { 
   A & x;
   public:
   reflexive_qcache(A & x_):x(x_){}
@@ -104,21 +116,13 @@ namespace triqs { namespace arrays {
   exposed_type operator()() const {return x;}
  };
 
- template<typename A> class reflexive_qcache< A, typename boost::enable_if<is_amv_view_class<A> >::type> : boost::noncopyable { 
-  typedef typename A::non_view_type data_type;
-  boost::scoped_ptr< data_type  > data;
-  boost::scoped_ptr< A > V_ptr;
-  bool need_copy, init;
-  A orig; A * V;
-  void prep(){data.reset(new data_type(*V)); V_ptr.reset(new A(*data)); V=V_ptr.get(); init=true; } 
+ template<typename A> class reflexive_qcache <A, ENABLE_IF((is_amv_view_class<A>))> : const_qcache<A> {
+  typedef const_qcache<A> B;
   public :
-  explicit reflexive_qcache(A const & x): need_copy (!( x.indexmap().is_contiguous())), init(false), orig(x), V(&orig){
-   if (need_copy) std::cerr<< " I need a copy "<< std::endl;
-  }
-  reflexive_qcache(reflexive_qcache const &c):need_copy(c.need_copy),init(false),orig(c.orig),V(&orig) {}
-  ~reflexive_qcache() { if (need_copy && init) orig = *(data);} // copy data back
+  explicit reflexive_qcache(A const & x) : B(x) {} 
+  ~reflexive_qcache() { this->back_update();}
   typedef A exposed_type; 
-  exposed_type operator()() { if (need_copy && (!init)) prep(); return *(V);}
+  exposed_type operator()() { return B::view(); } 
  };
 
 }}//namespace triqs::arrays

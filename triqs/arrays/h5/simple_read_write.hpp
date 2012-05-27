@@ -44,7 +44,7 @@ namespace triqs {
       if (h5::exists(file_or_group, name)) file_or_group.unlink( name.c_str());  // put some option here ?
       DataSet ds;
       if (C_reorder) { 
-       BOOST_AUTO(C, make_const_cache_C_order(A));
+       BOOST_AUTO(C, make_const_cache(A,Option::C()));
        //typename result_of::cache<false,Tag::C, ArrayType >::type C(A);
        ds = file_or_group.createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(C.view()) );
        ds.write( data(C.view()), data_type_mem(A), data_space(C.view()) ); 
@@ -88,7 +88,7 @@ namespace triqs {
       mini_vector<size_t,ArrayType::rank > d2; for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
       resize_or_check(A, d2 ); 
       if (C_reorder) { 
-       BOOST_AUTO(C,  make_cache_C_order(A));
+       BOOST_AUTO(C,  make_cache(A, Option::C() ));
        //typename result_of::cache<true,Tag::C, ArrayType >::type C(A);
        ds.read( data(C.view()), data_type_mem(C.view()), data_space(C.view()) , dataspace );
       }

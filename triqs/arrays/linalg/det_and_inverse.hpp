@@ -118,7 +118,7 @@ namespace triqs { namespace arrays {
   typedef typename boost::remove_const<typename A::value_type>::type value_type;
   typedef typename A::domain_type domain_type;
   typedef typename domain_type::index_value_type index_value_type;
-  typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
+  typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   const A_type a;
   inverse_lazy_impl(A const & a_):a (a_)  {
      if (a.dim0() != a.dim1()) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< a.dim0()<<" x "<< a.dim1(); 
@@ -169,7 +169,7 @@ namespace triqs { namespace arrays {
 
  template<typename A> struct determinant_lazy  { // : { Tag::expression_terminal, Tag::scalar_expression_terminal {
   typedef typename A::value_type value_type;
-  typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type;
+  typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   A_type a;
   determinant_lazy(A const & a_):a(a_){}
   operator value_type()  { activate(); return _id->det; }

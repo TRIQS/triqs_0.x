@@ -44,8 +44,8 @@ namespace triqs { namespace arrays {
     public:
     typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type; // what is the result of multiplying a V1 by a V2 ?
     typedef typename A::domain_type  domain_type;
-    typedef typename utility::proto::const_view_type_if_exists_else_type<A>::type A_type; 
-    typedef typename utility::proto::const_view_type_if_exists_else_type<B>::type B_type;
+    typedef typename const_view_type_if_exists_else_type<A>::type A_type; 
+    typedef typename const_view_type_if_exists_else_type<B>::type B_type;
     const A_type a; const B_type b;
 
     private: 

@@ -47,16 +47,21 @@
 #include <boost/mpl/char.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_complex.hpp>
-
+#include <boost/preprocessor/tuple/enum.hpp>
 #include <triqs/utility/compiler_details.hpp>
 #include "./tags.hpp"
 #include "./traits.hpp"
 
 // move to TRIQS level
-#define DISABLE_IF(Cond, Type) typename boost::disable_if< Cond, Type >::type
-#define DISABLE_IFC(Cond, Type) typename boost::disable_if_c< Cond, Type >::type
-#define ENABLE_IF(Cond, Type)  typename boost::enable_if< Cond, Type >::type
-#define ENABLE_IFC(Cond, Type)  typename boost::enable_if_c< Cond, Type >::type
+#define TYPE_ENABLE_IF(Cond, Type)  typename boost::enable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
+#define TYPE_ENABLE_IFC(Cond, Type)  typename boost::enable_if_c< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
+#define TYPE_DISABLE_IF(Cond, Type)  typename boost::disable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
+#define TYPE_DISABLE_IFC(Cond, Type)  typename boost::disable_if_c< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
+
+#define ENABLE_IF(Cond)           TYPE_ENABLE_IF(Cond,void)
+#define ENABLE_IFC(Cond)          TYPE_ENABLE_IFC(Cond,void)
+#define DISABLE_IF(Cond, Type)    TYPE_DISABLE_IF(Cond,void)
+#define DISABLE_IFC(Cond, Type)   TYPE_DISABLE_IFC(Cond,void)
 
 // Use Cblas
 #define BOOST_NUMERIC_BINDINGS_BLAS_CBLAS 
@@ -86,6 +91,7 @@ namespace triqs { namespace arrays {
  template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
 
  /// Is the data contiguous
+ template<typename A> typename boost::disable_if<is_amv_value_or_view_class<A>,bool>::type has_contiguous_data(A const &) {return false;}
  template<typename A> typename boost::enable_if<is_amv_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}
  template<typename A> typename boost::enable_if<is_amv_view_class<A>, bool>::type has_contiguous_data(A const & v){return v.indexmap().is_contiguous();}
 
