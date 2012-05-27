@@ -29,6 +29,7 @@
 #include <triqs/arrays/proto/array_algebra.hpp>
 #include "./meshes.hpp"
 #include "triqs/utility/complex_ops.hpp"
+#include <triqs/utility/view_tools.hpp>
 
 #include "domains.hpp"
 
@@ -180,8 +181,8 @@ namespace triqs { namespace gf { namespace local {
  // -----------  tail special multiplication --------------------
 
  template<typename L, typename R> struct tail_mul_lazy { // should have the same concept as tail_expr
-  typename tup::const_view_type_if_exists_else_type<L>::type l; 
-  typename tup::const_view_type_if_exists_else_type<R>::type r;
+  typename const_view_type_if_exists_else_type<L>::type l; 
+  typename const_view_type_if_exists_else_type<R>::type r;
   tail_mul_lazy(L const & l_, R const & r_):l(l_),r(r_){ if (l.shape()[1] != r.shape()[0]) TRIQS_RUNTIME_ERROR<< "tail multiplication : shape mismatch";}
 
   int order_min() const { return l.order_min() + r.order_min();}
@@ -213,7 +214,7 @@ namespace triqs { namespace gf { namespace local {
  // -----------  tail special inversion --------------------
 
  template<typename T> struct tail_inv_lazy { // should have the same concept as tail_expr
-  typename tup::const_view_type_if_exists_else_type<T>::type t; 
+  typename const_view_type_if_exists_else_type<T>::type t; 
   tail_inv_lazy(tail_view const & t_):t(t_){}
 
   int order_min() const { return - t.order_min(); }
