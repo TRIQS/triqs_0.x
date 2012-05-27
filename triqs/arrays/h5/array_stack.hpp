@@ -21,7 +21,7 @@
 #ifndef TRIQS_ARRAYS_H5_STACK_H
 #define TRIQS_ARRAYS_H5_STACK_H
 #include "../array.hpp"
-#include "./common.hpp"
+#include "./group_or_file.hpp" 
 
 namespace triqs { namespace arrays { namespace h5 { 
  using namespace H5;

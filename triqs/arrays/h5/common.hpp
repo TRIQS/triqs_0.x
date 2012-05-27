@@ -74,6 +74,11 @@ namespace triqs { namespace arrays { namespace h5 {
    return native_type_from_C(typename remove_complex<typename ArrayType::value_type>::type());
   }
 
+ template <typename S >
+  PredType data_type_mem_scalar ( S const & A) { 
+   return native_type_from_C(typename remove_complex<S>::type());
+  }
+
  // the type of data to put in the file_or_group
  template <typename V >
   PredType data_type_file ( V const & ) { return h5_type_from_C(typename remove_complex<V>::type());}
@@ -144,32 +149,13 @@ namespace triqs { namespace arrays { namespace h5 {
  inline void write_attribute ( DataSet & dataset, std::string name, std::string value ) { 
   DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
   // Create new string datatype for attribute
-  StrType strdatatype(PredType::C_S1, 25); // of length 256 characters
+  StrType strdatatype(PredType::C_S1, value.size()); 
   // Set up write buffer for attribute
   const H5std_string strwritebuf (value);
   // Create attribute and write to it
   Attribute myatt_in = dataset.createAttribute(name, strdatatype, attr_dataspace);
   myatt_in.write(strdatatype, strwritebuf); 
  } 
-
- /****************** opaque object for h5 files *********************************************/
-
- class group_or_file {
-  boost::shared_ptr<H5::CommonFG> fg_ptr;
-  hid_t id;
-  public:
-  group_or_file (H5::Group g)   { fg_ptr = boost::make_shared<H5::Group>(g); id = g.getId();} 
-  group_or_file (H5::H5File  f) { fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();}
-  hid_t getId() const { return id;}
-  const H5::CommonFG & operator* () const  { return *fg_ptr;}
-  H5::CommonFG & operator* ()              { return *fg_ptr;}
-  H5::CommonFG const * operator-> () const { return fg_ptr.get();}
-  H5::CommonFG * operator-> ()             { return fg_ptr.get();}
- };
-
- /********************* exists *************************************************/
-
- inline bool exists (group_or_file f, std::string name) { return (H5Lexists(f.getId(), name.c_str(), H5P_DEFAULT)); } 
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
  catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\

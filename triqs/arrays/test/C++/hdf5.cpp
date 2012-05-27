@@ -26,7 +26,8 @@
 #include "./src/h5/simple_read_write.hpp"
 
 using namespace std;
-using namespace triqs::arrays;
+namespace tqa = triqs::arrays;
+using tqa::range;
 
 template <typename T> 
 ostream & operator << (ostream & out, std::vector<T> const & v) { 
@@ -40,12 +41,12 @@ int main(int argc, char **argv) {
 
  try { 
 
- array<long,2> A (2,3),B,vc;
- array<double,2> D (2,3), D2;
+ tqa::array<long,2> A (2,3),B,vc;
+ tqa::array<double,2> D (2,3), D2;
 
- array<long,2,Option::Fortran> Af,Bf,vf;
+ tqa::array<long,2,tqa::Option::Fortran> Af,Bf,vf;
 
- array<complex<double>,1> C(5), C2;
+ tqa::array<complex<double>,1> C(5), C2;
  complex<double> z(1,2);
 
  for (int i =0; i<5; ++i) {
@@ -72,6 +73,11 @@ int main(int argc, char **argv) {
  h5_write(file,"C",C);
  h5_write(file,"D",D);
 
+ // testing scalar
+ double x=2.3;
+ tqa::h5::h5_write(file, "x",x);
+
+ tqa::h5::h5_write(file, "s", std::string("a nice chain"));
  file.createGroup("G");
  h5_write(file,"G/A",A);
 
@@ -83,7 +89,13 @@ int main(int argc, char **argv) {
  h5_read (file, "D",D2);  cout<< "D = "<< D2<<endl;
  h5_read (file, "C",C2);  cout<< "C = "<< C2<<endl;
 
- //array<long,1> E; h5_read (file, "A",E);   cout<< "E = "<< E<<endl;
+ double xx =0; tqa::h5::h5_read(file, "x",xx); TEST(xx);
+
+ std::string s2 ("----------------------------------");
+ tqa::h5::h5_read(file, "s", s2);
+ TEST(s2);
+
+ //tqa::array<long,1> E; h5_read (file, "A",E);   cout<< "E = "<< E<<endl;
 
  } 
  catch( const char * err) { cout<<err<<endl;}

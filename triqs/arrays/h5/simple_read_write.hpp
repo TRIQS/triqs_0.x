@@ -20,10 +20,79 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_H5_LOWLEVEL_H
 #define TRIQS_ARRAYS_H5_LOWLEVEL_H
-#include "./common.hpp"
+#include "./group_or_file.hpp"
 namespace triqs { 
  namespace arrays { 
   namespace h5 { 
+
+   /********************* IO for basic types and complex ... *************************************************/
+
+   template <typename S> ENABLE_IF((boost::is_arithmetic<S>)) 
+    h5_write (h5::group_or_file f, std::string const & name, S const & A) { 
+     try { 
+      f.unlink_if_exists(name);
+      DataSet ds;
+      ds = f->createDataSet( name.c_str(), data_type_file(S()), H5::DataSpace() );
+      ds.write( (void *)(&A), data_type_mem_scalar(A), H5::DataSpace() ); 
+     }
+     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+    }
+
+   template <typename S> ENABLE_IF((boost::is_arithmetic<S>)) 
+     h5_read (h5::group_or_file f, std::string const & name,  S & A) { 
+     if (!f.exists(name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
+     try { 
+      DataSet ds = f->openDataSet( name.c_str() );
+      DataSpace dataspace = ds.getSpace();
+      int rank = dataspace.getSimpleExtentNdims();
+      if (rank != 0) TRIQS_RUNTIME_ERROR << "triqs::array::h5::read. Rank mismatch : expecting a scalar (rank =0)"
+       <<" while the array stored in the hdf5 file has rank = "<<rank;
+      ds.read( (void *)(&A), data_type_mem_scalar(A), DataSpace() , DataSpace() );  
+     } 
+     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+    }
+
+   /********************* IO for string  *************************************************/
+
+  /** 
+    * \brief Write a string  into an hdf5 file
+    * \param f The h5 file or group of type H5::H5File or H5::Group
+    * \param name The name of the hdf5 array in the file/group where the stack will be stored
+    * \param value The string 
+    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
+    */
+    inline void h5_write (h5::group_or_file f, std::string const & name, std::string const & value) { 
+    try { 
+     DataSet ds;
+     StrType strdatatype(PredType::C_S1, value.size()); 
+     ds = f->createDataSet( name.c_str(), strdatatype, DataSpace() );
+     ds.write((void*)(value.c_str()), strdatatype ); 
+    }
+    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+   } 
+
+  /** 
+    * \brief Read a string from an hdf5 file
+    * \param f The h5 file or group of type H5::H5File or H5::Group
+    * \param name The name of the hdf5 array in the file/group where the stack will be stored
+    * \param value The string to fill 
+    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
+    */
+    inline void h5_read (h5::group_or_file f, std::string const & name, std::string & value) { 
+    if (!f.exists(name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
+    try { 
+     DataSet ds = f->openDataSet( name.c_str() );
+     DataSpace dataspace = ds.getSpace();
+     int rank = dataspace.getSimpleExtentNdims();
+     if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string and got rank !=0"; 
+     size_t size = ds.getStorageSize(); 
+     StrType strdatatype(PredType::C_S1, size); 
+     std::vector<char> buf(size+1, 0x00); 
+     ds.read( (void *)(&buf[0]), strdatatype, DataSpace(), DataSpace() );  
+     value = ""; value.append( &(buf.front()) );
+    } 
+    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+   } 
 
    /*********************************** WRITE array ****************************************************************/
    /** 
@@ -38,7 +107,7 @@ namespace triqs {
     * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
    template <typename ArrayType> 
-    void write (group_or_file f, std::string const & name, ArrayType const & A, bool C_reorder = true) { 
+    void write_array (group_or_file f, std::string const & name, ArrayType const & A, bool C_reorder = true) { 
      try { 
       if (h5::exists(f, name)) f->unlink( name.c_str());  // put some option here ?
       DataSet ds;
@@ -69,8 +138,8 @@ namespace triqs {
     * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
    template <typename ArrayType> 
-    void read (group_or_file f, std::string const & name,  ArrayType & A, bool C_reorder = true) { 
-      typedef typename ArrayType::value_type V;
+    void read_array (group_or_file f, std::string const & name,  ArrayType & A, bool C_reorder = true) { 
+     typedef typename ArrayType::value_type V;
      if (!h5::exists(f, name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
      try { 
       DataSet ds = f->openDataSet( name.c_str() );
@@ -104,7 +173,7 @@ namespace triqs {
    */
   template <typename ArrayType>
    ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
-   h5_read (h5::group_or_file fg, std::string const & name,  ArrayType & A) { h5::read(fg,name, A);} 
+   h5_read (h5::group_or_file fg, std::string const & name,  ArrayType & A) { h5::read_array(fg,name, A);} 
 
   /** 
    * \brief Write an array or a view into an hdf5 file
@@ -116,7 +185,7 @@ namespace triqs {
    */
   template <typename ArrayType>
    ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
-   h5_write (h5::group_or_file fg, std::string const & name,  ArrayType const & A) { h5::write(fg,name, A);} 
+   h5_write (h5::group_or_file fg, std::string const & name,  ArrayType const & A) { h5::write_array(fg,name, A);} 
 
  }}
 #endif
