@@ -76,19 +76,19 @@ void test(std::string filename, T init) {
  // now we read the file and compare
 
  h5::H5File file2( filename.c_str() ,H5F_ACC_RDONLY );
- h5::read (file2, "A",A_stack_compare); 
+ h5_read (file2, "A",A_stack_compare); 
  cerr<< "A keep      "<< A_stack_keep<<endl;
  cerr<< "A in file   "<< A_stack_compare<<endl;
  
  assert_all_close (A_stack_keep, A_stack_compare, 1.e-13);
 
- h5::read (file2, "B",B_stack_compare); 
+ h5_read (file2, "B",B_stack_compare); 
  cerr<< "B keep      "<< B_stack_keep<<endl;
  cerr<< "B in file   "<< B_stack_compare<<endl;
  
  assert_all_close (B_stack_keep, B_stack_compare, 1.e-13);
 
- h5::read (file2, "C",C_stack_compare); 
+ h5_read (file2, "C",C_stack_compare); 
  cerr<< "C keep      "<< C_stack_keep<<endl;
  cerr<< "C in file   "<< C_stack_compare<<endl;
  

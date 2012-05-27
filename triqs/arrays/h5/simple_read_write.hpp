@@ -29,8 +29,7 @@ namespace triqs {
    /** 
     * \brief Write an array or a view into an hdf5 file
     * \tparam ArrayType The type of the array/matrix/vector, etc..
-    * \tparam FileGroupType The type of the file or of the group
-    * \param file_or_group The h5 file or group, of type FileGroupType
+    * \param f The h5 file or group of type H5::H5File or H5::Group
     * \param name The name of the hdf5 array in the file/group where the stack will be stored
     * \param A The array to be stored
     * \param C_reorder bool If true [default] the data will be stored in C order in the hdf5, hence making a temporary
@@ -38,19 +37,18 @@ namespace triqs {
     *        If false, the array is stored as it [if you know what you are doing]
     * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
-   template <typename ArrayType, typename FileGroupType >
-    void write (FileGroupType file_or_group, std::string const & name, ArrayType const & A, bool C_reorder = true) { 
+   template <typename ArrayType> 
+    void write (group_or_file f, std::string const & name, ArrayType const & A, bool C_reorder = true) { 
      try { 
-      if (h5::exists(file_or_group, name)) file_or_group.unlink( name.c_str());  // put some option here ?
+      if (h5::exists(f, name)) f->unlink( name.c_str());  // put some option here ?
       DataSet ds;
       if (C_reorder) { 
        BOOST_AUTO(C, make_const_cache(A,Option::C()));
-       //typename result_of::cache<false,Tag::C, ArrayType >::type C(A);
-       ds = file_or_group.createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(C.view()) );
+       ds = f->createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(C.view()) );
        ds.write( data(C.view()), data_type_mem(A), data_space(C.view()) ); 
       }
       else { 
-       ds = file_or_group.createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(A) );
+       ds = f->createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(A) );
        ds.write( data(A), data_type_mem(A), data_space(A) ); 
       } 
       // if complex, to be python compatible, we add the __complex__ attribute
@@ -63,20 +61,19 @@ namespace triqs {
    /** 
     * \brief Read an array or a view from an hdf5 file
     * \tparam ArrayType The type of the array/matrix/vector, etc..
-    * \tparam FileGroupType The type of the file or of the group
-    * \param file_or_group The h5 file or group, of type FileGroupType
+    * \param f The h5 file or group of type H5::H5File or H5::Group
     * \param name The name of the hdf5 array in the file/group where the stack will be stored
     * \param A The array to be stored
     * \param C_reorder bool If true [default] the data will be stored in C order in the hdf5, hence making a temporary
     *        cache of the data to reorder them in memory. If false, the array is stored as it [if you know what you are doing]
     * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
     */
-   template <typename ArrayType, typename FileGroupType >
-    void read (FileGroupType file_or_group, std::string const & name,  ArrayType & A, bool C_reorder = true) { 
-     typedef typename ArrayType::value_type V;
-     if (!h5::exists(file_or_group, name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
+   template <typename ArrayType> 
+    void read (group_or_file f, std::string const & name,  ArrayType & A, bool C_reorder = true) { 
+      typedef typename ArrayType::value_type V;
+     if (!h5::exists(f, name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
      try { 
-      DataSet ds = file_or_group.openDataSet( name.c_str() );
+      DataSet ds = f->openDataSet( name.c_str() );
       DataSpace dataspace = ds.getSpace();
       static const unsigned int Rank =  ArrayType::rank + (boost::is_complex<typename ArrayType::value_type>::value ? 1 : 0);
       int rank = dataspace.getSimpleExtentNdims();
@@ -89,7 +86,6 @@ namespace triqs {
       resize_or_check(A, d2 ); 
       if (C_reorder) { 
        BOOST_AUTO(C,  make_cache(A, Option::C() ));
-       //typename result_of::cache<true,Tag::C, ArrayType >::type C(A);
        ds.read( data(C.view()), data_type_mem(C.view()), data_space(C.view()) , dataspace );
       }
       else { ds.read( data(A), data_type_mem(A), data_space(A) , dataspace ); } 
@@ -98,13 +94,29 @@ namespace triqs {
     }
   }
 
-  template <typename ArrayType, typename FileGroupType >
-   typename boost::enable_if<arrays::is_amv_value_or_view_class<ArrayType> >::type 
-   h5_read (FileGroupType file_or_group, std::string const & name,  ArrayType & A) { h5::read(file_or_group,name, A);} 
+  /** 
+   * \brief Read an array or a view from an hdf5 file
+   * \tparam ArrayType The type of the array/matrix/vector, etc..
+   * \param fg The h5 file or group of type H5::H5File or H5::Group
+   * \param name The name of the hdf5 array in the file/group where the stack will be stored
+   * \param A The array to be stored
+   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
+   */
+  template <typename ArrayType>
+   ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
+   h5_read (h5::group_or_file fg, std::string const & name,  ArrayType & A) { h5::read(fg,name, A);} 
 
-  template <typename ArrayType, typename FileGroupType >
-   typename boost::enable_if<arrays::is_amv_value_or_view_class<ArrayType> >::type 
-   h5_write (FileGroupType file_or_group, std::string const & name,  ArrayType const & A) { h5::write(file_or_group,name, A);} 
+  /** 
+   * \brief Write an array or a view into an hdf5 file
+   * \tparam ArrayType The type of the array/matrix/vector, etc..
+   * \param fg The h5 file or group of type H5::H5File or H5::Group
+   * \param name The name of the hdf5 array in the file/group where the stack will be stored
+   * \param A The array to be stored
+   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
+   */
+  template <typename ArrayType>
+   ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
+   h5_write (h5::group_or_file fg, std::string const & name,  ArrayType const & A) { h5::write(fg,name, A);} 
 
  }}
 #endif

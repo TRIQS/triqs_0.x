@@ -127,7 +127,7 @@ namespace triqs { namespace arrays { namespace h5 {
    static const bool is_complex =  boost::is_complex<typename ArrayType::value_type>::value;
    return dataspace_from_LS<R,is_complex > ( A.indexmap().domain().lengths(),A.indexmap().domain().lengths(), S);
   }
- 
+
  /********************   resize or check the size ****************************************************/
 
  template <typename A> ENABLE_IF((is_amv_value_class<A>)) 
@@ -139,12 +139,6 @@ namespace triqs { namespace arrays { namespace h5 {
     << "\n in file  : "<< dimsf.to_string() 
      << "\n in view  : "<<a.indexmap().domain().lengths().to_string() ;
   }
-
- /********************* exists *************************************************/
-
- template < typename FileGroupType >
-  bool exists (FileGroupType file_or_group, std::string name) { return (H5Lexists(file_or_group.getId(), name.c_str(), H5P_DEFAULT)); } 
-
  /****************** WRITE attribute *********************************************/
 
  inline void write_attribute ( DataSet & dataset, std::string name, std::string value ) { 
@@ -157,6 +151,25 @@ namespace triqs { namespace arrays { namespace h5 {
   Attribute myatt_in = dataset.createAttribute(name, strdatatype, attr_dataspace);
   myatt_in.write(strdatatype, strwritebuf); 
  } 
+
+ /****************** opaque object for h5 files *********************************************/
+
+ class group_or_file {
+  boost::shared_ptr<H5::CommonFG> fg_ptr;
+  hid_t id;
+  public:
+  group_or_file (H5::Group g)   { fg_ptr = boost::make_shared<H5::Group>(g); id = g.getId();} 
+  group_or_file (H5::H5File  f) { fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();}
+  hid_t getId() const { return id;}
+  const H5::CommonFG & operator* () const  { return *fg_ptr;}
+  H5::CommonFG & operator* ()              { return *fg_ptr;}
+  H5::CommonFG const * operator-> () const { return fg_ptr.get();}
+  H5::CommonFG * operator-> ()             { return fg_ptr.get();}
+ };
+
+ /********************* exists *************************************************/
+
+ inline bool exists (group_or_file f, std::string name) { return (H5Lexists(f.getId(), name.c_str(), H5P_DEFAULT)); } 
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
  catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\

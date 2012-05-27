@@ -56,10 +56,10 @@ void test(std::string filename, T init) {
   for (int v = 0; v<6; ++v)
    M(u,v) = 10*u + v;
 
- h5::write( file, "A", A_stack_keep);
- h5::write( file, "A2", A_stack_keep);
- h5::write( file, "B", B_stack_keep);
- h5::write( file, "M", M);
+ h5_write( file, "A", A_stack_keep);
+ h5_write( file, "A2", A_stack_keep);
+ h5_write( file, "B", B_stack_keep);
+ h5_write( file, "M", M);
 
  h5::array_proxy<T,3,3> P( file, "A2");
  P (0,range(), range())  = T(2) *A;
