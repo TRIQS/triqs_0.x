@@ -25,6 +25,7 @@
 
 namespace triqs { namespace arrays {
 
+ using std::abs;
  struct abs_wrap { 
    template<typename Sig> struct result;
    template<typename This, typename A> struct result<This(A)> { typedef A type;};
@@ -36,6 +37,7 @@ namespace triqs { namespace arrays {
  template <typename A>
   typename boost::result_of<map_impl<abs_wrap>(A)>::type abs(A const & a) { return map(abs_wrap())(a); }
 
+ using std::pow;
  struct pow_wrap { 
    template<typename Sig> struct result;
    template<typename This, typename A> struct result<This(A)> { typedef A type;};
