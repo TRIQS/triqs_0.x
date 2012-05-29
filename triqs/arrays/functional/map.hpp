@@ -26,7 +26,6 @@
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/function.hpp>
 #include "../impl/common.hpp"
-
 namespace triqs { namespace arrays { 
  
  template<class F, int arity=F::arity> class map_impl;
@@ -97,7 +96,6 @@ namespace triqs { namespace arrays {
 
   friend std::ostream & operator<<(std::ostream & out, map_impl const & x){ return out<<"map("<<"F"<<")";}
  };
-
 }}//namespace triqs::arrays
 #endif
 

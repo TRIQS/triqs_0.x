@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include <iostream>
 
@@ -34,10 +32,8 @@
 #include "./src/linalg/a_x_ty.hpp"
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 
-
 using namespace std;
 using namespace triqs::arrays;
-using linalg::a_x_ty;
 
 int main(int argc, char **argv) {
 

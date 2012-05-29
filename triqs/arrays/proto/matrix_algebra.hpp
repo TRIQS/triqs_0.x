@@ -28,7 +28,7 @@
 
 namespace triqs { namespace arrays { 
 
- namespace bf = boost::fusion; namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
+ namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
 
  template<typename M1, typename M2> // matrix * matrix
   typename boost::enable_if< mpl::and_<ImmutableMatrix<M1>, ImmutableMatrix<M2> >, matmul_lazy<M1,M2> >::type
@@ -82,18 +82,19 @@ namespace triqs { namespace arrays {
   struct eval_scalar { // a transform that evaluates a scalar as an IDENTITY MATRIX !
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
-   template<typename This, typename S, typename AL> struct result<This(S,AL)> { typedef typename remove_reference<S>::type type;};
-   template<typename S, typename AL> 
-    typename result<eval_scalar(S,AL)>::type operator ()(S const & s, AL const & al) const 
-    { BOOST_AUTO( key, bf::at<mpl::int_<0> >(al)); return (key[0]==key[1] ? s : S()); }
+   template<typename This, typename S, typename KeyType> 
+    struct result<This(S,KeyType)> { typedef typename remove_reference<S>::type type;};
+   template<typename S, typename KeyType> 
+    typename result<eval_scalar(S,KeyType)>::type operator ()(S const & s, KeyType const & key) const {return (key[0]==key[1]?s:S());}
   };
 
-  struct eval_mv { // a transform that evaluates a matrix or a vector on a key contains at head of a bf::vector
+  struct eval_mv { // a transform that evaluates a matrix or a vector on a key 
    BOOST_PROTO_CALLABLE();
    template<typename Sig> struct result;
-   template<typename This, typename M, typename AL> struct result<This(M,AL)> { typedef typename remove_reference<M>::type::value_type type;};
-   template<typename M, typename AL> 
-    typename result<eval_mv(M,AL)>::type operator ()(M const & m, AL const & al) const { return m[bf::at<mpl::int_<0> >(al)]; }
+   template<typename This, typename M, typename KeyType> 
+    struct result<This(M,KeyType)> { typedef typename remove_reference<M>::type::value_type type;};
+   template<typename M, typename KeyType> 
+    typename result<eval_mv(M,KeyType)>::type operator ()(M const & m, KeyType const & key) const { return m[key]; }
   };
 
   struct eval_t;
@@ -188,14 +189,14 @@ namespace triqs { namespace arrays {
   typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::dom_t(matrix_expr) >::type>::type domain_type;
   static const int rank = domain_type::rank; static_assert((rank==2)||(rank==0), "2 indices expected"); 
   typedef typename domain_type::index_value_type key_type; 
-  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(matrix_expr,bf::vector<key_type>) >::type>::type value_type;
+  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(matrix_expr,key_type) >::type>::type value_type;
 
   domain_type domain() const { return detail_expr_matvec::dom_t()(*this); }
   mini_vector<size_t,2> shape() const { return this->domain().lengths();} 
   size_t dim0() const { return this->domain().lengths()[0];} 
   size_t dim1() const { return this->domain().lengths()[1];} 
 
-  value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, bf::make_vector(key)); }
+  value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, key); }
   value_type operator()(index_type const & i1, index_type const & i2) const { return (*this)[mini_vector<size_t,2>(i1,i2)]; }
 
   friend std::ostream &operator <<(std::ostream &sout, matrix_expr<Expr> const &expr){return proto::eval(expr,tup::algebra_print_ctx (sout));}
@@ -210,13 +211,13 @@ namespace triqs { namespace arrays {
    typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::dom_t(vector_expr) >::type>::type domain_type;
    static const int rank = domain_type::rank; static_assert((rank==1)||(rank==0), "1 indice expected"); 
    typedef typename domain_type::index_value_type key_type; 
-   typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(vector_expr,bf::vector<key_type>) >::type>::type value_type;
+   typedef typename boost::remove_reference<typename boost::result_of<detail_expr_matvec::eval_t(vector_expr,key_type) >::type>::type value_type;
 
    domain_type domain() const { return detail_expr_matvec::dom_t()(*this); }
    mini_vector<size_t,1> shape() const { return this->domain().lengths();} 
    size_t dim0() const { return this->domain().lengths()[0];} 
 
-   value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, bf::make_vector(key)); }
+   value_type operator[] (key_type const &key) const { return detail_expr_matvec::eval_t()(*this, key); }
    value_type operator()(index_type const & i1) const { return (*this)[mini_vector<size_t,1>(i1)]; }
 
    friend std::ostream &operator <<(std::ostream &sout, vector_expr<Expr> const &expr){return proto::eval(expr,tup::algebra_print_ctx (sout));}

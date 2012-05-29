@@ -13,7 +13,7 @@ add_source ( impl option.hpp sliceable_object.hpp indexmap_storage_pair.hpp assi
 add_source ( storages mem_block.hpp shared_block.hpp )
 add_source ( h5 common.hpp simple_read_write.hpp array_stack.hpp array_proxy.hpp )
 add_source ( indexmaps/cuboid cuboid_domain.hpp index_order.hpp cuboid_map.hpp cuboid_index_generator.hpp cuboid_map_iterator.hpp foreach.hpp cuboid_slice.hpp /../permutation.hpp )
-add_source ( proto algebra_common.hpp array_algebra.hpp matrix_algebra.hpp )
+add_source ( proto array_algebra.hpp matrix_algebra.hpp )
 add_source ( functional map.hpp fold.hpp  )
 add_source ( linalg a_x_ty.hpp det_and_inverse.hpp matmul.hpp mat_vec_mul.hpp eigenelements.hpp )
 add_source ( python numpy_interface.hpp  converters.hpp)
