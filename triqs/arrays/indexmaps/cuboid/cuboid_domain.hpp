@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -58,6 +57,8 @@ namespace triqs { namespace arrays {
     generator end() const { return generator(*this,true);}
 
     template<class KeyType> void assert_key_in_domain(KeyType const & key) const;
+
+    friend std::ostream & operator<<(std::ostream & out, cuboid_domain const & x){return out<<"Cuboid of rank "<<x.rank<<" and dimensions "<<x.lengths(); }
 
     protected:
     n_uple lengths_;
@@ -130,8 +131,4 @@ namespace triqs { namespace arrays {
 
  }}}
 
-template<int Rank>
-std::ostream & operator << (std::ostream & out, const triqs::arrays::indexmaps::cuboid_domain<Rank> & P) { 
- return out<<"Cuboid of rank "<<P.rank<<" and dimensions "<<P.lengths(); 
-}
 #endif

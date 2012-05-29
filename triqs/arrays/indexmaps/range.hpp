@@ -19,7 +19,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_RANGE_H
 #define TRIQS_ARRAYS_RANGE_H
 
@@ -51,6 +50,8 @@ namespace triqs { namespace arrays {
   int first() const { return first_;}
   int last () const { return last_;}
   int step() const { return step_;}
+
+  int size() const { return (last_ - first_ + 1)/ step_;}
 
   range operator+(int shift) const { return range(first_ + shift, last_ + shift, step_); }
 
