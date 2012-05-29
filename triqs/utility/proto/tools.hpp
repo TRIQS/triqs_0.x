@@ -175,6 +175,14 @@ template<> struct eval_fnt<1> {
 };
 #undef AUX6
 
+ // Debug tool
+ template<typename Expr>
+  std::ostream & print_structure (std::ostream &sout, Expr const & E)  { 
+   sout<<"Expression  "<<E <<std::endl;//triqs::utility::typeid_name(*this)<<std::endl;
+   sout<<"            : return_type : "<<triqs::utility::typeid_name((typename Expr::value_type*)0)<<std::endl;
+   sout<<"            : domain_type : "<<triqs::utility::typeid_name((typename Expr::domain_type*)0)<<std::endl;
+   return sout;
+  }
 
 }}}
 
