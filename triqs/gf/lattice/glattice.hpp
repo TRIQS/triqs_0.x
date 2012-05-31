@@ -1,6 +1,7 @@
 #ifndef glattice_hpp
 #define glattice_hpp
 
+#include "boost/fusion.hpp"
 #include "../local/gf.hpp"
 
 namespace triqs { namespace gf { namespace nonlocal {
@@ -18,11 +19,12 @@ namespace triqs { namespace gf { namespace nonlocal {
    typedef typename GfLocal::mesh_type time_mesh_type;
    typedef typename GfLocal::domain_type time_domain_type;
 
-   typedef typename boost::fusion::vector< space_domain_type, time_domain_type> domain_type;
+   typedef typename boost::fusion::vector< space_domain_type, time_domain_type > domain_type;
+   typedef typename boost::fusion::vector< space_mesh_type, time_mesh_type > domain_type;
+   
 
-   typedef typename bf::result_of::at<domain_type,mpl::_int_<0> >::type space_domain_type2;
-
-   space_domain_type space_domain() const { return bf::at<mpl::int_<0> >(domain());}
+   //typedef typename bf::result_of::at<domain_type,mpl::_int_<0> >::type space_domain_type2;
+   //space_domain_type space_domain() const { return bf::at<mpl::int_<0> >(domain());}
 
    typedef arrays::vector<GfLocal> data_view_type;
    typedef arrays::vector_view<GfLocal> data_non_view_type;
@@ -32,13 +34,12 @@ namespace triqs { namespace gf { namespace nonlocal {
    typedef glattice_view<MeshType,GfLocal> view_type;
    typedef glattice<MeshType,GfLocal> non_view_type;
 
-   space_mesh_type const & space_mesh() const {return my_space_mesh;}
-   domain_type const & domain() const {return my_domain;}
+   mesh_type const & mesh() const {return my_mesh;}
 
 
 
   protected:
-   space_mesh_type my_space_mesh;
+   mesh_type my_mesh;
    data_type data;
 
    //constructors
@@ -61,8 +62,7 @@ namespace triqs { namespace gf { namespace nonlocal {
    typedef GfLocal::const_mv_type const_mv_type;
 
 
-   operator () (bf::vector<space_domain_type::element_type, time_domain_type::element_type> const & ) {}
-
+   //operator () (bf::vector<space_domain_type::element_type, time_domain_type::element_type> const & ) {}
    // appel G( bf::make_vector( k, omega) 
 
    mv_type operator() (meshes::mesh_pt<space_mesh_type> const & x,meshes::mesh_pt<time_mesh_type> const & y) {
