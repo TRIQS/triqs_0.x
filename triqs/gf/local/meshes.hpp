@@ -147,6 +147,18 @@ namespace triqs { namespace gf { namespace meshes {
 
 }}
 
+
+
+
+ struct BZ_mesh{
+
+  };
+
+
+
+
+
+
 #endif
 
 
