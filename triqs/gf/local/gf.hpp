@@ -65,7 +65,11 @@ namespace triqs { namespace gf { namespace local {
    typedef tqa::mini_vector<size_t,2> shape_type;
    shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);} 
 
-   protected:
+   typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
+   typedef gf_view<MeshType> view_type;
+   typedef gf<MeshType>      non_view_type;
+
+  protected:
    mesh_type mymesh;
    data_type data;
    tail_type tail;
@@ -96,10 +100,9 @@ namespace triqs { namespace gf { namespace local {
    void operator = (gf_impl<MeshType,!IsView> const & rhs) { mymesh = rhs.mymesh; data = rhs.data; tail = rhs.tail; }
    template<typename RHS> void operator = (RHS const & rhs) { // the general version  
     mymesh = rhs.mesh(); 
-    BOOST_AUTO(r0 , rhs(mesh()[0])); // first point computed first to compute the shape of the result... 
-    tqa::resize_or_check_if_view( data, tqa::make_shape(r0.shape()[0],r0.shape()[1],mymesh.size()) );
-    (*this)[0] = r0;
-    for (size_t u=1; u<mesh().size(); ++u)  (*this)[u] = rhs(mesh()[u]); 
+    shape_type sh = rhs.shape();
+    tqa::resize_or_check_if_view( data, tqa::make_shape(sh[0],sh[1],mymesh.size()) );
+    for (size_t u=0; u<mesh().size(); ++u)  (*this)[u] = rhs(mesh()[u]); 
     fill_tail1(mpl::bool_<has_tail>(), rhs); //tail = rhs (domains::infty());  
    }
 
@@ -132,6 +135,15 @@ namespace triqs { namespace gf { namespace local {
    mv_type       operator() (arg0_type const & i)       { return this->mesh().interpolate(*this,i);}
    const_mv_type operator() (arg0_type const & i) const { return this->mesh().interpolate(*this,i);}
 
+   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
+
+   /// Slice in orbital space
+   const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
+
+   /// Slice of the mesh : to be implemented
+   view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
+   view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
+
    /// Save the Green function in i omega_n (as 2 columns).
    void save(std::string file,  bool accumulate=false) const {}
 
@@ -140,14 +152,14 @@ namespace triqs { namespace gf { namespace local {
 
    /// 
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
-    BOOST_AUTO( gr , fg.create_group(subgroup_name) );
+    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
     h5_write(gr,"data",g.data);
     h5_write(gr,"tail",g.tail);
     //h5_write(gr,"mesh",g.mymesh);
    }
 
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl & g){
-    BOOST_AUTO( gr,  fg.open_group(subgroup_name) );
+    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
     h5_read(gr,"data",g.data);
     h5_read(gr,"tail",g.tail);
     //h5_read(gr,"mesh",g.mymesh);
@@ -163,133 +175,43 @@ namespace triqs { namespace gf { namespace local {
     }
 
    /// print
-   friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<"gf_view";}
+   friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
+   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
  };
 
  // ---------------------------------------------------------------------------------
  ///The regular class of GF
- template<typename MeshType> class gf :  public gf_impl<MeshType,false> {
+ template<typename MeshType> class gf : public gf_impl<MeshType,false> {
   typedef gf_impl<MeshType,false> B;
   public : 
   gf():B() {} 
-  gf(size_t N1, size_t N2, MeshType const & m, int tail_order_max = 3):B(N1,N2,m,tail_order_max) {}
 
   gf(gf const & g): B(g){}
   gf(gf_view<MeshType> const & g): B(g){} 
   template<typename GfType> gf(GfType const & x): B() { *this = x;} 
 
+  gf(size_t N1, size_t N2, MeshType const & m, int tail_order_max = 3) : B(N1,N2,m,tail_order_max) {}
+
   using B::operator=;// or the default is = synthetized...
-
-  typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
-  typedef gf_view<MeshType> view_type;
-  typedef gf<MeshType>      non_view_type;
-
-  using B::operator();
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
-
-  /// Slice in orbital space
-  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
-
-  /// Slice of the mesh
-  view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
-  view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
  };
 
  // ---------------------------------------------------------------------------------
  ///The View class of GF
- template<typename MeshType> class gf_view :  public gf_impl<MeshType,true> {
+ template<typename MeshType> class gf_view : public gf_impl<MeshType,true> {
   typedef gf_impl<MeshType,true> B;
   public :
-
-  gf_view(gf_view const & g): B(g){}
-  gf_view(gf<MeshType> const & g): B(g){}
-
-  gf_view (gf_view const & m,      range R1, range R2) : B(m,R1,R2){} // slice constructor 
-  gf_view (gf<MeshType> const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
+  template<bool V> gf_view(gf_impl<MeshType,V> const & g): B(g){}
+  template<bool V> gf_view(gf_impl<MeshType,V> const & g, range R1, range R2) : B(g,R1,R2){} // slice constructor 
 
   using B::operator=;// or the default is = synthetized...
-
-  friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
-
-  typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
-  typedef gf_view<MeshType> view_type;
-  typedef gf<MeshType>      non_view_type;
-
-  using B::operator();
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
-
-  /// Slice in orbital space
-  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
-
-  /// Slice of the mesh : to be implemented
-  view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
-  view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
-
  };
 
  // -------------------------------   Expression template for gf  --------------------------------------------------
 
- // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
- //template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, tup::is_in_ZRC<T> > {};
- struct gf_scalar_grammar : proto::and_< proto::terminal<proto::_>, proto::if_<is_scalar_or_element<proto::_value>()> > {}; 
-
- struct gf_leaf_grammar: proto::and_< proto::terminal<proto::_>, proto::if_<LocalGf<proto::_value>()> > {}; 
-
- struct gf_grammar : // the grammar of gf
-  proto::or_< gf_scalar_grammar , gf_leaf_grammar
-  , proto::plus      <gf_grammar,gf_grammar>
-  , proto::minus     <gf_grammar,gf_grammar>
-  , proto::multiplies<gf_grammar,gf_grammar>
-  , proto::divides   <gf_grammar,gf_grammar>
-  , proto::negate    <gf_grammar >
-  > {};
-
- struct gf_eval_t : // evaluation of an expression  
-  proto::or_<
-  proto::when<gf_scalar_grammar, proto::_value>
-  ,proto::when<gf_leaf_grammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
-  ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<gf_eval_t > >
-  > {};
-
- //------ computation of the mesh of the expression ----
-
- struct gf_no_mesh{}; // absence of mesh (for scalar)
-
- struct gf_combine_mesh_t { // a transform that combine the mesh of a node with the State
-  BOOST_PROTO_CALLABLE();
-  template<typename Sig> struct result;
-  template<typename This, typename X, typename S> struct result<This(X,S)> {
-   typedef typename tup::remove_const_and_ref<X>::type::mesh_type type;
-   typedef typename tup::remove_const_and_ref<S>::type S2;
-   static_assert((mpl::or_<boost::is_same<S2,gf_no_mesh>, boost::is_same<type,S2> >::value), "FATAL : two meshs of different type mixed in an expression");   
-  };
-  template<typename X> typename X::mesh_type operator ()(X const & x, gf_no_mesh ) const { return x.mesh();}
-  template<typename X, typename M> typename X::mesh_type operator ()(X const & x, M const & m ) const { 
-   if (!(x.mesh() == m)) TRIQS_RUNTIME_ERROR << "Domain mismatch in expressions"; // run time check 
-   return x.mesh();
-  }
- };
-
- struct gf_mesh_t : // the transform that computes the mesh recursively using a fold and a State initialized to gf_no_mesh
-  proto::or_<
-  proto::when < gf_scalar_grammar, proto::_state >
-  ,proto::when< gf_leaf_grammar, gf_combine_mesh_t (proto::_value, proto::_state) >
-  ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, gf_mesh_t >() >
-  > {};
-
- // grammar and domain and proto expression
- template <typename Expr> struct gf_expr;
- typedef tup::domain_with_copy<gf_grammar,gf_expr> gf_expr_domain;
-
- template<typename Expr> struct gf_expr : proto::extends<Expr, gf_expr<Expr>, gf_expr_domain> {
-  gf_expr( Expr const & expr = Expr() ) : proto::extends<Expr, gf_expr<Expr>, gf_expr_domain> (expr) {}
-  typedef typename boost::result_of<gf_mesh_t(Expr,gf_no_mesh) >::type mesh_type;
-  mesh_type mesh() const {return gf_mesh_t()(*this,gf_no_mesh());} 
-  template<typename T> typename boost::result_of<gf_eval_t(Expr,bf::vector<T>)>::type 
-   operator()(T const & x) const {return gf_eval_t()(*this,bf::make_vector(x));}
-  friend std::ostream &operator <<(std::ostream &sout, gf_expr<Expr> const &expr) { return tup::print_algebra(sout,expr);} 
- };
-
- BOOST_PROTO_DEFINE_OPERATORS(LocalGf, gf_expr_domain);
+ template< typename T> struct scalar_identification_trait : is_scalar_or_element<T> {}; // is_scalar_or_element defined in tail
+ template< typename T> struct gf_identification_trait : LocalGf<T> {};
+ static const int gf_arity=1;
+ // this include in intentionnally IN the namespace
+#include "../gf_proto.hpp"
 }}}
 #endif

@@ -157,11 +157,15 @@ PureFunctionOnDomain
 +----------------------------------------------+---------------------------------------------------------+
 | Elements                                     | Comment                                                 |
 +==============================================+=========================================================+
-| * domain_type                                | Type of the Domain represented                          |
+| domain_type                                  | Type of the Domain represented                          |
 +----------------------------------------------+---------------------------------------------------------+
-| * domain_type const & domain() const         | Returns the domain                                      |
+| domain_type const & domain() const           | Returns the domain                                      |
 +----------------------------------------------+---------------------------------------------------------+
-| * operator (domain_type::element_type) const | Calling for all elements of the Domain (including infty |
+| shape_type                                   | result of shape (mini_vector<size_t,2>)                 |
++----------------------------------------------+---------------------------------------------------------+
+| shape_type shape() const                     | Shape of the tail                                       |
++----------------------------------------------+---------------------------------------------------------+
+| operator (domain_type::element_type) const   | Calling for all elements of the Domain (including infty |
 |                                              | if it is in the domain...                               |
 +----------------------------------------------+---------------------------------------------------------+
 

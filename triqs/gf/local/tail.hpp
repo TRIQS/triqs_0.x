@@ -163,13 +163,10 @@ namespace triqs { namespace gf { namespace local {
  ///The View class of GF
  class tail_view : public tail_impl <true> { 
   typedef tail_impl <true>  B;
-  tail_view(tail_view const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
-  tail_view(tail const & m,      range R1, range R2); // defined later, after definition of tail 
-
-  friend class tail;
   public :
-  tail_view(tail_view const & g): B(g){}
-  tail_view(tail const & g); // defined later
+
+  template<bool V> tail_view(tail_impl<V> const & t): B(t){}
+  template<bool V> tail_view(tail_impl<V> const & t, range R1, range R2) : B(t,R1,R2){}
 
   using B::operator=; // import operator = from impl. class or the default = is synthetized and is the only one
   using B::operator(); // import all previously defined operator() for overloading
@@ -187,10 +184,12 @@ namespace triqs { namespace gf { namespace local {
   typedef tail_impl <false>  B;
   public : 
   tail():B() {} 
-  tail(size_t N1, size_t N2,  int order_min, int order_max):B(N1,N2,order_min,order_max) {} 
+  
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){} 
   template<typename GfType> tail(GfType const & x): B() { *this = x;} // to maintain value semantics
+  
+  tail(size_t N1, size_t N2,  int order_min, int order_max):B(N1,N2,order_min,order_max) {} 
 
   using B::operator=;
   using B::operator();
@@ -207,10 +206,6 @@ namespace triqs { namespace gf { namespace local {
 
  };
  
- // definitions that could not be done above (need the def of tail). 
- tail_view::tail_view(tail const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
- tail_view::tail_view(tail const & g): B(g){}
-
  // -------------------------------   Expression template for tail and view -----------------------
 
  // -----------  tail special multiplication --------------------
