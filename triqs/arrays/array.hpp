@@ -30,41 +30,41 @@ namespace triqs { namespace arrays {
 
  template <typename ValueType, int Rank, typename Opt= Option::Default > class array_view;
  template <typename ValueType, int Rank, typename Opt= Option::Default > class array;
- 
+
  template <typename ValueType, int Rank, typename Opt>
   class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray),  
   public details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view >{
    static_assert( Rank>0, " Rank must be >0");
-   public :   
-    typedef details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > impl_type;
-    typedef typename impl_type::indexmap_type indexmap_type;
-    typedef array_view<ValueType,Rank,Opt> view_type;
-    typedef array<ValueType,Rank,Opt> non_view_type;
-    typedef void has_view_type_tag;
+   public:   
+   typedef details::indexmap_storage_pair < typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > impl_type;
+   typedef typename impl_type::indexmap_type indexmap_type;
+   typedef array_view<ValueType,Rank,Opt> view_type;
+   typedef array<ValueType,Rank,Opt> non_view_type;
+   typedef void has_view_type_tag;
 
-    /// Build from an IndexMap and a storage 
-    template<typename S> array_view (indexmap_type const & Ind,S const & Mem): impl_type(Ind, Mem) {}
+   /// Build from an IndexMap and a storage 
+   template<typename S> array_view (indexmap_type const & Ind,S const & Mem): impl_type(Ind, Mem) {}
 
-    /// Copy constructor
-    array_view(array_view const & X): impl_type(X.indexmap(),X.storage()) {}
+   /// Copy constructor
+   array_view(array_view const & X): impl_type(X.indexmap(),X.storage()) {}
 
-    /// Build from anything that has an indexmap and a storage compatible with this class
-    template<typename ISP> array_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
+   /// Build from anything that has an indexmap and a storage compatible with this class
+   template<typename ISP> array_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-    /**
+   /**
     * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
     */
    explicit array_view (PyObject * X); // implemented in python/numpy_interface : include before use
 #endif
 
-    /// Assignment. The size of the array MUST match exactly. 
-    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
+   /// Assignment. The size of the array MUST match exactly. 
+   template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
-    ///
-    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
+   ///
+   array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
 
-    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
+   TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
 
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::array_view > { typedef array_view<V,R,Opt> type; };
@@ -85,14 +85,14 @@ namespace triqs { namespace arrays {
    array():impl_type(indexmap_type(),storage_type()) {}
 
    /// From a domain
-   array( typename indexmap_type::domain_type const & dom):impl_type(indexmap_type(dom)){}
+   explicit array( typename indexmap_type::domain_type const & dom):impl_type(indexmap_type(dom)){}
 
 #ifdef TRIQS_DOXYGEN
    /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
    array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
-   array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_)): \
+   explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_)): \
    impl_type(indexmap_type(mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_)))) {\
     static_assert(impl_type::rank-1==NN,"array : incorrect number of variables in constructor");}
    BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
@@ -139,8 +139,8 @@ namespace triqs { namespace arrays {
      triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
-  
-    TRIQS_DEFINE_COMPOUND_OPERATORS(array);
+
+   TRIQS_DEFINE_COMPOUND_OPERATORS(array);
 
   };//array class
 }}//namespace triqs::arrays
