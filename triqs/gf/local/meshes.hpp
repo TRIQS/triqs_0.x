@@ -62,29 +62,6 @@ namespace triqs { namespace gf { namespace meshes {
 
  struct default_tag{};
 
-/* class tail{
-  int omin,omax;
-
-  public:
-  typedef size_t index_type;
-  typedef domains::tail domain_type;
-  // typedef std::complex<double> gf_result_type;
-  typedef tqa::range range_type;
-  typedef bool slice_arg_type;
-  tail(int OrderMin=-1, int OrderMax = 7) : omin(OrderMin), omax(OrderMax) {}
-
-  static const bool has_tail = false;
-  static const bool mesh_tail = false;
-
-  domain_type domain() const { return domain_type();}
-  size_t size() const{ int r = omax - omin +1; assert(r>=0); return r;}
-  mesh_pt<tail> operator[](index_type i) const { return make_mesh_pt(*this,i);}
-  domain_type::embedded_point_type embed(index_type n) const {return omin + int(n);}
-
-  int order_min() const {return omin;}
-  int order_max() const {return omax;}
-  };
-*/
  //--------------------------------------------------------
 
  struct matsubara_freq {
@@ -96,10 +73,7 @@ namespace triqs { namespace gf { namespace meshes {
   typedef arrays::range slice_arg_type;
 
   matsubara_freq (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): 
-  // mesh_tail(), 
    _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
-
-  //tail mesh_tail;
 
   domain_type const & domain() const { return _dom;}
   size_t size() const{ return n_max_;}

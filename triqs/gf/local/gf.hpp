@@ -56,15 +56,14 @@ namespace triqs { namespace gf { namespace local {
    typedef typename tail_type_from_mesh_type<mesh_type>::type                     tail_non_view_type; 
    typedef typename tail_non_view_type::view_type                                 tail_view_type; 
    typedef typename mpl::if_c<IsView, tail_view_type, tail_non_view_type>::type   tail_type;
-
-   typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
-   typedef gf_view<MeshType> view_type;
-   typedef gf<MeshType>      non_view_type;
-   
+  
    mesh_type const & mesh() const { return mymesh;}
    domain_type const & domain() const { return mymesh.domain();}
    //data_view_type data_view()             { return data;} 
    //const data_view_type data_view() const { return data;}
+
+   typedef tqa::mini_vector<size_t,2> shape_type;
+   shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);} 
 
    protected:
    mesh_type mymesh;
@@ -87,6 +86,10 @@ namespace triqs { namespace gf { namespace local {
      mymesh(m.mesh().slice(arg)),data(m.data),tail(m.tail){static_assert(IsView, "Internal Error");}
 
    friend class gf_impl<MeshType,!IsView>;
+
+   // access to the data . Beware, we view it as a *matrix* NOT an array...
+   tqa::matrix_view <value_type, storage_order> operator[](size_t u) { return data(range(),range(),u);}
+
    public:
    
    void operator = (gf_impl const & rhs) { mymesh = rhs.mymesh; data = rhs.data; tail = rhs.tail; }// for clarity, would be synthetized anyway
@@ -95,16 +98,15 @@ namespace triqs { namespace gf { namespace local {
     mymesh = rhs.mesh(); 
     BOOST_AUTO(r0 , rhs(mesh()[0])); // first point computed first to compute the shape of the result... 
     tqa::resize_or_check_if_view( data, tqa::make_shape(r0.shape()[0],r0.shape()[1],mymesh.size()) );
-    data(range(),range(),0) = r0;
-    for (size_t u=1; u<mesh().size(); ++u) data(range(),range(),u) = rhs(mesh()[u]); 
-     fill_tail1(mpl::bool_<has_tail>(), rhs); //tail = rhs (domains::infty());  
+    (*this)[0] = r0;
+    for (size_t u=1; u<mesh().size(); ++u)  (*this)[u] = rhs(mesh()[u]); 
+    fill_tail1(mpl::bool_<has_tail>(), rhs); //tail = rhs (domains::infty());  
    }
 
    TRIQS_NVL_HAS_AUTO_ASSIGN(); 
    template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { // mesh is invariant in this case...
-    for (size_t u=0; u<x.mesh().size(); ++u)  { x.data(range(),range(),u) = f(x.mesh()[u]); }
+    for (size_t u=0; u<x.mesh().size(); ++u)  { x[u] = f(x.mesh()[u]); }
     fill_tail(mpl::bool_<gf_impl::has_tail>(), x.tail, f); 
-    //x.tail =  f (TailType(x.data.shape()[0], x.data.shape()[1],x.mesh().mesh_tail ));
     // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on infty, 
     // it uses the fact that tail_non_view_type can be caster into domains::infty (See below).
    }
@@ -112,9 +114,7 @@ namespace triqs { namespace gf { namespace local {
    private : // impl detail. We do not want that f or rhs is called when there is no tail...
    // using this overload, we guarantee that the call of f/rhs will not be *compiled* when not needed... 
    template<typename RHS> static void fill_tail ( mpl::false_, tail_type & t, RHS const & rhs) {} 
-   template<typename RHS> static void fill_tail ( mpl::true_,  tail_type & t, RHS const & rhs) { 
-    t = rhs(tail_non_view_type(t.shape()[0], t.shape()[1],-1,-1+t.size()));// f( omega)
-   } 
+   template<typename RHS> static void fill_tail ( mpl::true_,  tail_type & t, RHS const & rhs) {t = rhs( tail::omega(t.shape(),t.size()));} 
    template<typename RHS> void fill_tail1 ( mpl::false_, RHS const & rhs) {} 
    template<typename RHS> void fill_tail1 ( mpl::true_,  RHS const & rhs) { this->tail = rhs (domains::infty()); }
 
@@ -132,56 +132,99 @@ namespace triqs { namespace gf { namespace local {
    mv_type       operator() (arg0_type const & i)       { return this->mesh().interpolate(*this,i);}
    const_mv_type operator() (arg0_type const & i) const { return this->mesh().interpolate(*this,i);}
 
-   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
-
-   /// Slice in orbital space
-   const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
-
-   /// Slice of the mesh
-   view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
-   view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
-
    /// Save the Green function in i omega_n (as 2 columns).
    void save(std::string file,  bool accumulate=false) const {}
 
    /// Load the GF
    void load(std::string file){}
 
-   /// HDF5 saving .... // shall we use boost::file_system for paths ???
-   // NOT OK on gcc since CommonFG is abstract... Grrr....
-   //friend void h5_write( H5::CommonFG file, std::string path, mv_fnt_on_mesh const & g) {} 
-   //friend void h5_read( H5::CommonFG file, std::string path, mv_fnt_on_mesh & g) {} // exceptions will propagate from the array read/write... 
+   /// 
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
+    BOOST_AUTO( gr , fg.create_group(subgroup_name) );
+    h5_write(gr,"data",g.data);
+    h5_write(gr,"tail",g.tail);
+    //h5_write(gr,"mesh",g.mymesh);
+   }
 
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl & g){
+    BOOST_AUTO( gr,  fg.open_group(subgroup_name) );
+    h5_read(gr,"data",g.data);
+    h5_read(gr,"tail",g.tail);
+    //h5_read(gr,"mesh",g.mymesh);
+   }
+
+   //  BOOST Serialization
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("data",data);
+     ar & boost::serialization::make_nvp("tail",tail);
+     ar & boost::serialization::make_nvp("mesh",mymesh);
+    }
+
+   /// print
    friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<"gf_view";}
  };
 
  // ---------------------------------------------------------------------------------
  ///The regular class of GF
  template<typename MeshType> class gf :  public gf_impl<MeshType,false> {
-  typedef gf_impl<MeshType,false>  B;
+  typedef gf_impl<MeshType,false> B;
   public : 
   gf():B() {} 
-  gf(size_t N1, size_t N2, MeshType const & m, int tail_order_max = 5):B(N1,N2,m,tail_order_max) {}
+  gf(size_t N1, size_t N2, MeshType const & m, int tail_order_max = 3):B(N1,N2,m,tail_order_max) {}
+
   gf(gf const & g): B(g){}
   gf(gf_view<MeshType> const & g): B(g){} 
-  template<typename GfType> gf(GfType const & x): B() { *this = x;} // to maintain value semantics
+  template<typename GfType> gf(GfType const & x): B() { *this = x;} 
+
   using B::operator=;// or the default is = synthetized...
+
+  typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
+  typedef gf_view<MeshType> view_type;
+  typedef gf<MeshType>      non_view_type;
+
+  using B::operator();
+  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
+
+  /// Slice in orbital space
+  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
+
+  /// Slice of the mesh
+  view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
+  view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
  };
 
  // ---------------------------------------------------------------------------------
  ///The View class of GF
  template<typename MeshType> class gf_view :  public gf_impl<MeshType,true> {
-  typedef gf_impl<MeshType,true>  B;
-  protected:
-  template<bool V> gf_view (gf_impl<MeshType,V> const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
-  friend class gf_impl<MeshType,true>; friend class gf_impl<MeshType,false>; // to call the constructor...
+  typedef gf_impl<MeshType,true> B;
   public :
+
   gf_view(gf_view const & g): B(g){}
   gf_view(gf<MeshType> const & g): B(g){}
-  gf_view(gf_impl<MeshType,true> const & g): B(g){}
-  gf_view(gf_impl<MeshType,false> const & g): B(g){}
+
+  gf_view (gf_view const & m,      range R1, range R2) : B(m,R1,R2){} // slice constructor 
+  gf_view (gf<MeshType> const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
+
+  using B::operator=;// or the default is = synthetized...
 
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_view const & x) { return out<<"gf_view";}
+
+  typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
+  typedef gf_view<MeshType> view_type;
+  typedef gf<MeshType>      non_view_type;
+
+  using B::operator();
+  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
+
+  /// Slice in orbital space
+  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
+
+  /// Slice of the mesh : to be implemented
+  view_type       slice_mesh(typename MeshType::slice_arg_type arg)       { return view_type (*this, arg);}
+  view_type const slice_mesh(typename MeshType::slice_arg_type arg) const { return view_type (*this, arg);}
+
  };
 
  // -------------------------------   Expression template for gf  --------------------------------------------------

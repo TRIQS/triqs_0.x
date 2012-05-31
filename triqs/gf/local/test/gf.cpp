@@ -46,19 +46,17 @@ int main() {
 
  std::cout  <<"-------------lazy assign ------------------"<<std::endl;
  
-// tqa::matrix<double> Id; Id() = 1;
- //Gv(om_) = (om_ + 2.3);
- Gv(om_) = (om_ + 2.3);
-// G(om_) = (2.0 + om_ - 2.3);
-//G(om_) = 1.0/(om_ + 2.3);
- //G(om_) = Id* (1/(om_ + 2.3) );
+ Gv(om_) = (0.2 + om_ + 2.1);
  TEST(G(0));
- TEST(G(inf)(0));
+ TEST(G(inf));
 
- //Gv.set_from_function (om_ >> 2.9 + om_ );
- triqs_nvl_auto_assign(Gv,om_ >> 2.9 + om_ );
+ std::cout  <<"-------------lazy assign ------------------"<<std::endl;
+
+ G(om_) = 1/(om_ + 2.3);
+
  TEST(G(0));
- TEST(G(inf)(0));
+ TEST(G(inf));
+ TEST(inverse(G(inf)));
 
  std::cout  <<"-------------------------------------"<<std::endl;
 
@@ -114,5 +112,8 @@ int main() {
  A()=0;
  //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
 
+ // test hdf5 
+ H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );
+ h5_write(file, "g", G);
 #endif
 }

@@ -113,7 +113,7 @@ namespace triqs { namespace gf { namespace local {
     return this->data(range(), range(), n- this->order_min());
    }
 
-   const_mv_type operator() (int n) const { 
+   const_mv_type operator() (int n) const {  
     if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
     if (n<this->order_min())  return mv_type::non_view_type();
     return this->data(range(), range(), n- this->order_min());
@@ -127,10 +127,35 @@ namespace triqs { namespace gf { namespace local {
    /// Load from txt file : doc the format ?
    void load(std::string file){}
 
-   /// HDF5 saving .... // shall we use boost::file_system for paths ???
-   // NOT OK on gcc since CommonFG is abstract... Grrr....
-   //friend void h5_write( H5::CommonFG file, std::string path, mv_fnt_on_mesh const & g) {} 
-   //friend void h5_read( H5::CommonFG file, std::string path, mv_fnt_on_mesh & g) {} // exceptions will propagate from the array read/write... 
+   /// 
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, tail_impl const & t) {
+    BOOST_AUTO( gr , fg.create_group(subgroup_name) );
+    h5_write(gr,"omin",t.omin);
+    h5_write(gr,"omax",t.omax);
+    h5_write(gr,"data",t.data);
+   }
+
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, tail_impl & t){
+    BOOST_AUTO( gr,  fg.open_group(subgroup_name) );
+    h5_read(gr,"omin",t.omin);
+    h5_read(gr,"omax",t.omax);
+    h5_read(gr,"data",t.data);
+   }
+
+   //  BOOST Serialization
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("omin",omin);
+     ar & boost::serialization::make_nvp("omax",omax);
+     ar & boost::serialization::make_nvp("data",data);
+    }
+
+   friend std::ostream & operator << (std::ostream & out, tail_impl const & x) { 
+    out <<" tail/tail_view : Ordermin/max = "<< x.order_min() << "  "<< x.order_max();
+    for (int u =x.order_min();u<= x.order_max(); ++u) out <<"\n ...  Order "<<u << " = " << x(u);
+    return out; 
+   } 
 
  };
 
@@ -139,22 +164,21 @@ namespace triqs { namespace gf { namespace local {
  class tail_view : public tail_impl <true> { 
   typedef tail_impl <true>  B;
   tail_view(tail_view const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
-  friend class tail; //friend class tail_impl;
+  tail_view(tail const & m,      range R1, range R2); // defined later, after definition of tail 
+
+  friend class tail;
   public :
-  template<bool V> tail_view(tail_impl<V> const & g): B(g){}
-  //tail_view(tail const & g): B(g){}
-  //tail_view(tail_view const & g): B(g){}
-  //tail_view(tail const & g): B(g){}
+  tail_view(tail_view const & g): B(g){}
+  tail_view(tail const & g); // defined later
 
   using B::operator=; // import operator = from impl. class or the default = is synthetized and is the only one
   using B::operator(); // import all previously defined operator() for overloading
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view);
+  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
 
   /// Slice in orbital space
   const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
 
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
-  friend std::ostream & operator << (std::ostream & out, tail_view const & x) { return out<<"tail_view";}
  };
 
  // -----------------------------
@@ -170,11 +194,22 @@ namespace triqs { namespace gf { namespace local {
 
   using B::operator=;
   using B::operator();
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view);
+  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
 
   /// Slice in orbital space
   const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
+
+  /// The simplest tail corresponding to  : omega
+  static tail_view omega(size_t N1, size_t N2, size_t size_) { tail t(N1,N2,-1, -1 + int(size_)); t(t.order_min())=1; return t; }
+
+  /// The simplest tail corresponding to  : omega, constructed from a shape for convenience
+  static tail_view omega(tail::shape_type const & sh, size_t size_) { return omega(sh[0],sh[1],size_);}
+
  };
+ 
+ // definitions that could not be done above (need the def of tail). 
+ tail_view::tail_view(tail const & m, range R1, range R2) : B(m,R1,R2){} // slice constructor 
+ tail_view::tail_view(tail const & g): B(g){}
 
  // -------------------------------   Expression template for tail and view -----------------------
 
@@ -214,8 +249,9 @@ namespace triqs { namespace gf { namespace local {
  // -----------  tail special inversion --------------------
 
  template<typename T> struct tail_inv_lazy { // should have the same concept as tail_expr
-  typename const_view_type_if_exists_else_type<T>::type t; 
-  tail_inv_lazy(tail_view const & t_):t(t_){}
+  typedef typename const_view_type_if_exists_else_type<T>::type t_type; 
+  t_type t; 
+  tail_inv_lazy(T const & t_):t(t_){}
 
   int order_min() const { return - t.order_min(); }
   size_t size()   const { return t.size();}
@@ -225,31 +261,30 @@ namespace triqs { namespace gf { namespace local {
   shape_type shape() const {return t.shape();}
 
   struct internal_data { // implementing the pattern LazyPreCompute
-   tail const & t;
+   t_type const & t;
    tail t_inv;
    internal_data( tail_inv_lazy const & Parent): t(Parent.t),
-   t_inv(t.shape(), Parent.order_min(), Parent.order_max()) {
-    // compute the inverse
+   t_inv(t.shape()[0],t.shape()[1] , Parent.order_min(), Parent.order_max()) {
     // b_n = - a_0^{-1} * sum_{p=0}^{n-1} b_p a_{n-p} for n>0
     // b_0 = a_0^{-1}
     // b_min <= p <=b_max ;  a_min <= n-p <= a_max ---> n-a_max  <= p <= n-a_min 
     const int omin = t_inv.order_min(); const int omax = t_inv.order_max();
-    //std::cout<< " t0 "<< t.order_min()<< std::endl;
-    //std::cout<< " t0 "<< t(t.order_min()) << std::endl;
     t_inv(omin) = inverse(t(t.order_min()));
-    for (int n=omin+1; n<=omax;n++) {
-     const int pmin = std::max(omin, n - t.order_max() );
-     const int pmax = std::min(n-1, n - t.order_min() );
-     for (int p=pmin; p<=pmax; p++) t_inv(n) -= t_inv(p)*t(n-p); //n-p >= t_omin --> p <= n-t_omin 
-     t_inv(n) *= t_inv(omin);
+    for (int n=1; n< t_inv.size();n++) {
+     // 0<= n-p < t.size() ---> p <= n, ok  and p > n- t.size() 
+     const int pmin = std::max(0, n - int(t.size()) +1 );
+     for (int p=pmin; p< n ; p++) { t_inv(omin + n) -= t_inv(omin + p)*t(t.order_min() + n-p); }
+     t_inv(omin + n) *= t_inv(omin);
     }
    }
   };
   friend struct internal_data;
   mutable boost::shared_ptr<internal_data> _id;
-  void activate() const { if (!_id) _id= boost::make_shared<internal_data>(*this);}
+  internal_data const & id() const { if (!_id) _id= boost::make_shared<internal_data>(*this); return *_id;}
 
-  mv_dcomplex_type operator ()(int n) const { activate(); return _id->t_inv(n); }
+  mv_dcomplex_type operator ()(int n) const { return id().t_inv(n); }
+
+  friend std::ostream & operator << (std::ostream & out, tail_inv_lazy const & x) { return out <<" tail_inv_lazy";}
  };
 
  // -----------  
@@ -294,6 +329,8 @@ namespace triqs { namespace gf { namespace local {
   proto::or_<
   proto::when<tail_scalar_grammar, tail_eval_scalar_t(proto::_value, proto::_state)>
   ,proto::when<tail_leaf_grammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
+  ,proto::when< proto::multiplies<tail_scalar_grammar,tail_eval_t>, tup::multiplies_t (proto::_value(proto::_left),tail_eval_t(proto::_right)) > 
+  ,proto::when< proto::multiplies<tail_eval_t,tail_scalar_grammar>, tup::multiplies_t (proto::_value(proto::_right),tail_eval_t(proto::_left)) > 
   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<tail_eval_t > >
   > {};
 
@@ -342,7 +379,10 @@ namespace triqs { namespace gf { namespace local {
 
   template<typename T> typename boost::result_of<tail_eval_t(Expr,bf::vector<T>)>::type 
    operator()(T const & x) const {return tail_eval_t()(*this,bf::make_vector(x));}
-  friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) { return tup::print_algebra(sout,expr);} 
+  friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) {
+   //sout <<" tail_expr : Ordermin/max = "<< expr.order_min() << "  "<< expr.order_max();
+   return tup::print_algebra(sout,expr);
+  } 
 
   private : // compute the sahpe and ordermin/max only once... 
   mutable sh_or so_; mutable bool init;
