@@ -35,6 +35,7 @@ Domain
   and does not contain any mesh.
 
 * **Refines** : CopyConstructible, DefaultContructible, EqualComparable, BoostSerializable
+   ?? Equal ??
 
 * **Definition** : 
 

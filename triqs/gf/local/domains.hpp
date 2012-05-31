@@ -30,14 +30,7 @@ namespace triqs { namespace gf {
  namespace domains {
 
   struct infty{}; // the point at infinity
-/*
-  struct tail{
-   typedef int point_type;
-   typedef int embedded_point_type;
-   typedef std::complex<double> gf_result_type;
-   //static const bool has_tail = false;
-  };
-*/
+  
   struct matsubara_freq {
    typedef long                 point_type;
    typedef std::complex<double> embedded_point_type;
