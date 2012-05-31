@@ -103,7 +103,8 @@ namespace triqs { namespace arrays {
      if (lhs.dim1() != dim1()) 
       TRIQS_RUNTIME_ERROR<< "Matmul : +=/-= operator : first dimension mismatch in A*B "<< lhs.dim1()<<" vs "<< dim1(); 
      const_qcache<A_type> Ca(a); const_qcache<B_type> Cb(b);
-     boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), S, lhs);
+     boost::numeric::bindings::blas::gemm(S,Ca(), Cb(), 1.0, lhs);
+     //boost::numeric::bindings::blas::gemm(1.0,Ca(), Cb(), S, lhs); //ERROR
     }
 
     friend std::ostream & operator<<(std::ostream & out, matmul_lazy<A,B> const & x){return out<<x.a<<" * "<<x.b;}
