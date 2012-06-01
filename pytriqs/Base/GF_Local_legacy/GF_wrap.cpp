@@ -84,7 +84,8 @@ BOOST_PYTHON_MODULE(_pytriqs_GF) {
 
   // **********  MeshGF  ******************
 
-  class_<MeshGF, boost::shared_ptr<MeshGF> >("MeshGF", init<Type_GF,Statistic_GF,double,PyObject *>()) 
+  class_<MeshGF, boost::shared_ptr<MeshGF> >("MeshGF", init<Type_GF,Statistic_GF,double,PyObject *>())
+    .def(init<MeshGF, Statistic_GF>())
     .def_readonly("Statistic", &MeshGF::Statistic)
     .def_readonly("TypeGF",  &MeshGF::typeGF)
     .def_readonly("Beta",  &MeshGF::Beta)
