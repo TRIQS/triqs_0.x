@@ -11,13 +11,15 @@ IF (NOT BLITZ_INSTALLED)
  FILE(APPEND ${fff} "cd ${CMAKE_CURRENT_BINARY_DIR}; tar xvzf  blitz_source.tgz >tar.log 2>&1\n" )
  FILE(APPEND ${fff} "export CXX=${CMAKE_CXX_COMPILER}\n")
  FILE(APPEND ${fff} "export CXXFLAGS=\"${CMAKE_CXX_FLAGS}\"\n")
- FILE(APPEND ${fff} "export CXX_IS_GNU=${CMAKE_COMPILER_IS_GNUCXX}\n")
 
- # overruling : using gnu for clang compiler
- string(REGEX MATCH "clang" IS_CLANG ${CMAKE_CXX_COMPILER})
+ # Check for clang compiler
+ execute_process(COMMAND "${CMAKE_CXX_COMPILER}" --version OUTPUT_VARIABLE STR_CLANG)
+ string(REGEX MATCH "clang" IS_CLANG "${STR_CLANG}")
  IF (IS_CLANG)
-  MESSAGE ( "Blitz config : you are using clang, I use the gcc version of blitz...  ")
-  FILE(APPEND ${fff} "export CXX_IS_GNU=1\n")
+   MESSAGE ( "Blitz config: you are using clang, I use the gcc version of blitz...")
+   FILE(APPEND ${fff} "export CXX_IS_GNU=1\n")
+ ELSE (IS_CLANG)
+   FILE(APPEND ${fff} "export CXX_IS_GNU=${CMAKE_COMPILER_IS_GNUCXX}\n")
  ENDIF (IS_CLANG) 
 
  FILE(APPEND ${fff} "cd blitz-0.9_CorrectedbyOPForICCBUG-ClangWarn\n")
