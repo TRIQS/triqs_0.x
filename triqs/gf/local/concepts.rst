@@ -100,7 +100,7 @@ Mesh
 | * mesh_pt<THIS> operator[](index_type) const                          | From an index, return a mesh_pt (Cf below) containing this |
 |                                                                       | a ref to this mesh and the index.                          |
 +-----------------------------------------------------------------------+------------------------------------------------------------+
-| * domain_type::element_type embed(index_type const &) const           | From the index, return the corresponding element_type      |
+| * domain_type::point_type embed(index_type const &) const           | From the index, return the corresponding point_type      |
 +-----------------------------------------------------------------------+------------------------------------------------------------+
 | * size_t size() const                                                 | The length of the array needed to store the mesh           |
 +-----------------------------------------------------------------------+------------------------------------------------------------+

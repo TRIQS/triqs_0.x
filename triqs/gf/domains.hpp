@@ -55,6 +55,14 @@ namespace triqs { namespace gf {
   struct matsubara_legendre{};
   struct real_freq {};
   struct real_time {};
+
+
+struct BZ{
+   typedef tqa::vector<double> point_type; 
+   typedef tqa::vector<double> embedded_point_type;
+ 
+  }; //end struct BZ
+
  }
 
  //#define TRIQS_LOCAL_GF_DOMAIN_LIST (matsubara_freq)(matsubara_time)(matsubara_legendre)(real_freq)(real_time)

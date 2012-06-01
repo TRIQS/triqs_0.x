@@ -12,10 +12,10 @@ std::complex<double> mul2 (std::complex<double> x) { return x*x;}
 
 int main() {
 
- typedef lattice::glattice<meshes::BZ_mesh,local::gf> Gf_type;
+ typedef lattice::glattice<meshes::BZ_mesh,local::gf<meshes::matsubara_freq> > Gf_type;
 
 
  Gf_type G1; // empty
- TEST( G1( 0) ) ;
+ TEST( G1( 0,0) ) ;
 
 }
