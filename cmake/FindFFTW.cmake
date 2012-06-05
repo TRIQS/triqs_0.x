@@ -9,12 +9,12 @@
 # 
 
 SET(TRIAL_PATHS
+ $ENV{FFTW_ROOT}/include
+ ${FFTW_ROOT}/include
  /usr/include
  /usr/local/include
  /opt/local/include
  /sw/include
- $ENV{FFTW_ROOT}/include
- ${FFTW_ROOT}/include
  )
 FIND_PATH(FFTW_INCLUDE_DIR fftw3.h ${TRIAL_PATHS} DOC "Include for FFTW")
 
