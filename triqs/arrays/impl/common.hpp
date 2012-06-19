@@ -53,6 +53,18 @@
 #include "./traits.hpp"
 
 // move to TRIQS level
+#define TYPE_ENABLE_IF(Type,...)    typename boost::enable_if < __VA_ARGS__ , Type >::type
+#define TYPE_ENABLE_IFC(Type,...)   typename boost::enable_if < __VA_ARGS__ , Type >::type
+#define TYPE_DISABLE_IF(Type,...)   typename boost::disable_if< __VA_ARGS__ , Type >::type
+#define TYPE_DISABLE_IFC(Type,...)  typename boost::disable_if< __VA_ARGS__ , Type >::type
+
+#define ENABLE_IF(...)    typename boost::enable_if < __VA_ARGS__ , void >::type
+#define ENABLE_IFC(...)   typename boost::enable_if < __VA_ARGS__ , void >::type
+#define DISABLE_IF(...)   typename boost::disable_if< __VA_ARGS__ , void >::type
+#define DISABLE_IFC(...)  typename boost::disable_if< __VA_ARGS__ , void >::type
+
+
+/*
 #define TYPE_ENABLE_IF(Cond, Type)  typename boost::enable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
 #define TYPE_ENABLE_IFC(Cond, Type)  typename boost::enable_if_c< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
 #define TYPE_DISABLE_IF(Cond, Type)  typename boost::disable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
@@ -62,6 +74,7 @@
 #define ENABLE_IFC(Cond)          TYPE_ENABLE_IFC(Cond,void)
 #define DISABLE_IF(Cond, Type)    TYPE_DISABLE_IF(Cond,void)
 #define DISABLE_IFC(Cond, Type)   TYPE_DISABLE_IFC(Cond,void)
+*/
 
 // Use Cblas
 #define BOOST_NUMERIC_BINDINGS_BLAS_CBLAS 

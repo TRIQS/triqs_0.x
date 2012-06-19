@@ -85,11 +85,11 @@ namespace triqs { namespace arrays { namespace h5 {
 
  // the pointer on the start of data
  template <typename ArrayType > 
-  TYPE_DISABLE_IF ( (boost::is_complex<typename ArrayType::value_type>), void * )
+  TYPE_DISABLE_IF ( void *, boost::is_complex<typename ArrayType::value_type> )
   data ( ArrayType const & A) { return &(A.storage()[0]);}
 
  template <typename ArrayType > 
-  TYPE_ENABLE_IF ( (boost::is_complex<typename ArrayType::value_type>), void * )
+  TYPE_ENABLE_IF ( void *, boost::is_complex<typename ArrayType::value_type> )
   data ( ArrayType const & A) {
    typedef typename ArrayType::value_type::value_type T; 
    std::complex<T> * p =  &(A.storage()[0]);
@@ -135,10 +135,10 @@ namespace triqs { namespace arrays { namespace h5 {
 
  /********************   resize or check the size ****************************************************/
 
- template <typename A> ENABLE_IF((is_amv_value_class<A>)) 
+ template <typename A> ENABLE_IF(is_amv_value_class<A>) 
   resize_or_check ( A & a, mini_vector<size_t,A::rank> const & dimsf ) { a.resize( indexmaps::cuboid_domain<A::rank>( dimsf)); }
 
- template <typename A> ENABLE_IF((is_amv_view_class<A>)) 
+ template <typename A> ENABLE_IF(is_amv_view_class<A>) 
   resize_or_check ( A const & a, mini_vector<size_t,A::rank> const & dimsf ) { 
    if (a.indexmap().domain().lengths() != dimsf) TRIQS_RUNTIME_ERROR<<"Dimension error : the view can not be resized : " 
     << "\n in file  : "<< dimsf.to_string() 

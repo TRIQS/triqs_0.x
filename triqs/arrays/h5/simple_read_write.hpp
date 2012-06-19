@@ -27,7 +27,7 @@ namespace triqs {
 
    /********************* IO for basic types and complex ... *************************************************/
 
-   template <typename S> ENABLE_IF((boost::is_arithmetic<S>)) 
+   template <typename S> ENABLE_IF(boost::is_arithmetic<S>) 
     h5_write (h5::group_or_file f, std::string const & name, S const & A) { 
      try { 
       f.unlink_if_exists(name);
@@ -38,7 +38,7 @@ namespace triqs {
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }
 
-   template <typename S> ENABLE_IF((boost::is_arithmetic<S>)) 
+   template <typename S> ENABLE_IF(boost::is_arithmetic<S>) 
      h5_read (h5::group_or_file f, std::string const & name,  S & A) { 
      if (!f.exists(name))  TRIQS_RUNTIME_ERROR << "no such dataset : "<<name <<" in file ";
      try { 
@@ -172,7 +172,7 @@ namespace triqs {
    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
    */
   template <typename ArrayType>
-   ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
+   ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
    h5_read (h5::group_or_file fg, std::string const & name,  ArrayType & A) { h5::read_array(fg,name, A);} 
 
   /** 
@@ -184,7 +184,7 @@ namespace triqs {
    * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc). 
    */
   template <typename ArrayType>
-   ENABLE_IF((is_amv_value_or_view_class<ArrayType>))
+   ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
    h5_write (h5::group_or_file fg, std::string const & name,  ArrayType const & A) { h5::write_array(fg,name, A);} 
 
  }}

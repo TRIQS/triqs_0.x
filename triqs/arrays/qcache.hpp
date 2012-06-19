@@ -38,7 +38,7 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class const_qcache;
 
- template<typename A> class const_qcache< A, ENABLE_IF((is_amv_value_class<A>)) > : boost::noncopyable { 
+ template<typename A> class const_qcache< A, ENABLE_IF(is_amv_value_class<A>) > : boost::noncopyable { 
    A const & x;
    public:
    const_qcache(A const & x_):x(x_){}
@@ -46,7 +46,7 @@ namespace triqs { namespace arrays {
    exposed_type operator()() const {return x;}
   };
 
- template<typename A> class const_qcache< A, ENABLE_IF((mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >)) > : 
+ template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >) > : 
   boost::noncopyable { 
    typedef matrix<typename A::value_type> X;
    X x;
@@ -56,7 +56,7 @@ namespace triqs { namespace arrays {
    exposed_type operator()() const {return x;}
   };
 
- template<typename A> class const_qcache< A, ENABLE_IF((mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >)) > :
+ template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >) > :
   boost::noncopyable { 
    typedef vector<typename A::value_type> X;
    X x;
@@ -66,7 +66,7 @@ namespace triqs { namespace arrays {
    exposed_type operator()() const {return x;}
   };
 
- template<typename A> class const_qcache< A, ENABLE_IF((is_amv_view_class<A>))> : boost::noncopyable { 
+ template<typename A> class const_qcache< A, ENABLE_IF(is_amv_view_class<A>)> : boost::noncopyable { 
   const bool need_copy;
   A keeper;
   struct internal_data {
@@ -107,7 +107,7 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class reflexive_qcache;
 
- template<typename A> class reflexive_qcache <A, ENABLE_IF((is_amv_value_class<A>))> : boost::noncopyable { 
+ template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_value_class<A>)> : boost::noncopyable { 
   A & x;
   public:
   reflexive_qcache(A & x_):x(x_){}
@@ -115,7 +115,7 @@ namespace triqs { namespace arrays {
   exposed_type operator()() const {return x;}
  };
 
- template<typename A> class reflexive_qcache <A, ENABLE_IF((is_amv_view_class<A>))> : const_qcache<A> {
+ template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_view_class<A>)> : const_qcache<A> {
   typedef const_qcache<A> B;
   public :
   explicit reflexive_qcache(A const & x) : B(x) {} 

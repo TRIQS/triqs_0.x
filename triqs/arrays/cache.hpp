@@ -37,7 +37,7 @@ namespace triqs { namespace arrays {
 
  // The type of A1, and A2 can already imply a copy. Compile time decision.
  template<typename A1, typename A2, typename Enable =void > struct need_copy_ct : mpl::true_{};
- template<typename A1, typename A2> struct need_copy_ct<A1,A2, ENABLE_IF((is_amv_value_or_view_class<A1>))> : 
+ template<typename A1, typename A2> struct need_copy_ct<A1,A2, ENABLE_IF(is_amv_value_or_view_class<A1>)> : 
   mpl::not_<indexmaps::IndexOrder::same_order<typename A1::indexmap_type::index_order_type, typename A2::indexmap_type::index_order_type> >{};
  
  template<typename DataType, typename CacheType> class const_cache {

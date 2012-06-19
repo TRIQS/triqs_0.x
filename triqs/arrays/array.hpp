@@ -105,7 +105,7 @@ namespace triqs { namespace arrays {
    /** 
     * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
     *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
-    *  - a expression : e.g. array<int, IndexOrder::C<2> > A( B+ 2*C);
+    *  - a expression : e.g. array<int> A = B+ 2*C;
     */
    template <typename T> 
     array(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
