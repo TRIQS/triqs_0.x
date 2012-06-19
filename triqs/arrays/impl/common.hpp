@@ -47,7 +47,6 @@
 #include <boost/mpl/char.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/type_traits/is_complex.hpp>
-#include <boost/preprocessor/tuple/enum.hpp>
 #include <triqs/utility/compiler_details.hpp>
 #include "./tags.hpp"
 #include "./traits.hpp"
@@ -62,19 +61,6 @@
 #define ENABLE_IFC(...)   typename boost::enable_if < __VA_ARGS__ , void >::type
 #define DISABLE_IF(...)   typename boost::disable_if< __VA_ARGS__ , void >::type
 #define DISABLE_IFC(...)  typename boost::disable_if< __VA_ARGS__ , void >::type
-
-
-/*
-#define TYPE_ENABLE_IF(Cond, Type)  typename boost::enable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
-#define TYPE_ENABLE_IFC(Cond, Type)  typename boost::enable_if_c< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
-#define TYPE_DISABLE_IF(Cond, Type)  typename boost::disable_if< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
-#define TYPE_DISABLE_IFC(Cond, Type)  typename boost::disable_if_c< BOOST_PP_TUPLE_ENUM(Cond), Type >::type
-
-#define ENABLE_IF(Cond)           TYPE_ENABLE_IF(Cond,void)
-#define ENABLE_IFC(Cond)          TYPE_ENABLE_IFC(Cond,void)
-#define DISABLE_IF(Cond, Type)    TYPE_DISABLE_IF(Cond,void)
-#define DISABLE_IFC(Cond, Type)   TYPE_DISABLE_IFC(Cond,void)
-*/
 
 // Use Cblas
 #define BOOST_NUMERIC_BINDINGS_BLAS_CBLAS 
