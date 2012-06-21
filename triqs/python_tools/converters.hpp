@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_PYTHON_C_CONVERTERS_H 
 #define TRIQS_PYTHON_C_CONVERTERS_H
 #include <list>
@@ -38,143 +36,27 @@
 
 namespace triqs { namespace python_tools { 
 
- inline std::string object_to_string (const boost::python::object & O1) {
-  std::stringstream fs;
-  fs<<std::string(boost::python::extract<std::string>(boost::python::str(O1)));
-  return fs.str();
- }
+ namespace bpy= boost::python;
+ std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
+ std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
+ template<typename T> std::string printer(T const & x) { return triqs::utility::typeid_name(x);}
 
- namespace Py_to_C { 
+ // The general case
+ template<typename C_Type, typename P_type= bpy::object> struct converter { 
 
-  template<typename T> struct convert{ 
-   static bool possible (boost::python::object x) { boost::python::extract<T> ext (x); return ext.check(); }
-   static T invoke(boost::python::object x) { 
-    boost::python::extract<T> ext (x);
-    if (!ext.check())  {
-     TRIQS_RUNTIME_ERROR<<"Object  : "<<object_to_string(x)
-     <<"\n of python type "<< object_to_string(x.attr("__class__").attr("__name__"))
-     <<"\n can not be converted to the C++ type "<<triqs::utility::typeid_name(T()); 
-    }
-     return ext();
-   }
-  };
+  typedef void _not_suitable_for_automatic_conversion_tag; // avoid infinite loop !
 
-  // VECTOR
-  template<typename T> 
-   struct convert<std::vector<T> > { 
-    static bool possible (boost::python::object l) { 
-     try { 
-      boost::python::list L(l); // check it is a list...
-      const size_t N = boost::python::len(L);
-      for (size_t i=0; i<N; ++i) if (!convert<T>::possible(l[i])) throw false;
-      return true;
-     }
-     catch(...) {return false;}
-    }
+  static bool Py2C_is_possible (bpy::object x) { return bpy::extract<C_Type>(x).check();}
 
-    static std::vector<T> invoke(boost::python::object l) { 
-     boost::python::list L(l);
-     const size_t N = boost::python::len(L);
-     std::vector<T> res;
-     for (size_t i=0; i<N; ++i) res.push_back( convert<T>::invoke(l[i]));
-     return res;
-    }
-   };
+  static C_Type Py2C (bpy::object x) { return  bpy::extract<C_Type> (x);}
 
-  // PAIR
-  template<typename T1, typename T2> 
-   struct convert<std::pair<T1,T2> > { 
-
-    static bool possible (boost::python::object l) { 
-     try { 
-      //boost::python::list L(l); // check it is a list...
-      if (boost::python::len(l)!=2) throw false;
-      if (! (convert<T1>::possible(l[0])) && (convert<T2>::possible(l[1])) ) throw false;
-      return true;
-     }
-     catch(...) {return false;}
-    }
-
-    static std::pair<T1,T2> invoke(boost::python::object l) { 
-     boost::python::list L(l);
-     const size_t N = boost::python::len(L);
-     if (N!=2) TRIQS_RUNTIME_ERROR<<"Object"<<object_to_string(l)<<" can not be converted to a std::pair : lengths mismatch "; 
-     return std::make_pair( convert<T1>::invoke(l[0]), convert<T2>::invoke(l[1]) );
-    }
-   };
-
-  // DICT  <-> unordered_map
-  template<typename Key, typename Mapped> 
-   struct convert < boost::unordered_map<Key,Mapped> >  {
-
-    static bool possible (boost::python::object d) { 
-     try { 
-      boost::python::dict dic(d); boost::python::list keys = dic.keys(), vals = dic.values();
-      const size_t N = boost::python::len(dic);
-      for (size_t i=0; i<N; ++i) if ( (!convert<Key>::possible(keys[i])) || (!convert<Mapped>::possible(vals[i]))) throw false;
-      return true;
-     }
-     catch(...) {return false;}
-    }
-
-    static boost::unordered_map<Key,Mapped> invoke (boost::python::object d) { 
-     boost::unordered_map<Key,Mapped> res;
-     boost::python::dict dic(d);
-     boost::python::list keys = dic.keys(), vals = dic.values();
-     const size_t N = boost::python::len(dic);
-     for (size_t i=0; i<N; ++i) {
-      bool ok =  res.insert(std::make_pair(convert<Key>::invoke(keys[i]), convert<Mapped>::invoke(vals[i]))).second;
-      if (!ok) TRIQS_RUNTIME_ERROR<<"This error should never happen !";
-     }
-     return res;
-    }
-   };
- }
-
- namespace C_to_Py { 
-
-  // a nice printing of the object for debug : type
-  template<typename T> std::string printer(T const & x) { return triqs::utility::typeid_name(x);}
-
-  template<typename T> struct convert { 
-   static boost::python::object invoke (T const & x) { 
-    boost::python::object r;
-    try {  r = boost::python::object (x); } 
-    catch(...) { TRIQS_RUNTIME_ERROR<<"The object "<<printer(x)<<" can not be converted to python "; }
-    return r;
-   }
-  };
-
-  template<typename T1, typename T2> 
-   struct convert<std::pair<T1,T2> > { 
-    static boost::python::object invoke (std::pair<T1,T2> const & p) { 
-     return boost::python::make_tuple( convert<T1>::invoke (p.first), convert<T2>::invoke (p.second) );
-    }
-   };
-
-  template<typename T> 
-   struct convert< std::vector<T>  >  { 
-    static  boost::python::object invoke (std::vector<T> const &v) {
-     const size_t N = v.size();
-     boost::python::list L;
-     for (size_t i=0; i<N; ++i) L.append( convert<T>::invoke (v[i])); 
-     return L;
-    }
-   };
-
-
-  template<typename Key, typename Mapped> 
-   struct convert< boost::unordered_map<Key,Mapped> > { 
-    static boost::python::object invoke( boost::unordered_map<Key,Mapped> const & m) {
-     boost::python::dict Res;
-     for (typename boost::unordered_map<Key,Mapped>::const_iterator it = m.begin(); it !=m.end(); ++it) 
-      Res[convert<Key>::invoke (it->first)] = convert<Mapped>::invoke (it->second);
-     return Res;
-    }
-   };
-
- }
-
+  static bpy::object C2Py (C_Type const & x) { 
+   bpy::object r;
+   try {  r = bpy::object (x); } 
+   catch(...) { TRIQS_RUNTIME_ERROR<<"The object "<<printer(x)<<" can not be converted to python "; }
+   return r;
+  }
+ };
 
  //****************** registering the converters in boost python ***********************************8   
 
@@ -187,9 +69,12 @@ namespace triqs { namespace python_tools {
    Py_INCREF(res); return res;
   }  
 
+  template<typename T, typename Void=void> struct is_suitable_for_automatic_conversion : mpl::true_{};
+  template<typename T> struct is_suitable_for_automatic_conversion <T, typename converter<T>::_not_suitable_for_automatic_conversion_tag> : mpl::false_{};
+
   template<class T>
    struct _to_python  { 
-    static PyObject* convert (T const & a) { python::object obj =  C_to_Py::convert<T>::invoke(a); return to_pyo(obj); }  
+    static PyObject* convert (T const & a) { python::object obj =  converter<T>::C2Py(a); return to_pyo(obj); }  
    };
 
   template<class T> 
@@ -198,7 +83,7 @@ namespace triqs { namespace python_tools {
 
     static void* convertible(PyObject* obj_ptr) {
      python::object obj ( python::borrowed (obj_ptr));
-     return (Py_to_C::convert<T>::possible(obj) ? obj_ptr : 0);
+     return (converter<T>::Py2C_is_possible(obj) ? obj_ptr : 0);
     } 
 
     static void construct( PyObject* obj_ptr, python::converter::rvalue_from_python_stage1_data* data) {
@@ -206,18 +91,16 @@ namespace triqs { namespace python_tools {
      storage_t* the_storage = reinterpret_cast<storage_t*>( data );
      void* memory_chunk = the_storage->storage.bytes;
      python::object obj ( python::borrowed (obj_ptr));
-     new (memory_chunk) T(Py_to_C::convert<T>::invoke(obj) );
+     new (memory_chunk) T(converter<T>::Py2C(obj) );
      data->convertible = memory_chunk;
     }
    };
 
   template<class T>  inline void register_converter() {
+   static_assert( is_suitable_for_automatic_conversion<T>::value, "No converter has been found for registering. Did you forget an include ?");
    static bool initialized = false;
    if (initialized) return;
-   //T x; boost::python::extract<T> test(x); 
-   //if (test()) // if you try to use it for T= double e.g. ....
-   //TRIQS_RUNTIME_ERROR<<"triqs::python_tools : the converter for the type "<<triqs::utility::typeid_name(T())<< " is already active !!"; 
-   boost::python::to_python_converter< T, _to_python<T> >(); _from_python_str<T> (); 
+   bpy::to_python_converter< T, _to_python<T> >(); _from_python_str<T> (); 
    initialized = true;
   }
  } // details
