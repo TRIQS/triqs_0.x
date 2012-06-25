@@ -1,6 +1,6 @@
 .. _ipt:
 
-Iterated perturbation theory: an extended solver example
+Iterated perturbation theory: an extended DMFT example
 ========================================================
 
 Introduction
@@ -27,6 +27,23 @@ both functions.
 The success of IPT is caused by the fact that it becomes exact not only in the
 weak coupling limit (by construction), but also reproduces an atomic-limit
 expression for :math:`\Sigma(i\omega_n)` as :math:`U` grows large [#ipt2]_.
+
+Our sample implementation of IPT includes two files: `IPT.py` and
+`Mott.py`.
+
+IPT solver and self-consistency loop
+------------------------------------
+
+The file `IPT.py` implements the weak coupling perturbation theory for a 
+symmetric single-band Anderson model (`Solver` class) and obeys
+:ref:`the solver concept<solver_concept>`. It also runs a DMFT loop with this
+solver and with a self-consistency condition provided from outside.
+
+All Green's functions in the calculations consist of one Matsubara block
+(there is no need for spin indices, since only paramagnetic solutions are sought).
+
+.. literalinclude:: IPT.py
+
 
 Journal references
 ------------------
