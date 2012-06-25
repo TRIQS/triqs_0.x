@@ -48,3 +48,4 @@ described below as well.
    hubbardI
    concept
    dmft/dmft
+   ipt/ipt
