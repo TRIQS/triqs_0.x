@@ -48,7 +48,7 @@ def run(**params):
     global S
     # Create a new IPT solver object
     S = Solver(U=U, beta=beta)
-    # Initialize the bare GF
+    # Initialize the bare GF using the function passed in through Initial_G0 parameter
     Initial_G0(S.G0)
 
     # DMFT iterations
