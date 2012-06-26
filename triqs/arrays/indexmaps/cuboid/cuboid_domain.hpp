@@ -85,7 +85,7 @@ namespace triqs { namespace arrays {
    template<typename A>
     struct print_impl <cuboid_domain<1>,A> {
      static void do_it (std::ostream & out,const cuboid_domain<1> & d, A const & a ) { out<<"[";
-      for (size_t i=0; i< d.lengths()[0]; ++i) out<<(i>0 ? ",": "")<<a(i);//[mini_vector<size_t,1>(i)];
+      for (size_t i=0; i< d.lengths()[0]; ++i) out<<(i>0 ? ",": "")<<a(i);
       out<<"]"; }
     };
 
@@ -95,7 +95,7 @@ namespace triqs { namespace arrays {
       out<<"\n[";
       for (size_t i=0; i< d.lengths()[0]; ++i) {
        out<<(i==0 ? "[" : " [");
-       for (size_t j=0; j< d.lengths()[1]; ++j) out<<(j>0 ? ",": "")<<a(i,j);//[mini_vector<size_t,2>(i,j)];
+       for (size_t j=0; j< d.lengths()[1]; ++j) out<<(j>0 ? ",": "")<<a(i,j);
        out<<"]"<<(i==d.lengths()[0]-1 ? "" :  "\n");
       }
       out<<"]";

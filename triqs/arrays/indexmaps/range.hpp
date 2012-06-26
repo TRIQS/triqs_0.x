@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,39 +20,26 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_RANGE_H
 #define TRIQS_ARRAYS_RANGE_H
-
 #include <ostream>
 
 namespace triqs { namespace arrays { 
 
+ /**
+  */
  class range {
-  int first_, last_, step_;
+  std::ptrdiff_t first_, last_, step_;
   public:
-  enum { from_start = 0, to_end = -1 };
-
-  range( int first__, int last__, int step__=1):first_(first__), last_(last__), step_(step__) {
-   /*    ARRAY_PRECHECK((first_ == from_start) || (last_ == to_end) ||
-	 (first_ < last_) && (step > 0) ||
-	 (first_ > last_) && (step < 0) ||
-	 (first_ == last_), (*this) << " is an invalid range.");
-	 ARRAY_PRECHECK((last_-first_) % step == 0,
-	 (*this) << ": the stride must evenly divide the range");
-	 */  
-  }
-
-  explicit range (int first__) :first_(first__), last_(first__+1), step_(1) {}
 
   range():first_(0),last_(-1),step_(1) {} // i.e. all
-
   range(const range& r):first_(r.first_), last_(r.last_), step_(r.step_) {}
+  range(std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__=1):first_(first__), last_(last__), step_(step__) {}
 
-  int first() const { return first_;}
-  int last () const { return last_;}
-  int step() const { return step_;}
+  std::ptrdiff_t first() const { return first_;}
+  std::ptrdiff_t last () const { return last_;}
+  std::ptrdiff_t step() const { return step_;}
+  size_t size() const { std::ptrdiff_t r = (last_ - first_ + 1)/step_; if (r<0) TRIQS_RUNTIME_ERROR <<" range with negative size"; return size_t(r);}
 
-  int size() const { return (last_ - first_ + 1)/ step_;}
-
-  range operator+(int shift) const { return range(first_ + shift, last_ + shift, step_); }
+  range operator+(std::ptrdiff_t shift) const { return range(first_ + shift, last_ + shift, step_); }
 
   friend inline std::ostream& operator<<(std::ostream& os, const range& range) {
    os << "range(" << range.first() << "," << range.last() << "," << range.step() << ")"; 
@@ -61,9 +47,11 @@ namespace triqs { namespace arrays {
   }
  };
 
+ /**
+  */
  class ellipsis : public range { 
   public :
-   ellipsis( int first__, int last__, int step__=1): range(first__, last__, step__) {}
+   ellipsis( std::ptrdiff_t first__, std::ptrdiff_t last__, std::ptrdiff_t step__=1): range(first__, last__, step__) {}
    ellipsis() : range() {}
  };
 

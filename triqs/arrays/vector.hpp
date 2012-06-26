@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAY_VECTOR_H
 #define TRIQS_ARRAY_VECTOR_H
 #include "indexmaps/cuboid/cuboid_map.hpp"
@@ -33,34 +31,35 @@ namespace triqs { namespace arrays {
  template <typename ValueType, typename Opt = Option::Default> class vector_view;
  template <typename ValueType, typename Opt = Option::Default> class vector;
 
+ // ---------------------- implementation --------------------------------
+
+#define IMPL_TYPE details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
+ 
  /** */
  template <typename ValueType, typename Opt >
-  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(ImmutableVector),
-  public details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
- {
+  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(ImmutableVector), public  IMPL_TYPE { 
   public :
-   typedef details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view > impl_type;
    typedef vector_view<ValueType,Opt> view_type;
    typedef vector<ValueType,Opt> non_view_type;
    typedef void has_view_type_tag;
 
    /// Build from an IndexMap and a storage 
-   template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): impl_type(Ind, Mem) {}
+   template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP>
-    vector_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
+    vector_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit vector_view (PyObject * X): impl_type(X, false, "vector_view "){}
+   explicit vector_view (PyObject * X): IMPL_TYPE(X, false, "vector_view "){}
 
    /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit vector_view (boost::python::object X): impl_type(X.ptr(), false, "vector_view "){}
+   explicit vector_view (boost::python::object X): IMPL_TYPE(X.ptr(), false, "vector_view "){}
 #endif
 
    /// Copy construction
-   vector_view(vector_view const & X): impl_type(X.indexmap(),X.storage()) {}
+   vector_view(vector_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
    /** Assignment.  The size of the array MUST match exactly.  */
    template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
@@ -76,34 +75,31 @@ namespace triqs { namespace arrays {
  template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::vector_view> { typedef vector_view<V,Opt> type; };
 
  template <typename ValueType, typename Opt>
-  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(ImmutableVector),
-  public vector_view<ValueType,Opt>::impl_type
- {
+  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(ImmutableVector), public IMPL_TYPE { 
   public :
-   typedef typename vector_view<ValueType,Opt>::impl_type  impl_type;
-   typedef typename impl_type::value_type value_type;
-   typedef typename impl_type::storage_type storage_type;
-   typedef typename impl_type::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::value_type value_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
+   typedef typename IMPL_TYPE::indexmap_type indexmap_type;
    typedef vector_view<ValueType,Opt> view_type;
    typedef vector<ValueType,Opt> non_view_type;
    typedef void has_view_type_tag;
 
    /// Empty vector.
-   vector():impl_type(indexmap_type(),storage_type()) {}
+   vector():IMPL_TYPE(indexmap_type(),storage_type()) {}
 
    ///
-   vector(size_t dim):impl_type(indexmap_type(mini_vector<size_t,1>(dim))) {}
+   vector(size_t dim):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-   explicit vector (PyObject * X): impl_type(X, true, "vector "){}
+   explicit vector (PyObject * X): IMPL_TYPE(X, true, "vector "){}
 
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-   explicit vector (boost::python::object X): impl_type(X.ptr(), true, "vector "){}
+   explicit vector (boost::python::object X): IMPL_TYPE(X.ptr(), true, "vector "){}
 #endif
 
    /** Makes a true (deep) copy of the data. */
-   vector(const vector & X): impl_type(X.indexmap(),X.storage().clone()) {}
+   vector(const vector & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
    /** 
     * Build a new vector from X.domain() and fill it with by evaluating X. X can be : 
@@ -112,22 +108,22 @@ namespace triqs { namespace arrays {
     */
    template <typename T> 
     vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+     IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
    /** 
     * Resizes the vector. NB : all references to the storage is invalidated.
     * Does not initialize the vector by default: to resize and init, do resize(IND).init()
     */
-   vector & resize (size_t L) { impl_type::resize(typename impl_type::domain_type(mini_vector<size_t,1>(L))); return *this; }
+   vector & resize (size_t L) { IMPL_TYPE::resize(typename IMPL_TYPE::domain_type(mini_vector<size_t,1>(L))); return *this; }
 
    /** 
     * Resizes the vector. NB : all references to the storage is invalidated.
     * Does not initialize the vector by default: to resize and init, do resize(IND).init()
     */
-   vector & resize (const indexmaps::cuboid_domain<impl_type::rank> & l) { impl_type::resize(l); return *this; }
+   vector & resize (const indexmaps::cuboid_domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
    /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
-   vector & operator=(const vector & X) { impl_type::resize_and_clone_data(X); return *this; }
+   vector & operator=(const vector & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
    /** 
     * Assignement resizes the vector.  All references to the storage are therefore invalidated.
@@ -136,17 +132,20 @@ namespace triqs { namespace arrays {
    template<typename RHS> 
     vector & operator=(const RHS & X) { 
      static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
-     impl_type::resize(X.domain());
+     IMPL_TYPE::resize(X.domain());
      triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
 
+   ///
    size_t size() const { return this->shape()[0];} 
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
  };//vector class
 }}//namespace triqs::arrays
+
+#undef IMPL_TYPE
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 namespace boost { namespace numeric { namespace bindings { namespace detail {

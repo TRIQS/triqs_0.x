@@ -68,12 +68,10 @@ namespace triqs { namespace arrays {
       this->indexmap().start_shift()), this->storage());\
   }
 
-#define _IMPL_ISP_TYPE(V,Opt) details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
+#define IMPL_TYPE details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
 
  template <typename ValueType, typename Opt >
-  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix),
-   public  _IMPL_ISP_TYPE(ValueType,Opt) {
-   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
    typedef matrix_view<ValueType,Opt> view_type;
    typedef matrix<ValueType,Opt>      non_view_type;
@@ -81,21 +79,21 @@ namespace triqs { namespace arrays {
    typedef Opt opt_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S> matrix_view (typename impl_type::indexmap_type const & Ind,S const & Mem): impl_type(Ind, Mem) {}
+   template<typename S> matrix_view (typename IMPL_TYPE::indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
-   template<typename ISP> matrix_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
+   template<typename ISP> matrix_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit matrix_view (PyObject * X): impl_type(X, false, "matrix_view "){}
+   explicit matrix_view (PyObject * X): IMPL_TYPE(X, false, "matrix_view "){}
 
    /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit matrix_view (boost::python::object X): impl_type(X.ptr(), false, "matrix_view "){}
+   explicit matrix_view (boost::python::object X): IMPL_TYPE(X.ptr(), false, "matrix_view "){}
 #endif
 
    /// Copy construction
-   matrix_view( matrix_view const & X): impl_type(X.indexmap(),X.storage()) {}
+   matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
    /** Assignement.  The size of the array MUST match exactly.  */
    template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
@@ -109,53 +107,55 @@ namespace triqs { namespace arrays {
  //--------------------------------------------------
 
  template <typename ValueType, typename Opt >
-  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix),
-  public   _IMPL_ISP_TYPE(ValueType,Opt) {
-   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
-   typedef typename impl_type::value_type value_type;
-   typedef typename impl_type::storage_type storage_type;
-   typedef typename impl_type::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::value_type value_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
+   typedef typename IMPL_TYPE::indexmap_type indexmap_type;
    typedef matrix_view<ValueType,Opt> view_type;
    typedef matrix<ValueType,Opt> non_view_type;
    typedef void has_view_type_tag;
    typedef Opt opt_type;
 
    /// Empty matrix.
-   matrix():impl_type(indexmap_type(),storage_type()) {}
+   matrix():IMPL_TYPE(indexmap_type(),storage_type()) {}
 
-   matrix(size_t dim1, size_t dim2) : impl_type(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
+   ///
+   matrix(size_t dim1, size_t dim2) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
+   
+   ///
+   matrix(mini_vector<size_t,2> const & sha) : IMPL_TYPE(indexmap_type(sha)) {}
 
    /** Makes a true (deep) copy of the data. */
-   matrix(const matrix & X): impl_type(X.indexmap(),X.storage().clone()) {}
+   matrix(const matrix & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
    /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
    template <typename T> 
     matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+     IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-   explicit matrix (PyObject * X): impl_type(X, true, "matrix "){}
+   explicit matrix (PyObject * X): IMPL_TYPE(X, true, "matrix "){}
 
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-   explicit matrix (boost::python::object X): impl_type(X.ptr(), true, "matrix "){}
+   explicit matrix (boost::python::object X): IMPL_TYPE(X.ptr(), true, "matrix "){}
 #endif
 
    /** 
     * Resizes the matrix. NB : all references to the storage is invalidated.
     * Does not initialize the matrix by default
     */
-   matrix & resize (size_t n1, size_t n2) { impl_type::resize(typename impl_type::domain_type (mini_vector<size_t,2>(n1,n2))); return *this;}
+   matrix & resize (size_t n1, size_t n2) { IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(n1,n2))); return *this;}
 
    /** 
     * Resizes the matrix. NB : all references to the storage is invalidated.
     * Does not initialize the matrix by default
     */
-   matrix & resize (const indexmaps::cuboid_domain<impl_type::rank> & l) { impl_type::resize(l); return *this; }
+   matrix & resize (const indexmaps::cuboid_domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
    /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
-   matrix & operator=(const matrix & X) { impl_type::resize_and_clone_data(X); return *this; }
+   matrix & operator=(const matrix & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
    /** 
     * Assignement resizes the matrix.  All references to the storage are therefore invalidated.
@@ -164,7 +164,7 @@ namespace triqs { namespace arrays {
    template<typename RHS> 
     matrix & operator=(const RHS & X) { 
      static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
-     impl_type::resize(X.domain());
+     IMPL_TYPE::resize(X.domain());
      triqs_arrays_assign_delegation(*this,X);
      return *this; 
     }
@@ -173,7 +173,7 @@ namespace triqs { namespace arrays {
    _IMPL_MATRIX_COMMON;
   };//matrix class
 #undef _IMPL_MATRIX_COMMON
-#undef _IMPL_ISP_TYPE
+#undef IMPL_TYPE
  namespace details { 
 
   template <typename T, int R> 
