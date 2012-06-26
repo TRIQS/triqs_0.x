@@ -52,10 +52,11 @@ namespace triqs { namespace arrays {
     vector_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit vector_view (PyObject * X); // implemented in python/numpy_interface : include before use
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit vector_view (PyObject * X): impl_type(X, false, "vector_view "){}
+
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit vector_view (boost::python::object X): impl_type(X.ptr(), false, "vector_view "){}
 #endif
 
    /// Copy construction
@@ -94,10 +95,11 @@ namespace triqs { namespace arrays {
    vector(size_t dim):impl_type(indexmap_type(mini_vector<size_t,1>(dim))) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit vector (PyObject * X); // implemented in python/numpy_interface : include before use
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit vector (PyObject * X): impl_type(X, true, "vector "){}
+
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit vector (boost::python::object X): impl_type(X.ptr(), true, "vector "){}
 #endif
 
    /** Makes a true (deep) copy of the data. */

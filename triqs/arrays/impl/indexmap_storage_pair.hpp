@@ -28,6 +28,8 @@
 #include "./assignment.hpp"
 #include "./option.hpp"
 #include "./sliceable_object.hpp"
+#include "triqs/utility/exceptions.hpp"
+#include "triqs/utility/typeid_name.hpp"
 
 #include <boost/type_traits/add_const.hpp>
 #include <boost/shared_ptr.hpp>
@@ -36,6 +38,10 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
+
+#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#include "../python/numpy_extractor.hpp"
+#endif
 
 namespace triqs { namespace arrays { 
 
@@ -82,6 +88,24 @@ namespace triqs { namespace arrays {
 
     /// Shallow copy
     indexmap_storage_pair(const indexmap_storage_pair & X):indexmap_(X.indexmap()),storage_(X.storage_){}
+
+#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+    indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) { 
+     try { 
+      numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, allow_copy);
+      this->indexmap_ = E.indexmap(); this->storage_  = E.storage();
+     }
+     catch(numpy_interface::copy_exception s){// intercept only this one...
+      TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
+       <<"\n   T = "<< triqs::utility::typeid_name(value_type())
+     //  <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
+       <<"\n   Opt = "<< triqs::utility::typeid_name(Opt())
+       <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X) 
+       <<"\nThe error was :\n "<<s.what();
+     }
+    }
+    
+#endif
 
    public:
 

@@ -16,7 +16,7 @@ add_source ( indexmaps/cuboid cuboid_domain.hpp index_order.hpp cuboid_map.hpp c
 add_source ( proto array_algebra.hpp matrix_algebra.hpp )
 add_source ( functional map.hpp fold.hpp  )
 add_source ( linalg a_x_ty.hpp det_and_inverse.hpp matmul.hpp mat_vec_mul.hpp eigenelements.hpp )
-add_source ( python numpy_interface.hpp  converters.hpp)
+add_source ( python numpy_extractor.hpp converters.hpp)
 get_property(ARRAY_SOURCES_LIST GLOBAL PROPERTY ARRAY_SOURCES_LIST)
 
 option (PsPrintCodesArray "Generate a pretty print in ps of the array lib" OFF)

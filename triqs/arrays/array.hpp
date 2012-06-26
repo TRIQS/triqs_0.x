@@ -52,10 +52,11 @@ namespace triqs { namespace arrays {
    template<typename ISP> array_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit array_view (PyObject * X); // implemented in python/numpy_interface : include before use
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit array_view (PyObject * X): impl_type(X, false, "array_view "){} 
+
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit array_view (boost::python::object X): impl_type(X.ptr(), false, "array_view "){} 
 #endif
 
    /// Assignment. The size of the array MUST match exactly. 
@@ -112,10 +113,11 @@ namespace triqs { namespace arrays {
      impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit array (PyObject * X); // implemented in python/numpy_interface : include before use
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit array (PyObject * X): impl_type(X, true, "array "){}
+   
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit array (boost::python::object X): impl_type(X.ptr(), true, "array "){}
 #endif
 
    /** 

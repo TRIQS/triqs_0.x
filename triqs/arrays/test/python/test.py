@@ -27,10 +27,13 @@ a=numpy.array([[1,2],[3,4]]) #,[5,6]])
 
 print a
 
+
 from _testarray import *
 print test1(a)
 
 print print_array_i(a)
+
+
 al=[[1,2],[3,4]] 
 a=numpy.array(al)
 #print_array_f(al)

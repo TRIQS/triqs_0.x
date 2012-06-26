@@ -87,10 +87,11 @@ namespace triqs { namespace arrays {
    template<typename ISP> matrix_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit matrix_view (PyObject * X); // implemented in python/numpy_interface : include before use
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit matrix_view (PyObject * X): impl_type(X, false, "matrix_view "){}
+
+   /// Build from a numpy.array : throws if X is not a numpy.array 
+   explicit matrix_view (boost::python::object X): impl_type(X.ptr(), false, "matrix_view "){}
 #endif
 
    /// Copy construction
@@ -103,7 +104,7 @@ namespace triqs { namespace arrays {
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
    _IMPL_MATRIX_COMMON;
-  };
+   };
 
  //--------------------------------------------------
 
@@ -134,10 +135,11 @@ namespace triqs { namespace arrays {
      impl_type(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit matrix (PyObject * X); // implemented in python/numpy_interface : include before use
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit matrix (PyObject * X): impl_type(X, true, "matrix "){}
+
+   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+   explicit matrix (boost::python::object X): impl_type(X.ptr(), true, "matrix "){}
 #endif
 
    /** 
@@ -181,10 +183,10 @@ namespace triqs { namespace arrays {
   // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
 
   template <typename V, typename RHS> struct __looper { 
-    RHS rhs;
-    __looper(const RHS & rhs_): rhs(rhs_) {}
-    template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
-   };
+   RHS rhs;
+   __looper(const RHS & rhs_): rhs(rhs_) {}
+   template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
+  };
 
   template<typename RHS, typename V, typename Opt> 
    typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type

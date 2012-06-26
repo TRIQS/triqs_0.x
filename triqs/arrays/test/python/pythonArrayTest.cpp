@@ -23,7 +23,7 @@
 #include "./test1.cpp"
 #include "./src/python/converters.hpp"
 
-extern "C" { void initmpi();}; 
+//extern "C" { void initmpi();}; 
 extern "C" { void init_testarray();}; 
 
 #define AS_STRING(X) AS_STRING2(X)
@@ -39,7 +39,7 @@ bool execute_file( const char * filename ) {
 
 int main(int argc, char **argv)
 {
- PyImport_AppendInittab((char*)("mpi"), &initmpi);
+ //PyImport_AppendInittab((char*)("mpi"), &initmpi);
  PyImport_AppendInittab((char*)("_testarray"), &init_testarray);
  Py_Initialize(); // init the interpreter
  triqs::arrays::register_boost_converters();
