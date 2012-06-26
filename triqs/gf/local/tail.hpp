@@ -27,38 +27,41 @@
 #include <triqs/arrays/h5/simple_read_write.hpp>
 #include <triqs/arrays/proto/matrix_algebra.hpp>
 #include <triqs/arrays/proto/array_algebra.hpp>
-#include "../meshes.hpp"
 #include "triqs/utility/complex_ops.hpp"
 #include <triqs/utility/view_tools.hpp>
 
+#include "../meshes.hpp"
 #include "domains.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
- namespace tqa= triqs::arrays; namespace tql= triqs::lazy; namespace mpl= boost::mpl; 
- namespace proto=boost::proto; namespace bf = boost::fusion; namespace tup = triqs::utility::proto; 
- using tqa::range;
-
- class tail;         // the value class
- class tail_view;    // the view class
+ namespace mpl= boost::mpl; 
+ class tail;                            // the value class
+ class tail_view;                       // the view class
  template<typename E>  class tail_expr; // the proto expression of tail
 
- template<typename G> struct LocalTail : mpl::false_{};  // a boolean trait to identify the objects modelling the concept LocalTail
+ template<typename G> struct LocalTail  : mpl::false_{};  // a boolean trait to identify the objects modelling the concept LocalTail
  template<> struct LocalTail<tail >     : mpl::true_{};
  template<> struct LocalTail<tail_view >: mpl::true_{};
  template<typename M> struct LocalTail<tail_expr<M> >: mpl::true_{};
 
  typedef std::complex<double> dcomplex;
- typedef tqa::matrix<std::complex<double> >  mv_dcomplex_type;
 
  // ---------------------- implementation --------------------------------
 
- /// A common implementation class
+ namespace tqa= triqs::arrays; namespace tql= triqs::lazy;  namespace proto=boost::proto; 
+ namespace bf = boost::fusion; namespace tup = triqs::utility::proto; 
+ 
+ /// A common implementation class. Idiom : ValueView
  template<bool IsView> class tail_impl  {  
   public : 
+   typedef void has_view_type_tag; // Idiom : ValueView 
+   typedef tail_view view_type;
+   typedef tail      non_view_type;
+   
    typedef arrays::Option::Fortran storage_order;
-   typedef arrays::array      <dcomplex,3,storage_order>                       data_non_view_type;
-   typedef arrays::array_view <dcomplex,3,storage_order>                       data_view_type;
+   typedef arrays::array      <dcomplex,3,storage_order>                         data_non_view_type;
+   typedef arrays::array_view <dcomplex,3,storage_order>                         data_view_type;
    typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
 
    typedef arrays::matrix_view<dcomplex,       storage_order>  mv_type;
@@ -68,58 +71,53 @@ namespace triqs { namespace gf { namespace local {
    const data_view_type data_view() const { return data;}
 
    int order_min() const {return omin;}
-   int order_max() const {return omax;}
-   size_t size()   const {return std::max (order_max() - order_min() +1, 0); } 
-   //size_t size()   const { assert(data.shape()[2]== std::max (order_max() - order_min() +1, 0)); return data.shape()[2]; } 
+   int order_max() const {return omin + size() -1;}
+   size_t size()   const {return data.shape()[2];} 
 
    typedef tqa::mini_vector<size_t,2> shape_type;
    shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);} 
 
-   typedef void has_view_type_tag; // so that triqs::lazy can put view in the expression trees. 
-   typedef tail_view view_type;
-   typedef tail      non_view_type;
-
   protected:
-   int omin,omax;
+   int omin;
    data_type data;
 
-   tail_impl() {} // all arrays of zero size (empty)
-   tail_impl (size_t N1, size_t N2, int order_min, int order_max) : omin(order_min), omax(order_max) { data.resize(tqa::make_shape(N1,N2,size())); data()=0;}
-   tail_impl(tail_impl          const & x): omin(x.omin), omax(x.omax), data(x.data){}// for clarity, would be synthetized anyway
-   tail_impl(tail_impl<!IsView> const & x): omin(x.omin), omax(x.omax), data(x.data){}
-//   tail_impl(tail_view const & x): omin(x.omin), omax(x.omax), data(x.data){}
-//   tail_impl(tail      const & x): omin(x.omin), omax(x.omax), data(x.data){}
-
-   // orbital slice constructor. Only for view.
-   template<bool V> tail_impl (tail_impl<V> const & x, range r1, range r2) :  
-    omin(x.omin), omax(x.omax), data(x.data(r1,r2, range())){static_assert(IsView, "Internal Error");}
+   tail_impl(): omin(0),data() {} // all arrays of zero size (empty)
+   tail_impl (size_t N1, size_t N2, int order_min, size_t size_) : omin(order_min), data(tqa::make_shape(N1,N2,size_)){data()=0;}
+   tail_impl( data_type const &d, int order_min ): omin(order_min), data(d){}
+   tail_impl(tail_impl          const & x): omin(x.omin), data(x.data){}
+   tail_impl(tail_impl<!IsView> const & x): omin(x.omin), data(x.data){}
 
    friend class tail_impl<!IsView>;
   public:
-   void operator = (tail_impl          const & x) { omin = x.omin; omax = x.omax; data = x.data; }// for clarity, would be synthetized anyway
-   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; omax = x.omax; data = x.data; }
-   template<typename RHS> void operator = (RHS const & rhs) { // the general version for an expression
-    static_assert( LocalTail<RHS>::value, "Internal error");
-    BOOST_AUTO(rhs_shape, rhs.shape()); // in case it would  be long to compute
-    size_t s =(IsView?std::min(size(),rhs.size()):size());
-    tqa::resize_or_check_if_view( data, tqa::make_shape(rhs_shape[0],rhs_shape[1], s));
-    omin = rhs.order_min(); omax = omin + s -1;
-    int i=omin; for (size_t u=0; u<size(); ++u,++i) data(range(),range(),u) = rhs(i); 
-   }
+   
+   void operator = (tail_impl          const & x) { omin = x.omin; data = x.data;}
+   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; data = x.data;}
+   
+   template<typename RHS> ENABLE_IF(LocalTail<RHS>) operator = (RHS const & rhs) { // the general version for an expression
+    // If it is a view, we can not resize, but we can truncate the rhs and we do it
+    // If it is not a view, we resize
+     if (IsView) { if (size()>rhs.size()) TRIQS_RUNTIME_ERROR <<" tail : operator = : rhs is too short !";}
+     else {
+      shape_type rhs_shape =  rhs.shape(); // in case it would  be long to compute
+      tqa::resize_or_check_if_view ( data, tqa::make_shape(rhs_shape[0],rhs_shape[1], rhs.size() )); 
+     }
+     omin = rhs.order_min(); 
+     int i=omin; for (size_t u=0; u<size(); ++u,++i) data(tqa::range(),tqa::range(),u) = rhs(i); 
+    }
 
    mv_type operator() (int n)       { 
     if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ; 
     if (n<this->order_min()) TRIQS_RUNTIME_ERROR<<" n < Min Order. n= "<<n <<", Min Order = "<<order_min() ;
-    return this->data(range(), range(), n- this->order_min());
+    return this->data(tqa::range(), tqa::range(), n- this->order_min());
    }
 
    const_mv_type operator() (int n) const {  
     if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
-    if (n<this->order_min())  return mv_type::non_view_type();
-    return this->data(range(), range(), n- this->order_min());
+    if (n<this->order_min())  { mv_type::non_view_type r(this->shape()); r()=0; return r;} 
+    return this->data(tqa::range(), tqa::range(), n- this->order_min());
    }
 
-   operator domains::infty() const { return domains::infty();}
+   operator domains::freq_infty() const { return domains::freq_infty();}
 
    /// Save in txt file : doc the format  ? ---> prefer serialization or hdf5 !
    void save(std::string file,  bool accumulate=false) const {}
@@ -130,15 +128,15 @@ namespace triqs { namespace gf { namespace local {
    /// 
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, tail_impl const & t) {
     BOOST_AUTO( gr , fg.create_group(subgroup_name) );
+    // Add the attribute
     h5_write(gr,"omin",t.omin);
-    h5_write(gr,"omax",t.omax);
     h5_write(gr,"data",t.data);
    }
 
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, tail_impl & t){
     BOOST_AUTO( gr,  fg.open_group(subgroup_name) );
+    // Check the attribute or throw 
     h5_read(gr,"omin",t.omin);
-    h5_read(gr,"omax",t.omax);
     h5_read(gr,"data",t.data);
    }
 
@@ -147,7 +145,6 @@ namespace triqs { namespace gf { namespace local {
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("omin",omin);
-     ar & boost::serialization::make_nvp("omax",omax);
      ar & boost::serialization::make_nvp("data",data);
     }
 
@@ -164,17 +161,12 @@ namespace triqs { namespace gf { namespace local {
  class tail_view : public tail_impl <true> { 
   typedef tail_impl <true>  B;
   public :
-
   template<bool V> tail_view(tail_impl<V> const & t): B(t){}
-  template<bool V> tail_view(tail_impl<V> const & t, range R1, range R2) : B(t,R1,R2){}
+  tail_view(B::data_type const &d, int order_min): B(d,order_min){}
 
-  using B::operator=; // import operator = from impl. class or the default = is synthetized and is the only one
+  using B::operator=; // import operator = from impl. class or the default = is synthetized 
   using B::operator(); // import all previously defined operator() for overloading
   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
-
-  /// Slice in orbital space
-  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
-
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
  };
 
@@ -184,29 +176,30 @@ namespace triqs { namespace gf { namespace local {
   typedef tail_impl <false>  B;
   public : 
   tail():B() {} 
-  
+  tail(size_t N1, size_t N2,  int order_min, size_t size_ ):B(N1,N2,order_min,size_) {} 
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){} 
   template<typename GfType> tail(GfType const & x): B() { *this = x;} // to maintain value semantics
-  
-  tail(size_t N1, size_t N2,  int order_min, int order_max):B(N1,N2,order_min,order_max) {} 
 
   using B::operator=;
   using B::operator();
   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
 
-  /// Slice in orbital space
-  const view_type slice(range R1, range R2) const { return view_type(*this,R1,R2); } 
-
   /// The simplest tail corresponding to  : omega
-  static tail_view omega(size_t N1, size_t N2, size_t size_) { tail t(N1,N2,-1, -1 + int(size_)); t(t.order_min())=1; return t; }
+  static tail_view omega(size_t N1, size_t N2, size_t size_) { tail t(N1,N2,-1, size_); t(t.order_min())=1; return t; }
 
   /// The simplest tail corresponding to  : omega, constructed from a shape for convenience
   static tail_view omega(tail::shape_type const & sh, size_t size_) { return omega(sh[0],sh[1],size_);}
-
  };
- 
+
+ /// Slice in orbital space
+ template<bool V> tail_view slice(tail_impl<V> const & t, tqa::range R1, tqa::range R2) { 
+  return tail_view(t.data_view()(R1,R2,tqa::range()),t.order_min());
+ } 
+
  // -------------------------------   Expression template for tail and view -----------------------
+
+ typedef tqa::matrix_view<std::complex<double>, tail::storage_order > mv_dcomplex_type;
 
  // -----------  tail special multiplication --------------------
 
@@ -217,7 +210,7 @@ namespace triqs { namespace gf { namespace local {
 
   int order_min() const { return l.order_min() + r.order_min();}
   size_t size()   const { return std::min(l.size(),r.size());}
-  int order_max() const { return order_min() + size(); }
+  int order_max() const { return order_min() + size() -1;}
 
   typedef tqa::mini_vector<size_t,2> shape_type;
   shape_type shape() const {return shape_type(l.shape()[0], r.shape()[1]);} 
@@ -228,7 +221,7 @@ namespace triqs { namespace gf { namespace local {
    const int pmin = std::max(l.order_min(), n - r.order_max() );
    const int pmax = std::min(l.order_max(), n - r.order_min() );
    mv_dcomplex_type::non_view_type res(shape()[0],shape()[1]); res()=0;
-   if (pmin<=pmax) { for (int p = pmin; p <= pmax; ++p)  { res += l(p) * r(n-p);} }
+   for (int p = pmin; p <= pmax; ++p)  { res += l(p) * r(n-p);} 
    return res;
   }
  };
@@ -250,7 +243,7 @@ namespace triqs { namespace gf { namespace local {
 
   int order_min() const { return - t.order_min(); }
   size_t size()   const { return t.size();}
-  int order_max() const { return order_min() + size(); }
+  int order_max() const { return order_min() + size() -1;}
 
   typedef tqa::mini_vector<size_t,2> shape_type;
   shape_type shape() const {return t.shape();}
@@ -259,7 +252,7 @@ namespace triqs { namespace gf { namespace local {
    t_type const & t;
    tail t_inv;
    internal_data( tail_inv_lazy const & Parent): t(Parent.t),
-   t_inv(t.shape()[0],t.shape()[1] , Parent.order_min(), Parent.order_max()) {
+   t_inv(t.shape()[0],t.shape()[1] , Parent.order_min(), Parent.size()) {
     // b_n = - a_0^{-1} * sum_{p=0}^{n-1} b_p a_{n-p} for n>0
     // b_0 = a_0^{-1}
     // b_min <= p <=b_max ;  a_min <= n-p <= a_max ---> n-a_max  <= p <= n-a_min 
@@ -315,15 +308,21 @@ namespace triqs { namespace gf { namespace local {
  struct tail_eval_scalar_t { // a transform that evaluates a scalar as a trivial expansion (only order 0)
   BOOST_PROTO_CALLABLE();
   template<typename Sig> struct result;
-  template<typename This, typename S, typename AL> struct result<This(S,AL)> { typedef dcomplex type;};
-  template<typename S, typename AL> dcomplex operator ()(S const & s, AL const & al) const 
-  { int n = bf::at<mpl::int_<0> >(al); return (n==0 ? s : S()); }
+  template<typename This, typename S, typename Arg> struct result<This(S,Arg)> { typedef dcomplex type;};
+  template<typename S, typename Arg> dcomplex operator ()(S const & s, Arg const & arg) const {int n = arg; return (n==0?s:S());}
+ };
+
+ struct tail_eval_leaf_t { // a transform that evaluates a leaf of the expression tree
+  BOOST_PROTO_CALLABLE();
+  template<typename Sig> struct result;
+  template<typename This, typename T, typename Arg> struct result<This(T,Arg)> { typedef mv_dcomplex_type type;};
+  template<typename T, typename Arg> mv_dcomplex_type operator ()(T const & t, Arg const & arg) const { return t(arg);}
  };
 
  struct tail_eval_t : // evaluation of an expression. same as for gf.  
   proto::or_<
   proto::when<tail_scalar_grammar, tail_eval_scalar_t(proto::_value, proto::_state)>
-  ,proto::when<tail_leaf_grammar, tup::eval_fnt<1>(proto::_value, proto::_state) >
+  ,proto::when<tail_leaf_grammar, tail_eval_leaf_t(proto::_value, proto::_state) >
   ,proto::when< proto::multiplies<tail_scalar_grammar,tail_eval_t>, tup::multiplies_t (proto::_value(proto::_left),tail_eval_t(proto::_right)) > 
   ,proto::when< proto::multiplies<tail_eval_t,tail_scalar_grammar>, tup::multiplies_t (proto::_value(proto::_right),tail_eval_t(proto::_left)) > 
   ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<tail_eval_t > >
@@ -334,7 +333,7 @@ namespace triqs { namespace gf { namespace local {
  struct no_result{}; // (for scalar)
  struct sh_or { tqa::mini_vector<size_t,2> shape; int order_min, order_max;}; 
 
- struct tail_combine_mesh_t { // a transform that combine the mesh of a node with the State
+ struct tail_combine_shape_t { // a transform that combine the mesh of a node with the State
   BOOST_PROTO_CALLABLE();
   template<typename Sig> struct result;
   template<typename This, typename X, typename S> struct result<This(X,S)> {
@@ -351,11 +350,11 @@ namespace triqs { namespace gf { namespace local {
   }
  };
 
- struct tail_mesh_t : // the transform that computes the mesh recursively using a fold and a State initialized to no_result
+ struct tail_shape_t : // the transform that computes the mesh recursively using a fold and a State initialized to no_result
   proto::or_<
   proto::when < tail_scalar_grammar, proto::_state >
-  ,proto::when< tail_leaf_grammar, tail_combine_mesh_t (proto::_value, proto::_state) >
-  ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, tail_mesh_t >() >
+  ,proto::when< tail_leaf_grammar, tail_combine_shape_t (proto::_value, proto::_state) >
+  ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, tail_shape_t >() >
   > {};
 
  // grammar and domain and proto expression
@@ -363,7 +362,6 @@ namespace triqs { namespace gf { namespace local {
 
  template<typename Expr> struct tail_expr : proto::extends<Expr, tail_expr<Expr>, tail_expr_domain> {
   tail_expr( Expr const & expr = Expr() ) : proto::extends<Expr, tail_expr<Expr>, tail_expr_domain> (expr) { init = false;}
-  //typedef typename boost::result_of<tail_mesh_t(Expr,no_result) >::type mesh_type;
 
   int order_min() const { return so().order_min; }
   int order_max() const { return so().order_max; }
@@ -372,19 +370,14 @@ namespace triqs { namespace gf { namespace local {
   typedef tqa::mini_vector<size_t,2> shape_type;
   shape_type shape() const {return so().shape;}
 
-  template<typename T> typename boost::result_of<tail_eval_t(Expr,bf::vector<T>)>::type 
-   operator()(T const & x) const {return tail_eval_t()(*this,bf::make_vector(x));}
-  friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) {
-   //sout <<" tail_expr : Ordermin/max = "<< expr.order_min() << "  "<< expr.order_max();
-   return tup::print_algebra(sout,expr);
-  } 
+  typename boost::result_of<tail_eval_t(Expr,int)>::type operator()(int n) const {return tail_eval_t()(*this,n);}
+  friend std::ostream &operator <<(std::ostream &sout, tail_expr<Expr> const &expr) {return tup::print_algebra(sout,expr);} 
 
   private : // compute the sahpe and ordermin/max only once... 
   mutable sh_or so_; mutable bool init;
-  sh_or const & so() const { if (!init) { so_ = tail_mesh_t()(*this,no_result()); init = true; } return so_;} 
+  sh_or const & so() const { if (!init) { so_ = tail_shape_t()(*this,no_result()); init = true; } return so_;} 
  };
 
  BOOST_PROTO_DEFINE_OPERATORS(LocalTail, tail_expr_domain);
-
 }}}
 #endif

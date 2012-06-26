@@ -16,7 +16,7 @@ int main() {
 
  typedef local::gf<meshes::matsubara_freq> Gf_type;
  typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
- domains::infty inf;
+ domains::freq_infty inf;
 
  Gf_type G1; // empty
  TEST( G1( 0) ) ;
@@ -29,8 +29,7 @@ int main() {
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
 
- //Gf_view_type Gv2 = slice(G,0,0);
- Gf_view_type Gv2 = G.slice(range(0),range(0));
+ Gf_view_type Gv2 = slice(G,range(0,1),range(0,1));
  TEST( Gv2( 0) ) ;
  Gv2(0) = 10;
  TEST( Gv2( 0) ) ;

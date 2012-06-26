@@ -29,7 +29,7 @@ namespace triqs { namespace gf {
 
  namespace domains {
 
-  struct infty{}; // the point at infinity
+  struct freq_infty{}; // the point at infinity
   
   struct matsubara_freq {
    typedef long                 point_type;

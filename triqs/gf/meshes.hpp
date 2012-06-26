@@ -130,7 +130,7 @@ namespace triqs { namespace gf { namespace meshes {
 
   domain_type const & domain() const {return dom_;}
   mesh_pt<BZ_mesh> operator[](index_type n) const  { return make_mesh_pt(*this,n);}
-  domain_type::point_type embed(index_type const & n) const {return NULL;}
+  domain_type::point_type embed(index_type const & n) const {return 0;}
   
    template<typename F> typename F::mv_type interpolate( F const & f, domain_type::point_type const & k) const {   return f((*this)[ 0 ]); } //just to fill in the fct
 
