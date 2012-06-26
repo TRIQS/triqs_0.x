@@ -18,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_INDEXMAP_CUBOID_FOREACH_H 
 #define TRIQS_ARRAYS_INDEXMAP_CUBOID_FOREACH_H
 
