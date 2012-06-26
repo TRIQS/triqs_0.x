@@ -28,7 +28,7 @@ class AutoCompile(object):
         link = "",
         include = "",
         definitions = "",
-      #  ld_library_path = "",
+        ld_library_path = "",
     )
     @classmethod
     def builder_init(cls,app):
@@ -67,7 +67,8 @@ class CompileBlock(Directive):
         try : 
             stdout = S.check_output(args,stderr=S.STDOUT,shell=True)
             try : 
-                resout = S.check_output("./a.out",stderr=S.STDOUT,shell=True)
+                resout = S.check_output(" ./a.out"%config ,stderr=S.STDOUT,shell=True)
+                #resout = S.check_output("LD_LIBRARY_PATH=$LD_LIBRAY_PATH:%(ld_library_path)s && ./a.out"%config ,stderr=S.STDOUT,shell=True)
                 if resout : 
                    stdout +='---------- Result is -------\n' + resout
                 error = False
