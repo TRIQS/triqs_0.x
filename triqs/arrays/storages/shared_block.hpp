@@ -101,34 +101,26 @@ namespace triqs { namespace arrays {
 #endif
 
     /// Shallow copy
-    template <typename  ValueType2> 
-     shared_block(const shared_block<ValueType2> & X): sptr() {
-      static_assert( (details::const_check<ValueType,ValueType2>::value), "shared_block : type mismatch");      
-      sptr = X.sptr; // so that the static_assert appears first
-      init_data();
-     }
-
+    shared_block(const shared_block<const_value_type> & X): sptr(X.sptr) { init_data(); }
+  
     /// Shallow copy
-    shared_block(const shared_block & X): sptr(X.sptr) { init_data(); }
+    shared_block(const shared_block<non_const_value_type> & X): sptr(X.sptr) { init_data(); }
 
     void operator=(const shared_block & X) { sptr=X.sptr; init_data(); } 
 
     /// raw copy from another 
-    template <class ValueType2> 
-     void raw_copy_from(const shared_block<ValueType2> & X){
-      assert(this-> size() == X.size());
-      static_assert( (details::const_check<ValueType,ValueType2>::value), "shared_block : can not create a block. type mismatch");      
-      if (!empty()) (*sptr) = (*X.sptr);     
-     }
+    void raw_copy_from(const shared_block<non_const_value_type> & X){assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
+
+    /// raw copy from another 
+    void raw_copy_from(const shared_block<const_value_type> & X){ assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
 
     /// True copy of the data
     clone_type clone() const { 
      if (empty()) return clone_type ();
 #ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT    
-     clone_type res; res.sptr = boost::shared_ptr<block_type > (sptr->clone()); res.init_data();
+     clone_type res; res.sptr = boost::make_shared<block_type > (*sptr); res.init_data();
 #else
-     clone_type res(this->size(), Tag::no_init() );
-     (*res.sptr) = (*sptr);
+     clone_type res(this->size(), Tag::no_init() ); (*res.sptr) = (*sptr);
 #endif
      return res;
     }

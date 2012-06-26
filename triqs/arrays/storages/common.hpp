@@ -28,16 +28,6 @@ namespace triqs { namespace arrays {
  namespace Tag {struct storage{}; }
  namespace storages  { 
 
-  namespace details { 
-   // technical tool to check the const status of the Storage.
-   //
-   template<typename T1, typename T2> struct const_check {// true iif T =  ValueType up to const, and ValueType if not "more const" than T
-    static const bool v1 = boost::is_same< typename boost::remove_const<T1>::type , typename boost::remove_const<T2>::type >::type::value;
-    static const bool value = v1 && ( boost::is_const<T1>::value || (!boost::is_const<T1>::value) );
-   };
-
-  }
-
   // is a raw copy possible ? only if the value_type is the same
   template<typename S1, typename S2>
    struct raw_copy_possible : boost::is_same< typename boost::remove_const<typename S1::value_type>::type,
