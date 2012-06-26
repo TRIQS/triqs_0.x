@@ -25,14 +25,14 @@
 namespace triqs { namespace python_tools { 
 
  // std::vector<T> <----> python list or tuple of the conversion of T
- template<typename T,typename P_ListType> struct converter<std::vector<T>, P_ListType > { 
+ template<typename T> struct converter<std::vector<T> > { 
 
   typedef std::vector<T> C_type;
-  typedef P_ListType Py_type;
+  typedef bpy::list P_type;
 
   static bool Py2C_is_possible (bpy::object l) { 
    try { 
-    P_ListType L(l); // check it is a list...
+    P_type L(l); // check it is a list...
     const size_t N = bpy::len(L);
     for (size_t i=0; i<N; ++i) if (!converter<T>::Py2C_is_possible(l[i])) throw false;
     return true;
@@ -41,15 +41,15 @@ namespace triqs { namespace python_tools {
   }
 
   static C_type Py2C (bpy::object l) { 
-   P_ListType L(l);
+   P_type L(l);
    const size_t N = bpy::len(L);
    std::vector<T> res; res.reserve(N);
    for (size_t i=0; i<N; ++i) res.push_back( converter<T>::Py2C(l[i]));
    return res;
   }
 
-  static  bpy::object C2Py (C_type const &v) {
-   P_ListType L;
+  static P_type C2Py (C_type const &v) {
+   P_type L;
    for (size_t i=0; i<v.size(); ++i) L.append( converter<T>::C2Py(v[i])); 
    return L;
   }

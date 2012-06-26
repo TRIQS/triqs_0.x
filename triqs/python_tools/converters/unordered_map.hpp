@@ -21,11 +21,12 @@
 #ifndef TRIQS_PYTHON_C_CONVERTERS_UNODERORED_MAP_H
 #define TRIQS_PYTHON_C_CONVERTERS_UNODERORED_MAP_H
 #include "../converters.hpp"
+
 namespace triqs { namespace python_tools { 
 
  // boost::unordered_map<Key,Mapped> <----> python dict of conversion of Key, Mapped 
  template<typename Key, typename Mapped> 
-  struct converter< boost::unordered_map<Key,Mapped>, bpy::object >  {
+  struct converter< boost::unordered_map<Key,Mapped> >  {
 
    typedef boost::unordered_map<Key,Mapped> C_type;
    typedef bpy::object P_type;
@@ -46,7 +47,8 @@ namespace triqs { namespace python_tools {
     bpy::list keys = dic.keys(), vals = dic.values();
     const size_t N = bpy::len(dic);
     for (size_t i=0; i<N; ++i) {
-     bool ok =  res.insert(std::make_pair(converter<Key>::invoke(keys[i]), converter<Mapped>::invoke(vals[i]))).second;
+
+     bool ok =  res.insert(std::make_pair(converter<Key>::Py2C(keys[i]), converter<Mapped>::Py2C(vals[i]))).second;
      if (!ok) TRIQS_RUNTIME_ERROR<<"This error should never happen !";
     }
     return res;
@@ -55,7 +57,7 @@ namespace triqs { namespace python_tools {
    static P_type C2Py ( boost::unordered_map<Key,Mapped> const & m) {
     bpy::dict Res;
     for (typename boost::unordered_map<Key,Mapped>::const_iterator it = m.begin(); it !=m.end(); ++it) 
-     Res[converter<Key>::invoke (it->first)] = converter<Mapped>::invoke (it->second);
+     Res[converter<Key>::C2Py (it->first)] = converter<Mapped>::C2Py (it->second);
     return Res;
    }
   };

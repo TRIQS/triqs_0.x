@@ -26,7 +26,7 @@ namespace triqs { namespace python_tools {
 
  // std::pair<T1,T2> <----> python list or tuple of the conversion of T1,T2
  template<typename T1, typename T2> 
-  struct converter<std::pair<T1,T2>, bpy::tuple> { 
+  struct converter<std::pair<T1,T2> > { 
 
    typedef std::pair<T1,T2> C_type;
    typedef bpy::tuple Py_type;
@@ -44,10 +44,10 @@ namespace triqs { namespace python_tools {
     bpy::list L(l);
     const size_t N = bpy::len(L);
     if (N!=2) TRIQS_RUNTIME_ERROR<<"Object"<<object_to_string(l)<<" can not be converted to a std::pair : lengths mismatch "; 
-    return std::make_pair( converter<T1>::invoke(l[0]), converter<T2>::invoke(l[1]) );
+    return std::make_pair( converter<T1>::Py2C(l[0]), converter<T2>::Py2C(l[1]) );
    }
 
-   static bpy::object C2Py (C_type const & p) { return bpy::make_tuple( converter<T1>::invoke (p.first), converter<T2>::invoke (p.second));}
+   static bpy::object C2Py (C_type const & p) { return bpy::make_tuple( converter<T1>::C2Py (p.first), converter<T2>::C2Py (p.second));}
   };
 }}
 #endif

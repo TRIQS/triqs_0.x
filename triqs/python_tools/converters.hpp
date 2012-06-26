@@ -37,12 +37,12 @@
 namespace triqs { namespace python_tools { 
 
  namespace bpy= boost::python;
- std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
- std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
+ inline std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
+ inline std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
  template<typename T> std::string printer(T const & x) { return triqs::utility::typeid_name(x);}
 
  // The general case
- template<typename C_Type, typename P_type= bpy::object> struct converter { 
+ template<typename C_Type> struct converter { 
 
   typedef void _not_suitable_for_automatic_conversion_tag; // avoid infinite loop !
 
@@ -58,6 +58,9 @@ namespace triqs { namespace python_tools {
   }
  };
 
+ /// More general than boost::object constructor since it does not need registration
+ template<typename T> bpy::object make_object(T const & x) { return converter<T>::C2Py(x);}
+
  //****************** registering the converters in boost python ***********************************8   
 
  namespace details {
@@ -71,6 +74,9 @@ namespace triqs { namespace python_tools {
 
   template<typename T, typename Void=void> struct is_suitable_for_automatic_conversion : mpl::true_{};
   template<typename T> struct is_suitable_for_automatic_conversion <T, typename converter<T>::_not_suitable_for_automatic_conversion_tag> : mpl::false_{};
+  
+  template<typename T, typename Void=void> struct is_suitable_for_automatic_conversion_value : mpl::true_{};
+  template<typename T> struct is_suitable_for_automatic_conversion_value <T, typename converter<T>::value_not_suitable_for_automatic_conversion_tag> : mpl::false_{};
 
   template<class T>
    struct _to_python  { 
@@ -97,7 +103,8 @@ namespace triqs { namespace python_tools {
    };
 
   template<class T>  inline void register_converter() {
-   static_assert( is_suitable_for_automatic_conversion<T>::value, "No converter has been found for registering. Did you forget an include ?");
+   static_assert(is_suitable_for_automatic_conversion<T>::value, "No converter has been found for registering. Did you forget an include ?");
+   static_assert(is_suitable_for_automatic_conversion_value<T>::value, "A value (like array, matrix, ...) can not be registered for automatic conversion.");
    static bool initialized = false;
    if (initialized) return;
    bpy::to_python_converter< T, _to_python<T> >(); _from_python_str<T> (); 
