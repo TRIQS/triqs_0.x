@@ -19,29 +19,33 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include <boost/python.hpp>
-#include <triqs/python_tools/converters.hpp>
+#include <triqs/utility/compiler_details.hpp>
+#include <triqs/python_tools/converters/vector.hpp>
+#include <triqs/python_tools/converters/unordered_map.hpp>
+#include <triqs/python_tools/converters/pair.hpp>
 
 using namespace boost::python;
+//namespace bpy = boost::python;
 using namespace triqs::python_tools;
 
 #include <iostream>
 #include <iterator>
 #include <vector>
 #include <map>
+
 using namespace std;
 
 void f1( object x) { 
 
- vector<int> V = Py_to_C::convert< vector<int> >::invoke (x);
+ vector<int> V = triqs::python_tools::converter < vector<int> >::Py2C (x);
  std::ostream_iterator<int> out_it (cout,", "); 
  std::copy(V.begin(), V.end(), out_it);
 }
 
 void f11( object x) { 
 
- vector<vector<int > > V = Py_to_C::convert< vector<vector<int> > >::invoke (x);
+ vector<vector<int > > V = triqs::python_tools::converter< vector<vector<int> > >::Py2C (x);
 
  for (size_t i = 0 ; i<V.size(); ++i)
   for (size_t j = 0 ; j<V[i].size(); ++j)
@@ -50,17 +54,17 @@ void f11( object x) {
 
 object f2() { 
  vector<double> V(10,2);
- return C_to_Py::convert< vector<double> >::invoke(V);
+ return triqs::python_tools::converter< vector<double> >::C2Py(V);
 }
 
 object f3() { 
  vector< vector< double > > V(3, vector<double>(4,2) );
- return C_to_Py::convert< vector<vector<double> > >::invoke(V);
+ return triqs::python_tools::converter< vector<vector<double> > >::C2Py(V);
 }
 
 void g(object x) {
  typedef boost::unordered_map<std::string, int > type;
- type M = Py_to_C::convert<type>::invoke(x);
+ type M = triqs::python_tools::converter<type>::Py2C(x);
  std::map<std::string,int> res;
  res.insert(M.begin(), M.end());
  for (std::map<std::string,int>::iterator it = res.begin(); it !=res.end(); ++it) {
@@ -73,13 +77,13 @@ object g2() {
  type M; 
  M.insert(std::make_pair("a",10));
  M.insert(std::make_pair("b",28));
- return C_to_Py::convert< type >::invoke(M);
+ return triqs::python_tools::converter< type >::C2Py(M);
 }
 
 
 void p1( object x) { 
  typedef std::pair< vector<double>, vector<int> > type;
- type res =   Py_to_C::convert< type >::invoke (x);
+ type res =   triqs::python_tools::converter< type >::Py2C (x);
  std::ostream_iterator<int> out_it (cout,", "); 
  std::copy(res.first.begin(), res.first.end(), out_it);
  cout<<endl;
@@ -92,7 +96,7 @@ void p1( object x) {
 object p2() { 
  vector<double> V(5,2.5);
  vector<int> VV(3,6);
- return C_to_Py::convert <std::pair< vector<double>, vector<int> > >::invoke(std::make_pair(V,VV));
+ return triqs::python_tools::converter <std::pair< vector<double>, vector<int> > >::C2Py(std::make_pair(V,VV));
 };
 
 typedef std::pair< vector<double>, vector<int> > pair_vd_vi;
