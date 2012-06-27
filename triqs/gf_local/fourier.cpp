@@ -115,9 +115,9 @@ void fourier_direct  (GF_Bloc_ImTime const & Gt, GF_Bloc_ImFreq & Gw, bool time_
    {
     COMPLEX om1 = Gw.mesh[om];
     if (time_mesh_starts_at_half_bin) {
-     Gw.data(n1,n2,om) = G_out(om)*exp(I*(om+Gw.Statistic)*Pi/Gt.numberTimeSlices) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); }
-    else {
-     Gw.data(n1,n2,om) = G_out(om) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); 
+      Gw.data(n1,n2,om) = G_out(om)*exp(I*om*Pi/Gt.numberTimeSlices) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3);
+    } else {
+      Gw.data(n1,n2,om) = G_out(om) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); 
     }
      
 
