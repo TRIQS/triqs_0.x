@@ -1,4 +1,4 @@
-from pytriqs.demo.mymodule import myClass
+from pytriqs.demo.mymodule import myClass, inc
 
 class Solver:
 
@@ -10,3 +10,6 @@ class Solver:
 S = Solver()
 S.U = 11
 S.Solve()
+
+inc (10)
+

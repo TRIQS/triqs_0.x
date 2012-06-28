@@ -11,9 +11,14 @@ class myClass
     int U;
 };
 
+int increment(int x) { return x+1;}
+
 BOOST_PYTHON_MODULE(mymodule)
 {
     class_<myClass>("myClass", init<object>())
       .def("solvecpp",&myClass::solve)
     ;
+
+    def ("inc", increment,"This is my nice inc function ");
+
 };
