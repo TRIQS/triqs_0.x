@@ -1,9 +1,7 @@
 from pytriqs.demo.mymodule import *
 
 class Solver:
-
   def Solve(self):
-
     myClass(self).solvecpp()
 
 
