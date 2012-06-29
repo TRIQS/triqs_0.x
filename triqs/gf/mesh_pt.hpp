@@ -58,7 +58,7 @@ namespace triqs { namespace gf { namespace meshes {
  template<typename MeshType> 
   mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
 
-}}
+}}}
 
 #endif
 

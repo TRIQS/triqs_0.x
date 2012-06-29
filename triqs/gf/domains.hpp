@@ -24,9 +24,10 @@
 namespace triqs { namespace gf {
 
  namespace tqa= triqs::arrays;
-
+ 
  enum statistic_enum {Boson,Fermion};
-
+ // mettre un char
+ 
  namespace domains {
 
   struct freq_infty{}; // the point at infinity
@@ -38,8 +39,7 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_freq (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   static const bool has_tail = true;
-   bool operator == (matsubara_freq D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
+   bool operator == (matsubara_freq const & D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
   struct matsubara_time {
@@ -49,7 +49,6 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_time (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   //static const bool has_tail = true;
   };
 
   struct matsubara_legendre{};

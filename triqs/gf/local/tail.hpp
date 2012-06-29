@@ -31,7 +31,7 @@
 #include <triqs/utility/view_tools.hpp>
 
 #include "../meshes.hpp"
-#include "domains.hpp"
+#include "../domains.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
