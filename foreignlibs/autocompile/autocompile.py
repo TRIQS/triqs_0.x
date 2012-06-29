@@ -81,7 +81,8 @@ class CompileBlock(Directive):
             
         # Process output 
         if stdout:
-            out = ''.join(stdout).decode(output_encoding)
+            stdout = stdout.decode(output_encoding,'ignore')
+            out = u''.join(stdout).decode(output_encoding)
         else:
             out = '' #.join(stderr).decode(output_encoding)
         
