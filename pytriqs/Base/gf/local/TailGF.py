@@ -40,7 +40,7 @@ class __inject (make_injector(TailGF), TailGF):
         """
         self._indL, self._indR = d['IndicesL'], d['IndicesR']
         N1,N2 = len(self._indL), len(self._indR)
-        self.__data_array = d['array'] if 'array' in d else numpy.zeros((d['size'],N1,N2),numpy.complex,order='F') 
+        self.__data_array = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size']),numpy.complex,order='F') 
         self._omin = d['OrderMin']
         self._init_before_injection__(self.__data_array, self._omin) 
 
@@ -53,12 +53,12 @@ class __inject (make_injector(TailGF), TailGF):
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return ArrayViewWithIndexConverter(self.__data_array[i-self.OrderMin,:,:], self._indL, self._indR)
+        return ArrayViewWithIndexConverter(self.__data_array[:,:,i-self.OrderMin], self._indL, self._indR)
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        self.__data_array[i-self._omin,:,:] = val
+        self.__data_array[:,:,i-self._omin] = val
 
     def has_coef(self, i):
         return (i >= self.OrderMin) and (i <= self.OrderMax)
@@ -70,13 +70,13 @@ class __inject (make_injector(TailGF), TailGF):
     def OrderMax(self) : return self._omin+self.size-1
 
     @property
-    def size(self) : return self.__data_array.shape[0]
+    def size(self) : return self.__data_array.shape[2]
 
     #---------------------------------------------------------------------------------
  
     @property
     def _data(self) : 
-        return ArrayViewWithIndexConverter(self.__data_array, None, self._indL, self._indR)
+        return ArrayViewWithIndexConverter(self.__data_array, self._indL, self._indR, None)
 
     @_data.setter
     def _data(self, value) : self.__data_array[:,:,:] = value 
@@ -146,7 +146,7 @@ class __inject (make_injector(TailGF), TailGF):
     #---- other operations ----
     def __call__(self, n) :
         if not self.has_coef(n) : raise IndexError, "Index %s is out of range"%i
-        return self.__data_array[n-self.OrderMin,:,:]
+        return self.__data_array[:,:,n-self.OrderMin]
 
     def zero(self) : 
         """Sets the expansion to 0"""
