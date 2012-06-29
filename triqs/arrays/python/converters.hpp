@@ -139,7 +139,6 @@ namespace triqs { namespace python_tools {
 }// python_tools
 
 /* ***********************************************
-
    Mainly for debug : in real code, it is better to list explicitely the converters needed.
    Function to register the convert between numpy object and triqs_arrays into boost.python
 Usage : (in the main, before launching the interpreter)
@@ -147,7 +146,6 @@ Usage : (in the main, before launching the interpreter)
 arrays::register_boost_converters();
 
  ****************************************************/
-
 // List all the types for which a converter will be generated.
 #define TYPES_FOR_WHICH_CONVERTER_IS_NEEDED (long)(std::complex<double>)(double) 
 
@@ -175,9 +173,7 @@ namespace arrays {
   BOOST_PP_SEQ_FOR_EACH(ONETYPE, nil , TYPES_FOR_WHICH_CONVERTER_IS_NEEDED); 
 #undef ONETYPE
  }
-
 }}
-
 #undef TYPES_FOR_WHICH_CONVERTER_IS_NEEDED
 #endif 
 
