@@ -20,9 +20,9 @@
 ################################################################################
 
 __all__ = ['TailGF']
-from pytriqs_GF import TailGF
+from pytriqs_GF2 import TailGF
 import numpy
-from math import pi
+import string
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 
 #-----------------------------------------------------
@@ -40,40 +40,43 @@ class __inject (make_injector(TailGF), TailGF):
         """
         self._indL, self._indR = d['IndicesL'], d['IndicesR']
         N1,N2 = len(self._indL), len(self._indR)
-        self.__data_array = d['array'] if 'array' in d else numpy.zero((N1,N2,d['size'])) 
+        self.__data_array = d['array'] if 'array' in d else numpy.zeros((d['size'],N1,N2),numpy.complex,order='F') 
         self._omin = d['OrderMin']
         self._init_before_injection__(self.__data_array, self._omin) 
 
     def copy(self) : 
-        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(), OrderMin = self._omin)
+        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
  
     def __repr__ (self) :
-        return string.join([ "%s"%self[r-self._omin] + ("/" if r<0 else "") + "Om^%s"%(abs(r)) for r in range (self._omin, self._omax+1) ] , "+") 
+        return string.join([ "%s"%self[r] + ("/" if r<0 else "") + "Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , "+")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return ArrayViewWithIndexConverter(self._data.array[ i - self._omin, :,:], self.IndicesL, self.IndicesR)
+        return ArrayViewWithIndexConverter(self.__data_array[i-self.OrderMin,:,:], self._indL, self._indR)
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
-       if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-       self._data.array[ i - self._omin, :,:] = val
+        if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
+        self.__data_array[i-self._omin,:,:] = val
+
+    def has_coef(self, i):
+        return (i >= self.OrderMin) and (i <= self.OrderMax)
 
     @property
     def OrderMin(self) : return self._omin
 
     @property
-    def OrderMax(self) : return self._omin+self.size() -1
+    def OrderMax(self) : return self._omin+self.size-1
 
     @property
-    def size(self) : return self.__data_array.shape[2]
+    def size(self) : return self.__data_array.shape[0]
 
     #---------------------------------------------------------------------------------
  
     @property
     def _data(self) : 
-        return ArrayViewWithIndexConverter(self.__data_array, self._IndicesL, self._IndicesR, None)
+        return ArrayViewWithIndexConverter(self.__data_array, None, self._indL, self._indR)
 
     @_data.setter
     def _data(self, value) : self.__data_array[:,:,:] = value 
@@ -87,7 +90,7 @@ class __inject (make_injector(TailGF), TailGF):
         assert(eval(indR)==tuple(self._indR))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
-                'array' : self._data.array,
+                'array' : self.__data_array,
                 'OrderMin' : self.OrderMin,
                 'size' : self.size }
 
@@ -101,6 +104,21 @@ class __inject (make_injector(TailGF), TailGF):
  
     #---- arithmetic operations ----
  
+    ########################################## TEMPORARY
+    def __iadd__(self,arg):
+        self.__data_array += arg.__data_array
+        return self
+    def __isub__(self,arg):
+        self.__data_array -= arg.__data_array
+        return self
+    def __imul__(self,arg):
+        self.__data_array *= arg
+        return self
+    def __idiv__(self,arg):
+        self.__data_array /= arg
+        return self
+    ########################################## TEMPORARY
+
     def __add__(self,y):
         c= self.copy()
         c+=y
@@ -126,15 +144,14 @@ class __inject (make_injector(TailGF), TailGF):
         return c
 
     #---- other operations ----
-    def __call__(self, n) : return self.__data_array[:,:,n - self.OrderMin]
+    def __call__(self, n) :
+        if not self.has_coef(n) : raise IndexError, "Index %s is out of range"%i
+        return self.__data_array[n-self.OrderMin,:,:]
 
     def zero(self) : 
         """Sets the expansion to 0"""
         self.__data_array[:,:,:] =0
 
-    #.def ("copyFrom",&tail_view::copyFrom)
-    #.def ("invert",&tail_view::invert,"Replace itself by the expansion of the inverse of the function.")
- 
     def from_L_T_R(self,L,R) : 
       """Multiply Left & right with Matrices :  G <- L* G2 * R"""
       assert(0)

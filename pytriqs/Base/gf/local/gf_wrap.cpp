@@ -28,15 +28,18 @@ using namespace boost::python;
 
 using namespace triqs::gf;
 using local::tail_view;
+using local::gf_view;
+
+typedef gf_view<meshes::matsubara_freq>::data_type data_type;
 
 BOOST_PYTHON_MODULE(_pytriqs_GF2) {
 
  int _r = _import_array();assert(_r==0); // to be refined...
-// tqa::register_boost_converters();
+ //tqa::register_boost_converters();
 
  //register_exception_translator<std::string>(translatorString);
  //triqs::python_tools::register_converter< triqs::arrays::array<double,2> > ();
- triqs::python_tools::register_converter< triqs::arrays::array_view<std::complex<double>,3> > ();
+ triqs::python_tools::register_converter< triqs::arrays::array_view<std::complex<double>,3,triqs::arrays::Option::Fortran> > ();
 
  docstring_options doc_options;
  doc_options.disable_cpp_signatures();
@@ -61,6 +64,12 @@ BOOST_PYTHON_MODULE(_pytriqs_GF2) {
  // **********  tail  ******************
 
  class_<tail_view>("TailGF", init<tail_view::data_type,long>() )
+  ;
+
+ // **********  local gf  ******************
+
+ class_<gf_view<meshes::matsubara_freq> >("GF", init<meshes::matsubara_freq const &, data_type const &, tail_view const &>())
+  .def("load",&gf_view<meshes::matsubara_freq>::load)
   ;
 
 };
