@@ -105,8 +105,8 @@ class _GFBloc_concept_impl:
     #-------------------------------------------------
 
     def __repr__(self) : 
-	return """%s %s :  Beta = %.3f; IndicesL = %s, IndicesR = %s """%(self.__class__.__name__, self.Name,
-          self.Beta, [x for x in self.IndicesL], [x for x in self.IndicesR])
+	return """%s %s : IndicesL = %s, IndicesR = %s"""%(self.__class__.__name__, self.Name,
+          [x for x in self.IndicesL], [x for x in self.IndicesR])
 
     #-------------------------------------------------
 

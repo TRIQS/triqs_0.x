@@ -79,7 +79,7 @@ class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base
             Nmax = d['NFreqMatsubara'] if 'NFreqMatsubara' in d else 1025
             stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
             sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshMatsubaraFrequency(10.0,GF_Statistic.Fermion,Nmax)
+            d['Mesh'] = MeshMatsubaraFrequency(Beta,GF_Statistic.Fermion,Nmax)
             for a in [ 'Beta', 'Statistic', 'NFreqMatsubara'] : 
                 if a in d : del d[a]
 
@@ -95,7 +95,7 @@ class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base
              * :param x_window: (xmin,xmax) or None [default]
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        M = [x.imag for x in self.mesh]
+        M = [self._mesh.get_point(i).imag for i in range(self._mesh.size())]
         return self._plot_base( OptionsDict,  r'$\omega_n$', lambda name : r'%s$(i\omega_n)$'%name, True, M)
     
     #-----------------------------------------------------

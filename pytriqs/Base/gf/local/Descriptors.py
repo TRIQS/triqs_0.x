@@ -218,24 +218,23 @@ class SemiCircular (Base):
         if type(G._mesh) == MeshMatsubaraFrequency:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
         elif type(G._mesh) == MeshRealFrequency:
-            dos = _SemiCircularDOS (D)
-            f = lambda om : -1j*pi*dos(om)*Id
+            def f(om):
+              if (om > -D) and (om < D):
+                return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
+              else:
+                return (2.0/D**2) * (om - sign(om) * sqrt(om**2 - D**2))
         else :
             raise TypeError, "This initializer is only correct in frequency"
 
-        t =G._tail
-        t.zero()
-        if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
-            for i in range(G.N1):
-                t[1].array[i,i] = 1.0
-                t[3].array[i,i] = D**2/4.0
-                t[5].array[i,i] = D**4/8.0
+        # Let's create a new tail
+        oldL = G._tail._indL
+        oldR = G._tail._indR
+        G._tail = TailGF(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
+        for i in range(G.N1):
+            G._tail[1].array[i,i] = 1.0
+            G._tail[3].array[i,i] = D**2/4.0
+            G._tail[5].array[i,i] = D**4/8.0
  
-        #t[1].array[:,:] = 1.0
-        #t[3].array[:,:] = D**2/4.0
-        #t[5].array[:,:] = D**4/8.0
-
-        t.changeOrderMax(5) # expansion is not valid above this
         Function(f,None)(G)
         return G
 
@@ -262,9 +261,9 @@ class Wilson (Base):
         D = self.HalfBandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
 
-        if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
+        if type(G._mesh) == MeshMatsubaraFrequency:
             f = lambda om : (-1/(2.0*D)) * numpy.log((om-D)/(om+D)) * Id
-        elif G.mesh.TypeGF == GF_Type.Real_Frequency: 
+        elif type(G._mesh) == MeshRealFrequency:
             def f(om):
               if (om > -D) and (om < D):
                 return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D) - 1j*pi*Id/(2*D)
@@ -273,16 +272,15 @@ class Wilson (Base):
         else :
             raise TypeError, "This initializer is only correct in frequency"
 
-
-        t = G._tail
-        t.zero()
+        # Let's create a new tail
+        oldL = G._tail._indL
+        oldR = G._tail._indR
+        G._tail = TailGF(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
         for i in range(G.N1):
-            t[1].array[i,i] = 1.0
-            t[3].array[i,i] = D**2/3.0
-            t[5].array[i,i] = D**4/5.0
+            G._tail[1].array[i,i] = 1.0
+            G._tail[3].array[i,i] = D**2/3.0
+            G._tail[5].array[i,i] = D**4/5.0
 
-        t.changeOrderMax(5) # expansion is not valid above this
-        
         Function(f,None)(G)
         return G
 

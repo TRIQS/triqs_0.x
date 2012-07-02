@@ -51,7 +51,7 @@ class _GFBloc_base_data_tail  :
         if not self._tail : self._tail = TailGF(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
 
         self.__data_raw = d.pop('Data', None)
-        if not self.__data_raw: self.__data_raw = numpy.zeros((len(indL),len(indR),d['Mesh'].size()), numpy.complex, order='F')
+        if self.__data_raw == None: self.__data_raw = numpy.zeros((len(indL),len(indR),d['Mesh'].size()), numpy.complex, order='F')
 
         self._mesh = d.pop('Mesh')
         self.Name = d.pop('Name','g')
@@ -77,7 +77,7 @@ class _GFBloc_base_data_tail  :
                               Name = self.Name,
                               Mesh = self._mesh,
                               Data = self._data.array[sl1,sl2,:],
-                              Tail = TailGF(self._tail,sl1,sl2))
+                              Tail = self._tail._make_slice(sl1,sl2))
 
     #-----------------------------------------------------
 
@@ -305,7 +305,7 @@ class _GFBloc_base_data_tail  :
             t /= arg._tail
         elif Descriptors.is_scalar(arg): # a scalar
             d[:,:,:] /= arg
-            for n in range(t.OrderMax):
+            for n in range(t.OrderMin,t.OrderMax+1):
                 t[n].array[:,:] /= arg
             #t = self._tail; t /= arg
         else:
@@ -362,7 +362,7 @@ class _GFBloc_base_data_tail  :
         return self.__class__( 
                 Indices = list(self.Indices),
                 Mesh  = self._mesh,
-                Data = self._data.transpose( (1,0,2) ), 
+                Data = self._data.array.transpose( (1,0,2) ), 
                 Tail = self._tail.transpose(),
                 Name = self.Name+'(t)', 
                 Note = self.Note)

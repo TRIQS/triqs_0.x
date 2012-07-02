@@ -44,16 +44,19 @@ class __inject (make_injector(TailGF), TailGF):
         self._omin = d['OrderMin']
         self._init_before_injection__(self.__data_array, self._omin) 
 
+    def _make_slice(self, sl1, sl2):
+        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.__data_array[sl1,sl2,:]), OrderMin = self._omin)
+
     def copy(self) : 
         return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
 
     # Should I do more compatibility checks?
     def copyFrom(self, T) : 
         self._omin = T._omin
-        self.__data_array[:,:,:] = T.__data_array[:,:,:]
+        self.__data_array = T.__data_array.copy(order='F')
  
     def __repr__ (self) :
-        return string.join([ "%s"%self[r] + ("/" if r<0 else "") + "Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , "+")
+        return string.join([ "%s"%self[r].array + (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
