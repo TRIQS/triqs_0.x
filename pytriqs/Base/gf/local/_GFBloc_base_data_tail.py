@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF2 import GF_Statistic,TailGF
 from pytriqs.Base.Utility.myUtils import *
 import numpy
 from types import *
@@ -40,26 +40,34 @@ class _GFBloc_base_data_tail  :
         else: 
             raise ValueError, "No Indices !!"
         
+        self.N1 = len(indL)
+        self.N2 = len(indR)
+        self._IndicesL = indL
+        self._IndicesR = indR
         self._myIndicesGFBlocL = _IndicesConverter(indL)
         self._myIndicesGFBlocR = _IndicesConverter(indR)
-        Mesh = d.pop('Mesh')
-        Data = d.pop('Data', None)
-        Tail = d.pop('Tail', None)
-        if not Tail : Tail = TailGF(-2,10,indL,indR)
+
+        self._tail = d.pop('Tail', None)
+        if not self._tail : self._tail = TailGF(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
+
+        self.__data_raw = d.pop('Data', None)
+        if not self.__data_raw: self.__data_raw = numpy.zeros((len(indL),len(indR),d['Mesh'].size()), numpy.complex, order='F')
+
+        self._mesh = d.pop('Mesh')
         self.Name = d.pop('Name','g')
         self.Note = d.pop('Note','') 
         
-        self._param_for_cons = (indL,indR, Data,Mesh,Tail)
+        self._param_for_cons = (self._mesh, self.__data_raw, self._tail)
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
 
     #---------------------------------------------------------------------------------
  
     @property
     def _data(self) : 
-        return ArrayViewWithIndexConverter(self._data_c_array, self._IndicesL, self._IndicesR, None)
+        return ArrayViewWithIndexConverter(self.__data_raw, self._IndicesL, self._IndicesR, None)
 
     @_data.setter
-    def _data(self, value) : self._data_c_array[:,:,:] = value 
+    def _data(self, value) : self.__data_raw[:,:,:] = value 
     
     #---------------------------------------------------------------------------------
     
@@ -67,7 +75,7 @@ class _GFBloc_base_data_tail  :
         return self.__class__(IndicesL = self._IndicesL[sl1],
                               IndicesR = self._IndicesR[sl2],
                               Name = self.Name,
-                              Mesh = self.mesh,
+                              Mesh = self._mesh,
                               Data = self._data.array[sl1,sl2,:],
                               Tail = TailGF(self._tail,sl1,sl2))
 
@@ -76,7 +84,7 @@ class _GFBloc_base_data_tail  :
     def copy (self) : 
         new_g = self.__class__(IndicesL = self._IndicesL,
                                IndicesR = self._IndicesR,
-                               Mesh = self.mesh,
+                               Mesh = self._mesh,
                                Name = self.Name, Note = self.Note)
         new_g._tail.copyFrom(self._tail)
         new_g._data.array[:,:,:] = self._data.array[:,:,:]
@@ -84,19 +92,26 @@ class _GFBloc_base_data_tail  :
         
     #-----------------------------------------------------
         
-    def copy_with_new_stat(self,stat) :
-        new_g = self.__class__(IndicesL = self._IndicesL,
-                               IndicesR = self._IndicesR,
-                               Mesh = MeshGF(self.mesh,stat),
-                               Name = self.Name, Note = self.Note)
-        new_g._tail.copyFrom(self._tail)
-        new_g._data.array[:,:,:] = self._data.array[:,:,:]
-        return new_g        
+    # Should I do more compatibility checks?
+    def copyFrom(self, G) :
+        self._data.array[:,:,:] = G._data.array[:,:,:]
+        self._tail.copyFrom(G._tail)
+
+    #-----------------------------------------------------
+
+    #def copy_with_new_stat(self,stat) :
+    #    new_g = self.__class__(IndicesL = self._IndicesL,
+    #                           IndicesR = self._IndicesR,
+    #                           Mesh = MeshGF(self._mesh,stat),
+    #                           Name = self.Name, Note = self.Note)
+    #    new_g._tail.copyFrom(self._tail)
+    #    new_g._data.array[:,:,:] = self._data.array[:,:,:]
+    #    return new_g        
 
     #-----------------------------------------------------
 
     def _is_compatible_for_ops(self, g): 
-        m1,m2  = self.mesh, g.mesh
+        m1,m2  = self._mesh, g._mesh
         return m1 is m2 or m1 == m2
 
     #-----------------------------------------------------
@@ -108,8 +123,8 @@ class _GFBloc_base_data_tail  :
         assert(eval(indR)==tuple(self.IndicesR))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
-                'Data' : self._data.array,
-                'Mesh' : self.mesh,
+                'Data' : self._data,
+                'Mesh' : self._mesh,
                 'Tail' : self._tail,
                 'Name' : self.Name,
                 'Note' : self.Note }
@@ -177,7 +192,7 @@ class _GFBloc_base_data_tail  :
                  * data is a 3d numpy array of dim (:,:, len(X)), the corresponding slice of data
                    If flatten_y is True and dim is (1,1,*), returns a 1d numpy
         """
-        X = [x.imag for x in self.mesh] if self.mesh.TypeGF == GF_Type.Imaginary_Frequency  else [x for x in self.mesh]
+        X = [x.imag for x in self._mesh] if self._mesh.TypeGF == GF_Type.Imaginary_Frequency  else [x for x in self._mesh]
         X, data = numpy.array(X), self._data.array
         if x_window :
           sl = clip_array (X, *x_window) if x_window else slice(len(X)) # the slice due to clip option x_window
@@ -270,7 +285,7 @@ class _GFBloc_base_data_tail  :
 
     def __mul__(self,y):
         if hasattr(y,"_data") :
-            c = self.copy_with_new_stat(GF_Statistic.Boson if self.mesh.Statistic == y.mesh.Statistic else GF_Statistic.Fermion)
+            c = self.copy_with_new_stat(GF_Statistic.Boson if self._mesh.Statistic == y._mesh.Statistic else GF_Statistic.Fermion)
         else:
             c = self.copy()
         try: 
@@ -319,7 +334,7 @@ class _GFBloc_base_data_tail  :
     def replaceByTail(self,start) : 
         d = self._data.array
         t = self._tail
-        for n, om in enumerate(self.mesh) : # not the most efficient ...
+        for n, om in enumerate(self._mesh) : # not the most efficient ...
             if n >= start : d[:,:,n] = t(om).array
 
     #-------------------------------------------------------------------
@@ -331,7 +346,7 @@ class _GFBloc_base_data_tail  :
         gtmp = self.copy()
          
         #data:
-        M = [x.imag for x in self.mesh]
+        M = [x.imag for x in self._mesh]
         for iom in range(len(M)):
             gtmp._data.array[:,:,iom] = self._data.array[:,:,iom].transpose()
 
@@ -346,8 +361,8 @@ class _GFBloc_base_data_tail  :
         
         return self.__class__( 
                 Indices = list(self.Indices),
-                Mesh  = self.mesh,
-                Data = self._data.array.transpose( (1,0,2) ), 
+                Mesh  = self._mesh,
+                Data = self._data.transpose( (1,0,2) ), 
                 Tail = self._tail.transpose(),
                 Name = self.Name+'(t)', 
                 Note = self.Note)
@@ -358,9 +373,9 @@ class _GFBloc_base_data_tail  :
         
         return self.__class__( 
                 Indices = list(self.Indices),
-                Mesh  = self.mesh,
-                Data = self._data.array.conjugate(), 
-                Tail = self._tail.conjugate(self.mesh.TypeGF==GF_Type.Imaginary_Frequency),
+                Mesh  = self._mesh,
+                Data = self._data.conjugate(), 
+                Tail = self._tail.conjugate(self._mesh.TypeGF==GF_Type.Imaginary_Frequency),
                 Name = self.Name+'*', 
                 Note = self.Note)
 
@@ -370,7 +385,7 @@ class _GFBloc_base_data_tail  :
     # why is this here ???
     def Delta(self) :
         """Computes Delta from self ...."""
-        if self.mesh.TypeGF not in [GF_Type.Real_Frequency, GF_Type.Imaginary_Frequency] :
+        if self._mesh.TypeGF not in [GF_Type.Real_Frequency, GF_Type.Imaginary_Frequency] :
             raise RuntimeError, "Can not compute Delta for this GF"
         G0 = self if self._tail.OrderMin <=-1 else inverse(self)
         tmp = G0.copy()
@@ -379,9 +394,3 @@ class _GFBloc_base_data_tail  :
         return tmp
 
 #-----------------------------------------------------
-
-from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (TailGF)
-register_class (MeshGF)
-
-

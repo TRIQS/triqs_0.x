@@ -46,6 +46,11 @@ class __inject (make_injector(TailGF), TailGF):
 
     def copy(self) : 
         return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
+
+    # Should I do more compatibility checks?
+    def copyFrom(self, T) : 
+        self._omin = T._omin
+        self.__data_array[:,:,:] = T.__data_array[:,:,:]
  
     def __repr__ (self) :
         return string.join([ "%s"%self[r] + ("/" if r<0 else "") + "Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , "+")
@@ -172,5 +177,4 @@ class __inject (make_injector(TailGF), TailGF):
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
 register_class (TailGF)
-
 

@@ -49,7 +49,7 @@ BOOST_PYTHON_MODULE(_pytriqs_GF2) {
 
  enum_<statistic_enum>("GF_Statistic") .value("Boson", Boson) .value("Fermion",Fermion) ;
 
- // **********   ******************
+ // ********** Matsubara frequencies ******************
 
  class_<domains::matsubara_freq>("DomainMatsubaraFrequency", init<double, statistic_enum>())
   .add_property("Beta",&domains::matsubara_freq::beta)
@@ -58,7 +58,21 @@ BOOST_PYTHON_MODULE(_pytriqs_GF2) {
 
  class_<meshes::matsubara_freq> ("MeshMatsubaraFrequency", init<double, statistic_enum, size_t>())
   .def("domain",&meshes::matsubara_freq::domain,return_internal_reference<1>()) // TO BE TESTED !! 
+  .def("get_point",&meshes::matsubara_freq::embed)
   .def("size",&meshes::matsubara_freq::size)
+  ;
+
+ class_<gf_view<meshes::matsubara_freq> >("GFBloc_ImFreq", init<meshes::matsubara_freq const &, data_type const &, tail_view const &>())
+  .def("shape",&gf_view<meshes::matsubara_freq>::shape)
+  .def("load",&gf_view<meshes::matsubara_freq>::load)
+  ;
+
+ // **********  Real frequencies  ******************
+
+ class_<domains::real_freq>("DomainRealFrequency", init<>())
+  ;
+
+ class_<meshes::real_freq> ("MeshRealFrequency", init<>())
   ;
 
  // **********  tail  ******************
@@ -66,10 +80,6 @@ BOOST_PYTHON_MODULE(_pytriqs_GF2) {
  class_<tail_view>("TailGF", init<tail_view::data_type,long>() )
   ;
 
- // **********  local gf  ******************
 
- class_<gf_view<meshes::matsubara_freq> >("GF", init<meshes::matsubara_freq const &, data_type const &, tail_view const &>())
-  .def("load",&gf_view<meshes::matsubara_freq>::load)
-  ;
 
 };

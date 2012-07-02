@@ -24,7 +24,7 @@ r""" """
 
 import numpy
 from math import *
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF2 import GF_Statistic,TailGF,MeshMatsubaraFrequency, MeshRealFrequency
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
@@ -73,7 +73,7 @@ class Function (Base):
         if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
         res = G._data.array[:,:,:]
         try : 
-            for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
+            for n in range(G._mesh.size()) : res[:,:,n] = self.F(G._mesh.get_point(n))
         except :
             raise RuntimeError, "The given function has a problem..."
         if self.Tail : G._tail.copyFrom(self.Tail)
@@ -88,7 +88,7 @@ class Const(Base):
          
     def __call__(self,G) :
         C = self.C
-        if G.mesh.TypeGF not in [GF_Type.Imaginary_Frequency, GF_Type.Real_Frequency] : 
+        if type(G._mesh) not in [MeshMatsubaraFrequency, MeshRealFrequency]:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(C,numpy.ndarray) : 
@@ -110,7 +110,7 @@ class Omega_(Base):
     r"""The function :math:`\omega \rightarrow \omega` """
     def __str__(self) : return "Omega" 
     def __call__(self,G) :
-        if G.mesh.TypeGF not in [GF_Type.Imaginary_Frequency, GF_Type.Real_Frequency] : 
+        if type(G._mesh) not in [MeshMatsubaraFrequency, MeshRealFrequency]:
             raise TypeError, "This initializer is only correct in frequency"
 
         t = G._tail
@@ -133,7 +133,7 @@ class A_Omega_Plus_B(Base):
          
     def __call__(self,G) :
         A,B = self.A, self.B
-        if G.mesh.TypeGF not in [GF_Type.Imaginary_Frequency, GF_Type.Real_Frequency] : 
+        if type(G._mesh) not in [MeshMatsubaraFrequency, MeshRealFrequency]:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(A,numpy.ndarray) : A = A*numpy.identity(G.N1) 
@@ -215,9 +215,9 @@ class SemiCircular (Base):
     def __call__(self,G) :
         D= self.HalfBandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
-        if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
+        if type(G._mesh) == MeshMatsubaraFrequency:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
-        elif G.mesh.TypeGF == GF_Type.Real_Frequency: 
+        elif type(G._mesh) == MeshRealFrequency:
             dos = _SemiCircularDOS (D)
             f = lambda om : -1j*pi*dos(om)*Id
         else :

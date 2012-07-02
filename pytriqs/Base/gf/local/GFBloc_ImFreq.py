@@ -21,7 +21,7 @@
 ################################################################################
 
 __all__ = ['GFBloc_ImFreq']
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF2 import GF_Statistic,TailGF,MeshMatsubaraFrequency
 from _GFBloc_base_data_tail import _GFBloc_base_data_tail
 from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
@@ -32,9 +32,9 @@ from math import pi
 #-----------------------------------------------------
 
 from pytriqs.Base.Utility.Injector import make_injector        # inject new code in the SAME class  
-from pytriqs_GF import GFBloc_ImFreq     # the wrapped C++ class.
+from pytriqs_GF2 import GFBloc_ImFreq     # the wrapped C++ class.
 
-class __inject (make_injector(GFBloc_ImFreq) ,_GFBloc_concept_impl, _GFBloc_base_data_tail, GFBloc_ImFreq):
+class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base_data_tail, GFBloc_ImFreq):
     """ 
     A matrix-valued block Green's function in Matsubara frequencies.
     """
@@ -79,12 +79,9 @@ class __inject (make_injector(GFBloc_ImFreq) ,_GFBloc_concept_impl, _GFBloc_base
             Nmax = d['NFreqMatsubara'] if 'NFreqMatsubara' in d else 1025
             stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
             sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshGF( GF_Type.Imaginary_Frequency,stat,Beta,
-                           numpy.array([ (2*n+sh)*pi/Beta for n in range(Nmax)]))
+            d['Mesh'] = MeshMatsubaraFrequency(10.0,GF_Statistic.Fermion,Nmax)
             for a in [ 'Beta', 'Statistic', 'NFreqMatsubara'] : 
                 if a in d : del d[a]
-        else : 
-            assert d['Mesh'].TypeGF== GF_Type.Imaginary_Frequency, "You provided a wrong type of mesh !!"
 
         self._init_base__(d)
         self._init_before_injection__(*self._param_for_cons)

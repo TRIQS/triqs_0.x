@@ -42,7 +42,7 @@ GFInitializer functions are used to initialize the GFBloc_xxx objects
 
 import numpy
 from math import *
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF2 import GF_Statistic,TailGF
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 
