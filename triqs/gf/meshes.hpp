@@ -81,6 +81,7 @@ namespace triqs { namespace gf { namespace meshes {
 
 */
 
+ struct real_freq {};
 
  
  struct BZ_mesh{
