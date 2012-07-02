@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,20 +18,18 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#ifndef TRIQS_GF_LOCAL_FOURIER_BASE_H 
+#define TRIQS_GF_LOCAL_FOURIER_BASE_H
+#include <triqs/arrays/vector.hpp>
 
-#ifndef TRIQS_GF_BLOC_FOURIER
-#define TRIQS_GF_BLOC_FOURIER
+namespace triqs { namespace gf { namespace details { 
 
-class GF_Bloc_ImTime;
-class GF_Bloc_ImFreq;
-class GF_Bloc_ReTime;
-class GF_Bloc_ReFreq;
+ namespace tqa = triqs::arrays;
+ typedef std::complex<double> dcomplex;
 
-void fourier_direct  (GF_Bloc_ImTime const & Gt, GF_Bloc_ImFreq & Gw, bool time_mesh_starts_at_half_bin);
-void fourier_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImTime & Gt, bool time_mesh_starts_at_half_bin);
+ void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, bool direct);
 
-void fourier_direct  (GF_Bloc_ReTime const & Gt, GF_Bloc_ReFreq & Gw);
-void fourier_inverse (GF_Bloc_ReFreq const & Gw, GF_Bloc_ReTime & Gt );
+}}}
 
 #endif
 

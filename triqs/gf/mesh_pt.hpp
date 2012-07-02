@@ -21,6 +21,7 @@
 #ifndef TRIQS_GF_MESH_PT_H
 #define TRIQS_GF_MESH_PT_H
 #include "domains.hpp"
+#include <boost/iterator/iterator_facade.hpp>
 
 namespace triqs { namespace gf { namespace meshes { 
 
@@ -39,11 +40,12 @@ namespace triqs { namespace gf { namespace meshes {
 
  template<typename MeshType> struct mesh_pt {
   MeshType const & m;
-  typename MeshType::index_type i;
-  mesh_pt( MeshType const & mesh, typename MeshType::index_type const & index): m(mesh), i(index) {}
+  typename MeshType::index_type index;
+  mesh_pt( MeshType const & mesh, typename MeshType::index_type const & index_): m(mesh), index(index_) {}
   typedef typename MeshType::domain_type::embedded_point_type cast_type;
-  operator cast_type() const { return m.embed(i);} // cast into the element type of the domain (e.g. real time, real frequency).
-  cast_type casted() const { return m.embed(i);}
+  operator cast_type() const { return m.embed(index);} // cast into the element type of the domain (e.g. real time, real frequency).
+  cast_type casted() const { return m.embed(index);}
+  void advance() { ++index;}
   // I need to explicitely redefine the 4 basic operations...
 #define IMPL_OP(TRA, OP)\
   template<typename T> friend typename details::TRA<cast_type,T>::type operator OP ( mesh_pt const & x, T y) { return cast_type(x) OP y;}\
@@ -57,6 +59,23 @@ namespace triqs { namespace gf { namespace meshes {
 
  template<typename MeshType> 
   mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
+
+ //------------------------------------------------------
+ 
+template<typename MeshType>
+ class mesh_pt_generator : 
+  public boost::iterator_facade< mesh_pt_generator<MeshType>, mesh_pt<MeshType> const &, boost::forward_traversal_tag, mesh_pt<MeshType> const & > {
+   friend class boost::iterator_core_access;
+   MeshType const & mesh;
+   size_t u;
+   mesh_pt<MeshType> pt;
+   void increment() { ++u; pt.advance(); }
+   mesh_pt<MeshType> const & dereference() const { return pt;}
+   bool equal(mesh_pt_generator const & other) const { return ((&mesh == &other.mesh) && (other.u==u) );}
+   public:
+   mesh_pt_generator( MeshType const & m, bool atEnd = false): mesh(m), u(atEnd ? m.size()-1: 0), pt(m,u) {}
+   operator bool() const { return (u!=mesh.size()-1);}
+  };
 
 }}}
 

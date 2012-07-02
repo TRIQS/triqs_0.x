@@ -49,6 +49,7 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    matsubara_time (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
+   bool operator == (matsubara_time const & D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
   struct matsubara_legendre{};

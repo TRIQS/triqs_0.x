@@ -70,6 +70,7 @@ namespace triqs { namespace gf { namespace local {
  
    gf_impl() {} // all arrays of zero size (empty)
    gf_impl(size_t N1, size_t N2, MeshType const & m, int tail_order_max): _mesh(m), data(N1,N2,m.size()), _tail(N1,N2,-1,tail_order_max +2){ data()=0;}
+   gf_impl(shape_type sh, MeshType const & m, tail_view const & t): _mesh(m), data(sh[0],sh[1],m.size()), _tail(t){ data()=0;}
    gf_impl (mesh_type const & m, data_view_type const & dat,tail_view const & t) : _mesh(m), data(dat), _tail(t){}
    
    gf_impl(gf_impl const & x)                  : _mesh(x._mesh), data(x.data), _tail(x._tail){}
@@ -104,8 +105,8 @@ namespace triqs { namespace gf { namespace local {
    typedef arrays::matrix_view<value_type,       storage_order>  mv_type;
    typedef arrays::matrix_view<const value_type, storage_order>  const_mv_type;
 
-   mv_type       operator() (meshes::mesh_pt<mesh_type> const & x)       { return data(tqa::range(),tqa::range(),x.i);}
-   const_mv_type operator() (meshes::mesh_pt<mesh_type> const & x) const { return data(tqa::range(),tqa::range(),x.i);}
+   mv_type       operator() (meshes::mesh_pt<mesh_type> const & x)       { return data(tqa::range(),tqa::range(),x.index);}
+   const_mv_type operator() (meshes::mesh_pt<mesh_type> const & x) const { return data(tqa::range(),tqa::range(),x.index);}
 
    tail_view       operator() ( domains::freq_infty const & x)       {return _tail;}
    const tail_view operator() ( domains::freq_infty const & x) const {return _tail;}
@@ -163,6 +164,7 @@ namespace triqs { namespace gf { namespace local {
   gf(gf_view<MeshType> const & g): B(g){} 
   template<typename GfType> gf(GfType const & x): B() { *this = x;} 
   gf(size_t N1, size_t N2, MeshType const & m, int tail_order_max = 3) : B(N1,N2,m,tail_order_max) {}
+  gf(typename B::shape_type sh, MeshType const & m, tail_view const & t) : B(sh,m,t) {}
   using B::operator=;// or the default is = synthetized...
  };
 
