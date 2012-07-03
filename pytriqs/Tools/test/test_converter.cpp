@@ -121,8 +121,7 @@ map_st_vi g3() {
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/python/converters.hpp>
 
-using namespace triqs::arrays;
-typedef array<double,1> ad1;
+typedef triqs::arrays::array<double,1> ad1;
 typedef std::pair < ad1, ad1 > p_ad1_ad1;
 
 p_ad1_ad1 a1() {
