@@ -22,9 +22,11 @@ void read_dict(boost::python::dict d) {
 
   std::cout << "i = " << i<< std::endl ;
   std::cout << "s = " << s<< std::endl ;
+
+  std::cout << "square of 5 is " << extract<double>(d['f'] (5)); 
  
   //one can also store classes in dictionaries: 
-  myClass c = extract<myClass>(d['C']);
+  myClass&  c = extract<myClass&>(d['C']);
   std::cout  << " myclass .U = " << c.U<< std::endl;
 }
 
