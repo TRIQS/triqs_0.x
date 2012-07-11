@@ -22,8 +22,10 @@
 #define TRIQS_UTILITY_CONCEPT_TOOLS_H
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/seq/for_each_i.hpp>
+#include <boost/type_traits/is_base_of.hpp>
+#include <boost/type_traits/is_complex.hpp>
 
-#define TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) concept_tag__##MyBeautifulConcept
+#define TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept) MyBeautifulConcept##__concept_tag
 
 #define TRIQS_MODEL_CONCEPT(MyBeautifulConcept) TRIQS_CONCEPT_TAGNAME(MyBeautifulConcept)
 
