@@ -85,7 +85,7 @@ namespace triqs { namespace arrays {
   template<typename Sig> struct result;
   template<typename This, typename A> struct result<This(A)> { typedef m_result<A> type;};
 
-  template< class A > m_result<A> operator()(A const & a) { 
+  template< class A > m_result<A> operator()(A const & a) const { 
     //static_assert( (ImmutableArray<A>::value), "map : A does not model ImmutableArray");
     return m_result<A>(f,a);
    } 
