@@ -101,8 +101,7 @@ namespace triqs { namespace gf { namespace lattice {
 
    mv_type operator()(arg0_type const & i,arg1_type const & j)  {
 
-    
-    return evaluator<Default,glattice_impl>(*this) (i,j); 
+    return evaluator<glattice_impl>(*this) (i,j); 
 
    }
    const_mv_type operator()(arg0_type const & i,arg1_type const & j) const {
