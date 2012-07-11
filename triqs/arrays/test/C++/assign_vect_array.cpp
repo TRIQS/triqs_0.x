@@ -26,7 +26,6 @@
 #include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
-using namespace std;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -36,9 +35,9 @@ int main(int argc, char **argv) {
  triqs::arrays::vector<double> V; array<double,1> Va(5);
  for (int i =0; i<5; ++i) Va(i) = i+2;
  V = Va/2.0;
- cout<<" V = VA/2 : "<< V<< Va<<endl;
+ std::cout<<" V = VA/2 : "<< V<< Va<<std::endl;
  V = Va;
- cout<<" V = VA : "<< V<< Va<<endl;
+ std::cout<<" V = VA : "<< V<< Va<<std::endl;
  return 0;
 }
 

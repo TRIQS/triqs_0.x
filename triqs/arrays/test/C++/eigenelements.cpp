@@ -27,7 +27,7 @@
 #include "./src/linalg/eigenelements.hpp"
 
 #include <iostream>
-using namespace std;
+
 using namespace triqs::arrays;
 using namespace triqs::arrays::linalg;
 
@@ -41,12 +41,12 @@ int main(int argc, char **argv) {
   for (int j=0; j<=i; ++j)
   { A(i,j) = (i>j ? i+2*j : i-j); A(j,i) = A(i,j);}
 
- cerr<<"A = "<<A<<endl;
+ std::cerr<<"A = "<<A<<std::endl;
  eigenelements_worker< matrix_view <double>, true> w (A());
  w.invoke();
- cout<<"A = "<<A<<endl;
- cout<<" vectors = "<< w.values()<<endl;
- cout<<" values = "<< w.vectors()<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<" vectors = "<< w.values()<<std::endl;
+ std::cout<<" values = "<< w.vectors()<<std::endl;
 
  A() =0;
  A(0,1) = 1;
@@ -55,19 +55,19 @@ int main(int argc, char **argv) {
  A(0,2) = 2;
  A(2,0) = 2;
 
- cout<<"A = "<<A<<endl;
- cout<<" values = "<< eigenelements(A(),true).first<<endl;
- cout<<" vectors = "<< eigenelements(A(),true).second<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<" values = "<< eigenelements(A(),true).first<<std::endl;
+ std::cout<<" vectors = "<< eigenelements(A(),true).second<<std::endl;
 
  A() =0;
  A(0,1) = 1;
  A(1,0) = 1;
  A(2,2) = 8;
 
- cout<<"A = "<<A<<endl;
- cout<<" vectors = "<< eigenelements(A(),true).second<<endl;
- cout<<" values = "<< eigenelements(A(),true).first<<endl;
- cout<<"A = "<<A<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<" vectors = "<< eigenelements(A(),true).second<<std::endl;
+ std::cout<<" values = "<< eigenelements(A(),true).first<<std::endl;
+ std::cout<<"A = "<<A<<std::endl;
 
  return 0;
 

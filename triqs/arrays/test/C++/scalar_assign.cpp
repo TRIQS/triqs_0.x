@@ -26,7 +26,7 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -36,10 +36,10 @@ int main(int argc, char **argv) {
  triqs::arrays::matrix<double,Option::Fortran > A(5,5);
 
  A() = 2;
- cout<<"A = "<<A<<endl;
+ std::cout<<"A = "<<A<<std::endl;
 
  array_view<double,2,Option::Fortran> AA(A); AA = 2;
- cout<<"A = "<<A<<endl;
+ std::cout<<"A = "<<A<<std::endl;
 
 }
 

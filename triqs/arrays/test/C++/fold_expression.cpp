@@ -28,7 +28,7 @@
 #include "./src/algorithms.hpp"
 #include <iostream>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
@@ -45,16 +45,16 @@ int main(int argc, char **argv) {
   { A(i,j) = i+2*j+1; B(i,j) = i-3*j;}
 
  C = A+ B ;
- cout<< " A " << A<<endl;
- cout<< " B " << B<<endl;
- cout<< " A+B " << C<<endl;
+ std::cout<< " A " << A<<std::endl;
+ std::cout<< " B " << B<<std::endl;
+ std::cout<< " A+B " << C<<std::endl;
 
- cout<< " max A : "<<triqs::arrays::max_element(A)<<endl;
- cout<< " max B : "<<triqs::arrays::max_element(B)<<endl;
- cout<< " max abs(B) : "<<triqs::arrays::max_element(Abs(B))<<endl;
- cout<< " max A+B : "<<triqs::arrays::max_element(A+B)<<endl;
+ std::cout<< " max A : "<<triqs::arrays::max_element(A)<<std::endl;
+ std::cout<< " max B : "<<triqs::arrays::max_element(B)<<std::endl;
+ std::cout<< " max abs(B) : "<<triqs::arrays::max_element(Abs(B))<<std::endl;
+ std::cout<< " max A+B : "<<triqs::arrays::max_element(A+B)<<std::endl;
 
- cout <<" sum(A) "<< sum(A)<<endl;
- cout <<" prod(A) "<< prod(A)<<endl;
+ std::cout <<" sum(A) "<< sum(A)<<std::endl;
+ std::cout <<" prod(A) "<< prod(A)<<std::endl;
  return 0;
 }

@@ -27,7 +27,7 @@
 #include <boost/proto/debug.hpp>
 #include <iostream>
 
-using namespace std;
+
 using namespace triqs::arrays;
 namespace tqa = triqs::arrays;
 using namespace indexmaps;
@@ -42,36 +42,36 @@ int main(int argc, char **argv) {
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j) 
    { A(i,j) = 10*i+ j;B(i,j) = i+ 2*j;}
-  cout<<" A = "<<A<<endl;
-  cout<<" B = "<<B<<endl;
+  std::cout<<" A = "<<A<<std::endl;
+  std::cout<<" B = "<<B<<std::endl;
 
-  cout<< (A+2*B) <<endl;
-  cout<<"-------"<<endl;
+  std::cout<< (A+2*B) <<std::endl;
+  std::cout<<"-------"<<std::endl;
 
-  cout<< (A+2*B).domain()<<endl;
-  cout<<"----EVAL ---"<<endl;
+  std::cout<< (A+2*B).domain()<<std::endl;
+  std::cout<<"----EVAL ---"<<std::endl;
 
   C= A + 2*B;
-  cout<<" C = A + 2*B = "<<C<<endl;
+  std::cout<<" C = A + 2*B = "<<C<<std::endl;
 
   C= std::plus<matrix<long> >()(A,B);
-  cout<<" C = A+B =  "<<C<<endl;
+  std::cout<<" C = A+B =  "<<C<<std::endl;
 
   // matrix multiplication
   matrix<double> Af (2,2), Bf(2,2),Cf(2,2);
   Af = A; Bf = B; Bf(0,0) = 1; Cf()=0;
-  cout<<" Af = "<<Af<<endl;
-  cout<<" Bf = "<<Bf<<endl;
+  std::cout<<" Af = "<<Af<<std::endl;
+  std::cout<<" Bf = "<<Bf<<std::endl;
  
-  cout<< (Af* Bf).domain()<<endl;
+  std::cout<< (Af* Bf).domain()<<std::endl;
 
-  cout<<" computing  Cf = Af * Bf "<<endl;
+  std::cout<<" computing  Cf = Af * Bf "<<std::endl;
   Cf = Af * Bf;
-  cout<<" Cf  = "<<Cf<<endl;
+  std::cout<<" Cf  = "<<Cf<<std::endl;
 
-  cout<<" matrix( Af * Bf )"<<matrix<double>(Af*Bf)<<endl;
+  std::cout<<" matrix( Af * Bf )"<<matrix<double>(Af*Bf)<<std::endl;
   
-  cout<<" matrix( Af * (Bf + Cf) )"<<matrix<double>(Af*(Bf+ Cf))<<endl;
+  std::cout<<" matrix( Af * (Bf + Cf) )"<<matrix<double>(Af*(Bf+ Cf))<<std::endl;
 
   TEST (A);  
   TEST (tqa::make_matrix( 2*A ));

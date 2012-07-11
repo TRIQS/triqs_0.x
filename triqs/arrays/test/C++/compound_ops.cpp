@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
  array<long,2> A (2,3);
  array<long,2,Option::Fortran> Af (2,3);
 
- cout <<"Filling Af...."<<endl;
+ std::cout <<"Filling Af...."<<std::endl;
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
@@ -42,25 +42,25 @@ int main(int argc, char **argv) {
 
  // assign 
  A = Af;
- cout <<"A= Af --- > A =  "<<A<<endl;
+ std::cout <<"A= Af --- > A =  "<<A<<std::endl;
 
 
  A *=2.0;
 
- cout<<" 2* A= "<<A<<endl;
+ std::cout<<" 2* A= "<<A<<std::endl;
 
  Af /= 2.0;
 
- cout<<"  Af/2 =  "<<Af<<endl;
+ std::cout<<"  Af/2 =  "<<Af<<std::endl;
 
  // should this really compile ??
- long i=5; i/=2.0; cout <<i<<endl;
+ long i=5; i/=2.0; std::cout <<i<<std::endl;
  
  array<double,2> B (A);
 
  B /=4;
  
- cout<<"  B= A/4 =  "<<B<<endl;
+ std::cout<<"  B= A/4 =  "<<B<<std::endl;
 
  return 0;
 }

@@ -32,7 +32,7 @@
 #include "./src/linalg/a_x_ty.hpp"
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -49,25 +49,25 @@ int main(int argc, char **argv) {
   {  MC(i) = i;MB(i)=10*(i+1); }
 
  range R(1,3);
- cout<<" MC(R) = "<<MC(R)<< endl<<endl;
- cout<<" MB(R) = "<<MB(R)<< endl<<endl;
+ std::cout<<" MC(R) = "<<MC(R)<< std::endl<<std::endl;
+ std::cout<<" MB(R) = "<<MB(R)<< std::endl<<std::endl;
 
  A(R,R) += a_x_ty(1.0,MC(R),MB(R));
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
 
  A(R,R) += a_x_ty(1.0,MB(R),MC(R));
 
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
 
  A(R,R) = a_x_ty(1.0,MB(R),MC(R));
 
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
  
- cout<<" full A"<< A<<endl<<endl;
+ std::cout<<" full A"<< A<<std::endl<<std::endl;
 
 
- cout<< " MB, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MB,MC)<<endl;
- cout<< " MC, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MC,MC)<<endl;
+ std::cout<< " MB, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MB,MC)<<std::endl;
+ std::cout<< " MC, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MC,MC)<<std::endl;
 
 }
 

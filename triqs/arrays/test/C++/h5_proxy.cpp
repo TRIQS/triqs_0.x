@@ -25,7 +25,7 @@
 #include <iostream>
 #include "./src/impl/asserts.hpp"
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 template < class T>
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  test("proxy_d.h5", 1.0 );
- test("proxy_c.h5", complex<double>(1,2) );
+ test("proxy_c.h5", std::complex<double>(1,2) );
 
 }
 

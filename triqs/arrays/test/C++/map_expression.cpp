@@ -26,7 +26,7 @@
 #include <iostream>
 #include <algorithm>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 template<class T> T mmax(T const & x, T const &  y) { return std::max(x,y);}
@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
  BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
  BOOST_AUTO( Max ,  map( boost::function<double(double,double)>(mmax<double>) ) );
 
- cout<< " A " << A<<endl<<endl;
- cout<< " B " << B<<endl<<endl;
- cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<endl<<endl;
- cout<<" A+10*B = "<<make_matrix(A+10*B) <<endl<<endl;
- cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<endl<<endl;
- cout<<" Max(A,10*B)"<< make_matrix(Max(A,10*B))<<endl<<endl;
+ std::cout<< " A " << A<<std::endl<<std::endl;
+ std::cout<< " B " << B<<std::endl<<std::endl;
+ std::cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<std::endl<<std::endl;
+ std::cout<<" A+10*B = "<<make_matrix(A+10*B) <<std::endl<<std::endl;
+ std::cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<std::endl<<std::endl;
+ std::cout<<" Max(A,10*B)"<< make_matrix(Max(A,10*B))<<std::endl<<std::endl;
  return 0;
 }

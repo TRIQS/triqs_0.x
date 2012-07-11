@@ -25,7 +25,6 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-using namespace std;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -35,7 +34,7 @@ int main(int argc, char **argv) {
  array<long,2> A (2,3);
  array<long,2,Option::Fortran> Af (2,3);
 
- cout <<"Filling Af...."<<endl;
+ std::cout <<"Filling Af...."<<std::endl;
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
@@ -43,34 +42,34 @@ int main(int argc, char **argv) {
 
  // assign 
  A = Af;
- cout <<"A= Af --- > A =  "<<A<<endl;
+ std::cout <<"A= Af --- > A =  "<<A<<std::endl;
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
-   cout<<" i,j = "<<i<<"    "<<j<<" A="<< A(i,j)<< " should be "<< 10*i+ j<<endl;
+   std::cout<<" i,j = "<<i<<"    "<<j<<" A="<< A(i,j)<< " should be "<< 10*i+ j<<std::endl;
 
- cout<<" copy construction B(A)"<<endl;
+ std::cout<<" copy construction B(A)"<<std::endl;
  array<long,2> B(Af);
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
-   cout<<"B "<<B(i,j)<<endl;
+   std::cout<<"B "<<B(i,j)<<std::endl;
 
- cout<<"  B2 = A"<<endl;
+ std::cout<<"  B2 = A"<<std::endl;
  array<long,2> B2;
  B2 = A;
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
-   cout<<"B2 "<<B2(i,j)<<endl;
+   std::cout<<"B2 "<<B2(i,j)<<std::endl;
 
  array<double,2> F = A;
- cout<<"  F = A"<<F<<endl;
+ std::cout<<"  F = A"<<F<<std::endl;
 
 
 matrix<std::complex<double> > M1(2,2), M2(2,2);
 M1() = 0;
 A()=0;
-cerr<< " is scalar "<< is_scalar_for< int, matrix<std::complex<double> > >::type::value<< endl; 
+std::cerr<< " is scalar "<< is_scalar_for< int, matrix<std::complex<double> > >::type::value<< std::endl; 
 
 return 0;
 }

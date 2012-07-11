@@ -39,7 +39,7 @@
 #include <boost/numeric/bindings/lapack/computational/getri.hpp>
 
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 namespace blas = boost::numeric::bindings::blas;
@@ -55,15 +55,15 @@ int main(int argc, char **argv) {
 
  for (int i =0; i<5; ++i) {V(i) = i; V2(i) = -1;}
 
- cout<<"V = "<<V<<endl;
- cout<<"V2 = "<<V2<<endl;
+ std::cout<<"V = "<<V<<std::endl;
+ std::cout<<"V2 = "<<V2<<std::endl;
 
- cout <<"starting blas test"<<endl;
+ std::cout <<"starting blas test"<<std::endl;
 
  blas::axpy(2.0,V,V2);
 
- cout<<"V = "<<V<<endl;
- cout<<"V2 = "<<V2<<endl;
+ std::cout<<"V = "<<V<<std::endl;
+ std::cout<<"V2 = "<<V2<<std::endl;
 
  triqs::arrays::vector <double> V3(2);
  for (int i =0; i<2; ++i) {V3(i) = i+1;}
@@ -75,26 +75,26 @@ int main(int argc, char **argv) {
 
  // try to multiply
  blas::gemm(1.0,M1, M2, 1.0, M3);
- cout<<"M1 = "<<M1<<endl;
- cout<<"M2 = "<<M2<<endl;
- cout<<"M3 = "<<M3<<endl;
+ std::cout<<"M1 = "<<M1<<std::endl;
+ std::cout<<"M2 = "<<M2<<std::endl;
+ std::cout<<"M3 = "<<M3<<std::endl;
 
 /* triqs::arrays::matrix_view<double,'C' > MC1(M1);
- cout<<"M1 = "<<M1<<endl;
- cout<<"MC1 = "<<MC1<<endl;
+ std::cout<<"M1 = "<<M1<<std::endl;
+ std::cout<<"MC1 = "<<MC1<<std::endl;
 
 */
 
  // blas::get(alpha, A,B, c, R) : R <= alpha *A*B + c*R
- cout<<"V3 = "<<V3<<endl;
+ std::cout<<"V3 = "<<V3<<std::endl;
  blas::ger(1.0,V3,V3,M2);
- cout<<"M2 = "<<M2<<endl;
+ std::cout<<"M2 = "<<M2<<std::endl;
 
  // try to invert
  triqs::arrays::vector <int> ipiv(2);
  lapack::getrf(M1, ipiv);
  lapack::getri(M1, ipiv);
- cout<<"inv M1 = "<<M1<<endl;
+ std::cout<<"inv M1 = "<<M1<<std::endl;
 
 
 }

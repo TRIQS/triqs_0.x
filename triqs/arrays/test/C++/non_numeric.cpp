@@ -24,7 +24,7 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
  
 #include <boost/function.hpp>
@@ -42,7 +42,7 @@ struct S {
 
 double my_fun(double x, double y) { return x+y;}
 
-ostream & operator << (ostream & out, S const & s) { return out<<boost::make_tuple(s.x,s.y,s.i);}
+std::ostream & operator << (std::ostream & out, S const & s) { return out<<boost::make_tuple(s.x,s.y,s.i);}
 
 int main(int argc, char **argv) {
  
@@ -57,10 +57,10 @@ int main(int argc, char **argv) {
   for (int j=0; j<2; ++j,++p) 
        A(i,j) = S(i,j,p);
 
- cout<<"  A "<<A<<A(range(),0)<<endl;
+ std::cout<<"  A "<<A<<A(range(),0)<<std::endl;
 
  A() = s0;
- cout<<"  A "<<A<<A(range(),0)<<endl;
+ std::cout<<"  A "<<A<<A(range(),0)<<std::endl;
 
  array< array<double,1>, 2> AA(2,2);
 
@@ -70,9 +70,9 @@ int main(int argc, char **argv) {
 
  AA()=A0;
 
- cout<<"  AA "<<AA<<endl;
+ std::cout<<"  AA "<<AA<<std::endl;
  
- cout<<AA(0,0)<<endl;
+ std::cout<<AA(0,0)<<std::endl;
 
  // even more  : a matrix of functions !
  matrix< boost::function<double(double) > > F (2,2);
@@ -83,7 +83,7 @@ for (int i =0; i<2; ++i)
 
 for (int i =0; i<2; ++i)
   for (int j=0; j<2; ++j,++p) 
-    cout<<F(i,j)(0)<<endl; 
+    std::cout<<F(i,j)(0)<<std::endl; 
 
  return 0;
 }

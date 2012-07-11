@@ -25,7 +25,7 @@
 #include <iostream>
 #include <fstream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 #include <boost/archive/text_oarchive.hpp>
@@ -42,8 +42,8 @@ int main(int argc, char **argv) {
    A(i,j) = 10*i+ j;
 
  array_view<long,1>  SL( A(0,range(0,3)));
- cout<<"A = "<<A<<endl;
- cout<<"SLICE : A(0,range(0,3))  "<<SL<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
 
  // create and open a character archive for output
  std::ofstream ofs("arch1");
@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
    A(i,j)=0;
- cout<<"A = "<<A<<endl;
- cout<<"SLICE : A(0,range(0,3))  "<<SL<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
 
  {
   // create and open an archive for input
@@ -69,13 +69,13 @@ int main(int argc, char **argv) {
   ia >> A>> SL;
   // archive and stream closed when destructors are called
  }
- cout<<"A is "<<A<<endl;
- cout<<"SLICE : A(0,range(0,3))  "<<SL<<endl;
+ std::cout<<"A is "<<A<<std::endl;
+ std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
 
- cout<<"Setting A(0,0) =56 "<<endl;
+ std::cout<<"Setting A(0,0) =56 "<<std::endl;
  SL(0) = 56;
- cout<<"A is "<<A<<endl;
- cout<<"SLICE : A(0,range(0,3))  "<<SL<<endl;
+ std::cout<<"A is "<<A<<std::endl;
+ std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
 
 }
 

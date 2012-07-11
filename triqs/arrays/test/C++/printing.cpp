@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-//using namespace std;
+//using std::cout; using std::endl;
 //using namespace triqs::arrays;
 
 int main(int argc, char **argv) {

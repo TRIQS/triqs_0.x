@@ -25,7 +25,7 @@
 #include <iostream>
 #include "./src/impl/asserts.hpp"
 
-using namespace std;
+
 using namespace triqs::arrays;
    
 template<typename ArrayType>
@@ -43,21 +43,21 @@ int main(int argc, char **argv) {
  array<long,3> A(2,3,4) ;
  A() = 7;
 
- cerr<< A(0, ellipsis() ) <<endl;
+ std::cerr<< A(0, ellipsis() ) <<std::endl;
 
  array<long,4> B(2,3,4,5) ;
  B() = 8;
 
- cerr<< B(0, ellipsis(), 3 ) <<endl;
- cerr<< B(0, ellipsis(), 2, 3 ) <<endl;
- cerr<< B( ellipsis(), 2, 3 ) <<endl;
+ std::cerr<< B(0, ellipsis(), 3 ) <<std::endl;
+ std::cerr<< B(0, ellipsis(), 2, 3 ) <<std::endl;
+ std::cerr<< B( ellipsis(), 2, 3 ) <<std::endl;
 
 
  assert_all_close (B(0, ellipsis(), 3 ) , B(0, range(),range(), 3 ) , 1.e-15);
  assert_all_close (B(0, ellipsis(),2, 3 ) , B(0, range(), 2, 3 ) , 1.e-15);
  assert_all_close (B( ellipsis(),2, 3 ) , B( range(),range(),  2, 3 ) , 1.e-15);
 
- cerr << B.shape() <<endl;
+ std::cerr << B.shape() <<std::endl;
 
 
  }

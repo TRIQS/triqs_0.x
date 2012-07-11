@@ -28,7 +28,7 @@
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 namespace bindings= boost::numeric::bindings;
 
@@ -45,14 +45,14 @@ int main(int argc, char **argv) {
 
  range R(1,3); 
 
- cout<< "A = "<< A<< endl;
- cout<<A.transpose() << endl;
- cout<<A(R,R) << endl;
- cout<<A(R,R).transpose() << endl;
+ std::cout<< "A = "<< A<< std::endl;
+ std::cout<<A.transpose() << std::endl;
+ std::cout<<A(R,R) << std::endl;
+ std::cout<<A(R,R).transpose() << std::endl;
 
  triqs::arrays::matrix_view<double > Acw =  A.transpose();
- cout<<"bindings::stride_major(a) "<<  bindings::stride_major(Acw(R,R)) <<endl; 
- cout<<"bindings::stride_major(a) "<<  bindings::stride_major(A(R,R)) <<endl; 
+ std::cout<<"bindings::stride_major(a) "<<  bindings::stride_major(Acw(R,R)) <<std::endl; 
+ std::cout<<"bindings::stride_major(a) "<<  bindings::stride_major(A(R,R)) <<std::endl; 
   
 }
 

@@ -25,7 +25,7 @@
 #include "./src/vector.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -37,28 +37,28 @@ int main(int argc, char **argv) {
  for (int i =0; i<5; ++i) 
  V(i) = i+1;
 
- cout<< V<<endl; 
+ std::cout<< V<<std::endl; 
  W = V;
- cout<< W <<endl; 
- cout<< V<<endl; 
+ std::cout<< W <<std::endl; 
+ std::cout<< V<<std::endl; 
 
  triqs::arrays::vector<double> A(3);
  A() = 10; 
  W(range(0,6,2)) = A;
- cout<< W <<endl; 
+ std::cout<< W <<std::endl; 
 
  W +=V;
- cout<< W <<endl; 
+ std::cout<< W <<std::endl; 
 
  W -=V;
- cout<< W <<endl; 
+ std::cout<< W <<std::endl; 
 
  V *=2;
- cout<< "W = "<<W <<endl; 
- cout<< "V = "<<V <<endl; 
+ std::cout<< "W = "<<W <<std::endl; 
+ std::cout<< "V = "<<V <<std::endl; 
  triqs::arrays::swap(W,V);
- cout<< "W = "<<W <<endl; 
- cout<< "V = "<<V <<endl; 
+ std::cout<< "W = "<<W <<std::endl; 
+ std::cout<< "V = "<<V <<std::endl; 
 
  return 0;
 }

@@ -25,7 +25,7 @@
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 template<typename O1, typename O2, typename O3> void test(bool all =false)  { 
@@ -42,11 +42,11 @@ template<typename O1, typename O2, typename O3> void test(bool all =false)  {
  M3 = matmul(M1,M2);
 
  if (all) { 
-  cout<<"M1 = "<<M1<<endl;
-  cout<<"M2 = "<<M2<<endl;
-  cout<<"M3 = "<<M3<<endl;
-  cout<<"M4 = "<< matrix<double,Option::Fortran>(matmul(M1,M2)) <<endl;
-  cout<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<endl;
+  std::cout<<"M1 = "<<M1<<std::endl;
+  std::cout<<"M2 = "<<M2<<std::endl;
+  std::cout<<"M3 = "<<M3<<std::endl;
+  std::cout<<"M4 = "<< matrix<double,Option::Fortran>(matmul(M1,M2)) <<std::endl;
+  std::cout<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
 
 
   for (int i =0; i<2; ++i)
@@ -54,7 +54,7 @@ template<typename O1, typename O2, typename O3> void test(bool all =false)  {
     M3(i,j) = matmul(M1,M2)[mini_vector<int,2>(i,j)];
  }
 
- cout<<"M3 = "<<M3<<endl<<"----------------"<<endl;
+ std::cout<<"M3 = "<<M3<<std::endl<<"----------------"<<std::endl;
 
 }
 
