@@ -55,7 +55,10 @@ namespace mc_tools {
   static std::string random_generator_names(std::string const & sep=" ");
 
   /// Returns a integer in [0,i-1] with flat distribution
-  int operator()(int i) { return (i==1 ? 0 : int(floor(i*((*gen)()))));}
+#define INTEGER_OVERLOAD(T) T operator()(T i) { return (i==1 ? 0 : T(floor(i*((*gen)()))));}
+  INTEGER_OVERLOAD(int)
+  INTEGER_OVERLOAD(size_t)
+#undef INTEGER_OVERLOAD
 
   /// Returns a double in [0,1[ with flat distribution
   double operator()() { return ((*gen)());} 
