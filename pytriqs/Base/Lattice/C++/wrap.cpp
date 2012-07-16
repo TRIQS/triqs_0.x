@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -24,8 +23,10 @@
 #include "tight_binding.hpp"
 #include <boost/python.hpp>
 #include <boost/python/docstring_options.hpp>
-#include <triqs/python_tools/converters.hpp> 
+#include <triqs/utility/compiler_details.hpp>
 #include <triqs/arrays/python/converters.hpp>
+#include <triqs/python_tools/converters/pair.hpp> 
+#include <triqs/python_tools/converters/unordered_map.hpp> 
 
 using namespace boost::python;
 
@@ -38,6 +39,10 @@ int _r = _import_array();assert(_r==0);
   triqs::python_tools::register_converter< std::pair<array<double,1>, tqa::array<double,1> > >();
   triqs::python_tools::register_converter< std::pair<array<double,1>, tqa::array<double,2> > >();
 
+  //triqs::python_tools::register_converter< tqa::array_view<double,2> >();
+  //triqs::python_tools::register_converter< tqa::array_view<double,2, tqa::Option::Fortran> >();
+  //triqs::python_tools::register_converter< tqa::vector_view<double> >();
+
   docstring_options doc_options;
   doc_options.disable_py_signatures();
   doc_options.disable_cpp_signatures();
@@ -48,7 +53,8 @@ int _r = _import_array();assert(_r==0);
    " :param Orbital_Positions: Position of the orbitals close to the origin. Default = (0,0,0)";
 
   class_<bravais_lattice>("bravais_lattice", 
-    init<array<double,2>, object  >
+    init<object , object  >
+    //init<array_view<double,2>, object  >
     ( bravais_lattice_doc_init,
       ( boost::python::arg("Units"), 
 	boost::python::arg("Orbital_Positions")=boost::python::list(make_tuple(make_tuple(0.0,0.0,0.0)))

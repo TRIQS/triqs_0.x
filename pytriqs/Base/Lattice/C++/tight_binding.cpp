@@ -18,13 +18,15 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "tight_binding.hpp"
 
-#include <triqs/arrays/expressions/arithmetic.hpp>
-#include <triqs/arrays/expressions/min_max.hpp>
+#include <triqs/arrays/proto/array_algebra.hpp>
+#include <triqs/arrays/proto/matrix_algebra.hpp>
+#include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
-#include <triqs/python_tools/converters.hpp> 
+#include <triqs/python_tools/converters/vector.hpp> 
+#include <triqs/python_tools/converters/unordered_map.hpp> 
+#include <triqs/arrays/python/converters.hpp>
 #include "grid_generator.hpp"
 #include "functors.hpp"
 
@@ -35,7 +37,7 @@ namespace triqs { namespace lattice_tools {
  tight_binding::tight_binding(bravais_lattice const & bl__, map_type const & t_r) : bl_(bl__),tr(t_r) {check();}
 
  tight_binding::tight_binding(bravais_lattice const & bl__,boost::python::object dct) : 
-  bl_(bl__), tr(triqs::python_tools::Py_to_C::convert<map_type>::invoke(dct)) {check();}
+  bl_(bl__), tr(triqs::python_tools::converter<map_type>::Py2C(dct)) {check();}
 
  void tight_binding::check() { 
   const size_t no = bl_.n_orbitals();
@@ -47,7 +49,7 @@ namespace triqs { namespace lattice_tools {
 
  //------------------------------------------------------
 
- array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array<double,2> const & k_stack) {
+ array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, Option::Fortran> const & k_stack) {
   result_of::Fourier<tight_binding>::type TK = Fourier(TB);  
   array<dcomplex,3> res(TB.n_bands(), TB.n_bands(), k_stack.len(1));
   for(size_t i = 0; i<k_stack.len(1); ++i) res(range(), range(), i) = TK(k_stack(range(),i));
