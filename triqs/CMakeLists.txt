@@ -1,3 +1,6 @@
+# C++11 
+add_definitions( -std=c++0x)
+
 # Compile and link with python 
 link_libraries(${PYTHON_LIBRARY})
 include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
