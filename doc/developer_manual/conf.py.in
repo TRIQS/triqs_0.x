@@ -21,7 +21,9 @@ import sys, os
 # General configuration
 # ---------------------
 
-sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe", "@CMAKE_BINARY_DIR@/doc/mpl", "@CMAKE_BINARY_DIR@/doc"]
+sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe",
+"@CMAKE_BINARY_DIR@/doc/mpl","@CMAKE_BINARY_DIR@/doc/autocompile",
+"@CMAKE_BINARY_DIR@/doc/sandbox","@CMAKE_BINARY_DIR@/doc"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -37,6 +39,15 @@ extensions += [
        # 'inheritance_diagram',
         'numpydoc']
 
+extensions += ['autocompile']
+#extensions += ['sandbox']
+
+autocompile_opts = dict(compiler = "@CMAKE_CXX_COMPILER@", 
+        link = "@DOC_AUTOCOMPILE_LINK@".replace(';',' '), 
+        ld_library_path = "@DOC_AUTOCOMPILE_LD_LIBRARY_PATH@".replace(';',' '), 
+        include =''.join([ " -I%s"%arg for arg in "@DOC_AUTOCOMPILE_INCLUDE@".split(';')] ),
+        definitions =''.join([ " %s"%arg for arg in "@DOC_AUTOCOMPILE_DEFINITIONS@".split(';')] )
+        )
 autoclass_content = "both"
 
 #pngmath_dvipng_args = ['-gamma 1.2', '-D 150', '-bg Transparent']

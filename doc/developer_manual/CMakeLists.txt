@@ -5,6 +5,23 @@
 
 FILE(GLOB_RECURSE SOURCES *.rst)
 
+# The compiler flags for autocompile
+SET( link_libs "${LAPACK_LIBS}  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ list (REMOVE_DUPLICATES link_libs)
+ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+string(REPLACE "boost_for_triqs" " " TMP "${link_libs}")
+string(REPLACE "debug" " " TMP "${TMP}")
+string(REPLACE "optimized" " " TMP "${TMP}")
+SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost -lboost_for_triqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs ${TMP} ")
+SET(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR}  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/foreignlibs  )
+SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
+SET(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
+
+EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/foreignlibs/boost/libboost_for_triqs.so ${CMAKE_CURRENT_BINARY_DIR}")
+EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
+
+# generating the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/html")
 SET(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -16,6 +33,7 @@ add_subdirectory(arrays)
 
 # we must first have doxygen process the sources to link to them
 add_dependencies(docs_sphinx_cpp docs_doxy_mctools)
+add_dependencies(docs_sphinx_cpp triqs boost_for_triqs ) # add also mpi ?
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/developer_manual
  FILES_MATCHING 
