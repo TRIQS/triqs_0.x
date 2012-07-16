@@ -1,0 +1,21 @@
+expr = 2
+-------------
+expr = 7
+-------------
+((y_ >> x_ + 2*y_)) ---> lazy function : (x2,) --> (x1 + (2 * x2))
+(x_ >> (y_ >> x_ + 2*y_ )) --->  function : (x1,) --> lazy function : (x2,) --> (x1 + (2 * x2))
+ r >> = lazy function : (x2,) --> (x1 + (2 * x2))
+ r2 >> =  function : (x1,) --> lazy function : (x2,) --> (x1 + (2 * x2))
+expr = (x1 + (2 * x2))
+ ph list of expr x1,x2,
+ ph list of r x2,
+ ph list of r2 
+expr = 7
+(tql::eval ( make_function(x_ + 2*y_ , x_) , y_ = 2) (3)) ---> 7
+(make_function(x_ + 2 , x_) (3)) ---> 5
+-------------
+expr = ((x1 + (2 * x2)) + x3)
+ ph list of expr x1,x2,x3,
+ ph list of r x2,x3,
+ ph list of r2 x3,
+-------------
