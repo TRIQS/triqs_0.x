@@ -61,6 +61,8 @@ namespace triqs { namespace gf { namespace meshes {
   mesh_pt<MeshType> make_mesh_pt(MeshType const & m, typename MeshType::index_type const & i){ return mesh_pt<MeshType>(m,i);}
 
  //------------------------------------------------------
+
+// PB this is 1d only
  
 template<typename MeshType>
  class mesh_pt_generator : 
@@ -73,8 +75,9 @@ template<typename MeshType>
    mesh_pt<MeshType> const & dereference() const { return pt;}
    bool equal(mesh_pt_generator const & other) const { return ((&mesh == &other.mesh) && (other.u==u) );}
    public:
-   mesh_pt_generator( MeshType const & m, bool atEnd = false): mesh(m), u(atEnd ? m.size()-1: 0), pt(m,u) {}
-   operator bool() const { return (u!=mesh.size()-1);}
+   mesh_pt_generator( MeshType const & m, bool atEnd = false): mesh(m), u(atEnd ? m.size(): 0), pt(m,u) {}
+   //mesh_pt_generator( MeshType const & m, bool atEnd = false): mesh(m), u(atEnd ? m.size()-1: 0), pt(m,u) {}
+   //operator bool() const { return (u!=mesh.size()-1);}
   };
 
 }}}
