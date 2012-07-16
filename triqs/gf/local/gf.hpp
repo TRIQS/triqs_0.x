@@ -93,7 +93,7 @@ namespace triqs { namespace gf { namespace local {
     _tail = rhs (domains::freq_infty());  
    }
 
-   TRIQS_NVL_HAS_AUTO_ASSIGN(); 
+   TRIQS_CLEF_HAS_AUTO_ASSIGN(); 
    template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { // mesh is invariant in this case...
     for (size_t u=0; u<x.mesh().size(); ++u)  { x._at(u) = f(x.mesh()[u]); }
     x._tail = f( tail::omega(x._tail.shape(),x._tail.size()));
@@ -115,7 +115,7 @@ namespace triqs { namespace gf { namespace local {
    mv_type       operator() (arg0_type const & i)       { return this->mesh().interpolate(*this,i);}
    const_mv_type operator() (arg0_type const & i) const { return this->mesh().interpolate(*this,i);}
 
-   TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
+   TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,view_type);
 
    /// Save the Green function in i omega_n (as 2 columns).
    void save(std::string file,  bool accumulate=false) const {}

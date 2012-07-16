@@ -4,7 +4,7 @@
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
-namespace tql= triqs::lazy;
+namespace tql= triqs::clef;
 //namespace tqa= triqs::arrays;
 using tqa::range;
 
@@ -35,7 +35,7 @@ int main() {
  TEST( Gv2( 0) ) ;
  TEST( G( 0) ) ;
 
- triqs::lazy::placeholder<0> om_;
+ triqs::clef::placeholder<0> om_;
 
  TEST( G(om_) ) ;
  TEST( tql::eval(G(om_), om_=0) ) ;

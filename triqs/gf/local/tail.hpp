@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_LOCAL_TAIL_H
 #define TRIQS_GF_LOCAL_TAIL_H
-#include <triqs/lazy/core.hpp>
+#include <triqs/clef/core.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/utility/proto/tools.hpp>
@@ -49,7 +49,7 @@ namespace triqs { namespace gf { namespace local {
 
  // ---------------------- implementation --------------------------------
 
- namespace tqa= triqs::arrays; namespace tql= triqs::lazy;  namespace proto=boost::proto; 
+ namespace tqa= triqs::arrays; namespace tql= triqs::clef;  namespace proto=boost::proto; 
  namespace bf = boost::fusion; namespace tup = triqs::utility::proto; 
  
  /// A common implementation class. Idiom : ValueView
@@ -166,7 +166,7 @@ namespace triqs { namespace gf { namespace local {
 
   using B::operator=; // import operator = from impl. class or the default = is synthetized 
   using B::operator(); // import all previously defined operator() for overloading
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
+  TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
  };
 
@@ -183,7 +183,7 @@ namespace triqs { namespace gf { namespace local {
 
   using B::operator=;
   using B::operator();
-  TRIQS_LAZY_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
+  TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
 
   /// The simplest tail corresponding to  : omega
   static tail_view omega(size_t N1, size_t N2, size_t size_) { tail t(N1,N2,-1, size_); t(t.order_min())=1; return t; }
