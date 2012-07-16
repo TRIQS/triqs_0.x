@@ -2,32 +2,19 @@ Array library
 ****************
 
 .. warning::
-    This library is beta.
+    This library is still beta. Beware of bugs ! 
 
-    This manual is not finished: work in progress.
 
+The documentation of the array library is divided into three parts.
 
 .. highlight:: c
 
+
 .. toctree::
    :maxdepth: 1
-   :numbered:
+ 
+   introduction.rst
+   CookBook/contents.rst
+   UserManual/contents.rst
+   Design/contents.rst
 
-   introduction
-   getting_started
-   view_or_not_view
-   basic_classes
-   slicing
-   shape
-   debug 
-   assignment
-   algebras
-   foreach
-   functional
-   STL
-   H5
-   Interop_Python
-   IO
-   blas_lapack
-   FAQ
-   design/contents 

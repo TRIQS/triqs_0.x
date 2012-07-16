@@ -1,4 +1,4 @@
-Motivation ...
+Motivation
 ===========================
 
 .. highlight:: c
