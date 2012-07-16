@@ -1,7 +1,9 @@
 #include "./python_stuff.hpp"
-#include <triqs/lazy/core.hpp>
+#include <triqs/clef/core.hpp>
 #include <triqs/arrays/indexmaps/cuboid/group_indices.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
+#include <triqs/arrays/proto/array_algebra.hpp>
+#include <triqs/clef/adapters/array.hpp>
 
 /*
    struct to_vec_ {
@@ -12,7 +14,7 @@
    template <typename V> void print() { boost::mpl::for_each<V>(to_vec_(std::cout)); }
    */
 namespace tqa=triqs::arrays;
-namespace tql=triqs::lazy;
+namespace tql=triqs::clef;
 namespace mpl=boost::mpl;
 
 using tqa::m_index;

@@ -20,12 +20,13 @@
  ******************************************************************************/
 #include "./python_stuff.hpp"
 
-#include <triqs/lazy/core.hpp> 
+#include <triqs/clef/core.hpp> 
+#include <triqs/arrays/array.hpp>
 #include <triqs/arrays/make_immutable_array.hpp>
 #include <iostream>
 
 namespace tqa = triqs::arrays;
-namespace tql = triqs::lazy;
+namespace tql = triqs::clef;
 using tqa::range;
 
 int main(int argc, char **argv) {
@@ -35,7 +36,7 @@ int main(int argc, char **argv) {
  
  TEST( make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2)));
  
- TEST( make_array(tqa::make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2))));
+ TEST( (tqa::array<int,2>(tqa::make_immutable_array( i_ + j_, i_= range(0,2), j_=range(0,2)))));
 
  return 0;
 }
