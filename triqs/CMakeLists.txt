@@ -24,6 +24,7 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/legendre_matsubara.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/MeshGF.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/TailGF.cpp
+
 )
 
 if (Use_Pade)
@@ -36,8 +37,11 @@ endif (Use_Pade)
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 
 # Add the arrays
+add_subdirectory(utility)
 add_subdirectory(arrays)
 add_subdirectory(python_tools)
+add_subdirectory(clef)
+#add_subdirectory(gf)
 
 # The lib will be build from the sources
 add_library(triqs ${ALLSOURCES})
@@ -61,7 +65,8 @@ if (Install_dev)
     arrays/storages/*.hpp
     arrays/python/*.hpp
     arrays/impl/*.hpp
-    arrays/expressions/*.hpp
+    arrays/functional/*.hpp
+    arrays/proto/*.hpp
     arrays/h5/*.hpp
     arrays/linalg/*.hpp
     arrays/indexmaps/*.hpp
@@ -70,6 +75,8 @@ if (Install_dev)
     python_tools/*.hpp
     gf_local/*.hpp
     utility/*.hpp
+    clef/*.hpp
+    clef/adapters/*.hpp
   )
 
   # Install headers in good include dir
