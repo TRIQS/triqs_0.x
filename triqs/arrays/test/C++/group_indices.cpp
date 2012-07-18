@@ -4,6 +4,7 @@
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/proto/array_algebra.hpp>
 #include <triqs/clef/adapters/array.hpp>
+#include <triqs/arrays/impl/asserts.hpp>
 
 /*
    struct to_vec_ {
@@ -56,7 +57,8 @@ template<typename STO> void test() {
 
   TEST(R);
   TEST(A);
-  TEST(make_array(R-A));
+  assert_all_close(R,A,1.e-15);
+  //TEST(make_array(R-A));
   //TEST( max(abs(R-A)));
  }
 
