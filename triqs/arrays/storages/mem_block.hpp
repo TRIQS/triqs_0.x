@@ -70,19 +70,22 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     else Py_DECREF(py_obj); 
    } 
 
+   private:
    // copy such that it is a fast memcpy for scalar / pod objects
    template<typename T>
-   typename boost::enable_if<boost::mpl::or_<is_scalar<T>, boost::is_pod<T> >,void>::type
-   memcopy (T * p1, T * p2, size_t size) { memcpy (p1, p2 , size * sizeof(ValueType)); }
+   typename boost::enable_if<is_scalar_or_pod<T> ,void>::type
+   memcopy (T * restrict p1, T * restrict p2, size_t size) { memcpy (p1, p2 , size * sizeof(T)); }
 
    // when not a scalar object, loop on elements
    template<typename T>
-   typename boost::disable_if<boost::mpl::or_<is_scalar<T>, boost::is_pod<T> >,void>::type
-   memcopy (T * p1, T * p2, size_t size) { for (size_t i = 0; i < size; ++i) p1[i] = p2[i]; }
+   typename boost::disable_if<is_scalar_or_pod<T> ,void>::type
+   memcopy (T * restrict p1, T * restrict p2, size_t size) { for (size_t i = 0; i < size; ++i) p1[i] = p2[i]; }
+
+   public:
 
    void operator=(const mem_block & X) {
     assert( py_obj==NULL); assert(size_==X.size_);assert(p); assert(X.p);
-    memcopy (p, X.p, size_);
+    this->memcopy (p, X.p, size_);
    }
 
    mem_block ( mem_block const & X): size_(X.size()), py_obj(NULL) { 
@@ -94,14 +97,13 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
      // else make a new copy of the numpy ...
      import_numpy_array(); 
      assert(PyArray_Check(X.py_obj));
+     if (!is_scalar_or_pod<ValueType>::value) TRIQS_RUNTIME_ERROR << "Internal Error : memcpy on non-scalar";
      if ( ( PyArray_ISFORTRAN(X.py_obj)) || (PyArray_ISCONTIGUOUS(X.py_obj)))  { 
-      if (!boost::mpl::or_<is_scalar<ValueType>, boost::is_pod<ValueType> >::value) TRIQS_RUNTIME_ERROR << "Error : memcpy on non-scalar";
       memcpy (p,PyArray_DATA(X.py_obj),size_ * sizeof(ValueType));
      }
      else { // if the X.py_obj is not contiguous, first let numpy copy it properly
       PyObject * na = PyObject_CallMethod(X.py_obj,(char *)"copy",NULL);
       assert(na); assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
-      if (!boost::mpl::or_<is_scalar<ValueType>, boost::is_pod<ValueType> >::value) TRIQS_RUNTIME_ERROR << "Error : memcpy on non-scalar";
       memcpy (p,PyArray_DATA(na),size_ * sizeof(ValueType));
       Py_DECREF(na);
      }

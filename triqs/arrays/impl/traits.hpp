@@ -85,6 +85,10 @@ namespace triqs { namespace arrays {
  template <class T> struct is_amv_value_or_view_class : boost::mpl::or_< is_amv_value_class<T>, is_amv_view_class<T> > {};
 
  template <class S> struct is_scalar : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S> > {};
+ 
+ // beware : complex is not a pod
+ template <class S> struct is_scalar_or_pod : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S>, boost::is_pod<S> > {};
+ 
  template<class S, class A> struct is_scalar_for : 
   boost::mpl::if_<is_scalar<typename A::value_type > , is_scalar<S>,boost::is_same<S,typename A::value_type > >::type {};
 
