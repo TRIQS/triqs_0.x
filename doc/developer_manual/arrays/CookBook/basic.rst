@@ -8,7 +8,7 @@ Declaring and printing an array
 -------------------------------
 .. compileblock:: 
 
-
+ 
     #include <triqs/arrays/array.hpp>
     namespace tqa=triqs::arrays;
     int main(){
@@ -130,10 +130,11 @@ Defining through a lazy expression
 
 .. compileblock::
 
-    #include <triqs/lazy/core.hpp>
+    #include <triqs/clef/core.hpp>
     #include <triqs/arrays/array.hpp>
+    #include <triqs/clef/adapters/array.hpp>
     
-    namespace tqa=triqs::arrays; namespace tql=triqs::lazy;
+    namespace tqa=triqs::arrays; namespace tql=triqs::clef;
  
     int main(){
        tql::placeholder<0> i_;   tql::placeholder<1> j_;
@@ -149,13 +150,14 @@ Linear algebra
 
 .. compileblock::
 
-    #include <triqs/lazy/core.hpp>
+    #include <triqs/clef/core.hpp>
     #include <triqs/arrays/matrix.hpp>
     #include <triqs/arrays/array.hpp>
     #include <triqs/arrays/linalg/inverse.hpp>
     #include <triqs/arrays/linalg/determinant.hpp>
+    #include <triqs/clef/adapters/array.hpp>
     
-    namespace tql=triqs::lazy; namespace tqa=triqs::arrays;
+    namespace tql=triqs::clef; namespace tqa=triqs::arrays;
     int main(){
       tql::placeholder<0> i_;
       tql::placeholder<1> j_;

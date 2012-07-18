@@ -61,6 +61,7 @@ class CompileBlock(Directive):
         fil.flush()
          
         args = " %(compiler)s %(definitions)s %(include)s %(link)s "%config + " " + fil.name
+        print "Compiling ...."
         #print args
         import subprocess as S
         error = True
@@ -78,7 +79,8 @@ class CompileBlock(Directive):
         except S.CalledProcessError as E : 
             stdout ='---------- Compilation error -------\n'
             stdout += E.output
-            
+        print "... done"
+
         # Process output 
         if stdout:
             stdout = stdout.decode(output_encoding,'ignore')
