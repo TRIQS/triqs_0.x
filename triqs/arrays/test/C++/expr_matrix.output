@@ -63,6 +63,3 @@ Cuboid of rank 2 and dimensions (2 2)
 (make_matrix(Af/2)) ---> 
 [[0,0.5]
  [5,5.5]]
-(make_matrix(Af/Af)) ---> 
-[[1,0]
- [0,1]]

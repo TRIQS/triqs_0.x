@@ -26,6 +26,7 @@
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
 #include <iostream>
+#include <triqs/arrays/impl/asserts.hpp>
 
 
 using namespace triqs::arrays;
@@ -58,8 +59,8 @@ int main(int argc, char **argv) {
   std::cout<<" C = A+B =  "<<C<<std::endl;
 
   // matrix multiplication
-  matrix<double> Af (2,2), Bf(2,2),Cf(2,2);
-  Af = A; Bf = B; Bf(0,0) = 1; Cf()=0;
+  matrix<double> Af (2,2), Bf(2,2),Cf(2,2), id (2,2);
+  Af = A; Bf = B; Bf(0,0) = 1; Cf()=0; id () = 1;
   std::cout<<" Af = "<<Af<<std::endl;
   std::cout<<" Bf = "<<Bf<<std::endl;
  
@@ -89,7 +90,9 @@ int main(int argc, char **argv) {
   TEST(1/Af);
   TEST(make_matrix(2/Af));
   TEST(make_matrix(Af/2));
-  TEST(make_matrix(Af/Af));
+
+  assert_all_close( make_matrix(Af/Af), id , 1.e-14);
+  //TEST(make_matrix(Af/Af));
 
   // matrix <long> AA(3,3); TEST( tqa::make_matrix(A+ 2* AA)); // exception because of size...
  return 0;
