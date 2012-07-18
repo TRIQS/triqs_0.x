@@ -26,6 +26,9 @@
 
 //using std::cout; using std::endl;
 //using namespace triqs::arrays;
+#include <type_traits>
+
+static_assert( ! std::is_pod< triqs::arrays::array<long,2 > >::value, "POD pb");
 
 int main(int argc, char **argv) {
 
