@@ -27,6 +27,8 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/legendre_matsubara.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/MeshGF.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/TailGF.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_base.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_matsubara.cpp
 
 )
 
@@ -45,7 +47,7 @@ add_subdirectory(arrays)
 add_subdirectory(python_tools)
 add_subdirectory(clef)
 add_subdirectory(det_manip)
-#add_subdirectory(gf)
+add_subdirectory(gf)
 
 # The lib will be build from the sources
 add_library(triqs ${ALLSOURCES})
