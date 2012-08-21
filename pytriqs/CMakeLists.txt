@@ -11,3 +11,5 @@ add_subdirectory(Base)
 add_subdirectory(Wien2k)
 add_subdirectory(Solvers)
 
+add_subdirectory(demo)
+
