@@ -47,6 +47,7 @@ for numerical computations with the following characteristics/goals :
  
   This library is used a lot with mixed C++/python codes.
   It handles quick conversion between the C++ and python world, e.g. :
+
    * work on a view of a numpy, 
    * create a array in C++, and return it as a numpy.
    * mix the various kind of arrays transparently in C++ expressions.

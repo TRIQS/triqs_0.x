@@ -163,7 +163,7 @@ Linear algebra
       tql::placeholder<1> j_;
       tqa::matrix<double> A(2,2); 
 
-      tqa::array_view<double,2>(A)(i_,j_) = i_+j_; 
+      A(i_,j_) = i_+j_; 
       tqa::matrix<double> B = inverse(A); 
       double C = determinant(A); 
  

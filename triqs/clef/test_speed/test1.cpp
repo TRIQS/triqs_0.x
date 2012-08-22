@@ -1,6 +1,6 @@
 #include "./speed_tester.hpp"
 #include "./common.hpp"
-#include "triqs/lazy/function.hpp"
+#include "triqs/clef/function.hpp"
 
 double S =0;
 struct eval_exp1 { 
@@ -24,10 +24,10 @@ struct eval_exp_c {
   F1 f(2); 
   double x=1,y=2;
 
-  triqs::lazy::function <double (double)>  f7;
+  triqs::clef::function <double (double)>  f7;
   f7(x_) = f(x_) + 2*x_;
 
-  triqs::lazy::function <double (double)> f2;
+  triqs::clef::function <double (double)> f2;
   f2(x_) = f(x_)  + 2*x_;
 
   double s=0;
