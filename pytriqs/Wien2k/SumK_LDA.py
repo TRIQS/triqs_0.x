@@ -584,7 +584,9 @@ class SumK_LDA:
                 for icrsh in xrange(self.N_corr_shells):
                     for bn in self.Hsumk[icrsh]:
 
-                        if (self.corr_shells[icrsh][4]==0): self.Hsumk[icrsh][bn] = self.Hsumk[icrsh][bn].conjugate()
+                        if (self.rotmat_timeinv[icrsh]==1): self.Hsumk[icrsh][bn] = self.Hsumk[icrsh][bn].conjugate()
+                        #if (self.corr_shells[icrsh][4]==0): self.Hsumk[icrsh][bn] = self.Hsumk[icrsh][bn].conjugate()
+                        
                         self.Hsumk[icrsh][bn] = numpy.dot( numpy.dot(self.rotmat[icrsh].conjugate().transpose(),self.Hsumk[icrsh][bn]) , 
                                                            self.rotmat[icrsh] )
                  
@@ -1035,14 +1037,16 @@ class SumK_LDA:
 
         ikarray=numpy.array(range(self.Nk))
         
-        dens = 0.0
-        
+        dens = {}
+        for ib in bln:
+            dens[ib] = 0.0
+ 
         for ik in MPI.slice_array(ikarray):
         
             S = self.latticeGF_Matsubara(ik=ik,mu=self.Chemical_Potential)
             for sig,g in S:
                 deltaN[sig][ik] = S[sig].density()
-            dens += self.BZ_weights[ik] * S.total_density()
+                dens[sig] += self.BZ_weights[ik] * S[sig].total_density()
             
                 
 
@@ -1050,7 +1054,7 @@ class SumK_LDA:
         for sig in deltaN:
             for ik in range(self.Nk):
                 deltaN[sig][ik] = MPI.all_reduce(MPI.world,deltaN[sig][ik],lambda x,y : x+y)
-        dens = MPI.all_reduce(MPI.world,dens,lambda x,y : x+y)
+            dens[sig] = MPI.all_reduce(MPI.world,dens[sig],lambda x,y : x+y)
         MPI.barrier()
 
        

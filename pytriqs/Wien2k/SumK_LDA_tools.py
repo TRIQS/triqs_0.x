@@ -478,7 +478,7 @@ class SumK_LDA_tools(SumK_LDA):
                     for ik in range(self.Nk):
                         if Fermisurface:
                             if (invertAkw):
-                                Akw[ibn][ik,0] = 1.0/(minAkw-maxAkw)*(Akw[ibn][ik,iom] - maxAkw)           
+                                Akw[ibn][ik,0] = 1.0/(minAkw-maxAkw)*(Akw[ibn][ik,0] - maxAkw)           
                             f.write('%s    %s\n'%(ik,Akw[ibn][ik,0]))
                         else:
                             for iom in range(N_om): 
