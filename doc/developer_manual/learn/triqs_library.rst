@@ -20,7 +20,7 @@ I will use:
    /home/triqs/triqs_dev --> sources of TRIQS
    /home/triqs/build --> the directory where TRIQS will be compiled
    /home/triqs/install --> TRIQS is installed here
-   /home/project/src --> the source code of my project
+   /home/project/src --> the sources of my project
    /home/project/build --> the directory where I will compile my code
 
 Basically, anything that has to do with the sources of TRIQS, its compilation
@@ -134,6 +134,6 @@ everything in :file:`/home/project/build`, we do as follows:
   $ ./example
 
 That's it! You can modify your sources and then recompile with make. Obviously
-with bigger projects you :file:`CMakeLists.txt` file will change, but the
+with bigger projects your :file:`CMakeLists.txt` file will change, but the
 principle remains the same.
 

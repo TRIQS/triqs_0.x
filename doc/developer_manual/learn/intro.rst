@@ -16,3 +16,4 @@ write your own CT-INT impurity solver.
    :numbered:
 
    triqs_library
+   first_mc
