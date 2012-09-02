@@ -78,6 +78,7 @@ if (Install_dev)
     python_tools/*.hpp
     gf_local/*.hpp
     utility/*.hpp
+    utility/proto/*.hpp
     clef/*.hpp
     clef/adapters/*.hpp
   )
