@@ -13,7 +13,6 @@ write your own CT-INT impurity solver.
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
 
    triqs_library
    first_mc

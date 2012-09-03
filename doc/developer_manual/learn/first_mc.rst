@@ -42,6 +42,8 @@ Here are a couple of implementation hints that you might want to follow.
   space, you could use a vector of booleans (true for up spins, false for
   down spins).
 
+* More to come...
+
 
 Solution
 --------
