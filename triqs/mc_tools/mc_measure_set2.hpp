@@ -22,7 +22,7 @@
 
 #ifndef TRIQS_TOOLS_MC_MEASURE2_H
 #define TRIQS_TOOLS_MC_MEASURE2_H 
-//#include "Python.h" 
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -68,12 +68,6 @@ namespace triqs { namespace mc_tools {
    { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
- 
-   //mcmeasure reduce(boost::mpi::communicator const & c, std::size_t binnumber) { 
-    //assert(impl_); 
-    //if (c.rank() == 0) { collect_result_(std::cerr,c); } else { std::stringstream fs; collect_result_(fs,c);}
-   //return *this;
-  // }
  
    uint64_t count() const { return count_;}
 };

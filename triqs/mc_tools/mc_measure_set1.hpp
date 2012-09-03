@@ -23,7 +23,6 @@
 #ifndef MC_MEASURE1_H
 #define MC_MEASURE1_H
 
-#include "Python.h"
 #include <boost/mpi.hpp>
 #include <boost/function.hpp>
 #include <boost/scoped_ptr.hpp>

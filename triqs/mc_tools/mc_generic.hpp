@@ -23,39 +23,49 @@
 #ifndef TRIQS_TOOLS_MC_GENERIC_H
 #define TRIQS_TOOLS_MC_GENERIC_H
 
-#include "mc_measure_set.hpp"
-#include "mc_move_set.hpp"
-#include "mc_basic_step.hpp"
-
-#include <triqs/python_tools/improved_python_dict.hpp>
 #include <boost/function.hpp>
-#include "polymorphic_random_generator.hpp"
 #include <math.h>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
+
+#include "mc_measure_set.hpp"
+#include "mc_move_set.hpp"
+#include "mc_basic_step.hpp"
+#include "polymorphic_random_generator.hpp"
 #include "call_backs.hpp"
 
 namespace triqs { namespace mc_tools { 
 
- typedef triqs::python_tools::improved_python_dict mcparams_python; 
-  
  /**
   * 
   */
- template<typename MCSignType, typename ParameterDictType = mcparams_python, typename MCStepType= Step::Metropolis<MCSignType> > 
+ template<typename MCSignType, typename MCStepType = Step::Metropolis<MCSignType> >
  class mc_generic {
   public:
 
-   typedef ParameterDictType parameters_type;
+   /**
+     * Constructor from a set of parameters
+     */
+   mc_generic(int N_Cycles, int Length_Cycle, int N_Warmup_Cycles, int Random_Seed = 1, std::string Random_Name = "", int Verbosity = 1,
+              boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
+     NCycles(N_Cycles),
+     Length_MC_Cycle(Length_Cycle),
+     NWarmIterations(N_Warmup_Cycles),
+     RandomGenerator(Random_Name, Random_Seed),
+     AllMoves(RandomGenerator),
+     AllMeasures(),
+     report(&std::cout, Verbosity),
+     after_cycle_duty(AfterCycleDuty) {}
+
    /** 
+     * Constructor from a dictionnary
      * \param[in] P  dictionnary parameters
-     * \param[in] rank The rank of the process in mpi (why ?).
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
-    */
-   mc_generic(parameters_type const & P, size_t rank,  boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) : 
+     */
+   template<typename ParameterDictType>
+   mc_generic(ParameterDictType const & P, boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
     RandomGenerator(P.value_or_default("Random_Generator_Name",""), P.value_or_default("Random_Seed",1)),
     report(&std::cout,int(P["Verbosity"])),
-    Rank(rank),
     AllMoves(RandomGenerator), 
     AllMeasures(),
     Length_MC_Cycle(P["Length_Cycle"]),
@@ -82,8 +92,9 @@ namespace triqs { namespace mc_tools {
     
        \endrst
     */
+
    template <typename MoveType>
-    void add_move (MoveType *M, double PropositionProbability,std::string name ="") { AllMoves.add(M, PropositionProbability,name); }
+   void add_move (MoveType *M, double PropositionProbability,std::string name ="") { AllMoves.add(M, PropositionProbability,name); }
 
     /** 
     * Add a couple of inverse moves (M1,M2) with their probability of being proposed.
@@ -158,7 +169,6 @@ namespace triqs { namespace mc_tools {
   protected:
 
    triqs::utility::report_stream report;
-   size_t Rank;
    move_set<MCSignType> AllMoves;
    measure_set<MCSignType> AllMeasures;
    uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
@@ -171,18 +181,6 @@ namespace triqs { namespace mc_tools {
    uint64_t NC,done_percent;// NC = number of the cycle
  };
 
- // add the communicator
- template<typename MCG> class mc_runner : public MCG {
-  boost::mpi::communicator communicator;
-  public:
-  typedef typename MCG::parameters_type parameters_type;
-
-  mc_runner(parameters_type const & p, boost::mpi::communicator const & c) : MCG(p, c.rank()) , communicator(c) 
-  { MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN); }
-
-  double fraction_completed() const { return boost::mpi::all_reduce(communicator, MCG::fraction_completed(), std::plus<double>()); }
-  void collect_results() { MCG::collect_results(communicator);}
- };
 
 }}// end namespace
 #endif
