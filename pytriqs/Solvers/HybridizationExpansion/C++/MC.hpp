@@ -50,9 +50,11 @@ protected:
 
 public : 
 
-  MC_Hybridization_Matsubara(parameters_type const & params, size_t rank); 
-  void finalize(boost::mpi::communicator const & c );
+  MC_Hybridization_Matsubara(triqs::python_tools::improved_python_dict const & params);
+  void finalize(boost::mpi::communicator const & c);
 
 };
+
+
 #endif
 

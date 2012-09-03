@@ -26,7 +26,6 @@
 #include <triqs/python_tools/IteratorOnPythonSequences.hpp>
  
 using triqs::mc_tools::move_set;
-using triqs::mc_tools::mcparams_python;
 using python::extract;
 using namespace triqs;
 
@@ -60,8 +59,8 @@ std::string make_string( T1 const & x1,T2 const & x2) {
 
 //-----------------------------------------------------
 
-MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubara::parameters_type const & params, size_t rank) : 
- BaseType (params ,rank), 
+MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::improved_python_dict const & params) :
+ BaseType(params),
  Config(params),
  G_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["G_tau"])),
  F_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["F_tau"])),
@@ -167,26 +166,27 @@ void MC_Hybridization_Matsubara::finalize (boost::mpi::communicator const & c) {
   report<<"Monte-Carlo : Time measurements (cpu time) : "<<endl;
   report<<"   time elapsed total : " << this->Timer << " seconds" << endl;
 
- }
-
- using namespace std;
-
- //********************************************************
-
- namespace  MC_Hybridization_Matsu { 
-  void solve (boost::python::object parent) {
-
-   boost::mpi::communicator c; // i.e. world = all nodes
-
-   MC_Hybridization_Matsubara::parameters_type parms(parent);
-   triqs::mc_tools::mc_runner<MC_Hybridization_Matsubara> s(parms, c);
-
-   s.run(mc_tools::clock_callback(parms.value_or_default("MAX_TIME",-1)));
-   s.collect_results();
-
-   s.finalize(c);
-
-  }
- };
+}
 
 
+//********************************************************
+
+namespace MC_Hybridization_Matsu {
+void solve(boost::python::object parent) {
+
+  // communicate on the world = all nodes
+  boost::mpi::communicator c;
+
+  // get parameters of parent in parms
+  triqs::python_tools::improved_python_dict parms(parent);
+
+  // construct the QMC
+  MC_Hybridization_Matsubara QMC(parms);
+
+  // run!!
+  QMC.run(triqs::mc_tools::clock_callback(parms.value_or_default("MAX_TIME",-1)));
+  QMC.collect_results(c);
+  QMC.finalize(c);
+
+}
+}
