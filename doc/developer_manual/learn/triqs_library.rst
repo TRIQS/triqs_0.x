@@ -28,8 +28,8 @@ and its installation will be under :file:`/home/triqs`, while the new project
 will be under :file:`/home/project`. Obviously you can choose any other directory
 but this structure will be assumed below.
 
-Install development version of TRIQS
-------------------------------------
+Install the development version of TRIQS
+----------------------------------------
 
 First of all you will have to install the *development* version of TRIQS.
 Let's be concrete and say that you want to download the TRIQS sources in
@@ -61,6 +61,11 @@ we decide to install everything in :file:`/home/triqs/install`:
 If everything went fine, the TRIQS libraries and headers are installed
 in :file:`/home/triqs/install`.
 
+.. note::
+   This is nothing more than a standard installation of TRIQS except
+   that you have to be careful to set ``Install_dev`` to ``ON``
+
+
 Start your project
 ------------------
 
@@ -77,7 +82,7 @@ Let's start by adding some sources:
   $ mkdir src
   $ cd src
 
-OK, our project will be just one :file:`main.cpp` file::
+OK, our project will be just one :file:`main.cpp` file, e.g.::
 
   #include <triqs/arrays/array.hpp>
   #include <triqs/arrays/proto/array_algebra.hpp>
@@ -96,7 +101,7 @@ OK, our project will be just one :file:`main.cpp` file::
 As you can see, the code includes headers from TRIQS. Along with
 :file:`main.cpp` we write a :file:`CMakeLists.txt` file to compile our project.
 In order to make this easy, there is a file called :file:`TRIQSConfig.cmake`
-file in :file:`/home/triqs/install/share/triqs/cmake`. Including this file in
+in :file:`/home/triqs/install/share/triqs/cmake`. Including this file in
 your :file:`CMakeLists.txt` automatically defines a certain number of useful
 variables, especially the include directories related to the TRIQS headers and
 the location of the TRIQS libraries. Here is what your simple

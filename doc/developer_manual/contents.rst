@@ -8,5 +8,6 @@ Part II : C++ librairies
    clef/contents
    mctools/contents
    lectures/contents
+   montecarlo/intro
    learn/intro
-   utility.rst
+   utility

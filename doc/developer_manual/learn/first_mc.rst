@@ -4,7 +4,7 @@ A first external code
 
 .. highlight:: c
 
-As a first exercice you can try to write a Monte Carlo code
+As a first exercise you can try to write a Monte Carlo code
 for an Ising chain in a magnetic field. Your goal is to
 write this code as an external project and to use the
 Monte Carlo class provided by TRIQS.
@@ -28,6 +28,21 @@ The goal is to find the magnetization per spin :math:`m` of the system for
 the inverse temperature :math:`\beta`. You can see how the results
 change with the length of the chain :math:`N`.
 
+Implementation hints
+--------------------
+
+Here are a couple of implementation hints that you might want to follow.
+
+* In most Monte Carlo programs there is a *configuration* which is modified
+  along the simulation. Take enough time to think how this configuration
+  can be efficiently described and implement it in a separate file, say
+  :file:`configuration.hpp`. In this example, the configuration is a
+  collection of spins that can e.g. be described by a vector of integers.
+  +1 would be a spin up and -1 a spin down. If you're worried with memory
+  space, you could use a vector of booleans (true for up spins, false for
+  down spins).
+
+
 Solution
 --------
 
@@ -42,3 +57,6 @@ is
 Here's a plot of :math:`m` versus :math:`\beta` for different values of :math:`N`:
 
 .. image:: m_vs_beta.png
+   :width: 700
+   :align: center
+
