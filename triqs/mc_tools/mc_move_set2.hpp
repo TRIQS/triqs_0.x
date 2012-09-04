@@ -71,6 +71,17 @@ namespace triqs { namespace mc_tools {
     BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
    }
 
+   template<typename MoveType>
+    move(boost::shared_ptr<MoveType> sptr) :
+     move_impl(sptr),NProposed(0),NAccepted(0),
+     mset_ptr( _mk_ptr(sptr.get())),
+     Try_(BLL::bind(&MoveType::Try,sptr.get())),
+     Accept_(BLL::bind(&MoveType::Accept,sptr.get())),
+     Reject(BLL::bind(&MoveType::Reject,sptr.get()))
+   {
+    BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
+   }
+
    MCSignType Try(){ NProposed++; return Try_();}
    MCSignType Accept() { NAccepted++; return  Accept_(); }
 
@@ -121,15 +132,13 @@ namespace triqs { namespace mc_tools {
      normaliseProba();// ready to run after each add !
     }
 
-   /** 
-    * Add a couple of inverse moves (M1,M2) with their probability of being proposed.
-    * Equivalent to two add(M1), add(M2), but it emphasize the fact that inverse
-    * moves must have the same PropositionProbability.
-    */
-   template <typename MoveType1,typename MoveType2>
-    void add (MoveType1 *M1, MoveType2 *M2, double PropositionProbability, std::string name1="", std::string name2="") {
-     add(M1,PropositionProbability,name1);
-     add(M2,PropositionProbability,name2);
+   template <typename MoveType>
+    void add (boost::shared_ptr<MoveType> sptr, double PropositionProbability, std::string name="") {
+     this->push_back( move<MCSignType> (sptr) );
+     assert(PropositionProbability >=0);
+     Proba_Moves.push_back(PropositionProbability);
+     names_.push_back(name);
+     normaliseProba();// ready to run after each add !
     }
 
    /**

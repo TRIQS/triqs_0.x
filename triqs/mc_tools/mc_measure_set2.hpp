@@ -67,6 +67,13 @@ namespace triqs { namespace mc_tools {
     count_(0)
    { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
 
+   template<typename MeasureType> mcmeasure ( boost::shared_ptr<MeasureType> sptr) :
+    impl_(sptr),
+    accumulate_(BLL::bind(&MeasureType::accumulate,sptr.get(),BLL::_1)),
+    collect_results(BLL::bind(&MeasureType::collect_results,sptr.get(),BLL::_1)),
+    count_(0)
+   { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
+
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
  
    uint64_t count() const { return count_;}
@@ -92,10 +99,11 @@ class measure_set : public std::map<std::string, mcmeasure<MCSignType> > {
    BaseType::insert(std::make_pair(name, measure_type (M) )); 
   } 
 
- void insert(std::string const & name, measure_type const & M) { 
-  if (has(name)) TRIQS_RUNTIME_ERROR<< "measure_set : insert : measure '"<<name<<"' already inserted";
-  BaseType::insert(std::make_pair(name, M));
- }
+ template<typename T>
+  void insert (std::string const & name, boost::shared_ptr<T> sptr) {
+   if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
+   BaseType::insert(std::make_pair(name, measure_type (sptr) ));
+  }
 
  bool has(std::string const & name) const { return BaseType::find(name) != BaseType::end(); }
 
