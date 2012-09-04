@@ -119,7 +119,14 @@ namespace triqs { namespace mc_tools {
       \endrst
     */
    template<typename MeasureType>
-    void add_measure (MeasureType *M, std::string name="") {  AllMeasures.insert(name,M);} 
+    void add_measure (MeasureType * && M, std::string name="") {
+      AllMeasures.insert(name, std::move(M));
+    }
+
+   template<typename MeasureType>
+    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name="") {
+      AllMeasures.insert(name, sptr);
+    }
 
    // An access to the random number generator
    polymorphic_random_generator RandomGenerator;
