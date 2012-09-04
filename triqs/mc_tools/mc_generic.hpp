@@ -94,17 +94,14 @@ namespace triqs { namespace mc_tools {
     */
 
    template <typename MoveType>
-   void add_move (MoveType *M, double PropositionProbability,std::string name ="") { AllMoves.add(M, PropositionProbability,name); }
+   void add_move (MoveType * && M, double PropositionProbability, std::string name ="") {
+     AllMoves.add(std::move(M), PropositionProbability, name);
+   }
 
-    /** 
-    * Add a couple of inverse moves (M1,M2) with their probability of being proposed.
-    * Equivalent to two add_move(M1), add_move(M2), but it emphasizes the fact that inverse
-    * moves **must** have the same PropositionProbability.
-    */
-    template <typename MoveType1,typename MoveType2>
-    void add_move (MoveType1 *M1, MoveType2 *M2, double PropositionProbability, std::string name1="", std::string name2="") {
-     AllMoves.add(M1,M2,PropositionProbability,name1,name2);
-    }
+   template <typename MoveType>
+   void add_move (boost::shared_ptr<MoveType> sptr, double PropositionProbability,std::string name ="") {
+     AllMoves.add(sptr, PropositionProbability,name);
+   }
 
    /**
     * Register the Measure M 
