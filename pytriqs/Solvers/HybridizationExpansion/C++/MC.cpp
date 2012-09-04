@@ -80,8 +80,8 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  double p_mv = params["Proba_Move"];
 
  typedef move_set<SignType> move_set_type;
- move_set_type * AllInserts = new move_set_type(this->RandomGenerator);
- move_set_type * AllRemoves = new move_set_type(this->RandomGenerator);
+ boost::shared_ptr<move_set_type> AllInserts(new move_set_type(this->RandomGenerator));
+ boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(this->RandomGenerator));
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
@@ -94,7 +94,8 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
   }
  }
 
- this->add_move(AllInserts, AllRemoves, p_ir,"INSERT","REMOVE");
+ this->add_move(AllInserts, p_ir,"INSERT");
+ this->add_move(AllRemoves, p_ir,"REMOVE");
  this->add_move(new Move_C_Delta(Config, this->RandomGenerator), p_mv,"Move C Delta");
 
  // Register the Global moves
