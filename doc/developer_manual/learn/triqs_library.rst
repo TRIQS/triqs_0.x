@@ -113,6 +113,8 @@ the location of the TRIQS libraries. Here is what your simple
 
   project(myproj CXX)
 
+  set(CMAKE_CXX_FLAGS "-std=c++0x")
+
   set(CMAKE_BUILD_TYPE Release)
 
   SET(CMAKE_INSTALL_RPATH "${TRIQS_PATH}/lib")
