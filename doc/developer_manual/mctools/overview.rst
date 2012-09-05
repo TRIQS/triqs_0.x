@@ -106,8 +106,8 @@ but obviously you would usually want to cut this into pieces for clarity::
     configuration config(beta, field);
 
     // add moves and measures
-    SpinMC.add_move(new flip(config));
-    SpinMC.add_measure(new compute_m(config));
+    SpinMC.add_move(new flip(config), "flip move");
+    SpinMC.add_measure(new compute_m(config), "magnetization measure");
 
     // Run and collect results
     SpinMC.run(triqs::mc_tools::clock_callback(600));
@@ -178,17 +178,18 @@ At this stage the basic structure of the Monte Carlo is in ``SpinMC``. But we
 now need to tell it what moves must be tried and what measures must be made.
 This is done with::
 
-    SpinMC.add_move(new flip(config));
-    SpinMC.add_measure(new compute_m(config));
+    SpinMC.add_move(new flip(config), "flip move");
+    SpinMC.add_measure(new compute_m(config), "magnetization measure");
 
-The method ``add_move`` expects a pointer to a move, while ``add_measure``
-expects a pointer to a measure. In this example, the move is an instance
-of the ``flip`` class and the measure an instance of the
-``compute_m`` class. These classes have been defined in the beginning
-of the code and they have no direct connection with the ``mc_generic``
-class (e.g. they don't have inheritance links with ``mc_generic``).
-Actually you are almost completely free to design these classes
-as you want, **as long as they satisfy the correct concept**.
+The method ``add_move`` expects a pointer to a move and a name, while
+``add_measure`` expects a pointer to a measure and a name. The name can be
+anything, but different measures must have different names. In this example,
+the move is an instance of the ``flip`` class and the measure an instance of
+the ``compute_m`` class. These classes have been defined in the beginning of
+the code and they have no direct connection with the ``mc_generic`` class (e.g.
+they don't have inheritance links with ``mc_generic``).  Actually you are
+almost completely free to design these classes as you want, **as long as they
+satisfy the correct concept**.
 
 The move concept
 ****************
