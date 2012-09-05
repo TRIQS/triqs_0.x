@@ -128,7 +128,7 @@ namespace triqs { namespace mc_tools {
     * WARNING : the pointer is deleted automatically by the MC class at destruction. 
     */
    template <typename MoveType>
-    void add (MoveType * && M, double PropositionProbability, std::string name="") {
+    void add (MoveType * && M, std::string name, double PropositionProbability) {
      moves_.push_back(new details::move_impl<MCSignType,MoveType>(M));
      assert(PropositionProbability >=0);
      Proba_Moves.push_back(PropositionProbability);
@@ -137,7 +137,7 @@ namespace triqs { namespace mc_tools {
     }
 
    template <typename MoveType>
-    void add (boost::shared_ptr<MoveType> sptr, double PropositionProbability, std::string name="") {
+    void add (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability) {
      moves_.push_back(new details::move_impl<MCSignType,MoveType>(sptr));
      assert(PropositionProbability >=0);
      Proba_Moves.push_back(PropositionProbability);

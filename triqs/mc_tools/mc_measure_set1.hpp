@@ -121,13 +121,13 @@ namespace mc_tools {
     * WARNING : the pointer is deleted automatically by the class at destruction. 
     */
    template<typename T>
-    void insert (std::string const & name, T * && M) {
+    void insert (T * && M, std::string const & name) {
     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
     BaseType::insert(std::make_pair(name, measure_type (M)));
     } 
 
    template<typename T>
-   void insert(std::string const & name, boost::shared_ptr<T> ptr) {
+   void insert(boost::shared_ptr<T> ptr, std::string const & name) {
     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
     BaseType::insert(std::make_pair(name, measure_type(ptr)));
    }

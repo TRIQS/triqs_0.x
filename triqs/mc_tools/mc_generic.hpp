@@ -94,13 +94,13 @@ namespace triqs { namespace mc_tools {
     */
 
    template <typename MoveType>
-   void add_move (MoveType * && M, double PropositionProbability = 1.0, std::string name = "") {
-     AllMoves.add(std::move(M), PropositionProbability, name);
+   void add_move (MoveType * && M, std::string name, double PropositionProbability = 1.0) {
+     AllMoves.add(std::move(M), name, PropositionProbability);
    }
 
    template <typename MoveType>
-   void add_move (boost::shared_ptr<MoveType> sptr, double PropositionProbability = 1.0, std::string name = "") {
-     AllMoves.add(sptr, PropositionProbability,name);
+   void add_move (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability = 1.0) {
+     AllMoves.add(sptr, name, PropositionProbability);
    }
 
    /**
@@ -119,13 +119,13 @@ namespace triqs { namespace mc_tools {
       \endrst
     */
    template<typename MeasureType>
-    void add_measure (MeasureType * && M, std::string name= "") {
-      AllMeasures.insert(name, std::move(M));
+    void add_measure (MeasureType * && M, std::string name) {
+      AllMeasures.insert(std::move(M), name);
     }
 
    template<typename MeasureType>
-    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name= "") {
-      AllMeasures.insert(name, sptr);
+    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name) {
+      AllMeasures.insert(sptr, name);
     }
 
    // An access to the random number generator
