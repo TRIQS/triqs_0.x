@@ -85,18 +85,18 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
-   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, this->RandomGenerator), 1.0, make_string("Insert",a));
-   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, this->RandomGenerator), 1.0, make_string("Remove",a));
+   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
   }  
   else {  
-   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, this->RandomGenerator), 1.0, make_string("Insert",a));
-   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, this->RandomGenerator), 1.0, make_string("Remove",a));
+   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
   }
  }
 
- this->add_move(AllInserts, p_ir,"INSERT");
- this->add_move(AllRemoves, p_ir,"REMOVE");
- this->add_move(new Move_C_Delta(Config, this->RandomGenerator), p_mv,"Move C Delta");
+ this->add_move(AllInserts, "INSERT", p_ir);
+ this->add_move(AllRemoves, "REMOVE", p_ir);
+ this->add_move(new Move_C_Delta(Config, this->RandomGenerator), "Move C Delta", p_mv);
 
  // Register the Global moves
  python::list GM_List = python::extract<python::list>(params.dict()["Global_Moves_Mapping_List"]);
@@ -109,7 +109,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
    //cout<< "MAP" << Config.H[p->key].Number<< "  "<<mapping[Config.H[p->key].Number]->Number<<endl<<
    //      Config.H[p->key].name<< "  "<<mapping[Config.H[p->key].Number]->name<<endl;
   }
-  this->add_move(new Global_Move(g->x3 , Config, this->RandomGenerator, mapping), g->x1);
+  this->add_move(new Global_Move(g->x3 , Config, this->RandomGenerator, mapping), "Global move", g->x1);
  }
 
  /*************
@@ -120,9 +120,9 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
 
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
-     this->add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]),make_string("G Legendre ",a));
+     this->add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
      if (bool(params["Keep_Full_MC_Series"])) 
-      this->add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]),make_string("G Legendre (all) ",a));
+      this->add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
    } else if (TimeAccumulation) {
      this->add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
@@ -140,7 +140,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  python::dict opAv_results = python::extract<python::dict>(params.dict()["Measured_Operators_Results"]);
  python::list opAv_List = python::extract<python::list>(params.dict()["Operators_To_Average_List"]);
  for (triqs::python_tools::IteratorOnPythonList<string> g(opAv_List); !g.atEnd(); ++g) {
-  this->add_measure(new Measure_OpAv(*g, Config, opAv_results),*g);
+  this->add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
  }
 
  // register the measures for the time correlators:
@@ -150,7 +150,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
   str1+= "OpCorr";
-  this->add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()),str1);
+  this->add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()), str1);
  }
 
 }
