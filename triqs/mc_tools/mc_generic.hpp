@@ -46,7 +46,7 @@ namespace triqs { namespace mc_tools {
    /**
      * Constructor from a set of parameters
      */
-   mc_generic(int N_Cycles, int Length_Cycle, int N_Warmup_Cycles, int Random_Seed = 1, std::string Random_Name = "", int Verbosity = 1,
+   mc_generic(int N_Cycles, int Length_Cycle, int N_Warmup_Cycles, std::string Random_Name, int Random_Seed, int Verbosity,
               boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
      NCycles(N_Cycles),
      Length_MC_Cycle(Length_Cycle),
@@ -94,12 +94,12 @@ namespace triqs { namespace mc_tools {
     */
 
    template <typename MoveType>
-   void add_move (MoveType * && M, double PropositionProbability, std::string name ="") {
+   void add_move (MoveType * && M, double PropositionProbability = 1.0, std::string name = "") {
      AllMoves.add(std::move(M), PropositionProbability, name);
    }
 
    template <typename MoveType>
-   void add_move (boost::shared_ptr<MoveType> sptr, double PropositionProbability,std::string name ="") {
+   void add_move (boost::shared_ptr<MoveType> sptr, double PropositionProbability = 1.0, std::string name = "") {
      AllMoves.add(sptr, PropositionProbability,name);
    }
 
@@ -119,12 +119,12 @@ namespace triqs { namespace mc_tools {
       \endrst
     */
    template<typename MeasureType>
-    void add_measure (MeasureType * && M, std::string name="") {
+    void add_measure (MeasureType * && M, std::string name= "") {
       AllMeasures.insert(name, std::move(M));
     }
 
    template<typename MeasureType>
-    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name="") {
+    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name= "") {
       AllMeasures.insert(name, sptr);
     }
 
@@ -154,6 +154,7 @@ namespace triqs { namespace mc_tools {
     signe=1; done_percent = 0; 
     bool stop_it=false, finished = false;
     uint64_t NCycles_tot = NCycles+ NWarmIterations;
+    report << std::endl << std::flush;
     for (NC =0; !stop_it; ++NC) {
      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,signe); }
      if (after_cycle_duty) {after_cycle_duty();}
@@ -164,6 +165,7 @@ namespace triqs { namespace mc_tools {
      finished = ( (NC >= NCycles_tot -1) || converged () );
      stop_it = (stop_callback() || finished);
     }
+    report << std::endl << std::endl << std::flush;
     Timer.stop();
     return finished;
    }
