@@ -28,7 +28,7 @@ SET(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 SET(DOC_EXT "_cpp")
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
-add_subdirectory(mctools)
+#add_subdirectory(mctools)
 add_subdirectory(arrays)
 
 # we must first have doxygen process the sources to link to them

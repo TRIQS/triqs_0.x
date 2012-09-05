@@ -6,7 +6,6 @@ Part II : C++ librairies
 
    arrays/contents
    clef/contents
-   mctools/contents
    lectures/contents
    montecarlo/intro
    learn/intro

@@ -1,3 +1,4 @@
+.. _montecarlo:
 
 The Monte Carlo class
 =====================
@@ -11,5 +12,7 @@ the implementation details of your specific algorithm.
    :maxdepth: 2
 
    loop
-   example
-
+   overview
+   advanced
+   random
+   ising

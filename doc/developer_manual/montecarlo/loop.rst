@@ -1,3 +1,4 @@
+.. _montecarloloop:
 
 The Monte Carlo loop
 --------------------

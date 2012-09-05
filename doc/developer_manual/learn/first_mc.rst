@@ -4,15 +4,15 @@ A first external code
 
 .. highlight:: c
 
-As a first exercise you can try to write a Monte Carlo code
-for an Ising chain in a magnetic field. Your goal is to
-write this code as an external project and to use the
-Monte Carlo class provided by TRIQS.
+As a first exercise you can try to write a Monte Carlo code for an Ising chain
+in a magnetic field. Your goal is to write this code as an external project and
+to use the Monte Carlo class provided by TRIQS.
 
-The Monte Carlo class is described `on this link <../mctools/contents.html>`_.
-Take some time to read the chapter, but don't read the complete example
-at the end of the chapter because it is precisely what you need to
-do here. You can check your implementation later.
+Take some time to read the :ref:`Monte Carlo <montecarlo>` chapter, but don't
+read the complete example at the end of the chapter because it is precisely
+what you need to do here. You can check your implementation later.
+
+.. _isingex:
 
 Ising chain in magnetic field
 -----------------------------
