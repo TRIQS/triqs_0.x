@@ -277,11 +277,12 @@ Here, we sum the sign in ``Z`` (the partition function) and the magnetization
 in ``M``. The other method ``collect_results`` is usually called just once at
 the very end of the simulation, see below. It is meant to do the final
 operations that are needed to have your result. Here it just needs to divide
-``M`` by ``Z``. Note that, it takes the MPI communicator as an argument,
-meaning that you can easily do MPI operations here.  This makes sense because
-the accumulation will have taken place independently on all nodes and this is
-the good moment to gather the information from all the nodes. This is why you
-see reduce operations on the master node here.
+``M`` by ``Z`` and prints the result on the screen. Note that, it takes the MPI
+communicator as an argument, meaning that you can easily do MPI operations
+here.  This makes sense because the accumulation will have taken place
+independently on all nodes and this is the good moment to gather the
+information from all the nodes. This is why you see reduce operations on the
+master node here.
 
 
 Starting the Monte Carlo simulation
@@ -324,10 +325,27 @@ to the simulation and calls their ``collect_results`` member. As described
 above, this does the final computations needed to get the result you are
 interested in. It usually also saves or prints these results.
 
-That's it! This simple example should give you an idea about how to use
-the ``mc_generic`` class. In the next chapter we will address some
-more advanced issues. But you should already be able to implement
-a Monte Carlo simulation. Why don't you try to write your own Monte Carlo
-describing an :ref:`Ising chain in a field <isingex>`!
+
+Writing your own Monte Carlo simulation
+***************************************
+
+I hope that this simple example gave you an idea about how to use the
+``mc_generic`` class. In the next chapter we will address some more advanced
+issues, but you should already be able to implement a Monte Carlo simulation of
+your own. Maybe the only point that we haven't addressed and which is useful,
+is how to generate random numbers. Actually, as soon as you have generated an
+instance of a ``mc_generic`` class, like ``SpinMC`` above, you automatically
+have an acces to a random number generator with::
+
+  triqs::mc_tools::polymorphic_random_generator RNG = SpinMC.RandomGenerator;
+
+``RNG`` is an instance of a ``polymorphic_random_generator``. If you want to
+generate a ``double`` number on the interval :math:`[0,1[`, you just have to
+call ``RNG()``. By providing an argument to ``RNG`` you can generate integer
+and real numbers on different intervals. This is described in detail in the
+section :ref:`Random number generator <random>`.
+
+That's it! Why don't you try to write your own Monte Carlo describing an
+:ref:`Ising chain in a field <isingex>`!
 
 
