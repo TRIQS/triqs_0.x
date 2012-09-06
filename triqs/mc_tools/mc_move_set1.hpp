@@ -46,10 +46,10 @@ namespace triqs { namespace mc_tools {
 
   //--------------------------------------------------------------------
 
-  template <class X> struct IsMove {
+  template <class X, typename Y> struct IsMove {
    BOOST_CONCEPT_USAGE(IsMove)
    {
-    typename X::mc_weight_type r = i.Try();      
+    Y r = i.Try();      
     r = i.Accept();
     i.Reject();
    }
@@ -69,7 +69,7 @@ namespace triqs { namespace mc_tools {
 
   template<typename MCSignType, typename MoveType>
    class move_impl : boost::noncopyable, public move_base<MCSignType> { 
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
+    BOOST_CONCEPT_ASSERT((IsMove<MoveType, MCSignType>));
     private:
     boost::shared_ptr<MoveType> ptr; // ptr to the move
     uint64_t NProposed,NAccepted; // Statistics
@@ -113,8 +113,6 @@ namespace triqs { namespace mc_tools {
    polymorphic_random_generator & RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;  
    public:   
-
-   typedef MCSignType mc_weight_type;
 
    ///
    move_set(polymorphic_random_generator & R): RNG(R) { Proba_Moves.push_back(0); }

@@ -35,10 +35,10 @@
 namespace triqs { namespace mc_tools { 
  namespace mpi=boost::mpi; namespace BLL = boost::lambda;
 
- template <class X> struct IsMove { // a concept check for the moves at compile time
+ template <class X, typename Y> struct IsMove { // a concept check for the moves at compile time
   BOOST_CONCEPT_USAGE(IsMove)
   {
-   typename X::mc_weight_type r = i.Try();      
+   Y r = i.Try();      
    r = i.Accept();
    i.Reject();
   }
@@ -68,7 +68,7 @@ namespace triqs { namespace mc_tools {
      Accept_(BLL::bind(&MoveType::Accept,move_ptr)),
      Reject(BLL::bind(&MoveType::Reject,move_ptr))
    {
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
+    BOOST_CONCEPT_ASSERT((IsMove<MoveType,MCSignType>));
    }
 
    template<typename MoveType>
@@ -79,7 +79,7 @@ namespace triqs { namespace mc_tools {
      Accept_(BLL::bind(&MoveType::Accept,sptr.get())),
      Reject(BLL::bind(&MoveType::Reject,sptr.get()))
    {
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
+    BOOST_CONCEPT_ASSERT((IsMove<MoveType,MCSignType>));
    }
 
    MCSignType Try(){ NProposed++; return Try_();}
@@ -109,8 +109,6 @@ namespace triqs { namespace mc_tools {
    polymorphic_random_generator & RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;  
    public:   
-
-   typedef MCSignType mc_weight_type;
 
    ///
    move_set(polymorphic_random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
