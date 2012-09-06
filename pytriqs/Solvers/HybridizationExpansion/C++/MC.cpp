@@ -160,10 +160,6 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
 
 void MC_Hybridization_Matsubara::finalize (boost::mpi::communicator const & c) { 
 
-  // report the acceptance of the move
-  report<<" Move acceptance probability"<<std::endl;
-  this->AllMoves.print(report,c,"All moves");
-
   report<<"Monte-Carlo : Time measurements (cpu time) : "<<endl;
   report<<"   time elapsed total : " << this->Timer << " seconds" << endl;
 
