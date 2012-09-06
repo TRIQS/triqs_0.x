@@ -49,20 +49,25 @@ namespace triqs { namespace mc_tools {
 
  template<typename MCSignType> 
   class move {
+
    boost::shared_ptr<void> move_impl;
-   uint64_t NProposed,NAccepted; // Statistics
-   move_set<MCSignType> * mset_ptr; // if hte move is a move_set, we keep a handle for print reports ...
-   // two little helper functions for the constructor : pointer is not NULL iif we give a moveset, otherwise it is NULL.
+   uint64_t NProposed, NAccepted;
+
    static move_set<MCSignType> * _mk_ptr( move_set<MCSignType> * x) { return x;}
    template<class T> static move_set<MCSignType> * _mk_ptr( T * x) { return NULL;}
 
    public:
+
+   double acceptance_rate;
+   move_set<MCSignType> * mset_ptr;
+
    boost::function<MCSignType()> Try_, Accept_;
    boost::function<void()> Reject;
 
    template<typename MoveType>
     move( MoveType * move_ptr) : 
      move_impl(move_ptr),NProposed(0),NAccepted(0),
+     acceptance_rate(-1),
      mset_ptr( _mk_ptr(move_ptr)), 
      Try_(BLL::bind(&MoveType::Try,move_ptr)),
      Accept_(BLL::bind(&MoveType::Accept,move_ptr)),
@@ -74,6 +79,7 @@ namespace triqs { namespace mc_tools {
    template<typename MoveType>
     move(boost::shared_ptr<MoveType> sptr) :
      move_impl(sptr),NProposed(0),NAccepted(0),
+     acceptance_rate(-1),
      mset_ptr( _mk_ptr(sptr.get())),
      Try_(BLL::bind(&MoveType::Try,sptr.get())),
      Accept_(BLL::bind(&MoveType::Accept,sptr.get())),
@@ -85,18 +91,14 @@ namespace triqs { namespace mc_tools {
    MCSignType Try(){ NProposed++; return Try_();}
    MCSignType Accept() { NAccepted++; return  Accept_(); }
 
-   double acceptance_probability(mpi::communicator const & c) const { 
-    uint64_t nacc_tot=0, nprop_tot=1;
-    mpi::reduce(c, NAccepted, nacc_tot, std::plus<uint64_t>(), 0);
-    mpi::reduce(c, NProposed, nprop_tot, std::plus<uint64_t>(), 0);
-    return nacc_tot/static_cast<double>(nprop_tot);
+   void collect_statistics(mpi::communicator const & c) {
+     uint64_t nacc_tot=0, nprop_tot=1;
+     mpi::reduce(c, NAccepted, nacc_tot, std::plus<uint64_t>(), 0);
+     mpi::reduce(c, NProposed, nprop_tot, std::plus<uint64_t>(), 0);
+     acceptance_rate = nacc_tot/static_cast<double>(nprop_tot);
    }
 
-   void print (triqs::utility::report_stream & report, mpi::communicator const & c, std::string name, std::string decal) const {
-    report<< decal <<"Acceptance probability of move : "<<name<<"  :  "<<acceptance_probability(c)<<std::endl;
-    if (mset_ptr) mset_ptr->print (report, c, name, decal);
-   }
-  };// class move  
+  };
 
  //--------------------------------------------------------------------
 
@@ -199,10 +201,19 @@ namespace triqs { namespace mc_tools {
    } 
 
    /// Pretty printing of the acceptance probability of the moves. 
-   void print (triqs::utility::report_stream & report, mpi::communicator const & c, std::string name="", std::string decal="") const { 
-    report <<decal <<"Move set : "<<name <<std::endl;
-    for (unsigned int u =0; u< this->size(); ++u)
-     (*this)[u].print(report,c,names_[u],decal+std::string("  ")); 
+   std::string get_statistics(mpi::communicator const & c, int shift = 0) {
+     std::ostringstream s;
+     for (unsigned int u =0; u< this->size(); ++u) {
+       (*this)[u].collect_statistics(c);
+       for(int i=0; i<shift; i++) s << " ";
+       if ((*this)[u].mset_ptr) {
+         s << "Move set " << names_[u] << ": " << (*this)[u].acceptance_rate << "\n";
+         s << (*this)[u].mset_ptr->get_statistics(c,shift+2);
+       } else {
+         s << "Move " << names_[u] << ": " << (*this)[u].acceptance_rate << "\n";
+       }
+     }
+     return s.str();
    }
 
    protected:

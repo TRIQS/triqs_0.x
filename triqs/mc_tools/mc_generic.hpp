@@ -170,7 +170,11 @@ namespace triqs { namespace mc_tools {
     return finished;
    }
 
-   void collect_results (boost::mpi::communicator const & c) { AllMeasures.collect_results(c);} 
+   void collect_results(boost::mpi::communicator const & c) {
+     report(2) << "Acceptance rate for all moves:" << std::endl << std::endl;
+     report(2) << AllMoves.get_statistics(c) << std::endl << std::flush;
+     AllMeasures.collect_results(c);
+   }
 
   protected:
 
