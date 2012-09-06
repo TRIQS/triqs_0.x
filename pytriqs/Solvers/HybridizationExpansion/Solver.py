@@ -96,7 +96,7 @@ class Solver(Solver_Base):
         Parameters.check_no_parameters_not_in_union_of_dicts(param, self.Required, self.Optional)
         Solver_Base.__init__(self,GFstruct,param)
         self.Beta = float(Beta)
-        self.Verbosity = 1 if MPI.rank ==0 else 0
+        self.Verbosity = 2 if MPI.rank ==0 else 0
 
         # Green function in frequencies
         a_list = [a for a,al in self.GFStruct]
