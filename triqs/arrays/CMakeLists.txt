@@ -30,13 +30,6 @@ if (PsPrintCodesArray)
   add_custom_target(print_code_array ALL DEPENDS ${code_filename})
  endif (ENSCRIPT_EXECUTABLE)
 
- find_package(Vim)
- if (VIM_EXECUTABLE)
-  SET(edit_code_top ${CMAKE_CURRENT_BINARY_DIR}/edit_code.fake)
-  add_custom_command (OUTPUT ${edit_code_top} COMMAND ${VIM_EXECUTABLE} -p ${ARRAY_SOURCES_LIST} )
-  add_custom_target(edit_code_array DEPENDS ${edit_code_top})
- endif (VIM_EXECUTABLE)
-
 endif (PsPrintCodesArray)
 
 
