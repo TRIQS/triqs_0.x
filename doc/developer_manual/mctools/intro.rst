@@ -13,6 +13,6 @@ the implementation details of your specific algorithm.
 
    loop
    overview
-   advanced
+   reference
    random
    ising

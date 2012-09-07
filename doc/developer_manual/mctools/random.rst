@@ -5,6 +5,9 @@
 Random number generator
 -----------------------
 
+Generic use
+***********
+
 TRIQS comes with a set of random number generators implemented in the class
 ``random_generator``. Here's an example illustrating the
 use of the generator::
@@ -50,8 +53,9 @@ interval :math:`[0,1[`. If there is a ``double`` argument ``D``, then
 numbers are produced uniformly on :math:`[0,D]`. Finally, if there is
 a ``int`` argument ``I``, integer numbers are generated on :math:`[0,I[`.
 
+
 Getting a list of random number generators
-------------------------------------------
+******************************************
 
 In order to have a list of all the strings describing the available random
 generators, you can call the static method ``random_generator_names``. For
@@ -71,7 +75,7 @@ example::
 
 
 Accessing the random number generator from the Monte Carlo class
-----------------------------------------------------------------
+****************************************************************
 
 When you construct an instance of a Monte Carlo class ``mc_generic``, this
 instance automatically has an access to a random number generator.

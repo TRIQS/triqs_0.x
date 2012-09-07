@@ -231,9 +231,9 @@ In our example this ratio is
 With this ratio, the Monte Carlo loop decides wether this proposed move should
 be rejected, or accepted. In the move is accepted, the Monte Carlo calls the
 ``Accept`` method of the move. Note that this method returns 1. This is almost
-always what you want to put there (see advanced discussion below).  Otherwise
-it calls the ``Reject`` method. In our example, nothing has to be done if the
-move is rejected. If it is accepted, the spin should be flipped.
+always what you want to put there (see full reference below).  Otherwise it
+calls the ``Reject`` method. In our example, nothing has to be done if the move
+is rejected. If it is accepted, the spin should be flipped.
 
 The measure concept
 *******************
@@ -341,6 +341,7 @@ and real numbers on different intervals. This is described in detail in the
 section :ref:`Random number generator <random>`.
 
 That's it! Why don't you try to write your own Monte Carlo describing an
-:ref:`Ising chain in a field <isingex>`!
+:ref:`Ising chain in a field <isingex>`! You will find the solution
+in :ref:`this section <ising_solution>`.
 
 
