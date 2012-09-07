@@ -6,16 +6,16 @@ Random number generator
 -----------------------
 
 TRIQS comes with a set of random number generators implemented in the class
-``polymorphic_random_generator``. Here's an example illustrating the
+``random_generator``. Here's an example illustrating the
 use of the generator::
 
   #include <iostream>
-  #include <triqs/mc_tools/polymorphic_random_generator.hpp>
+  #include <triqs/mc_tools/random_generator.hpp>
 
   int main() {
 
     // Construct a random number generator
-    triqs::mc_tools::polymorphic_random_generator RNG("mt19937", 23432);
+    triqs::mc_tools::random_generator RNG("mt19937", 23432);
 
     // Generate double numbers in [0,1[
     for (size_t i = 0; i < 100; i++) std::cout << RNG() << " ";
@@ -34,10 +34,10 @@ use of the generator::
   }
 
 After having included the header
-:file:`<triqs/mc_tools/polymorphic_random_generator.hpp>` one constructs a
+:file:`<triqs/mc_tools/random_generator.hpp>` one constructs a
 random generator with::
 
-    triqs::mc_tools::polymorphic_random_generator RNG("mt19937", 23432);
+    triqs::mc_tools::random_generator RNG("mt19937", 23432);
 
 The first argument is a string which allows you to select the generator. Here
 mt19937 stands for a version of a Mersenne Twister. The second argument is
@@ -58,12 +58,12 @@ generators, you can call the static method ``random_generator_names``. For
 example::
 
   #include <iostream>
-  #include <triqs/mc_tools/polymorphic_random_generator.hpp>
+  #include <triqs/mc_tools/random_generator.hpp>
 
   int main() {
 
     std::cout << "A list of all random generators" << std::endl << std::endl;
-    std::cout << triqs::mc_tools::polymorphic_random_generator::random_generator_names() << std::endl;
+    std::cout << triqs::mc_tools::random_generator::random_generator_names() << std::endl;
 
     return 0;
 

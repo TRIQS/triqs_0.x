@@ -28,6 +28,7 @@ a code that would do the job. Note that we put everything in one file here,
 but obviously you would usually want to cut this into pieces for clarity::
 
   #include <iostream>
+  #include <triqs/utility/callbacks.hpp>
   #include <triqs/mc_tools/mc_generic.hpp>
 
   // the configuration: a spin, the inverse temperature, the external field
@@ -42,13 +43,12 @@ but obviously you would usually want to cut this into pieces for clarity::
   // a move: flip the spin
   struct flip {
 
-    typedef double mc_weight_type;
     configuration & config;
 
     flip(configuration & config_) : config(config_) {}
 
-    mc_weight_type Try() { return std::exp(-2*config.spin*config.h*config.beta); }
-    mc_weight_type Accept() { config.spin *= -1; return 1.0; }
+    double Try() { return std::exp(-2*config.spin*config.h*config.beta); }
+    double Accept() { config.spin *= -1; return 1.0; }
     void Reject() {}
 
   };
@@ -92,7 +92,7 @@ but obviously you would usually want to cut this into pieces for clarity::
     int N_Warmup_Cycles = 10000;
     std::string Random_Name = "";
     int Random_Seed = 374982 + world.rank() * 273894;
-    int Verbosity = (world.rank() == 0 ? 1 : 0);
+    int Verbosity = (world.rank() == 0 ? 2 : 0);
 
     // construct a Monte Carlo loop
     triqs::mc_tools::mc_generic<double> SpinMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
@@ -110,7 +110,7 @@ but obviously you would usually want to cut this into pieces for clarity::
     SpinMC.add_measure(new compute_m(config), "magnetization measure");
 
     // Run and collect results
-    SpinMC.run(triqs::mc_tools::clock_callback(600));
+    SpinMC.run(triqs::utility::clock_callback(600));
     SpinMC.collect_results(world);
 
     return 0;
@@ -145,7 +145,7 @@ called ``SpinMC``::
     int N_Warmup_Cycles = 10000;
     std::string Random_Name = "";
     int Random_Seed = 374982 + world.rank() * 273894;
-    int Verbosity = (world.rank() == 0 ? 1 : 0);
+    int Verbosity = (world.rank() == 0 ? 2 : 0);
 
     triqs::mc_tools::mc_generic<double> SpinMC(N_Cycles, Length_Cycle, N_Warmup_Cycles,
                                                Random_Name, Random_Seed, Verbosity);
@@ -165,11 +165,11 @@ The next two define the random number generator by giving its name in
 Twister) and the random seed in ``Random_See``. As you see the seed is
 different for all node with the use of ``world.rank()``.
 
-Finally, the last parameter sets the verbosity level. 0 means no output,
-while 1 will output the progress level for the current node. As you see,
-we have put ``Verbosity`` to 1 only for the master node and 0 for all
-the other ones. This way we will see the progress of the master node
-only.
+Finally, the last parameter sets the verbosity level. 0 means no output, 1 will
+output the progress level for the current node and 2 additionally shows some
+statistics about the simulation when you call ``collect_results``. As you see,
+we have put ``Verbosity`` to 2 only for the master node and 0 for all the other
+ones. This way the information will be printed only by the master.
 
 Moves and measures
 ******************
@@ -202,13 +202,12 @@ has three member functions that any move **must** have: ``Tyr``, ``Accept`` and
 
   struct flip {
 
-    typedef double mc_weight_type;
     configuration & config;
 
     flip(configuration & config_) : config(config_) {}
 
-    mc_weight_type Try() { return std::exp(-2*config.spin*config.h*config.beta); }
-    mc_weight_type Accept() { config.spin *= -1; return 1.0; }
+    double Try() { return std::exp(-2*config.spin*config.h*config.beta); }
+    double Accept() { config.spin *= -1; return 1.0; }
     void Reject() {}
 
   };
@@ -235,11 +234,6 @@ be rejected, or accepted. In the move is accepted, the Monte Carlo calls the
 always what you want to put there (see advanced discussion below).  Otherwise
 it calls the ``Reject`` method. In our example, nothing has to be done if the
 move is rejected. If it is accepted, the spin should be flipped.
-
-The last piece which is expected to be in a move, is a type called
-``mc_weight_type`` which tells what the return type of ``Accept`` is. This is
-the same as the template type of ``mc_generic``.
-
 
 The measure concept
 *******************
@@ -292,7 +286,7 @@ Well, at this stage we're ready to launch our simulation. The moves
 and measures have been specified, so all you need to do now is run
 the simulation with::
 
-    SpinMC.run(triqs::mc_tools::clock_callback(600));
+    SpinMC.run(triqs::utility::clock_callback(600));
 
 The ``run`` method takes one argument which is used to decide if the simulation
 must be stopped for some reason before it reaches the full number of cycles
@@ -301,11 +295,12 @@ only allows for 1 hour simulations. In that case, you would want your
 simulation to stop, say after 55 minutes, even if it didn't manage to do the
 ``N_cycles`` cycles.
 
-In practice, the argument is a ``boost::function<bool ()>`` which is called
-at the end of every cycle. If it returns 0 the simulation goes on, if it
-returns 1 the simulation stops. In this example, we used a function
-``clock_callback(600)`` which starts returning 1 after 600 seconds. This way
-the simulation will last at most 10 minutes.
+In practice, the argument is a ``boost::function<bool ()>`` which is called at
+the end of every cycle. If it returns 0 the simulation goes on, if it returns 1
+the simulation stops. In this example, we used a function
+``clock_callback(600)`` which starts returning 1 after 600 seconds.  It is
+defined in the header :file:`<triqs/utility/callbacks.hpp>`.  This way the
+simulation will last at most 10 minutes.
 
 Note that the simulation would end cleanly. The rest of the code can
 safely gather results from the statistics that has been accumulated, even
@@ -337,9 +332,9 @@ is how to generate random numbers. Actually, as soon as you have generated an
 instance of a ``mc_generic`` class, like ``SpinMC`` above, you automatically
 have an acces to a random number generator with::
 
-  triqs::mc_tools::polymorphic_random_generator RNG = SpinMC.RandomGenerator;
+  triqs::mc_tools::random_generator RNG = SpinMC.RandomGenerator;
 
-``RNG`` is an instance of a ``polymorphic_random_generator``. If you want to
+``RNG`` is an instance of a ``random_generator``. If you want to
 generate a ``double`` number on the interval :math:`[0,1[`, you just have to
 call ``RNG()``. By providing an argument to ``RNG`` you can generate integer
 and real numbers on different intervals. This is described in detail in the

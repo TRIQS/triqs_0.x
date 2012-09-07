@@ -39,8 +39,8 @@ number of cycles that will be done until the end of the simulation.
 At the end of the simulation, the code will have done:
 
   * :math:`N` measurements
-  * :math:`N + T` cycles
-  * :math:`(N + T) \times L` steps
+  * :math:`N + W` cycles
+  * :math:`(N + W) \times L` steps
 
 
 C++ variable names
