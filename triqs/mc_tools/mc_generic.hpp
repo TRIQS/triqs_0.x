@@ -166,14 +166,19 @@ namespace triqs { namespace mc_tools {
    bool run(boost::function<bool ()> const & stop_callback) {
     assert(stop_callback);
     Timer.start();
-    signe=1; done_percent = 0; 
+    signe=1; done_percent = 0; nmeasures = 0;
+    sum_sign = 0;
     bool stop_it=false, finished = false;
     uint64_t NCycles_tot = NCycles+ NWarmIterations;
     report << std::endl << std::flush;
     for (NC =0; !stop_it; ++NC) {
      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,signe); }
      if (after_cycle_duty) {after_cycle_duty();}
-     if (thermalized()) AllMeasures.accumulate(signe);
+     if (thermalized()) {
+       nmeasures++;
+       sum_sign += signe;
+       AllMeasures.accumulate(signe);
+     }
      // recompute fraction done
      uint64_t dp = uint64_t(floor( ( NC*100.0) / NCycles_tot));  
      if (dp>done_percent)  { done_percent=dp; report << done_percent; report<<"%; "; report <<std::flush; }
@@ -186,9 +191,19 @@ namespace triqs { namespace mc_tools {
    }
 
    void collect_results(boost::mpi::communicator const & c) {
+
+     uint64_t nmeasures_tot;
+     MCSignType sum_sign_tot;
+     boost::mpi::reduce(c, nmeasures, nmeasures_tot, std::plus<uint64_t>(), 0);
+     boost::mpi::reduce(c, sum_sign, sum_sign_tot, std::plus<MCSignType>(), 0);
+
      report(2) << "Acceptance rate for all moves:" << std::endl << std::endl;
-     report(2) << AllMoves.get_statistics(c) << std::endl << std::flush;
+     report(2) << AllMoves.get_statistics(c) << std::endl;
+     report(2) << "Simulation lasted: " << double(Timer) << " seconds" << std::endl;
+     report(2) << "Total measures: " << nmeasures_tot << " measures" << std::endl;
+     report(2) << "Average sign: " << sum_sign_tot / double(nmeasures_tot) << std::endl << std::endl << std::flush;
      AllMeasures.collect_results(c);
+
    }
 
   protected:
@@ -197,7 +212,9 @@ namespace triqs { namespace mc_tools {
    move_set<MCSignType> AllMoves;
    measure_set<MCSignType> AllMeasures;
    uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
-   uint64_t NWarmIterations,NCycles;
+   uint64_t NWarmIterations, NCycles;
+   uint64_t nmeasures;
+   MCSignType sum_sign;
    triqs::utility::timer Timer;
 
   private: 
