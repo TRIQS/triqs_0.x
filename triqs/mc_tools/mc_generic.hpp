@@ -40,6 +40,13 @@ namespace triqs { namespace mc_tools {
   */
  template<typename MCSignType, typename MCStepType = Step::Metropolis<MCSignType> >
  class mc_generic {
+
+   // Couple of traits to check arguments of add_move and add_measure
+   template <typename T> struct is_fine : boost::false_type {};
+   template <typename T> struct is_fine<T * &&> : boost::true_type {};
+   template <typename T> struct is_fine<boost::shared_ptr<T> > : boost::true_type {};
+   template <typename T> struct is_fine<std::shared_ptr<T> > : boost::true_type {};
+
   public:
 
    /**
@@ -91,7 +98,6 @@ namespace triqs { namespace mc_tools {
     
        \endrst
     */
-
    template <typename MoveType>
    void add_move (MoveType * && M, std::string name, double PropositionProbability = 1.0) {
      AllMoves.add(std::move(M), name, PropositionProbability);
@@ -100,6 +106,11 @@ namespace triqs { namespace mc_tools {
    template <typename MoveType>
    void add_move (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability = 1.0) {
      AllMoves.add(sptr, name, PropositionProbability);
+   }
+
+   template <typename T>
+   void add_move (T M, std::string name, double PropositionProbability = 1.0) {
+     BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add moves with the folloing syntax: add_move(new mymove(...), name, probability) or provide a shared_ptr to a move as the first argument");
    }
 
    /**
@@ -125,6 +136,11 @@ namespace triqs { namespace mc_tools {
    template<typename MeasureType>
     void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name) {
       AllMeasures.insert(sptr, name);
+    }
+
+   template<typename T>
+    void add_measure (T M, std::string name) {
+     BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add measures with the folloing syntax: add_measure(new mymeasure(...), name) or provide a shared_ptr to a measure as the first argument");
     }
 
    // An access to the random number generator
