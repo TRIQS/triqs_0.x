@@ -1,4 +1,6 @@
+.. highlight:: c
 
+::
 
   namespace Py_to_C { 
    template<typename T> struct convert{ 
@@ -12,4 +14,5 @@
     static boost::python::object invoke (T const & x); // convert T into a python object
     };
   }
+
 

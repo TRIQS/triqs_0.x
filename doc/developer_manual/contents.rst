@@ -5,5 +5,7 @@ Part II : C++ librairies
    :maxdepth: 3
 
    arrays/contents
+   clef/contents
    mctools/contents
+   lectures/contents
    utility.rst

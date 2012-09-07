@@ -149,7 +149,7 @@ namespace triqs { namespace arrays {
 
 #undef IMPL_TYPE
 #ifdef TRIQS_HAS_LAZY_EXPRESSIONS
-#include <triqs/lazy/adapters/array.hpp>
+#include <triqs/clef/adapters/array.hpp>
 #endif
 
 #endif

@@ -50,7 +50,7 @@ Copy contructors     - Create a new fresh memory block.                         
 Assignment (=)       - The assignment operator creates a new datablock if size mismatchs.    - The assignment operator just copy data into the view. 
                      - Hence, assignment never fail for size reason                            Behaviour is undefined if the size of the view is too small.
                        (unless there is a memory allocation exception of course)               (it throws if the array has option `Tag::BoundCheck` or if 
-                                                                                                `TRIQS_ARRAYS_ENFORCE_BOUNDCHECK` is defined, Cf below). 
+                                                                                               `TRIQS_ARRAYS_ENFORCE_BOUNDCHECK` is defined, Cf below). 
 Resizing             - Can be resized, invalidating all references/pointers to the data.     - Can be not be resized.
 Invalidation         - References/pointers to the data may become invalid after resize,      - References/pointers to the data  are still valid after assignment.
                        or assignment.

@@ -60,7 +60,7 @@ class CompileBlock(Directive):
         fil.write(code)
         fil.flush()
          
-        args = " %(compiler)s %(definitions)s %(include)s %(link)s "%config + " " + fil.name
+        args = "%(compiler)s "%config + fil.name + " %(definitions)s %(include)s %(link)s"%config
         print "Compiling ...."
         #print args
         import subprocess as S

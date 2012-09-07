@@ -300,6 +300,7 @@ Expression
 
 Simple expressions are made using boost.proto.
 Examples :: 
+
  array<long,2> A (2,2), B(2,2),C;
  C= A + 2*B;
  array<long,2> D( A+ 2*B);
@@ -349,10 +350,11 @@ that model the same concept. See e.g. expr2.cpp (map_expr) for examples.
 * *Multiplication* : 
 not decided, since it is not the same for array or matrices.
 Two choices : 
- * Do not add * for array, matrices (use matmul e.g.) and allow mixing array, matrix
+
+ * Do not add \* for array, matrices (use matmul e.g.) and allow mixing array, matrix
    e.g. add an array<int,2> and a matrix <int>
- * Add the *, but then do different expression for array and matrix/vector,
+
+ * Add the \*, but then do different expression for array and matrix/vector,
    then one can not mix them.
    In that case, it is however trivial to say e.g. M + matrix_view<int>(A) if A is an array.
-
 

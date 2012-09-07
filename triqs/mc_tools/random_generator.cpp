@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-#include "polymorphic_random_generator.hpp"
+#include "random_generator.hpp"
 #include "./MersenneRNG.hpp"
 #include <boost/random.hpp>
 //#include <boost/random/uniform_int.hpp>
@@ -63,17 +63,17 @@ namespace triqs {
 
  //---------------------------------------------
 
- polymorphic_random_generator::polymorphic_random_generator(std::string const & RandomGeneratorName, std::size_t seed_ ) : 
+ random_generator::random_generator(std::string const & RandomGeneratorName, std::size_t seed_ ) : 
   rng_ptr(), gen (choose_gen(RandomGeneratorName,seed_,rng_ptr)), name(RandomGeneratorName),seed(seed_) {}
 
  //---------------------------------------------
 
- polymorphic_random_generator::polymorphic_random_generator( polymorphic_random_generator const & p) :
+ random_generator::random_generator( random_generator const & p) :
   rng_ptr(), gen (choose_gen(p.name,p.seed,rng_ptr)), name (p.name),seed(p.seed) {}
 
  //---------------------------------------------
 
- std::string polymorphic_random_generator::random_generator_names(std::string const & sep) { 
+ std::string random_generator::random_generator_names(std::string const & sep) { 
 #define PR(r,sep,p,XX) BOOST_PP_IF(p,+ sep +,) std::string(AS_STRING(XX))   
   return BOOST_PP_SEQ_FOR_EACH_I (PR,sep,RNG_LIST);  
  }

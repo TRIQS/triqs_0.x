@@ -42,7 +42,7 @@ The move class should have a `mc_weight_type`, and three methods: `Try()`, `Acce
     #ifndef moves_hpp
     #define moves_hpp
 
-    #include <triqs/mc_tools/polymorphic_random_generator.hpp>
+    #include <triqs/mc_tools/random_generator.hpp>
     #include <vector>
 
     #include "configuration.hpp"
@@ -52,13 +52,13 @@ The move class should have a `mc_weight_type`, and three methods: `Try()`, `Acce
 
       typedef double mc_weight_type;
       configuration * config;
-      triqs::mc_tools::polymorphic_random_generator &RNG;
+      triqs::mc_tools::random_generator &RNG;
 
       int site;
       double delta_energy;
 
       // constructor
-      flip(configuration & config_, triqs::mc_tools::polymorphic_random_generator & RNG_) :
+      flip(configuration & config_, triqs::mc_tools::random_generator & RNG_) :
          config(&config_), RNG(RNG_) {}
 
       double Try() {
@@ -154,6 +154,7 @@ The Monte-Carlo itself can now be written::
     #include <iostream>
     #include <boost/python.hpp>
     #include <triqs/mc_tools/mc_generic.hpp>
+    #include <triqs/utility/callbacks.hpp>
 
     #include "moves.hpp"
     #include "configuration.hpp"
@@ -193,7 +194,7 @@ The Monte-Carlo itself can now be written::
       std::cout << "Run"<<std::endl;
 
       // Run and collect results
-      IsingMC.run(triqs::mc_tools::clock_callback(-1));
+      IsingMC.run(triqs::utility::clock_callback(-1));
       IsingMC.collect_results(c);
 
       // Finalize everything

@@ -23,39 +23,55 @@
 #ifndef TRIQS_TOOLS_MC_GENERIC_H
 #define TRIQS_TOOLS_MC_GENERIC_H
 
-#include "mc_measure_set.hpp"
-#include "mc_move_set.hpp"
-#include "mc_basic_step.hpp"
-
-#include <triqs/python_tools/improved_python_dict.hpp>
 #include <boost/function.hpp>
-#include "polymorphic_random_generator.hpp"
 #include <math.h>
 #include <triqs/utility/timer.hpp>
 #include <triqs/utility/report_stream.hpp>
-#include "call_backs.hpp"
+
+#include "mc_measure_set.hpp"
+#include "mc_move_set.hpp"
+#include "mc_basic_step.hpp"
+#include "random_generator.hpp"
 
 namespace triqs { namespace mc_tools { 
 
- typedef triqs::python_tools::improved_python_dict mcparams_python; 
-  
  /**
   * 
   */
- template<typename MCSignType, typename ParameterDictType = mcparams_python, typename MCStepType= Step::Metropolis<MCSignType> > 
+ template<typename MCSignType, typename MCStepType = Step::Metropolis<MCSignType> >
  class mc_generic {
+
+   // Couple of traits to check arguments of add_move and add_measure
+   template <typename T> struct is_fine : boost::false_type {};
+   template <typename T> struct is_fine<T * &&> : boost::true_type {};
+   template <typename T> struct is_fine<boost::shared_ptr<T> > : boost::true_type {};
+   template <typename T> struct is_fine<std::shared_ptr<T> > : boost::true_type {};
+
   public:
 
-   typedef ParameterDictType parameters_type;
+   /**
+     * Constructor from a set of parameters
+     */
+   mc_generic(int N_Cycles, int Length_Cycle, int N_Warmup_Cycles, std::string Random_Name, int Random_Seed, int Verbosity,
+              boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
+     NCycles(N_Cycles),
+     Length_MC_Cycle(Length_Cycle),
+     NWarmIterations(N_Warmup_Cycles),
+     RandomGenerator(Random_Name, Random_Seed),
+     AllMoves(RandomGenerator),
+     AllMeasures(),
+     report(&std::cout, Verbosity),
+     after_cycle_duty(AfterCycleDuty) {}
+
    /** 
+     * Constructor from a dictionnary
      * \param[in] P  dictionnary parameters
-     * \param[in] rank The rank of the process in mpi (why ?).
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
-    */
-   mc_generic(parameters_type const & P, size_t rank,  boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) : 
+     */
+   template<typename ParameterDictType>
+   mc_generic(ParameterDictType const & P, boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
     RandomGenerator(P.value_or_default("Random_Generator_Name",""), P.value_or_default("Random_Seed",1)),
     report(&std::cout,int(P["Verbosity"])),
-    Rank(rank),
     AllMoves(RandomGenerator), 
     AllMeasures(),
     Length_MC_Cycle(P["Length_Cycle"]),
@@ -83,17 +99,19 @@ namespace triqs { namespace mc_tools {
        \endrst
     */
    template <typename MoveType>
-    void add_move (MoveType *M, double PropositionProbability,std::string name ="") { AllMoves.add(M, PropositionProbability,name); }
+   void add_move (MoveType * && M, std::string name, double PropositionProbability = 1.0) {
+     AllMoves.add(std::move(M), name, PropositionProbability);
+   }
 
-    /** 
-    * Add a couple of inverse moves (M1,M2) with their probability of being proposed.
-    * Equivalent to two add_move(M1), add_move(M2), but it emphasizes the fact that inverse
-    * moves **must** have the same PropositionProbability.
-    */
-    template <typename MoveType1,typename MoveType2>
-    void add_move (MoveType1 *M1, MoveType2 *M2, double PropositionProbability, std::string name1="", std::string name2="") {
-     AllMoves.add(M1,M2,PropositionProbability,name1,name2);
-    }
+   template <typename MoveType>
+   void add_move (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability = 1.0) {
+     AllMoves.add(sptr, name, PropositionProbability);
+   }
+
+   template <typename T>
+   void add_move (T M, std::string name, double PropositionProbability = 1.0) {
+     BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add moves with the folloing syntax: add_move(new mymove(...), name, probability) or provide a shared_ptr to a move as the first argument");
+   }
 
    /**
     * Register the Measure M 
@@ -111,10 +129,22 @@ namespace triqs { namespace mc_tools {
       \endrst
     */
    template<typename MeasureType>
-    void add_measure (MeasureType *M, std::string name="") {  AllMeasures.insert(name,M);} 
+    void add_measure (MeasureType * && M, std::string name) {
+      AllMeasures.insert(std::move(M), name);
+    }
+
+   template<typename MeasureType>
+    void add_measure (boost::shared_ptr<MeasureType> sptr, std::string name) {
+      AllMeasures.insert(sptr, name);
+    }
+
+   template<typename T>
+    void add_measure (T M, std::string name) {
+     BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add measures with the folloing syntax: add_measure(new mymeasure(...), name) or provide a shared_ptr to a measure as the first argument");
+    }
 
    // An access to the random number generator
-   polymorphic_random_generator RandomGenerator;
+   random_generator RandomGenerator;
 
   protected:
    /**
@@ -136,33 +166,55 @@ namespace triqs { namespace mc_tools {
    bool run(boost::function<bool ()> const & stop_callback) {
     assert(stop_callback);
     Timer.start();
-    signe=1; done_percent = 0; 
+    signe=1; done_percent = 0; nmeasures = 0;
+    sum_sign = 0;
     bool stop_it=false, finished = false;
     uint64_t NCycles_tot = NCycles+ NWarmIterations;
+    report << std::endl << std::flush;
     for (NC =0; !stop_it; ++NC) {
      for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,signe); }
      if (after_cycle_duty) {after_cycle_duty();}
-     if (thermalized()) AllMeasures.accumulate(signe);
+     if (thermalized()) {
+       nmeasures++;
+       sum_sign += signe;
+       AllMeasures.accumulate(signe);
+     }
      // recompute fraction done
      uint64_t dp = uint64_t(floor( ( NC*100.0) / NCycles_tot));  
      if (dp>done_percent)  { done_percent=dp; report << done_percent; report<<"%; "; report <<std::flush; }
      finished = ( (NC >= NCycles_tot -1) || converged () );
      stop_it = (stop_callback() || finished);
     }
+    report << std::endl << std::endl << std::flush;
     Timer.stop();
     return finished;
    }
 
-   void collect_results (boost::mpi::communicator const & c) { AllMeasures.collect_results(c);} 
+   void collect_results(boost::mpi::communicator const & c) {
+
+     uint64_t nmeasures_tot;
+     MCSignType sum_sign_tot;
+     boost::mpi::reduce(c, nmeasures, nmeasures_tot, std::plus<uint64_t>(), 0);
+     boost::mpi::reduce(c, sum_sign, sum_sign_tot, std::plus<MCSignType>(), 0);
+
+     report(2) << "Acceptance rate for all moves:" << std::endl << std::endl;
+     report(2) << AllMoves.get_statistics(c) << std::endl;
+     report(2) << "Simulation lasted: " << double(Timer) << " seconds" << std::endl;
+     report(2) << "Total measures: " << nmeasures_tot << " measures" << std::endl;
+     report(2) << "Average sign: " << sum_sign_tot / double(nmeasures_tot) << std::endl << std::endl << std::flush;
+     AllMeasures.collect_results(c);
+
+   }
 
   protected:
 
    triqs::utility::report_stream report;
-   size_t Rank;
    move_set<MCSignType> AllMoves;
    measure_set<MCSignType> AllMeasures;
    uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
-   uint64_t NWarmIterations,NCycles;
+   uint64_t NWarmIterations, NCycles;
+   uint64_t nmeasures;
+   MCSignType sum_sign;
    triqs::utility::timer Timer;
 
   private: 
@@ -171,18 +223,6 @@ namespace triqs { namespace mc_tools {
    uint64_t NC,done_percent;// NC = number of the cycle
  };
 
- // add the communicator
- template<typename MCG> class mc_runner : public MCG {
-  boost::mpi::communicator communicator;
-  public:
-  typedef typename MCG::parameters_type parameters_type;
-
-  mc_runner(parameters_type const & p, boost::mpi::communicator const & c) : MCG(p, c.rank()) , communicator(c) 
-  { MPI_Errhandler_set(communicator, MPI_ERRORS_RETURN); }
-
-  double fraction_completed() const { return boost::mpi::all_reduce(communicator, MCG::fraction_completed(), std::plus<double>()); }
-  void collect_results() { MCG::collect_results(communicator);}
- };
 
 }}// end namespace
 #endif

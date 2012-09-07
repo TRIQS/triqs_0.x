@@ -31,7 +31,7 @@ namespace triqs { namespace mc_tools { namespace Step {
  // Performs one Metropolis step
  template<typename MCSignType>
   struct Metropolis {  
-   static void do_it (move_set<MCSignType> & MoveGroup, polymorphic_random_generator & RNG, MCSignType & signe){
+   static void do_it (move_set<MCSignType> & MoveGroup, random_generator & RNG, MCSignType & signe){
     double  r = MoveGroup.Try();
     if (RNG() < std::min(1.0,r)) { 
      signe *= MoveGroup.Accept();

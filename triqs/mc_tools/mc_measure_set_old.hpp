@@ -23,7 +23,6 @@
 #ifndef MC_MEASURE1_H
 #define MC_MEASURE1_H
 
-#include "Python.h"
 #include <boost/mpi.hpp>
 #include <boost/function.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -68,10 +67,11 @@ namespace mc_tools {
     BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>));
     void operator=(measure_impl const &); // forbidden
     protected:
-    boost::scoped_ptr<MeasureType> ptr; 
+    boost::shared_ptr<MeasureType> ptr;
     uint64_t count_;
     public:
     measure_impl(MeasureType * _ptr):measure_base<MCSignType>(), ptr(_ptr),count_(0)  {}
+    measure_impl(boost::shared_ptr<MeasureType> sptr) : measure_base<MCSignType>(), ptr(sptr),count_(0)  {}
     measure_impl( measure_impl const & X):measure_base<MCSignType>(X), ptr( new MeasureType (*X.ptr.get())),count_(X.count_) {}
     virtual ~measure_impl(){}
     virtual void accumulate(MCSignType signe){ count_++; ptr->accumulate(signe); }
@@ -87,8 +87,13 @@ namespace mc_tools {
   class mcmeasure  { 
    boost::shared_ptr< details::measure_base<MCSignType> > impl_;
    public :
+
    template<typename MeasureType>
-    mcmeasure ( MeasureType * p) : impl_( new  details::measure_impl<MCSignType,MeasureType> (p)) {}
+   mcmeasure ( MeasureType * p) : impl_( new  details::measure_impl<MCSignType,MeasureType> (p)) {}
+
+   template<typename MeasureType>
+   mcmeasure ( boost::shared_ptr<MeasureType> sptr) : impl_( new  details::measure_impl<MCSignType,MeasureType> (sptr)) {}
+
    mcmeasure() {} 
    void accumulate(MCSignType const & signe) { assert(impl_); impl_->accumulate(signe);}
    void collect_results(boost::mpi::communicator const & communicator) { assert(impl_); impl_-> collect_results(communicator);}
@@ -116,14 +121,15 @@ namespace mc_tools {
     * WARNING : the pointer is deleted automatically by the class at destruction. 
     */
    template<typename T>
-    void insert (std::string const & name, T *M) {
+    void insert (T * && M, std::string const & name) {
     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-    BaseType::insert(std::make_pair(name, measure_type (M) )); 
+    BaseType::insert(std::make_pair(name, measure_type (M)));
     } 
 
-   void insert(std::string const & name, measure_type const & M) { 
+   template<typename T>
+   void insert(boost::shared_ptr<T> ptr, std::string const & name) {
     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-    BaseType::insert(std::make_pair(name, M));
+    BaseType::insert(std::make_pair(name, measure_type(ptr)));
    }
 
    bool has(std::string const & name) const { return BaseType::find(name) != BaseType::end(); }

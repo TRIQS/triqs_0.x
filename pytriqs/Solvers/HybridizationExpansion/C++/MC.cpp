@@ -24,9 +24,9 @@
 #include <triqs/arrays/h5/array_stack.hpp>
 #include "MC.hpp"
 #include <triqs/python_tools/IteratorOnPythonSequences.hpp>
+#include <triqs/utility/callbacks.hpp>
  
 using triqs::mc_tools::move_set;
-using triqs::mc_tools::mcparams_python;
 using python::extract;
 using namespace triqs;
 
@@ -60,8 +60,8 @@ std::string make_string( T1 const & x1,T2 const & x2) {
 
 //-----------------------------------------------------
 
-MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubara::parameters_type const & params, size_t rank) : 
- BaseType (params ,rank), 
+MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::improved_python_dict const & params) :
+ BaseType(params),
  Config(params),
  G_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["G_tau"])),
  F_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["F_tau"])),
@@ -81,22 +81,23 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
  double p_mv = params["Proba_Move"];
 
  typedef move_set<SignType> move_set_type;
- move_set_type * AllInserts = new move_set_type(this->RandomGenerator);
- move_set_type * AllRemoves = new move_set_type(this->RandomGenerator);
+ boost::shared_ptr<move_set_type> AllInserts(new move_set_type(this->RandomGenerator));
+ boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(this->RandomGenerator));
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
-   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, this->RandomGenerator), 1.0, make_string("Insert",a));
-   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, this->RandomGenerator), 1.0, make_string("Remove",a));
+   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
   }  
   else {  
-   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, this->RandomGenerator), 1.0, make_string("Insert",a));
-   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, this->RandomGenerator), 1.0, make_string("Remove",a));
+   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
   }
  }
 
- this->add_move(AllInserts, AllRemoves, p_ir,"INSERT","REMOVE");
- this->add_move(new Move_C_Delta(Config, this->RandomGenerator), p_mv,"Move C Delta");
+ this->add_move(AllInserts, "INSERT", p_ir);
+ this->add_move(AllRemoves, "REMOVE", p_ir);
+ this->add_move(new Move_C_Delta(Config, this->RandomGenerator), "Move C Delta", p_mv);
 
  // Register the Global moves
  python::list GM_List = python::extract<python::list>(params.dict()["Global_Moves_Mapping_List"]);
@@ -109,7 +110,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
    //cout<< "MAP" << Config.H[p->key].Number<< "  "<<mapping[Config.H[p->key].Number]->Number<<endl<<
    //      Config.H[p->key].name<< "  "<<mapping[Config.H[p->key].Number]->name<<endl;
   }
-  this->add_move(new Global_Move(g->x3 , Config, this->RandomGenerator, mapping), g->x1);
+  this->add_move(new Global_Move(g->x3 , Config, this->RandomGenerator, mapping), "Global move", g->x1);
  }
 
  /*************
@@ -120,9 +121,9 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
 
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
-     this->add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]),make_string("G Legendre ",a));
+     this->add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
      if (bool(params["Keep_Full_MC_Series"])) 
-      this->add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]),make_string("G Legendre (all) ",a));
+      this->add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
    } else if (TimeAccumulation) {
      this->add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
@@ -140,7 +141,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
  python::dict opAv_results = python::extract<python::dict>(params.dict()["Measured_Operators_Results"]);
  python::list opAv_List = python::extract<python::list>(params.dict()["Operators_To_Average_List"]);
  for (triqs::python_tools::IteratorOnPythonList<string> g(opAv_List); !g.atEnd(); ++g) {
-  this->add_measure(new Measure_OpAv(*g, Config, opAv_results),*g);
+  this->add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
  }
 
  // register the measures for the time correlators:
@@ -150,7 +151,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
   str1+= "OpCorr";
-  this->add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()),str1);
+  this->add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()), str1);
  }
 
 }
@@ -160,33 +161,30 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(MC_Hybridization_Matsubar
 
 void MC_Hybridization_Matsubara::finalize (boost::mpi::communicator const & c) { 
 
-  // report the acceptance of the move
-  report<<" Move acceptance probability"<<std::endl;
-  this->AllMoves.print(report,c,"All moves");
-
   report<<"Monte-Carlo : Time measurements (cpu time) : "<<endl;
   report<<"   time elapsed total : " << this->Timer << " seconds" << endl;
 
- }
-
- using namespace std;
-
- //********************************************************
-
- namespace  MC_Hybridization_Matsu { 
-  void solve (boost::python::object parent) {
-
-   boost::mpi::communicator c; // i.e. world = all nodes
-
-   MC_Hybridization_Matsubara::parameters_type parms(parent);
-   triqs::mc_tools::mc_runner<MC_Hybridization_Matsubara> s(parms, c);
-
-   s.run(mc_tools::clock_callback(parms.value_or_default("MAX_TIME",-1)));
-   s.collect_results();
-
-   s.finalize(c);
-
-  }
- };
+}
 
 
+//********************************************************
+
+namespace MC_Hybridization_Matsu {
+void solve(boost::python::object parent) {
+
+  // communicate on the world = all nodes
+  boost::mpi::communicator c;
+
+  // get parameters of parent in parms
+  triqs::python_tools::improved_python_dict parms(parent);
+
+  // construct the QMC
+  MC_Hybridization_Matsubara QMC(parms);
+
+  // run!!
+  QMC.run(triqs::utility::clock_callback(parms.value_or_default("MAX_TIME",-1)));
+  QMC.collect_results(c);
+  QMC.finalize(c);
+
+}
+}

@@ -24,7 +24,7 @@
 #define MOVE_INSERT_REMOVE_H_823esfn
 
 #include "Configuration.hpp"
-#include "triqs/mc_tools/polymorphic_random_generator.hpp"
+#include "triqs/mc_tools/random_generator.hpp"
 #include "Move_AuxiliaryFunctions.hpp"
 #include "triqs/mc_tools/histograms.hpp"
 #include "util.hpp"
@@ -44,7 +44,7 @@ class Insert_Cdag_C_Delta {
   double deltaTau;
   bool no_trivial_reject;
   Configuration & Config;
-  mc_tools::polymorphic_random_generator & Random;
+  mc_tools::random_generator & Random;
   const int a_level, Nalpha;
   const std::string name;
   mc_tools::histogram_binned & HISTO_Length_Kinks_Proposed, & HISTO_Length_Kinks_Accepted;
@@ -55,7 +55,7 @@ public :
 
   //-----------------------------------------------
 
-  Insert_Cdag_C_Delta(int a,  Configuration & Config_, mc_tools::HistogramBinnedMap & HistoMap, mc_tools::polymorphic_random_generator & RNG ):
+  Insert_Cdag_C_Delta(int a,  Configuration & Config_, mc_tools::HistogramBinnedMap & HistoMap, mc_tools::random_generator & RNG ):
     Config(Config_), Random(RNG),
     a_level(a), Nalpha(Config.COps[a].size()), 
     name( to_string("Insert_Cdagger_C_",a)),
@@ -147,7 +147,7 @@ public :
 
 class Remove_Cdag_C_Delta { 
  Configuration & Config;
- mc_tools::polymorphic_random_generator & Random;
+ mc_tools::random_generator & Random;
  const int a_level, Nalpha;
  Configuration::DET_TYPE * det;
  public :  
@@ -158,7 +158,7 @@ class Remove_Cdag_C_Delta {
 
  //----------------------------------
 
- Remove_Cdag_C_Delta( int a, Configuration & Config_, mc_tools::polymorphic_random_generator & RNG  ):
+ Remove_Cdag_C_Delta( int a, Configuration & Config_, mc_tools::random_generator & RNG  ):
   Config(Config_), Random(RNG),
   a_level(a), Nalpha(Config.COps[a].size()),
   name( to_string("Remove_Cdagger_C_",a))

@@ -40,13 +40,13 @@ In this section, IM denotes some IndexMaps.
  The rest is done by indexmap_storage_pair class, which will compute the correct view class
  depending on the view class and IM2 (view_from_tag_I_S template).
 
-``
-In namespace IndexMaps::result_of
+::
+  //In namespace IndexMaps::result_of
   template<typename IM, typename ArgsTuple> 
-   struct slice< IM,  ArgsTuple> { typedef IM2 type; };
+  struct slice< IM,  ArgsTuple> { typedef IM2 type; };
 
-In namespace IndexMaps : 
+  //In namespace IndexMaps : 
   template<typename IM, typename ArgsTuple> 
   typename result_of::slice<IM,ArgsTuple>::type slice(IM const &, ArgsTuple args);
-``
+
 

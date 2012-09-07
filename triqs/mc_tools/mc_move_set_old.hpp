@@ -25,8 +25,7 @@
 
 #include <boost/mpi.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "polymorphic_random_generator.hpp"
-#include <boost/scoped_ptr.hpp>
+#include "random_generator.hpp"
 #include <boost/concept_check.hpp>
 #include <triqs/utility/report_stream.hpp>
 
@@ -47,10 +46,10 @@ namespace triqs { namespace mc_tools {
 
   //--------------------------------------------------------------------
 
-  template <class X> struct IsMove {
+  template <class X, typename Y> struct IsMove {
    BOOST_CONCEPT_USAGE(IsMove)
    {
-    typename X::mc_weight_type r = i.Try();      
+    Y r = i.Try();      
     r = i.Accept();
     i.Reject();
    }
@@ -70,13 +69,14 @@ namespace triqs { namespace mc_tools {
 
   template<typename MCSignType, typename MoveType>
    class move_impl : boost::noncopyable, public move_base<MCSignType> { 
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType>));
+    BOOST_CONCEPT_ASSERT((IsMove<MoveType, MCSignType>));
     private:
-    boost::scoped_ptr<MoveType> ptr; // ptr to the move
+    boost::shared_ptr<MoveType> ptr; // ptr to the move
     uint64_t NProposed,NAccepted; // Statistics
     void operator=(move_impl const &); // forbidden
     public:
     move_impl(MoveType * move_ptr):move_base<MCSignType>(),ptr(move_ptr),NProposed(0),NAccepted(0) {}
+    move_impl(boost::shared_ptr<MoveType> sptr):move_base<MCSignType>(),ptr(sptr),NProposed(0),NAccepted(0) {}
     move_impl(move_impl const & M):
      move_base<MCSignType>(),ptr(new MoveType (*M.ptr.get())),
      NProposed(M.NProposed),NAccepted(M.NAccepted){}
@@ -110,14 +110,12 @@ namespace triqs { namespace mc_tools {
    std::vector<std::string> names_;
    details::move_base<MCSignType> * current;
    size_t current_move_number;
-   polymorphic_random_generator & RNG;
+   random_generator & RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;  
    public:   
 
-   typedef MCSignType mc_weight_type;
-
    ///
-   move_set(polymorphic_random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
+   move_set(random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
 
    /** 
     * Add move M with its probability of being proposed.
@@ -128,7 +126,7 @@ namespace triqs { namespace mc_tools {
     * WARNING : the pointer is deleted automatically by the MC class at destruction. 
     */
    template <typename MoveType>
-    void add (MoveType *M, double PropositionProbability, std::string name="") {
+    void add (MoveType * && M, std::string name, double PropositionProbability) {
      moves_.push_back(new details::move_impl<MCSignType,MoveType>(M));
      assert(PropositionProbability >=0);
      Proba_Moves.push_back(PropositionProbability);
@@ -136,15 +134,13 @@ namespace triqs { namespace mc_tools {
      normaliseProba();// ready to run after each add !
     }
 
-   /** 
-    * Add a couple of inverse moves (M1,M2) with their probability of being proposed.
-    * Equivalent to two add(M1), add(M2), but it emphasize the fact that inverse
-    * moves must have the same PropositionProbability.
-    */
-   template <typename MoveType1,typename MoveType2>
-    void add (MoveType1 *M1, MoveType2 *M2, double PropositionProbability, std::string name1="", std::string name2="") {
-     add(M1,PropositionProbability,name1);
-     add(M2,PropositionProbability,name2);
+   template <typename MoveType>
+    void add (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability) {
+     moves_.push_back(new details::move_impl<MCSignType,MoveType>(sptr));
+     assert(PropositionProbability >=0);
+     Proba_Moves.push_back(PropositionProbability);
+     names_.push_back(name);
+     normaliseProba();// ready to run after each add !
     }
 
    //-----------------

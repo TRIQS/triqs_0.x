@@ -1,5 +1,5 @@
-# C++11 
-add_definitions( -std=c++0x)
+# Add C11 flag
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
 
 # Compile and link with python 
 link_libraries(${PYTHON_LIBRARY})
@@ -10,11 +10,11 @@ option(Use_Pade "Compile Pade tools?" OFF)
 # All the sources
 SET (ALLSOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/MersenneRNG.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/polymorphic_random_generator.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/call_backs.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/random_generator.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/python_tools/python_interpreter.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/utility/my_mpi.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/signal_handler.cpp 
+ ${CMAKE_CURRENT_SOURCE_DIR}/utility/callbacks.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/utility/stack_trace.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/blitzext/blitz_op.cpp 
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/fourier.cpp
@@ -54,7 +54,7 @@ target_link_libraries (triqs ${TRIQS_LINK_LIBS} )
 install(TARGETS triqs DESTINATION lib)
 
 # Do we install the dev version?
-option(Install_dev "Install the dev version of TRIQS?" OFF)
+option(Install_dev "Install the headers and libraries of TRIQS?" ON)
 if (Install_dev)
 
   # TRIQS cmake file
@@ -78,6 +78,7 @@ if (Install_dev)
     python_tools/*.hpp
     gf_local/*.hpp
     utility/*.hpp
+    utility/proto/*.hpp
     clef/*.hpp
     clef/adapters/*.hpp
   )
