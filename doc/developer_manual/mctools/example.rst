@@ -154,6 +154,7 @@ The Monte-Carlo itself can now be written::
     #include <iostream>
     #include <boost/python.hpp>
     #include <triqs/mc_tools/mc_generic.hpp>
+    #include <triqs/utility/callbacks.hpp>
 
     #include "moves.hpp"
     #include "configuration.hpp"
@@ -193,7 +194,7 @@ The Monte-Carlo itself can now be written::
       std::cout << "Run"<<std::endl;
 
       // Run and collect results
-      IsingMC.run(triqs::mc_tools::clock_callback(-1));
+      IsingMC.run(triqs::utility::clock_callback(-1));
       IsingMC.collect_results(c);
 
       // Finalize everything

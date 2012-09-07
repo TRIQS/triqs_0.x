@@ -20,13 +20,13 @@
  *
  ******************************************************************************/
 
-#include "call_backs.hpp"
+#include "callbacks.hpp"
+#include "signal_handler.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
-#include "../utility/signal_handler.hpp"
 
 namespace triqs { 
- namespace mc_tools { 
+ namespace utility { 
 
   bool clock_callback_impl(boost::posix_time::ptime const & end_time) {
    return (!triqs::signal_handler().empty()) || boost::posix_time::second_clock::local_time() > end_time;

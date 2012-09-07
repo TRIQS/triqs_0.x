@@ -2,6 +2,7 @@
 #include <iostream>
 #include <boost/python.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
+#include <triqs/utility/callbacks.hpp>
 #include "moves.hpp"
 
 int main() {
@@ -39,7 +40,7 @@ int main() {
   IsingMC.add_measure(new compute_m(config));
 
   // Run and collect results
-  IsingMC.run(triqs::mc_tools::clock_callback(-1));
+  IsingMC.run(triqs::utility::clock_callback(-1));
   IsingMC.collect_results(c);
 
   // Finalize everything

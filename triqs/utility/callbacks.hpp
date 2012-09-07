@@ -25,7 +25,7 @@
 
 #include <boost/function.hpp>
 
-namespace triqs { namespace mc_tools { 
+namespace triqs { namespace utility { 
  
  boost::function<bool ()> clock_callback(int time_in_seconds);
 

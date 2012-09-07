@@ -24,6 +24,7 @@
 #include <triqs/arrays/h5/array_stack.hpp>
 #include "MC.hpp"
 #include <triqs/python_tools/IteratorOnPythonSequences.hpp>
+#include <triqs/utility/callbacks.hpp>
  
 using triqs::mc_tools::move_set;
 using python::extract;
@@ -181,7 +182,7 @@ void solve(boost::python::object parent) {
   MC_Hybridization_Matsubara QMC(parms);
 
   // run!!
-  QMC.run(triqs::mc_tools::clock_callback(parms.value_or_default("MAX_TIME",-1)));
+  QMC.run(triqs::utility::clock_callback(parms.value_or_default("MAX_TIME",-1)));
   QMC.collect_results(c);
   QMC.finalize(c);
 
