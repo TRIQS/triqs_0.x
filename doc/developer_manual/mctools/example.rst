@@ -42,7 +42,7 @@ The move class should have a `mc_weight_type`, and three methods: `Try()`, `Acce
     #ifndef moves_hpp
     #define moves_hpp
 
-    #include <triqs/mc_tools/polymorphic_random_generator.hpp>
+    #include <triqs/mc_tools/random_generator.hpp>
     #include <vector>
 
     #include "configuration.hpp"
@@ -52,13 +52,13 @@ The move class should have a `mc_weight_type`, and three methods: `Try()`, `Acce
 
       typedef double mc_weight_type;
       configuration * config;
-      triqs::mc_tools::polymorphic_random_generator &RNG;
+      triqs::mc_tools::random_generator &RNG;
 
       int site;
       double delta_energy;
 
       // constructor
-      flip(configuration & config_, triqs::mc_tools::polymorphic_random_generator & RNG_) :
+      flip(configuration & config_, triqs::mc_tools::random_generator & RNG_) :
          config(&config_), RNG(RNG_) {}
 
       double Try() {

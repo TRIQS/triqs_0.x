@@ -24,13 +24,13 @@
 #define GLOBAL_MOVES_H
 
 #include "Configuration.hpp"
-#include "triqs/mc_tools/polymorphic_random_generator.hpp"
+#include "triqs/mc_tools/random_generator.hpp"
 
 
 class Global_Move { 
   const std::string name;
   Configuration & Config;
-  mc_tools::polymorphic_random_generator & Random;  
+  mc_tools::random_generator & Random;  
   const vector<const Hloc::Operator*> mapping;
   vector<Configuration::DET_TYPE*> dets_save;
 public :  
@@ -38,7 +38,7 @@ public :
   typedef std::complex<double> mc_weight_type;
 
   
-  Global_Move(string name_, Configuration & Config_, mc_tools::polymorphic_random_generator & RNG, 
+  Global_Move(string name_, Configuration & Config_, mc_tools::random_generator & RNG, 
 	      const vector<const Hloc::Operator*> & mapping_ ):
     name(string("Global_Move_") + name_),
     Config(Config_), Random(RNG),

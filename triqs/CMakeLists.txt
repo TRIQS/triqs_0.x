@@ -10,7 +10,7 @@ option(Use_Pade "Compile Pade tools?" OFF)
 # All the sources
 SET (ALLSOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/MersenneRNG.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/polymorphic_random_generator.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/random_generator.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/mc_tools/call_backs.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/python_tools/python_interpreter.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/deprecated/utility/my_mpi.cpp 

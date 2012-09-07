@@ -28,7 +28,7 @@
 #include <boost/mpi.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/utility/enable_if.hpp>
-#include "polymorphic_random_generator.hpp"
+#include "random_generator.hpp"
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/exceptions.hpp>
 
@@ -108,12 +108,12 @@ namespace triqs { namespace mc_tools {
    std::vector<std::string> names_;
    move<MCSignType> * current;
    size_t current_move_number;
-   polymorphic_random_generator & RNG;
+   random_generator & RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;  
    public:   
 
    ///
-   move_set(polymorphic_random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
+   move_set(random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
 
    /** 
     * Add move M with its probability of being proposed.

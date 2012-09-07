@@ -31,7 +31,7 @@
 #include "mc_measure_set.hpp"
 #include "mc_move_set.hpp"
 #include "mc_basic_step.hpp"
-#include "polymorphic_random_generator.hpp"
+#include "random_generator.hpp"
 #include "call_backs.hpp"
 
 namespace triqs { namespace mc_tools { 
@@ -129,7 +129,7 @@ namespace triqs { namespace mc_tools {
     }
 
    // An access to the random number generator
-   polymorphic_random_generator RandomGenerator;
+   random_generator RandomGenerator;
 
   protected:
    /**

@@ -1,7 +1,7 @@
 #ifndef moves_jadlsdadsjl
 #define moves_jadlsdadsjl
 
-#include <triqs/mc_tools/polymorphic_random_generator.hpp>
+#include <triqs/mc_tools/random_generator.hpp>
 #include <vector>
 
 // definition of a configuration
@@ -27,13 +27,13 @@ struct flip {
 
   typedef double mc_weight_type;
   configuration * config;
-  triqs::mc_tools::polymorphic_random_generator &RNG;
+  triqs::mc_tools::random_generator &RNG;
 
   int site;
   double delta_energy;
 
   // constructor
-  flip(configuration & config_, triqs::mc_tools::polymorphic_random_generator & RNG_) : config(&config_), RNG(RNG_) {}
+  flip(configuration & config_, triqs::mc_tools::random_generator & RNG_) : config(&config_), RNG(RNG_) {}
 
   double Try() {
 

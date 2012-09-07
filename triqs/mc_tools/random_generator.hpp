@@ -37,19 +37,19 @@ namespace mc_tools {
   *  and serve random numbers, buffered with a version boost::generator ,
   *  to hide the cost of dynamical polymorphism.
   */
- class polymorphic_random_generator {
+ class random_generator {
   boost::shared_ptr<void> rng_ptr;
   boost::scoped_ptr< boost::generator <double> > gen;
   std::string name;
-  void operator = ( polymorphic_random_generator const & p); //forbid
+  void operator = ( random_generator const & p); //forbid
   std::size_t seed;
   public: 
 
   /// Takes the boost name of the generator e.g. mt19937,...
-  polymorphic_random_generator(std::string const & RandomGeneratorName, std::size_t seed_ );
+  random_generator(std::string const & RandomGeneratorName, std::size_t seed_ );
 
   ///
-  polymorphic_random_generator( polymorphic_random_generator const & p);
+  random_generator( random_generator const & p);
 
   /// Return a list of the names of available generators, with separator sep
   static std::string random_generator_names(std::string const & sep=" ");
