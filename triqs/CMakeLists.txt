@@ -54,7 +54,7 @@ target_link_libraries (triqs ${TRIQS_LINK_LIBS} )
 install(TARGETS triqs DESTINATION lib)
 
 # Do we install the dev version?
-option(Install_dev "Install the dev version of TRIQS?" OFF)
+option(Install_dev "Install the headers and libraries of TRIQS?" ON)
 if (Install_dev)
 
   # TRIQS cmake file
