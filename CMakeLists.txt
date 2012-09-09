@@ -12,7 +12,9 @@ MESSAGE(STATUS "Installation directory is ${CMAKE_INSTALL_PREFIX}")
 
 # Forbid compilation in the source dir... to force good practice
 # and because I have not checked it (copy of various file before compilation may mess it up), blitz in particular....
-find_package(ForbidCompilationInSource)
+IF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+ MESSAGE(FATAL_ERROR "I am sorry, the on-site compilation is disabled at the moment. Use another directory")
+ENDIF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 
 # nasty policy for escaping in string....
 cmake_policy(SET CMP0011 OLD)
@@ -129,7 +131,7 @@ if(BOOST_SOURCE_DIR)
  FILE(COPY ${TRIQS_SOURCE_DIR}/foreignlibs/boost DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ FILES_MATCHING PATTERN *.py PATTERN *.svn EXCLUDE )
 else(BOOST_SOURCE_DIR)
  if(NOT BOOST_MODULE_DIR)
-   EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
+  EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
  endif(NOT BOOST_MODULE_DIR)
  execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost)
  install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
@@ -145,7 +147,7 @@ SET(TRIQS_LINK_LIBS
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}
  ${LAPACK_LIBS}
-)
+ )
 
 #------------------------
 # General triqs libraries
