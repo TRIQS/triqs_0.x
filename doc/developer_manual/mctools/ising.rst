@@ -200,7 +200,7 @@ The Monte-Carlo itself can now be written::
       std::cout << "Run"<<std::endl;
 
       // Run and collect results
-      IsingMC.run(triqs::utility::clock_callback(-1));
+      IsingMC.start(1.0, triqs::utility::clock_callback(-1));
       IsingMC.collect_results(c);
 
       // Finalize everything

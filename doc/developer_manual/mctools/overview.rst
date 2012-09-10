@@ -110,7 +110,7 @@ but obviously you would usually want to cut this into pieces for clarity::
     SpinMC.add_measure(new compute_m(config), "magnetization measure");
 
     // Run and collect results
-    SpinMC.run(triqs::utility::clock_callback(600));
+    SpinMC.start(1.0, triqs::utility::clock_callback(600));
     SpinMC.collect_results(world);
 
     return 0;
@@ -284,21 +284,25 @@ Starting the Monte Carlo simulation
 ***********************************
 
 Well, at this stage we're ready to launch our simulation. The moves
-and measures have been specified, so all you need to do now is run
+and measures have been specified, so all you need to do now is start
 the simulation with::
 
-    SpinMC.run(triqs::utility::clock_callback(600));
+    SpinMC.start(1.0, triqs::utility::clock_callback(600));
 
-The ``run`` method takes one argument which is used to decide if the simulation
-must be stopped for some reason before it reaches the full number of cycles
-``N_cycles``. For example, you might be running your code on a cluster that
-only allows for 1 hour simulations. In that case, you would want your
-simulation to stop, say after 55 minutes, even if it didn't manage to do the
-``N_cycles`` cycles.
+The ``start`` method takes two arguments. The first is the sign
+of the very first *configuration* of the simulation. Because the
+``Accept`` method only returns a ratio, this initial sign is used
+to determine the sign of all generated configurations.
 
-In practice, the argument is a ``boost::function<bool ()>`` which is called at
-the end of every cycle. If it returns 0 the simulation goes on, if it returns 1
-the simulation stops. In this example, we used a function
+The second argument is used to decide if the simulation must be stopped for
+some reason before it reaches the full number of cycles ``N_cycles``. For
+example, you might be running your code on a cluster that only allows for 1
+hour simulations. In that case, you would want your simulation to stop, say
+after 55 minutes, even if it didn't manage to do the ``N_cycles`` cycles.
+
+In practice, the second argument is a ``boost::function<bool ()>`` which is
+called at the end of every cycle. If it returns 0 the simulation goes on, if it
+returns 1 the simulation stops. In this example, we used a function
 ``clock_callback(600)`` which starts returning 1 after 600 seconds.  It is
 defined in the header :file:`<triqs/utility/callbacks.hpp>`.  This way the
 simulation will last at most 10 minutes.

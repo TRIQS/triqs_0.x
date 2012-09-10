@@ -23,7 +23,7 @@ Introduction & Motivations
     - writes move classes, modelling the Move concept.
     - writes measure classes, modelling the Measure concepts.
     - register them in a mc_generic object MC
-    - call `MC.run(...)`  ... and that is (almost) it  !
+    - call `MC.start(...)`  ... and that is (almost) it  !
 
 
 
