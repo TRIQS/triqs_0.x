@@ -181,8 +181,8 @@ void solve(boost::python::object parent) {
   // construct the QMC
   MC_Hybridization_Matsubara QMC(parms);
 
-  // run!!
-  QMC.run(triqs::utility::clock_callback(parms.value_or_default("MAX_TIME",-1)));
+  // run!! The empty configuration has sign = 1
+  QMC.start(1.0, triqs::utility::clock_callback(parms.value_or_default("MAX_TIME",-1)));
   QMC.collect_results(c);
   QMC.finalize(c);
 

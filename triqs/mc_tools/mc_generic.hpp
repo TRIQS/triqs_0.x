@@ -163,21 +163,21 @@ namespace triqs { namespace mc_tools {
   public:
 
    ///
-   bool run(boost::function<bool ()> const & stop_callback) {
+   bool start(MCSignType sign_init, boost::function<bool ()> const & stop_callback) {
     assert(stop_callback);
     Timer.start();
-    signe=1; done_percent = 0; nmeasures = 0;
+    sign = sign_init; done_percent = 0; nmeasures = 0;
     sum_sign = 0;
     bool stop_it=false, finished = false;
     uint64_t NCycles_tot = NCycles+ NWarmIterations;
     report << std::endl << std::flush;
     for (NC =0; !stop_it; ++NC) {
-     for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,signe); }
+     for (uint64_t k=1; (k<=Length_MC_Cycle); k++) { MCStepType::do_it(AllMoves,RandomGenerator,sign); }
      if (after_cycle_duty) {after_cycle_duty();}
      if (thermalized()) {
        nmeasures++;
-       sum_sign += signe;
-       AllMeasures.accumulate(signe);
+       sum_sign += sign;
+       AllMeasures.accumulate(sign);
      }
      // recompute fraction done
      uint64_t dp = uint64_t(floor( ( NC*100.0) / NCycles_tot));  
@@ -219,7 +219,7 @@ namespace triqs { namespace mc_tools {
 
   private: 
    boost::function<bool()> after_cycle_duty;
-   MCSignType signe;
+   MCSignType sign;
    uint64_t NC,done_percent;// NC = number of the cycle
  };
 
