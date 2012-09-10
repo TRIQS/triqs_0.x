@@ -16,6 +16,11 @@ endif(not_successful)
 
 MESSAGE( "ABOUT TO compare with ${COM}")
 
+# Little fix to turn -0 into 0 (--0 is not replaced)
+FILE(READ ${output_new} temp)
+STRING(REGEX REPLACE "([^-])-0([^.])" "\\10\\2" temp_after "${temp}")
+FILE(WRITE ${output_new} ${temp_after})
+
 execute_process(
  COMMAND ${COM}
  RESULT_VARIABLE not_successful
