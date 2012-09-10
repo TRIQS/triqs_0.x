@@ -1,5 +1,5 @@
 # Add C11 flag
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # Compile and link with python 
 link_libraries(${PYTHON_LIBRARY})

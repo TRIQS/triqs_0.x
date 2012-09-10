@@ -1,5 +1,5 @@
 # Add C11 flag
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # we do use triqs_array with python support
 add_definitions ( -DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT)
