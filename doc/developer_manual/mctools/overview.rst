@@ -57,20 +57,20 @@ but obviously you would usually want to cut this into pieces for clarity::
   struct compute_m {
 
     configuration & config;
-    int Z, M;
+    double Z, M;
 
     compute_m(configuration & config_) : config(config_), Z(0), M(0) {}
 
-    void accumulate(int sign) { Z += sign; M += config.spin; }
+    void accumulate(double sign) { Z += sign; M += sign * config.spin; }
 
     void collect_results(boost::mpi::communicator const &c) {
 
-      int sum_Z, sum_M;
-      boost::mpi::reduce(c, Z, sum_Z, std::plus<int>(), 0);
-      boost::mpi::reduce(c, M, sum_M, std::plus<int>(), 0);
+      double sum_Z, sum_M;
+      boost::mpi::reduce(c, Z, sum_Z, std::plus<double>(), 0);
+      boost::mpi::reduce(c, M, sum_M, std::plus<double>(), 0);
 
       if (c.rank() == 0) {
-        std::cout << "Magnetization: " << double(sum_M)/sum_Z << std::endl << std::endl;
+        std::cout << "Magnetization: " << sum_M / sum_Z << std::endl << std::endl;
       }
 
     }
@@ -244,25 +244,26 @@ Let's look at ``compute_m``::
   struct compute_m {
 
     configuration & config;
-    int Z, M;
+    double Z, M;
 
     compute_m(configuration & config_) : config(config_), Z(0), M(0) {}
 
-    void accumulate(int sign) { Z += sign; M += config.spin; }
+    void accumulate(double sign) { Z += sign; M += sign * config.spin; }
 
     void collect_results(boost::mpi::communicator const &c) {
 
-      int sum_Z, sum_M;
-      boost::mpi::reduce(c, Z, sum_Z, std::plus<int>(), 0);
-      boost::mpi::reduce(c, M, sum_M, std::plus<int>(), 0);
+      double sum_Z, sum_M;
+      boost::mpi::reduce(c, Z, sum_Z, std::plus<double>(), 0);
+      boost::mpi::reduce(c, M, sum_M, std::plus<double>(), 0);
 
       if (c.rank() == 0) {
-        std::cout << "Magnetization: " << double(sum_M)/sum_Z << std::endl << std::endl;
+        std::cout << "Magnetization: " << sum_M / sum_Z << std::endl << std::endl;
       }
 
     }
 
   };
+
 
 Here only two methods are expected, ``accumulate`` and ``collect_results``.
 The method ``accumulate`` is called every ``Length_Cycle`` Monte Carlo loops.

@@ -6,7 +6,7 @@ The Monte Carlo loop
 Introduction
 ************
 
-The ``mc_generic`` class is as implementation of the Monte Carlo loop.  Its
+The ``mc_generic`` class is an implementation of the Monte Carlo loop.  Its
 goal is to propose and then accept or reject changes to a configuration
 according to this loop:
 
@@ -46,12 +46,14 @@ At the end of the simulation, the code will have done:
 C++ variable names
 ******************
 
-In the C++ ``mc_generic`` class, these variables will be called:
+In the C++ examples, these variables will be called:
 
   * ``N_Cycles`` :math:`= N`
   * ``Length_Cycle`` :math:`= L`
   * ``N_Warmup_Cycle`` :math:`= W`
 
+You will also have to use these names if you will construct an ``mc_generic``
+instance from a dictonary (see full reference below).
 
 Monte Carlo loop and connection with moves and measures
 *******************************************************
