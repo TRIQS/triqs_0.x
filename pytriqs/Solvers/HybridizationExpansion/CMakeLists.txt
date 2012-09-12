@@ -46,18 +46,25 @@ SET(PYTHON_SOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/Models.py 
  )
 
-SET(CODENAME cthyb)
-include(${CMAKE_SOURCE_DIR}/cmake/PrintEditCode.cmake)
+#SET(CODENAME cthyb)
+#include(${CMAKE_SOURCE_DIR}/cmake/PrintEditCode.cmake)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/C++)
 
-set(NickName "CTHyb")
-python_build_module_optional (${NickName}  "_pytriqs_Solver_HybridizationExpansion" Solvers/HybridizationExpansion ${SOURCES_CPP} )
-if (Build_${NickName})
- if (NOT TRIQS_BUILD_STATIC) 
-  target_link_libraries (_pytriqs_Solver_HybridizationExpansion triqs)
- endif (NOT TRIQS_BUILD_STATIC) 
+option( Build_CTHyb "Should I build CTHyb ?" ON) 
+if (Build_CTHyb)
+ python_build_module(CTHyb "_pytriqs_Solver_HybridizationExpansion" Solvers/HybridizationExpansion ${SOURCES_CPP})
  install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Solvers/HybridizationExpansion)
  add_subdirectory(test)
-endif (Build_${NickName})
+endif (Build_CTHyb)
+
+#set(NickName "CTHyb")
+#python_build_module_optional (${NickName}  "_pytriqs_Solver_HybridizationExpansion" Solvers/HybridizationExpansion ${SOURCES_CPP} )
+#if (Build_${NickName})
+# if (NOT TRIQS_BUILD_STATIC) 
+#  target_link_libraries (_pytriqs_Solver_HybridizationExpansion triqs)
+# endif (NOT TRIQS_BUILD_STATIC) 
+# install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Solvers/HybridizationExpansion)
+# add_subdirectory(test)
+#endif (Build_${NickName})
 
