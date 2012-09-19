@@ -58,7 +58,7 @@ It is very convenient on clusters, e.g.
 
 How to proceed : 
 
-* Take the `EPD Free version <http://enthought.com/products/epd_free.php>`_  (the free and light version of Enthought).
+* Take the `EPD Free version <http://www.enthought.com/products/epd_free.php>`_  (the free and light version of Enthought).
 * Install it ::
 
    bash epd_free.sh -b -p EPD_Free_Install_Dir
