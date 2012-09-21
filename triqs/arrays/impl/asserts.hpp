@@ -29,10 +29,13 @@ namespace triqs { namespace arrays {
  template<class T> inline double assert_abs(T z) { return std::abs(z);}
 
  template<class ArrayType1, class ArrayType2 >
-  void assert_all_close( ArrayType1 const & A, ArrayType2 const & B, double precision) {
+  void assert_all_close( ArrayType1 const & A, ArrayType2 const & B, double precision, bool relative = false) {
    typedef typename ArrayType1::value_type F;
    BOOST_AUTO(  Abs , map( boost::function<double(F)> (assert_abs<F>) ));
-   if ( max_element (Abs(A-B)) > precision) TRIQS_RUNTIME_ERROR<<"assert_all_close error : "<<A<<"\n"<<B;
+   auto r =  max_element (Abs(A-B));
+   auto r2 =  max_element (Abs(A) + Abs(B));
+   if ( r > (relative ? precision * r2 : precision) ) 
+    TRIQS_RUNTIME_ERROR<<"assert_all_close error : \n\n"<<".. A = "<<A<<"\n\n"<<".. B= "<<B<<"\n\n"<< ".. Residue is r = "<<r;
   }
 
 }}
