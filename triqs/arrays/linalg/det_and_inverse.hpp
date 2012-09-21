@@ -80,10 +80,13 @@ namespace triqs { namespace arrays {
   private:
   int info; VT _det;
 
-  matrix_view<VT,Option::Fortran> fortran_view (matrix<VT,Option::C> const & x) {return x.transpose();}
-  matrix_view<VT,Option::Fortran> fortran_view (matrix<VT,Option::Fortran> const & x) {return x;}
-  matrix_view<VT,Option::Fortran> fortran_view (matrix_view<VT,Option::C> const & x) {return x.transpose();}
-  matrix_view<VT,Option::Fortran> fortran_view (matrix_view<VT,Option::Fortran> const & x) {return x;}
+  template<typename MT>
+   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::C>, V_type>::type 
+   fortran_view (MT const &x) { return x.transpose();}
+
+  template<typename MT>
+   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::Fortran>, V_type>::type 
+   fortran_view (MT const &x) { return x;}
 
   void _step1(V_type & W) { 
    if (step >0) return;
@@ -121,7 +124,7 @@ namespace triqs { namespace arrays {
   typedef typename const_view_type_if_exists_else_type<A>::type A_type;
   const A_type a;
   inverse_lazy_impl(A const & a_):a (a_)  {
-     if (a.dim0() != a.dim1()) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< a.dim0()<<" x "<< a.dim1(); 
+   if (a.dim0() != a.dim1()) TRIQS_RUNTIME_ERROR<< "Inverse : matrix is not square but of size "<< a.dim0()<<" x "<< a.dim1(); 
   }
   domain_type domain() const { return a.domain(); } 
   size_t dim0() const { return a.dim0();} 
