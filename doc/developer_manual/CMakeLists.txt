@@ -28,11 +28,13 @@ SET(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 SET(DOC_EXT "_cpp")
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
-add_subdirectory(mctools)
 add_subdirectory(arrays)
+add_subdirectory(mctools)
+add_subdirectory(det_manip)
 
 # we must first have doxygen process the sources to link to them
 add_dependencies(docs_sphinx_cpp docs_doxy_mctools)
+add_dependencies(docs_sphinx_cpp docs_doxy_detmanip)
 add_dependencies(docs_sphinx_cpp triqs boost_for_triqs ) # add also mpi ?
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/developer_manual

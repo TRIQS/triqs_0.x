@@ -9,5 +9,5 @@ Part II : C++ librairies
    lectures/contents
    mctools/intro
    learn/intro
-   det_manip
+   det_manip/det_manip
    utility.rst

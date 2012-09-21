@@ -128,6 +128,7 @@ breathe_default_project = "mc_tools"
 
 doxylink = {
         'mctools_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/mctools/doxy.tag', 'doxy_mctools'),
+        'detmanip_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/det_manip/doxy.tag', 'doxy_detmanip'),
         'arrays_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/arrays/doxy.tag', 'doxy_arrays'),
         }
 

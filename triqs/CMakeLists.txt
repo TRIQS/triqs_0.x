@@ -44,6 +44,7 @@ add_subdirectory(utility)
 add_subdirectory(arrays)
 add_subdirectory(python_tools)
 add_subdirectory(clef)
+add_subdirectory(det_manip)
 #add_subdirectory(gf)
 
 # The lib will be build from the sources
