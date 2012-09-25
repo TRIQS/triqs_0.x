@@ -24,6 +24,7 @@
 #include <iterator>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/mapped_functions.hpp>
+#include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/a_x_ty.hpp>
 #include <triqs/arrays/linalg/matmul.hpp>
@@ -626,9 +627,14 @@ namespace triqs { namespace det_manip {
       for (size_t j=0; j<N;j++)
        res(i,j) = f(x_values[i], y_values[j]);
      res = inverse(res); 
-     value_type r = max_element (abs(res - mat_inv(N,N)));
-     value_type r2= max_element (abs(res + mat_inv(N,N)));
-     return ( r >  (relative ? precision * r2 : precision));
+     value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
+     value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
+//#define TRIQS_DET_MANIP_VERBOSE_CHECK
+#ifdef TRIQS_DET_MANIP_VERBOSE_CHECK
+     std::cout  << "----------------"<<std::endl 
+      << "check " << "N = "<< N <<"  " <<"r,r2 =   "<< r << "  "<< r2 << std::endl;  
+#endif
+     return ( r <  (relative ? precision * r2 : precision));
     }
 
     //------------------------------------------------------------------------------------------
@@ -668,7 +674,7 @@ namespace triqs { namespace det_manip {
      last_try =0;
      ++n_opts;
      if (n_opts > n_opts_max_before_check) { 
-      if (!check_mat_inv(1.e-8))
+      if (!check_mat_inv(1.e-10))
        TRIQS_RUNTIME_ERROR << "Deviation too large ";
       n_opts=0;
      }
