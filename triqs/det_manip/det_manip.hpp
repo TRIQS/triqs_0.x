@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2012 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,6 +23,7 @@
 #include <vector>
 #include <iterator>
 #include <triqs/arrays/matrix.hpp>
+#include <triqs/arrays/mapped_functions.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/a_x_ty.hpp>
 #include <triqs/arrays/linalg/matmul.hpp>
@@ -50,30 +51,38 @@ namespace triqs { namespace det_manip {
     typedef triqs::arrays::range range;
 
     FunctionType f;
-    value_type det,newdet;
+    
+    // serialized data
+    value_type det;
     size_t Nmax,N, last_try;
     std::vector<size_t> row_num,col_num;
     std::vector<xy_type> x_values,y_values;
-    int sign,newsign;
+    int sign;
     matrix_type mat_inv;
+    long long n_opts, n_opts_max_before_check;
 
    private:
-    struct work_data_type { // temporary work data, not saved, serialized, etc....  
-     xy_type x, y, x1, y1;
-     vector_type MB,MC, col, row;
-     matrix_type MB2,MC2, B2, C2, ksi2;
-     size_t i0,j0,ireal0,jreal0, i1,j1,ireal1,jreal1; 
+    // temporary work data, not saved, serialized, etc....  
+    struct work_data_type1 { 
+     xy_type x, y;
+     vector_type MB,MC, B, C;
      value_type ksi;
-
-     void reserve(size_t s) { 
-      col.resize(s); row.resize(s);
-      MB.resize(s); MC.resize(s); MB2.resize(s,2); MC2.resize(2,s); B2.resize(s,2), C2.resize(2,s);
-      ksi2.resize(2,2); 
-      MB()=0; MC()=0; MB2() = 0; MC2() = 0; 
-     }
+     size_t i,j,ireal,jreal;
+     void reserve(size_t s) { B.resize(s); C.resize(s); MB.resize(s); MC.resize(s); MB()=0; MC()=0; }
+    };
+    
+    struct work_data_type2 { 
+     xy_type x[2], y[2];
+     matrix_type MB,MC, B, C,ksi;
+     size_t i[2],j[2],ireal[2],jreal[2];
+     void reserve(size_t s) { MB.resize(s,2); MC.resize(2,s); B.resize(s,2), C.resize(2,s); ksi.resize(2,2); MB() = 0; MC() = 0; }
+     value_type det_ksi() const { return ksi(0,0) * ksi(1,1) - ksi(1,0)* ksi(0,1);}
     };
 
-    work_data_type w;
+    work_data_type1 w1;
+    work_data_type2 w2;
+    value_type newdet;
+    int newsign;
 
    public:
 
@@ -88,9 +97,16 @@ namespace triqs { namespace det_manip {
      size_t N0 = Nmax; Nmax = new_size;
      mat_inv.resize(Nmax,Nmax); mat_inv(range(0,N0), range(0,N0)) = Mcopy; // keep the content of mat_inv ---> into the lib ?
      row_num.reserve(Nmax);col_num.reserve(Nmax); x_values.reserve(Nmax);y_values.reserve(Nmax);
-     w.reserve(Nmax);
+     w1.reserve(Nmax); w2.reserve(Nmax);
     }
 
+   private:
+    void _construct_common() { 
+     last_try=0; sign =1;
+     n_opts=0; n_opts_max_before_check = 100;
+    }
+
+   public:
     /** 
      * \brief Constructor.
      * 
@@ -101,9 +117,10 @@ namespace triqs { namespace det_manip {
      */
     det_manip(FunctionTypeArg F,size_t init_size):
      f(boost::unwrap_ref(F)), Nmax(0) , N(0){ 
-      this->reserve(init_size);
+      reserve(init_size);
       mat_inv()=0;
-      last_try=0; det = 1; sign =1;
+      det = 1; 
+     _construct_common();
      }
 
     /** \brief Constructor.
@@ -115,7 +132,7 @@ namespace triqs { namespace det_manip {
     template<typename ArgumentContainer1, typename ArgumentContainer2>
      det_manip(FunctionTypeArg F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(boost::unwrap_ref(F)) { 
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR<< " X.size != Y.size";
-      last_try=0; sign =1;
+      _construct_common();
       N =X.size(); 
       if (N==0) { det = 1; reserve(30); return;} 
       if (N>Nmax) reserve(2*N); // put some margin..
@@ -125,7 +142,7 @@ namespace triqs { namespace det_manip {
       for (size_t i=0; i<N; ++i) { 
        row_num.push_back(i);col_num.push_back(i); 
        for (size_t j=0; j<N; ++j)
-	mat_inv(i,j) = this->f(x_values[i],y_values[j]);
+	mat_inv(i,j) = f(x_values[i],y_values[j]);
       }
       mat_inv = inverse(mat_inv);
       det = determinant(mat_inv);
@@ -178,7 +195,11 @@ namespace triqs { namespace det_manip {
     template<class Archive>
      void serialize(Archive & ar) {
       using boost::serialization::make_nvp;
-      ar & make_nvp("Minv",mat_inv) & make_nvp("Nmax",Nmax) & make_nvp("row_num",row_num) & make_nvp("col_num",col_num) 
+      ar & make_nvp("Nmax",Nmax) & make_nvp("N",N) 
+       & make_nvp("n_opts",n_opts) & make_nvp("n_opts_max_before_check",n_opts_max_before_check) 
+       & make_nvp("det",det) & make_nvp("sign",sign) 
+       & make_nvp("Minv",mat_inv) 
+       & make_nvp("row_num",row_num) & make_nvp("col_num",col_num) 
        & make_nvp("x_values",x_values) & make_nvp("y_values",y_values); 
      }
 
@@ -204,37 +225,29 @@ namespace triqs { namespace det_manip {
      *
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_insert(size_t i0, size_t j0, xy_type const & x, xy_type const & y) {
+    value_type try_insert(size_t i, size_t j, xy_type const & x, xy_type const & y) {
 
      // check input and store it for complete_operation
-     w.i0=i0;w.j0=j0; last_try = 1;
-     w.x = x;w.y = y;
+     assert(i<=N);  assert(j<=N); assert(i>=0); assert(j>=0);
      if (N==Nmax) reserve(2*Nmax);
-     assert(i0<=N);  assert(j0<=N); assert(i0>=0); assert(j0>=0);
+     last_try = 1;
+     w1.i=i; w1.j=j; w1.x=x; w1.y = y;
 
-     // treat empty matrix separately (blas on vectors of size 0 ??)
+     // treat empty matrix separately 
      if (N==0) { newdet = f(x,y); newsign = 1; return newdet; }
 
      // I add the row and col and the end. If the move is rejected,
      // no effect since N will not be changed : Minv(i,j) for i,j>=N 
      // has no meaning.
      for (size_t k= 0; k< N; k++) {
-      w.col(k) = f(x_values[k],y);
-      w.row(k) = f(x, y_values[k]);
+      w1.B(k) = f(x_values[k],y);
+      w1.C(k) = f(x, y_values[k]);
      }
-
-     triqs::arrays::range R(0,N);
-     w.MB(R) = mat_inv(R,R) * w.col(R);
-     w.MB(N) = -1;
-
-     // w.ksi = Delta(tau,tauP) - Cw.MB using BLAS
-     w.ksi = f(x,y);
-     w.row(N) = w.ksi;  
-     w.ksi -= boost::numeric::bindings::blas::dot( w.row(R) , w.MB(R) );
-
-     // compute the newdet
-     newdet = det*w.ksi;
-     newsign = ((i0 + j0)%2==0 ? sign : -sign);   // since N-i0 + 1 + N-j0 +1 = i0+j0 [2]
+     range R(0,N);
+     w1.MB(R) = mat_inv(R,R) * w1.B(R);
+     w1.ksi = f(x,y) - boost::numeric::bindings::blas::dot( w1.C(R) , w1.MB(R) );
+     newdet = det*w1.ksi;
+     newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
      return (newdet/det)*(newsign*sign);          // sign is unity, hence 1/sign == sign
     } 
 
@@ -242,39 +255,38 @@ namespace triqs { namespace det_manip {
    private : 
 
     void complete_insert () {
-     assert(x_values.size()==N); assert(y_values.size()==N);
-     assert( row_num.size()==N); assert( col_num.size()==N); 
      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-     x_values.push_back(w.x); y_values.push_back(w.y);
+     x_values.push_back(w1.x); y_values.push_back(w1.y);
      row_num.push_back(0); col_num.push_back(0);
 
      // special empty case again
      if (N==0) { N=1; mat_inv(0,0) = 1/newdet; return; }
 
-     triqs::arrays::range R1(0,N);  
-     w.MC(R1) = mat_inv(R1,R1).transpose() * w.row(R1); 
-     w.MC(N) = -1;
+     range R1(0,N);  
+     w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); 
+     w1.MC(N) = -1;
+     w1.MB(N) = -1;
 
      N++;
 
      // keep the real position of the row/col
      // since we insert a col/row, we have first to push the col at the right
-     // and then say that col w.i0 is stored in N, the last col.
+     // and then say that col w1.i is stored in N, the last col.
      // same for rows
-     for (int_type i =N-2; i>=int_type(w.i0); i--) row_num[i+1]= row_num[i];
-     row_num[w.i0] = N-1;
-     for (std::ptrdiff_t i =N-2; i>=int_type(w.j0); i--) col_num[i+1]= col_num[i];
-     col_num[w.j0] = N-1;
+     for (int_type i =N-2; i>=int_type(w1.i); i--) row_num[i+1]= row_num[i];
+     row_num[w1.i] = N-1;
+     for (int_type i =N-2; i>=int_type(w1.j); i--) col_num[i+1]= col_num[i];
+     col_num[w1.j] = N-1;
 
      // Minv is ok, we need to complete 
-     w.ksi = 1/w.ksi;
+     w1.ksi = 1/w1.ksi;
 
      // compute the change to the inverse
-     // M += w.ksi w.MB w.MC with BLAS. first put the 0 
-     triqs::arrays::range R(0,N);
+     // M += w1.ksi w1.MB w1.MC with BLAS. first put the 0 
+     range R(0,N);
      mat_inv(R,N-1) = 0;
      mat_inv(N-1,R) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w.ksi, w.MB(R) ,w.MC(R)) ;//mat_inv(R,R) += w.ksi* w.MB(R) * w.MC(R)
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi, w1.MB(R) ,w1.MC(R)) ;//mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)
     }
 
    public : 
@@ -296,94 +308,76 @@ namespace triqs { namespace det_manip {
 
     value_type try_insert2(size_t i0, size_t i1, size_t j0, size_t j1, xy_type const & x0, xy_type const & x1, xy_type const & y0, xy_type const & y1) {
      // check input and store it for complete_operation
-     w.i0=i0;w.i1 = i1;
-     w.j0=j0;w.j1 = j1;
-     last_try = 10;
-     w.x = x0;w.y = y0; w.x1 = x1;w.y1 = y1;
-     if (N < Nmax) reserve(2*Nmax); // check this resize ... we add 2 lines
-     assert(i0<=N);  assert(j0<=N); assert(i0>=0); assert(j0>=0);
+     assert(i0!=i1); assert(j0!=j1);assert(i0<=N);  assert(j0<=N); assert(i0>=0); assert(j0>=0);
      assert(i1<=N+1);  assert(j1<=N+1); assert(i1>=0); assert(j1>=0);
 
-     // w.ksi = Delta(tau,tauP) - Cw.MB using BLAS
-     w.ksi2(0,0) = f(x0,y0);
-     w.ksi2(0,1) = f(x0,y1);
-     w.ksi2(1,0) = f(x1,y0);
-     w.ksi2(1,1) = f(x1,y1);
+     if (N >= Nmax) reserve(2*Nmax); // check this resize ... we add 2 lines
+     last_try = 10;
+     w2.i[0]=i0;w2.i[1]=i1; w2.j[0]=j0;w2.j[1]=j1;
+     w2.x[0] = x0;w2.y[0] = y0; w2.x[1] = x1;w2.y[1] = y1;
 
-     // treat empty matrix separately (blas on vectors of size 0 ??)
+     // w1.ksi = Delta(tau,tauP) - Cw.MB using BLAS
+     w2.ksi(0,0) = f(x0,y0);
+     w2.ksi(0,1) = f(x0,y1);
+     w2.ksi(1,0) = f(x1,y0);
+     w2.ksi(1,1) = f(x1,y1);
+
+     // treat empty matrix separately 
      if (N==0) {
-      newdet = w.ksi2(0,0) * w.ksi2(1,1) - w.ksi2(1,0)* w.ksi2(0,1);
+      newdet = w2.det_ksi(); 
       newsign = 1;
       return newdet;
      }
 
-     // I add the row and col and the end. If the move is rejected,
-     // no effect since N will not be changed : Minv(i,j) for i,j>=N 
-     // has no meaning.
+     // I add the rows and cols and the end. If the move is rejected,
+     // no effect since N will not be changed : inv_mat(i,j) for i,j>=N has no meaning.
      for (size_t k= 0; k< N; k++) {
-      w.B2(k,0) = f(x_values[k],y0);
-      w.B2(k,1) = f(x_values[k],y1);
-      w.C2(0,k) = f(x0, y_values[k]);
-      w.C2(1,k) = f(x1, y_values[k]);
+      w2.B(k,0) = f(x_values[k],y0);
+      w2.B(k,1) = f(x_values[k],y1);
+      w2.C(0,k) = f(x0, y_values[k]);
+      w2.C(1,k) = f(x1, y_values[k]);
      }
-
-     triqs::arrays::range R(0,N);
-     w.MB2(R,range(0,2)) = mat_inv(R,R) * w.B2(R,range(0,2)); 
-     w.MB2(range(N,N+2), range(N, N+2) ) = -1; // identity matrix 
-
-     w.ksi2 -= w.C2 (range(0,2), R) * w.MB2(R, range(0,2));
-
-     // compute the newdet
-     newdet = det * ( w.ksi2(0,0) * w.ksi2(1,1) - w.ksi2 (1,0)* w.ksi2(0,1));
-
-     newsign = ((i0 + j0 + i1 + j1)%2==0 ? sign : -sign); // since N-i0 + 1 + N-j0 +1 = i0+j0 [2]
+     range R(0,N), R2(0,2);
+     w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); 
+     w2.ksi -= w2.C (R2, R) * w2.MB(R, R2);
+     newdet = det * w2.det_ksi();
+     newsign = ((i0 + j0 + i1 + j1)%2==0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
     } 
 
     //------------------------------------------------------------------------------------------
    private:
     void complete_insert2 () {
-     assert(x_values.size()==N); assert(y_values.size()==N);
-     assert( row_num.size()==N); assert( col_num.size()==N); 
      // store the new value of x,y. They are seen through the same permutations as rows and cols resp.
-     x_values.push_back(w.x);  y_values.push_back(w.y);
-     x_values.push_back(w.x1); y_values.push_back(w.y1);
-     row_num.push_back(0); col_num.push_back(0);
-     row_num.push_back(0); col_num.push_back(0);
+     for (int k=0; k<2; ++k) { 
+      x_values.push_back(w2.x[k]); y_values.push_back(w2.y[k]);
+      row_num.push_back(0); col_num.push_back(0);
+     } 
 
-     // special empty case again
-     if (N==0) { N=2; mat_inv(range(0,2), range(0,2)) = inverse( w.ksi2); return; }
+     range R2(0,2); 
+     if (N==0) { N=2; mat_inv(R2, R2) = inverse( w2.ksi); return; }
 
-     triqs::arrays::range R1(0,N);  
-     w.MC2(range(0,2),R1) = w.C2(range(0,2),R1) * mat_inv(R1,R1);
-
-     w.MC2(range(N,N+2), range(N, N+2) ) = -1; // identity matrix 
+     range Ri(0,N);   
+     w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);
+     w2.MC(R2, range(N, N+2) ) = -1; // identity matrix 
+     w2.MB(range(N,N+2), R2 ) = -1; // identity matrix ! 
 
      // keep the real position of the row/col
      // since we insert a col/row, we have first to push the col at the right
-     // and then say that col w.i0 is stored in N, the last col.
+     // and then say that col w2.i[0] is stored in N, the last col.
      // same for rows
-     N++;
-     for (int_type i =N-2; i>=int_type(w.i0); i--) row_num[i+1]= row_num[i];
-     row_num[w.i0] = N-1;
-     for (int_type i =N-2; i>=int_type(w.j0); i--) col_num[i+1]= col_num[i];
-     col_num[w.j0] = N-1;
-
-     N++;
-     for (int_type i =N-2; i>=int_type(w.i1); i--) row_num[i+1]= row_num[i];
-     row_num[w.i1] = N-1;
-     for (int_type i =N-2; i>=int_type(w.j1); i--) col_num[i+1]= col_num[i];
-     col_num[w.j1] = N-1;
-
-     // Minv is ok, we need to complete 
-     w.ksi2 = inverse (w.ksi2);
-
-     // compute the change to the inverse
-     // M += w.ksi w.MB w.MC with BLAS. first put the 0 
-     triqs::arrays::range R(0,N);
+     for (int k =0; k<2; ++k) { 
+      N++;
+      for (int_type i =N-2; i>=int_type(w2.i[k]); i--) row_num[i+1]= row_num[i];
+      row_num[w2.i[k]] = N-1;
+      for (int_type i =N-2; i>=int_type(w2.j[k]); i--) col_num[i+1]= col_num[i];
+      col_num[w2.j[k]] = N-1;
+     }
+     w2.ksi = inverse (w2.ksi);
+     range R(0,N);
      mat_inv(R,range(N-2,N)) = 0;
      mat_inv(range(N-2,N),R) = 0;
-     mat_inv(R,R) += w.MB2 * (w.ksi2 * w.MC2); 
+     mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); 
     }
 
    public:
@@ -395,63 +389,55 @@ namespace triqs { namespace det_manip {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_remove(size_t i0, size_t j0){
-     assert(i0<N);  assert(j0<N); assert(i0>=0); assert(j0>=0);
-     w.i0=i0;w.j0=j0;last_try = 2;
-     w.jreal0 = col_num[w.j0];
-     w.ireal0 = row_num[w.i0];
+    value_type try_remove(size_t i, size_t j){
+     assert(i<N);  assert(j<N); assert(i>=0); assert(j>=0);
+     w1.i=i;w1.j=j;last_try = 2;
+     w1.jreal = col_num[w1.j];
+     w1.ireal = row_num[w1.i];
      // compute the newdet
-     // first we resolve the w.ireal0,w.jreal0, with the permutation of the Minv, then we pick up what
+     // first we resolve the w1.ireal,w1.jreal, with the permutation of the Minv, then we pick up what
      // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
-     // See complete_operation
-     w.ksi = mat_inv(w.jreal0,w.ireal0);
-     newdet = det*w.ksi;
-     newsign = ((i0 + j0)%2==0 ? sign : -sign);
+     w1.ksi = mat_inv(w1.jreal,w1.ireal);
+     newdet = det*w1.ksi;
+     newsign = ((i + j)%2==0 ? sign : -sign);
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
     void complete_remove() {
-     if (N==1) {
-      N=0;
-      row_num.pop_back(); col_num.pop_back();
-      x_values.pop_back(); y_values.pop_back();
-      det =1;
-      return;
-     }
+     if (N==1) { clear(); return; }
 
-     // repack the matrix _Minv
-     // swap the rows w.ireal0 and N, w.jreal0 and N in _Minv
+     // repack the matrix inv_mat
+     // swap the rows w1.ireal and N, w1.jreal and N in inv_mat
      // Remember that for M row/col is interchanged by inversion, transposition.
      {
-      triqs::arrays::range R(0,N);
-      if (w.jreal0 !=N-1){
-       triqs::arrays::swap( mat_inv(w.jreal0,R), mat_inv(N-1,R));
-       y_values[w.jreal0] = y_values[N-1]; 
+      range R(0,N);
+      if (w1.jreal !=N-1){
+       triqs::arrays::swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
+       y_values[w1.jreal] = y_values[N-1]; 
       }
 
-      if (w.ireal0 !=N-1){
-       triqs::arrays::swap (mat_inv(R,w.ireal0),  mat_inv(R,N-1));
-       x_values[w.ireal0] = x_values[N-1];
+      if (w1.ireal !=N-1){
+       triqs::arrays::swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
+       x_values[w1.ireal] = x_values[N-1];
       }
      }
 
      N--;
 
      // M <- a - d^-1 b c with BLAS
-     w.ksi = - 1/mat_inv(N,N);
-     triqs::arrays::range R(0,N);
+     w1.ksi = - 1/mat_inv(N,N);
+     range R(0,N);
 
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w.ksi,mat_inv(R,N),mat_inv(N,R));
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,N),mat_inv(N,R));
 
      // modify the permutations
-     // see case 1
-     for (size_t k =w.i0; k<N; k++) {row_num[k]= row_num[k+1];}
-     for (size_t k =w.j0; k<N; k++) {col_num[k]= col_num[k+1];}
+     for (size_t k =w1.i; k<N; k++) {row_num[k]= row_num[k+1];}
+     for (size_t k =w1.j; k<N; k++) {col_num[k]= col_num[k+1];}
      for (size_t k =0; k<N; k++) 
      {
-      if (col_num[k]==N) col_num[k]=w.jreal0;
-      if (row_num[k]==N) row_num[k]=w.ireal0;
+      if (col_num[k]==N) col_num[k]=w1.jreal;
+      if (row_num[k]==N) row_num[k]=w1.ireal;
      }
      row_num.pop_back(); col_num.pop_back();
      x_values.pop_back(); y_values.pop_back();
@@ -466,152 +452,185 @@ namespace triqs { namespace det_manip {
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) { 
-     assert(i0<N);  assert(j0<N); assert(i0>=0); assert(j0>=0);
-     w.i0=i0; w.i1=i1;
-     w.j0=j0; w.j1=j1;
-     last_try =11;
-     w.w.jreal0 = col_num[w.j0];
-     w.w.jreal1 = col_num[w.j1];
-     w.ireal0 = row_num[w.i0];
-     w.ireal1 = row_num[w.i1];
-     // compute the newdet
-     // first we resolve the w.ireal0,w.jreal0, with the permutation of the Minv, then we pick up what
-     // will become the 'corner' coefficient, if the move is accepted, after the exchange of row and col.
-     // See complete_operation
-     for (size_t u =0; u<2; ++u)
-      for (size_t v =0; v<2; ++v)
-       w.ksi2(u,v) = mat_inv(w.jreal0_2[u],w.ireal0_2[v]);
+    value_type try_remove2(size_t i0, size_t i1, size_t j0, size_t j1) {
 
-     newdet = det * ( w.ksi2(0,0) * w.ksi2(1,1) - w.ksi2 (1,0)* w.ksi2(0,1));
+     assert(N>=2); assert(i0!=i1); assert(j0!=j1);
+     assert(i0<N);  assert(j0<N); assert(i0>=0); assert(j0>=0); 
+     assert(i1<N+1);  assert(j1<N+1);assert(i1>=0); assert(j1>=0);  
+
+     last_try =11;
+
+     w2.i[0]=std::min(i0,i1); 
+     w2.i[1]=std::max(i0,i1); 
+     w2.j[0]=std::min(j0,j1); 
+     w2.j[1]=std::max(j0,j1); 
+     w2.ireal[0] = row_num[w2.i[0]]; 
+     w2.ireal[1] = row_num[w2.i[1]];
+     w2.jreal[0] = col_num[w2.j[0]]; 
+     w2.jreal[1] = col_num[w2.j[1]];
+
+     // compute the newdet
+     w2.ksi(0,0) = mat_inv(w2.jreal[0],w2.ireal[0]);
+     w2.ksi(1,0) = mat_inv(w2.jreal[1],w2.ireal[0]);
+     w2.ksi(0,1) = mat_inv(w2.jreal[0],w2.ireal[1]);
+     w2.ksi(1,1) = mat_inv(w2.jreal[1],w2.ireal[1]);
+
+     newdet = det * w2.det_ksi();
      newsign = ((i0 + j0+ i1 + j1)%2==0 ? sign : -sign);
+
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
     void complete_remove2() {
-     if (N==2) { N=0; }
+     if (N==2) { clear(); return;} // put the sign to 1 also .... Change complete_remove... 
 
-     else { 
+     size_t i_real_max =std::max(w2.ireal[0],w2.ireal[1]);  
+     size_t i_real_min =std::min(w2.ireal[0],w2.ireal[1]);  
+     size_t j_real_max =std::max(w2.jreal[0],w2.jreal[1]);  
+     size_t j_real_min =std::min(w2.jreal[0],w2.jreal[1]); 
 
-      size_t i_real_max =std::max(w.ireal0,w.ireal1);  
-      size_t i_real_min =std::min(w.ireal0,w.ireal1);  
-      size_t j_real_max =std::max(w.jreal0,w.jreal1);  
-      size_t j_real_min =std::min(w.jreal0,w.jreal1); 
+     range R(0,N);
 
+     if (j_real_max != N-1) { 
+      triqs::arrays::swap( mat_inv(j_real_max,R), mat_inv(N-1,R));
       y_values[ j_real_max ] = y_values[N-1];
-      y_values[ j_real_min ] = y_values[N-2];
-
-      x_values[ i_real_max ] = x_values[N-1];
-      x_values[ i_real_min ] = x_values[N-2];
-
-      N =-2;
-
-      // M <- a - d^-1 b c with BLAS
-      triqs::arrays::range Rn(0,N), R2(N-2,N);
-      w.ksi2 = - inverse( mat_inv(R2,R2)); 
-
-      mat_inv(Rn,Rn) += mat_inv(Rn,R2) * w.ksi2 * mat_inv(R2,Rn); 
-
-      // modify the permutations
-      // see case 1
-      size_t i_sh=0, j_sh =0;
-      for (size_t k =0; k<N; k++) {
-       if ((k==w.i0) || (k==w.i1)) i_sh++;
-       if ((k==w.j0) || (k==w.j1)) j_sh++;  
-       row_num[k]= row_num[k+i_sh];
-       col_num[k]= col_num[k+j_sh];
-       if (col_num[k]==N)   col_num[k]=j_real_max;
-       if (col_num[k]==N-1) col_num[k]=j_real_min;
-       if (row_num[k]==N)   row_num[k]=i_real_max;
-       if (row_num[k]==N-1) row_num[k]=i_real_min;
-      }
-
-      for (int u=0; u<2; ++u) { row_num.pop_back(); col_num.pop_back(); x_values.pop_back(); y_values.pop_back(); } 
      }
+     if (j_real_min != N-2) { 
+      triqs::arrays::swap( mat_inv(j_real_min,R), mat_inv(N-2,R));
+      y_values[ j_real_min ] = y_values[N-2];
+     }
+     if (i_real_max != N-1) { 
+      triqs::arrays::swap (mat_inv(R,i_real_max),  mat_inv(R,N-1));
+      x_values[ i_real_max ] = x_values[N-1];
+     }
+     if (i_real_min != N-2) { 
+      triqs::arrays::swap (mat_inv(R,i_real_min),  mat_inv(R,N-2));
+      x_values[ i_real_min ] = x_values[N-2];
+     }
+
+     N -= 2;
+
+     // M <- a - d^-1 b c with BLAS
+     range Rn(0,N), Rl(N,N+2);
+     //w2.ksi = mat_inv(Rl,Rl);
+     //w2.ksi = inverse( w2.ksi);
+     w2.ksi =  inverse( mat_inv(Rl,Rl));
+
+     // write explicitely the second product on ksi for speed ?
+     mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn));
+
+     // modify the permutations
+     for (size_t k =w2.i[0]; k<w2.i[1]-1; k++)   row_num[k] = row_num[k+1];
+     for (size_t k =w2.i[1]-1; k<N; k++)         row_num[k] = row_num[k+2];
+     for (size_t k =w2.j[0]; k<w2.j[1]-1; k++)   col_num[k] = col_num[k+1];
+     for (size_t k =w2.j[1]-1; k<N; k++)         col_num[k] = col_num[k+2];
+     for (size_t k =0; k<N; k++) {
+      if (col_num[k]==N+1)   col_num[k]=j_real_max;
+      if (col_num[k]==N)     col_num[k]=j_real_min;
+      if (row_num[k]==N+1)   row_num[k]=i_real_max;
+      if (row_num[k]==N)     row_num[k]=i_real_min;
+     }
+
+     for (int u=0; u<2; ++u) { row_num.pop_back(); col_num.pop_back(); x_values.pop_back(); y_values.pop_back(); } 
     }
     //------------------------------------------------------------------------------------------
 
     /**
-     * Consider the change the column j0 and the corresponding y.
+     * Consider the change the column j and the corresponding y.
      *
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_change_col(size_t j0, xy_type const & y) {
-     assert(j0<N); assert(j0>=0);
-     w.j0=j0;last_try = 3;
-     w.jreal0 = col_num[j0];
-     w.y = y;
+    value_type try_change_col(size_t j, xy_type const & y) {
+     assert(j<N); assert(j>=0);
+     w1.j=j;last_try = 3;
+     w1.jreal = col_num[j];
+     w1.y = y;
 
      // Compute the col B.
-     for (size_t i= 0; i<N;i++) w.MC(i) = f(x_values[i] , w.y) - f(x_values[i], y_values[w.jreal0]);
-     triqs::arrays::range R(0,N);
-     w.MB(R) = mat_inv(R,R) * w.MC(R);
+     for (size_t i= 0; i<N;i++) w1.MC(i) = f(x_values[i] , w1.y) - f(x_values[i], y_values[w1.jreal]);
+     range R(0,N);
+     w1.MB(R) = mat_inv(R,R) * w1.MC(R);
 
      // compute the newdet
-     w.ksi = (1+w.MB(w.jreal0));
-     newdet = det*w.ksi;
+     w1.ksi = (1+w1.MB(w1.jreal));
+     newdet = det*w1.ksi;
      newsign = sign;
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
     void complete_change_col() {
-     triqs::arrays::range R(0,N);
-     y_values[w.jreal0] = w.y;
+     range R(0,N);
+     y_values[w1.jreal] = w1.y;
 
-     // modifying M : Mij += w.ksi Bi Mnj 
+     // modifying M : Mij += w1.ksi Bi Mnj 
      // using Shermann Morrison formula.
      // implemented in 2 times : first Bn=0 so that Mnj is not modified ! and then change Mnj
-     // Cf notes : simply multiply by -w.ksi
-     w.ksi = - 1/(1+ w.MB(w.jreal0));
-     w.MB(w.jreal0) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w.ksi,w.MB(R), mat_inv(w.jreal0,R));
-     mat_inv(w.jreal0,R)*= -w.ksi; 
+     // Cf notes : simply multiply by -w1.ksi
+     w1.ksi = - 1/(1+ w1.MB(w1.jreal));
+     w1.MB(w1.jreal) = 0;
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R));
+     mat_inv(w1.jreal,R)*= -w1.ksi; 
     }
 
     //------------------------------------------------------------------------------------------
    public:
 
     /**
-     * Consider the change the row i0 and the corresponding x.
+     * Consider the change the row i and the corresponding x.
      *
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
-    value_type try_change_row(size_t i0, xy_type const & x) {
-     assert(i0<N); assert(i0>=0);
-     w.i0=i0;last_try = 4;
-     w.ireal0 = row_num[i0];
-     w.x = x;
-
+    value_type try_change_row(size_t i, xy_type const & x) {
+     assert(i<N); assert(i>=0);
+     w1.i=i;last_try = 4;
+     w1.ireal = row_num[i];
+     w1.x = x;
 
      // Compute the col B.
-     for (size_t i= 0; i<N;i++) w.MB(i) = f(w.x, y_values[i] ) -  f(x_values[w.ireal0], y_values[i] ); 
-     triqs::arrays::range R(0,N);
-     w.MC(R) = mat_inv(R,R).transpose() * w.MB(R); 
+     for (size_t i= 0; i<N;i++) w1.MB(i) = f(w1.x, y_values[i] ) -  f(x_values[w1.ireal], y_values[i] ); 
+     range R(0,N);
+     w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); 
 
      // compute the newdet
-     w.ksi = (1+w.MC(w.ireal0));
-     newdet = det*w.ksi;
+     w1.ksi = (1+w1.MC(w1.ireal));
+     newdet = det*w1.ksi;
      newsign = sign;
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
     }
     //------------------------------------------------------------------------------------------
    private:
     void complete_change_row() {
-     triqs::arrays::range R(0,N);
-     x_values[w.ireal0] = w.x;
+     range R(0,N);
+     x_values[w1.ireal] = w1.x;
 
-     // modifying M : M ij += w.ksi Min Cj
+     // modifying M : M ij += w1.ksi Min Cj
      // using Shermann Morrison formula.
      // impl. Cf case 3
-     w.ksi = - 1/(1+ w.MC(w.ireal0));
-     w.MC(w.ireal0) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w.ksi,mat_inv(R,w.ireal0),w.MC);
-     mat_inv(R,w.ireal0) *= -w.ksi;
+     w1.ksi = - 1/(1+ w1.MC(w1.ireal));
+     w1.MC(w1.ireal) = 0;
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,w1.ireal),w1.MC);
+     mat_inv(R,w1.ireal) *= -w1.ksi;
     }
+    //------------------------------------------------------------------------------------------
+   private: 
+
+    bool check_mat_inv (double precision) const { 
+     if (N==0) return true;
+     const bool relative = true;
+     matrix_type res(N,N);
+     for (size_t i=0; i<N;i++)
+      for (size_t j=0; j<N;j++)
+       res(i,j) = f(x_values[i], y_values[j]);
+     res = inverse(res); 
+     value_type r = max_element (abs(res - mat_inv(N,N)));
+     value_type r2= max_element (abs(res + mat_inv(N,N)));
+     return ( r >  (relative ? precision * r2 : precision));
+    }
+
     //------------------------------------------------------------------------------------------
    public:
     /**
@@ -638,7 +657,8 @@ namespace triqs { namespace det_manip {
       case(11): 
        complete_remove2();
        break;
-      case(0): 
+      case(0):
+       last_try=0; return; 
        break; // double call of complete_operation... 
       default: 
        TRIQS_RUNTIME_ERROR<< "Misuing det_manip";
@@ -646,6 +666,11 @@ namespace triqs { namespace det_manip {
      det = newdet;
      sign = newsign;
      last_try =0;
+     ++n_opts;
+     if (n_opts > n_opts_max_before_check) { 
+      if (!check_mat_inv(1.e-8))
+       TRIQS_RUNTIME_ERROR << "Deviation too large ";
+     }
     }
 
     ///

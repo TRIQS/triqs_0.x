@@ -10,21 +10,21 @@ struct fun {
  typedef double argument_type;
 
  /*double f(double eps, double tau, double beta) const { 
-  bool s = (tau>0);
-  tau = (s ? tau : beta + tau); 
-  return (s ? 1 : -1 ) * exp( - eps* (tau)) / (1 + exp(- beta *eps));
- }*/
+   bool s = (tau>0);
+   tau = (s ? tau : beta + tau); 
+   return (s ? 1 : -1 ) * exp( - eps* (tau)) / (1 + exp(- beta *eps));
+   }*/
 
  double operator()(double x, double y) const { 
-   const double pi = acos(-1); 
-   const double beta = 10.0; 
-   const double epsi = 0.1; 
-   double tau = x-y;
-   bool s = (tau>0);
-   tau = (s ? tau : beta + tau);
-   double r = epsi + tau/beta *(1-2*epsi);
-   return - 2*(pi/beta)/ std::sin ( pi *r);
-   
+  const double pi = acos(-1); 
+  const double beta = 10.0; 
+  const double epsi = 0.1; 
+  double tau = x-y;
+  bool s = (tau>0);
+  tau = (s ? tau : beta + tau);
+  double r = epsi + tau/beta *(1-2*epsi);
+  return - 2*(pi/beta)/ std::sin ( pi *r);
+
   //return - 0.5*(f(0.12, x-y, beta) + f(0.43,x-y,beta) ); //+ f(-0.7,x-y,beta)); 
  }
 
@@ -52,22 +52,24 @@ struct test {
    D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix()))<<  std::endl;
 #endif
   assert_close(D.determinant() , 1/determinant(D.inverse_matrix()), PRECISION); 
-  triqs::arrays::assert_all_close( inverse(D.matrix()) , D.inverse_matrix(), PRECISION);
+  triqs::arrays::assert_all_close( inverse(D.matrix()) , D.inverse_matrix(), PRECISION, true);
   assert_close( det_old * detratio , D.determinant(), PRECISION);
  }
 
  void run() { 
   triqs::mc_tools::random_generator RNG("mt19937", 23432);
   for (size_t i =0; i< 100; ++i) { 
+   std::cerr<<" ------------------------------------------------"<<std::endl;
    std::cerr <<" i = "<< i << " size = "<< D.size() << std::endl; 
    // choose a move
    int mn = RNG(4);
    size_t s = D.size();
-   size_t w;
+   size_t i0,j0,i1,j1;
    det_old = D.determinant();
-   double x,y; 
-
-   switch(RNG(( i>10 ? 2 : 1))) {
+   detratio=1;
+   double x,y,x1,y1; 
+ 
+   switch(RNG(( i>10 ? 4 : 1))) {
     case 0 :
      x = RNG(10.0), y = RNG(10.0);
      std::cerr  << " x,y = "<< x << "  "<< y << std::endl; 
@@ -76,10 +78,26 @@ struct test {
     case 1 : 
      if (s>0) detratio = D.try_remove(RNG(s),RNG(s));
      break;
-     //case 0 : 
-     // D.try_insert(RNG(s),RNG(s), RNG (10), RNG(10));
-     // break;
-    default : 
+    case 2:
+     x = RNG(10.0); x1 = RNG(10.0); 
+     y = RNG(10.0); y1 = RNG(10.0); 
+     i0 = RNG(s); i1 = RNG(s+1);
+     j0 = RNG(s); j1 = RNG(s+1);
+     if ((i0 !=i1)&& (j0!=j1))  {
+      detratio = D.try_insert2(i0,i1,j0,j1, x,x1,y,y1);
+     }
+     break;
+    case 3:
+     std::cerr  << " Remove2" << std::endl;
+     if (D.size()>=2) {
+      i0 = RNG(s); i1 = RNG(s);
+      j0 = RNG(s); j1 = RNG(s);
+      if ((i0 !=i1)&& (j0!=j1))  {
+       detratio = D.try_remove2(i0,i1,j0,j1);
+      }
+     }
+     break;
+    default :
      TRIQS_RUNTIME_ERROR <<" TEST INTERNAL ERROR" ;
    };
 
