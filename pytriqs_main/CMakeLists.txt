@@ -8,8 +8,6 @@ if (TRIQS_BUILD_STATIC)
  install(TARGETS ${ExecutableName} DESTINATION bin)  
  include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
- # Find if ipython is present
- find_package(IPython)
  if (IPYTHON_AVAIL) 
   MESSAGE(STATUS "ipython is available on your platform: I will compile pytriqs and ipytriqs")
   add_executable( i${ExecutableName} ${CMAKE_CURRENT_SOURCE_DIR}/main_i.cpp)

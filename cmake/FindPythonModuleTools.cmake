@@ -15,8 +15,8 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 
 # This function add the target to build a python module
 #
-# NickName = 
-# ModuleName = 
+# NickName =  
+# ModuleName = the python name of the module 
 # ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] 
 #
 function (python_build_module NickName ModuleName ModuleDest  )
@@ -47,12 +47,9 @@ function (python_build_module NickName ModuleName ModuleDest  )
   install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
 
   # SHould be in the static part ??? Useless ??
-  set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
+  #set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
 
   STRING(REPLACE "/" "." MODPATH ${ModuleDest})
-  # issue #26: setting RTLD_GLOBAL is no longer necessary because boost python is loaded dynamically and it was causing problems
-  # with a double definition of PyArray_API from multiarray.so
-  # file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "${FIX}\nimport sys,ctypes \nflag = sys.getdlopenflags()\nsys.setdlopenflags(flag|ctypes.RTLD_GLOBAL)\nfrom pytriqs.${MODPATH}._${MODNAME} import *\nsys.setdlopenflags(flag)")
   file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "from pytriqs.${MODPATH}._${MODNAME} import *\n")
  
  endif (TRIQS_BUILD_STATIC)

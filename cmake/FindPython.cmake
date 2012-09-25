@@ -21,6 +21,8 @@
 
 set(PYTHON_MINIMAL_VERSION 2.6.5)
 
+MESSAGE( STATUS "-------- Python detection -------------")
+
 # IF PYTHON_INTERPRETER is not defined, try to find a python
 if (NOT PYTHON_INTERPRETER )
  find_program(PYTHON_INTERPRETER python PATHS $ENV{PATH})
@@ -55,6 +57,7 @@ ENDIF (PYTHON_VERSION_NOT_OK)
 EXEC_PYTHON_SCRIPT ("import distutils " nulle) # check that distutils is there...
 EXEC_PYTHON_SCRIPT ("import numpy" nulle) # check that numpy is there...
 EXEC_PYTHON_SCRIPT ("import h5py" nulle) # check that h5py is there...
+EXEC_PYTHON_SCRIPT ("import scipy" nulle) # check that scipy is there...
 MESSAGE(STATUS "Python interpreter and modules are ok : version ${PYTHON_VERSION}" )
 
 #
@@ -109,6 +112,16 @@ mark_as_advanced(PYTHON_SITE_PKG)
  mark_as_advanced(PYTHON_EXTRA_LIBS)
 
  #
+ # Looking for ipython ... (optional)
+ # not very useful... in static case, we should not allow ipython anyway I guess...
+ #EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "try :\n import IPython\n print 1\nexcept:\n print 0" OUTPUT_VARIABLE IPYTHON_AVAIL RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
+ #if (IPYTHON_AVAIL) 
+ # MESSAGE(STATUS "IPython found")
+ #else (IPYTHON_AVAIL)
+ # MESSAGE(STATUS "IPython NOT FOUND ")
+ #endif (IPYTHON_AVAIL)
+
+ #
  # linking flags needed when embedding (building a shared lib)
  # To BE RETESTED
  #
@@ -117,33 +130,34 @@ mark_as_advanced(PYTHON_SITE_PKG)
  #MESSAGE(STATUS "PYTHON_LINK_FOR_SHARED =  ${PYTHON_LINK_FOR_SHARED}" )
  #mark_as_advanced(PYTHON_LINK_FOR_SHARED)
 
-# Correction on Mac
-#IF(APPLE)
-#    SET (PYTHON_LINK_FOR_SHARED -u _PyMac_Error -framework Python)
-#    SET (PYTHON_LINK_MODULE -bundle -undefined dynamic_lookup)
-#ELSE(APPLE)
-#    SET (PYTHON_LINK_MODULE -shared)
-#ENDIF(APPLE)
+ # Correction on Mac
+ #IF(APPLE)
+ #    SET (PYTHON_LINK_FOR_SHARED -u _PyMac_Error -framework Python)
+ #    SET (PYTHON_LINK_MODULE -bundle -undefined dynamic_lookup)
+ #ELSE(APPLE)
+ #    SET (PYTHON_LINK_MODULE -shared)
+ #ENDIF(APPLE)
 
-set (PYTHONLIBS_FOUND TRUE) #${PYTHON_FOUND})
+ set (PYTHONLIBS_FOUND TRUE) #${PYTHON_FOUND})
 
-# used in BOOST ONLY !!
-FUNCTION(PYTHON_ADD_MODULE _NAME )
- OPTION(PYTHON_ENABLE_MODULE_${_NAME} "Add module ${_NAME}" TRUE)
- OPTION(PYTHON_MODULE_${_NAME}_BUILD_SHARED "Add module ${_NAME} shared" ${BUILD_SHARED_LIBS})
+ # used in BOOST ONLY !!
+ FUNCTION(PYTHON_ADD_MODULE _NAME )
+  OPTION(PYTHON_ENABLE_MODULE_${_NAME} "Add module ${_NAME}" TRUE)
+  OPTION(PYTHON_MODULE_${_NAME}_BUILD_SHARED "Add module ${_NAME} shared" ${BUILD_SHARED_LIBS})
 
- IF(PYTHON_ENABLE_MODULE_${_NAME})
-  IF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
-   SET(PY_MODULE_TYPE MODULE)
-  ELSE(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
-   SET(PY_MODULE_TYPE STATIC)
-   SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_STATIC_MODULES_LIST ${_NAME})
-  ENDIF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
+  IF(PYTHON_ENABLE_MODULE_${_NAME})
+   IF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
+    SET(PY_MODULE_TYPE MODULE)
+   ELSE(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
+    SET(PY_MODULE_TYPE STATIC)
+    SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_STATIC_MODULES_LIST ${_NAME})
+   ENDIF(PYTHON_MODULE_${_NAME}_BUILD_SHARED)
 
-  SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_MODULES_LIST ${_NAME})
-  ADD_LIBRARY(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
-  #    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
+   SET_PROPERTY(GLOBAL  APPEND  PROPERTY  PY_MODULES_LIST ${_NAME})
+   ADD_LIBRARY(${_NAME} ${PY_MODULE_TYPE} ${ARGN})
+   #    TARGET_LINK_LIBRARIES(${_NAME} ${PYTHON_LIBRARIES})
 
- ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
-ENDFUNCTION(PYTHON_ADD_MODULE)
+  ENDIF(PYTHON_ENABLE_MODULE_${_NAME})
+ ENDFUNCTION(PYTHON_ADD_MODULE)
+MESSAGE( STATUS "--------------------------------------------")
 
