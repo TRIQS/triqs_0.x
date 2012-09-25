@@ -670,6 +670,7 @@ namespace triqs { namespace det_manip {
      if (n_opts > n_opts_max_before_check) { 
       if (!check_mat_inv(1.e-8))
        TRIQS_RUNTIME_ERROR << "Deviation too large ";
+      n_opts=0;
      }
     }
 
