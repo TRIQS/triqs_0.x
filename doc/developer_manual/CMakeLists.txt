@@ -32,9 +32,22 @@ add_subdirectory(arrays)
 add_subdirectory(mctools)
 add_subdirectory(det_manip)
 
-# we must first have doxygen process the sources to link to them
-add_dependencies(docs_sphinx_cpp docs_doxy_mctools)
-add_dependencies(docs_sphinx_cpp docs_doxy_detmanip)
+# Build the doxygen 
+SET(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
+find_package(Doxygen REQUIRED)
+
+get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
+string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
+message( "Doxygen sources are ${DOXYGEN_SOURCES}") 
+
+# Prepare the Doxyfile
+configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+SET(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
+add_custom_command (OUTPUT ${doxy_top} DEPENDS ${DOXYGEN_SOURCES} COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile > ${doxy_top} )
+add_custom_target(docs_doxy ALL DEPENDS ${doxy_top})
+add_dependencies(docs_sphinx_cpp docs_doxy) # we must first have doxygen process the sources to link to them
+
 add_dependencies(docs_sphinx_cpp triqs boost_for_triqs ) # add also mpi ?
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/developer_manual

@@ -68,13 +68,12 @@ The Measure concept
 Doxygen documentation
 *********************
 
-The :mctools_doxy:`full C++ documentation<triqs::mc_tools::mc_generic>` is available here.
+The :doxy:`full C++ documentation<triqs::mc_tools::mc_generic>` is available here.
 
-
-Breathe Documentation 
-*********************
-
-.. doxygenclass:: triqs::mc_tools::mc_generic
-  :project: mc_tools
-  :members:
+.. : 
+   Breathe Documentation 
+   *********************
+   .. doxygenclass:: triqs::mc_tools::mc_generic
+      :project: doxy
+      :members:
    

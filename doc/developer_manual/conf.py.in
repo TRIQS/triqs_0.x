@@ -117,8 +117,8 @@ pygments_style = 'sphinx'
 # -----------------------------
 
 breathe_projects = {
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/mctools/xml/",
-        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/arrays/xml/",
+        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
+        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
         }
 
 breathe_default_project = "mc_tools"
@@ -126,11 +126,7 @@ breathe_default_project = "mc_tools"
 # Options for doxylink extension
 # -----------------------------
 
-doxylink = {
-        'mctools_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/mctools/doxy.tag', 'doxy_mctools'),
-        'detmanip_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/det_manip/doxy.tag', 'doxy_detmanip'),
-        'arrays_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/arrays/doxy.tag', 'doxy_arrays'),
-        }
+doxylink = { 'doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
 
 # Options for HTML output
 # -----------------------
