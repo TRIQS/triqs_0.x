@@ -75,6 +75,7 @@ namespace triqs { namespace arrays {
   template<> struct eval_t_cases::case_<proto::tag::minus> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
   template<> struct eval_t_cases::case_<proto::tag::multiplies> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
   template<> struct eval_t_cases::case_<proto::tag::divides> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
+  template<> struct eval_t_cases::case_<proto::tag::negate> : proto::when< proto::negate<eval_t>, tup::negate_t(eval_t(_left))> {};
   struct eval_t : proto::switch_<eval_t_cases> {};
 
   // -----------  computation of the domain -------------------

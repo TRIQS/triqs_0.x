@@ -115,6 +115,13 @@ namespace triqs { namespace utility { namespace proto {
    typedef BOOST_TYPEOF_TPL( (*(pseudo_default_construct<T1>())) * (*(pseudo_default_construct<T2>()))) type;
   };
 
+ struct negate_t { 
+  BOOST_PROTO_CALLABLE();
+  template<typename Sig> struct result;
+  template<typename This, typename A> struct result<This(A)> : boost::remove_reference<A> {};
+  template<typename A> typename result<negate_t(A)>::type  operator ()(A const & a) const { return - a; }
+ };
+ 
  struct multiplies_t { 
   BOOST_PROTO_CALLABLE();
   template<typename Sig> struct result;
