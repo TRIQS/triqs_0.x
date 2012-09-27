@@ -302,7 +302,6 @@ namespace triqs { namespace det_manip {
      * The new colum/row will be at col j0, row i0.
      *
      * 0 <= i0,i1,j0,j1 <= N+1, where N is the current size of the matrix.
-
      * Returns the ratio of det Minv_new / det Minv.
      * This routine does NOT make any modification. It has to be completed with complete_operation().
      */
@@ -356,7 +355,7 @@ namespace triqs { namespace det_manip {
      } 
 
      range R2(0,2); 
-     if (N==0) { N=2; mat_inv(R2, R2) = inverse( w2.ksi); return; }
+     if (N==0) {N=2; mat_inv(R2,R2)=inverse(w2.ksi); row_num[w2.i[1]]=1; col_num[w2.j[1]]=1; return;}
 
      range Ri(0,N);   
      w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);
@@ -629,7 +628,7 @@ namespace triqs { namespace det_manip {
      res = inverse(res); 
      value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
      value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
-//#define TRIQS_DET_MANIP_VERBOSE_CHECK
+     //#define TRIQS_DET_MANIP_VERBOSE_CHECK
 #ifdef TRIQS_DET_MANIP_VERBOSE_CHECK
      std::cout  << "----------------"<<std::endl 
       << "check " << "N = "<< N <<"  " <<"r,r2 =   "<< r << "  "<< r2 << std::endl;  
