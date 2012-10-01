@@ -1,5 +1,5 @@
 from pytriqs.Wien2k.SumK_LDA_tools import *
-from pytriqs.Wien2k.SumK_LDA_Wien2K_input import *
+from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
 from pytriqs.Solvers.HubbardI.Solver_HubbardI import Solver_HubbardI 
 
 # Creates the data directory, cd into it:
@@ -21,7 +21,7 @@ HDFfilename = LDAFilename+'.h5'
 
 # Convert DMFT input:
 # Can be commented after the first run
-Converter = SumK_LDA_Wien2K_input(Filename=LDAFilename,repacking=True)
+Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
 Converter.convert_DMFT_input()
 Converter.convert_Parproj_input()
 
