@@ -35,15 +35,8 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
 message (STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 message (STATUS "CMAKE_CL_64: ${CMAKE_CL_64}")
 
-#option(ALPS_INSTALL_BOOST_TEST "Install Boost Test framwork" OFF)
-#mark_as_advanced(ALPS_INSTALL_BOOST_TEST)
-
 set(ALPS_BOOST_LIBRARY_NAME "boost_for_triqs" ) 
 set(ALPS_INSTALL_HEADERS  ON)
-
-# a workaround for Mac OS X's LLVM compiler
-#option(ALPS_LLVM_WORKAROUND "Exclude some parts of ALPS from the build with LLVM" OFF)
-#mark_as_advanced(ALPS_LLVM_WORKAROUND)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
@@ -56,16 +49,7 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 # C & C++ Headers
 ######################################################################
 include(CheckIncludeFile)
-CHECK_INCLUDE_FILE(rpc/rpc.h ALPS_HAVE_RPC_XDR_H)
-CHECK_INCLUDE_FILE(stdarg.h ALPS_HAVE_STDARG_H)
-CHECK_INCLUDE_FILE(sys/stat.h ALPS_HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILE(sys/systeminfo.h ALPS_HAVE_SYS_SYSTEMINFO_H)
-CHECK_INCLUDE_FILE(sys/types.h ALPS_HAVE_SYS_TYPES_H)
-CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
-CHECK_INCLUDE_FILE(windows.h ALPS_HAVE_WINDOWS_H)
-
 include(CheckIncludeFileCXX)
-CHECK_INCLUDE_FILE_CXX(valarray ALPS_HAVE_VALARRAY)
 
 ######################################################################
 # Packages
@@ -103,7 +87,6 @@ if(ALPS_ENABLE_MPI)
   ELSE(MPI_FOUND)
     set(BUILD_BOOST_MPI FALSE)
   ENDIF(MPI_FOUND)
-#add_definitions( -DBOOST_MPI_HOMOGENEOUS )
 else (ALPS_ENABLE_MPI)
     SET(ALPS_HAVE_MPI 0)
     SET(ALPS_HAVE_BOOST_MPI 0)
