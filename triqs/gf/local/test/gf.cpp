@@ -1,12 +1,14 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/local/gf.hpp>
+#include <triqs/gf/descriptors/matsubara_freq.hpp> 
+#include <triqs/gf/descriptors/matsubara_time.hpp> 
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
 namespace tql= triqs::clef;
 //namespace tqa= triqs::arrays;
 using tqa::range;
+using triqs::arrays::make_shape;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -14,22 +16,27 @@ std::complex<double> mul2 (std::complex<double> x) { return x*x;}
 
 int main() {
 
- typedef local::gf<meshes::matsubara_freq> Gf_type;
- typedef local::gf_view<meshes::matsubara_freq> Gf_view_type;
- domains::freq_infty inf;
+ typedef gf<matsubara_freq> Gf_type;
+ typedef gf_view<matsubara_freq> Gf_view_type;
+ typedef gf<matsubara_time> Gt_type;
+ typedef gf_view<matsubara_time> Gt_view_type;
+
+ freq_infty inf;
 
  Gf_type G1; // empty
  TEST( G1( 0) ) ;
 
  double beta =1;
- Gf_type G(2,2, meshes::matsubara_freq(beta,Fermion));
- Gf_type Gc(2,2, meshes::matsubara_freq(beta,Fermion));
- Gf_type G3(2,2, meshes::matsubara_freq(beta,Fermion));
+ Gf_type G  (matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
+ Gf_type Gc( matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
+ Gf_type G3( matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
+ 
+ Gt_type Gt  (matsubara_time::mesh_t(beta,Fermion),make_shape(2,2));
 
  Gf_view_type Gv =G;
  TEST( G( 0) ) ;
 
- Gf_view_type Gv2 = slice(G,range(0,1),range(0,1));
+ Gf_view_type Gv2 = slice_target(G,range(0,1),range(0,1));
  TEST( Gv2( 0) ) ;
  Gv2(0) = 10;
  TEST( Gv2( 0) ) ;
@@ -82,6 +89,9 @@ int main() {
 
  // operations on gf
  G3 = G + Gc;
+
+ // should not compile
+ //G3 = G + Gt;
 
 //#define ALL_TEST
 #ifdef ALL_TEST

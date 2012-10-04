@@ -38,7 +38,7 @@ class _GFBloc_concept_impl:
     #-------------  Indices management ---------------------
 
     def __get_Indices(self) : 
-	"""A generator of the indices"""
+        """A generator of the indices"""
         if self._IndicesL != self._IndicesR : raise RuntimeError, "Indices R and L are not the same. I can not give you the Indices"
         for ind in self._IndicesL: 
             yield ind
@@ -73,12 +73,12 @@ class _GFBloc_concept_impl:
         try :
             sl1 = self._myIndicesGFBlocL.convertToNumpyIndex(key[0])
         except IndexError, ValueError:
-	    raise IndexError, "Indices %s incorrect. Indices are %s"%(key[0],list(self._IndicesL))
+            raise IndexError, "Indices %s incorrect. Indices are %s"%(key[0],list(self._IndicesL))
 
         try :
             sl2 = self._myIndicesGFBlocR.convertToNumpyIndex(key[1])
         except IndexError, ValueError:
-	    raise IndexError, "Indices %s incorrect. Indices are %s"%(key[1],list(self._IndicesR))
+            raise IndexError, "Indices %s incorrect. Indices are %s"%(key[1],list(self._IndicesR))
 
         return self._make_slice (sl1, sl2)
 
@@ -100,22 +100,22 @@ class _GFBloc_concept_impl:
     #-------------------------------------------------
 
     def __str__ (self) : 
-	return self.Name if self.Name else repr(self)
+        return self.Name if self.Name else repr(self)
     
     #-------------------------------------------------
 
     def __repr__(self) : 
-	return """%s %s : IndicesL = %s, IndicesR = %s"""%(self.__class__.__name__, self.Name,
+        return """%s %s : IndicesL = %s, IndicesR = %s"""%(self.__class__.__name__, self.Name,
           [x for x in self.IndicesL], [x for x in self.IndicesR])
 
     #-------------------------------------------------
 
     def __iter__(self) :
-	for i in self._IndicesL : 
-	    for j in self._IndicesR :
+        for i in self._IndicesL : 
+            for j in self._IndicesR :
                 b =self[i,j]
-		b.Name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
-		yield i,j,b
+                b.Name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
+                yield i,j,b
 
     #-----------------------------------------------------
  

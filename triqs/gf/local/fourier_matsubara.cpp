@@ -22,29 +22,34 @@
 #include "fourier_base.hpp"
 #include <fftw3.h>
 
-namespace triqs { namespace gf { namespace local { namespace matsubara { 
 
- inline dcomplex oneFermion(dcomplex a,double b,double tau,double Beta) {
-  return -a*( b >=0 ? exp(-b*tau)/(1+exp(-Beta*b)) : exp(b*(Beta-tau))/(1+exp(Beta*b)) );
- }
+namespace triqs { namespace gf { 
 
- inline dcomplex oneBoson(dcomplex a,double b,double tau,double Beta) {
-  return a*( b >=0 ? exp(-b*tau)/(exp(-Beta*b)-1) : exp(b*(Beta-tau))/(1-exp(b*Beta)) );
+ namespace impl_local_matsubara {
+
+  inline dcomplex oneFermion(dcomplex a,double b,double tau,double Beta) {
+   return -a*( b >=0 ? exp(-b*tau)/(1+exp(-Beta*b)) : exp(b*(Beta-tau))/(1+exp(Beta*b)) );
+  }
+
+  inline dcomplex oneBoson(dcomplex a,double b,double tau,double Beta) {
+   return a*( b >=0 ? exp(-b*tau)/(exp(-Beta*b)-1) : exp(b*(Beta-tau))/(1-exp(b*Beta)) );
+  }
  }
 
  //--------------------------------------------------------------------------------------
 
- gf_imfreq fourier_direct (gf_imtime const & gt) { 
+ gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt) { 
 
-  auto ta = gt(domains::freq_infty());
-  meshes::matsubara_freq res_mesh(gt.domain().beta, gt.domain().statistic, gt.mesh().size());
-  gf_imfreq gw ( gt.shape(), res_mesh, ta); 
-
+  auto ta = gt(freq_infty());
+  matsubara_freq::mesh_t res_mesh(gt.domain().beta, gt.domain().statistic, gt.mesh().size());
+  gf<matsubara_freq> gw (  res_mesh, gt.shape(),ta); 
+ 
   long numberTimeSlices = gt.mesh().size();
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);
   tqa::vector<dcomplex> g_in(gt.mesh().size()), g_out (gw.mesh().size()); 
 
+  using namespace impl_local_matsubara;
   for (int n1=0; n1<gw.shape()[0];n1++)
    for (int n2=0; n2<gw.shape()[1];n2++) {
     dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
@@ -79,18 +84,19 @@ namespace triqs { namespace gf { namespace local { namespace matsubara {
 
  //---------------------------------------------------------------------------
 
- gf_imtime fourier_inverse (gf_imfreq const & gw) { 
+ gf<matsubara_time> fourier_inverse (gf<matsubara_freq> const & gw) { 
 
   static bool Green_Function_Are_Complex_in_time = false;
 
-  auto ta = gw(domains::freq_infty());
-  meshes::matsubara_time res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
-  gf_imtime gt ( gw.shape(), res_mesh, ta); 
+  auto ta = gw(freq_infty());
+  matsubara_time::mesh_t res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
+  gf<matsubara_time> gt (  res_mesh,gw.shape(), ta); 
 
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);
   tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out (gt.mesh().size()); 
-
+  
+  using namespace impl_local_matsubara;
   for (int n1=0; n1<gt.shape()[0];n1++)
    for (int n2=0; n2<gt.shape()[1];n2++) {
     dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
@@ -115,7 +121,10 @@ namespace triqs { namespace gf { namespace local { namespace matsubara {
     double fact = (Green_Function_Are_Complex_in_time ? 1 : 2);
     g_out = g_out*(fact/Beta);
 
-    typedef typename gf_imtime::mesh_type::gf_result_type gt_result_type;
+    // CORRECT FOR COMPLEX G(tau) !!!
+    typedef double gt_result_type;
+    //typedef boost::mpl::if_<gt_result_type;
+    //typedef typename gf<matsubara_time>::mesh_type::gf_result_type gt_result_type;
     if (gw.domain().statistic == Fermion){
      for (auto & t : gt.mesh()) 
       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)*exp(-I*Pi*t/Beta) + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
@@ -128,5 +137,5 @@ namespace triqs { namespace gf { namespace local { namespace matsubara {
   return gt;
  }
 
-}}}}
+}}
 

@@ -21,18 +21,15 @@
 #ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
 #define TRIQS_GF_LOCAL_FOURIER_MATSU_H
 
-#include "./gf.hpp"
+#include <triqs/gf/descriptors/matsubara_freq.hpp> 
+#include <triqs/gf/descriptors/matsubara_time.hpp> 
 
-namespace triqs { namespace gf { namespace local { namespace matsubara { 
+namespace triqs { namespace gf { 
 
-typedef gf<meshes::matsubara_freq> gf_imfreq;
-typedef gf<meshes::matsubara_time> gf_imtime;
+gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt);
+gf<matsubara_time> fourier_inverse (gf<matsubara_freq> const & gw);
 
-gf_imfreq fourier_direct (gf_imtime const & gt);
-gf_imtime fourier_inverse (gf_imfreq const & gw);
-
-}}}}
-
+}}
 #endif
 
 

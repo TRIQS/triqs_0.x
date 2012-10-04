@@ -21,7 +21,8 @@
 ################################################################################
 
 __all__ = ['GFBloc_ImFreq']
-from pytriqs_GF2 import GF_Statistic,TailGF,MeshMatsubaraFrequency
+#from pytriqs_GF3 import GF_Statistic,TailGF,MeshMatsubaraFrequency
+
 from _GFBloc_base_data_tail import _GFBloc_base_data_tail
 from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
@@ -31,10 +32,9 @@ from math import pi
 #  Code Injection
 #-----------------------------------------------------
 
-from pytriqs.Base.Utility.Injector import make_injector        # inject new code in the SAME class  
-from pytriqs_GF2 import GFBloc_ImFreq     # the wrapped C++ class.
+from pytriqs_GF3 import GFBloc_ImFreq_c, MeshMatsubaraFrequency     # the wrapped C++ class.
 
-class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base_data_tail, GFBloc_ImFreq):
+class GFBloc_ImFreq (GFBloc_ImFreq_c, _GFBloc_concept_impl, _GFBloc_base_data_tail):
     """ 
     A matrix-valued block Green's function in Matsubara frequencies.
     """
@@ -77,16 +77,18 @@ class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d['Beta'])
             Nmax = d['NFreqMatsubara'] if 'NFreqMatsubara' in d else 1025
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
-            sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshMatsubaraFrequency(Beta,GF_Statistic.Fermion,Nmax)
+            stat = d['Statistic'] if 'Statistic' in d else 'F'# GF_Statistic.Fermion
+            sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
+            d['Mesh'] = MeshMatsubaraFrequency(Beta,'F',Nmax)
+            #d['Mesh'] = MeshMatsubaraFrequency(Beta,GF_Statistic.Fermion,Nmax)
             for a in [ 'Beta', 'Statistic', 'NFreqMatsubara'] : 
                 if a in d : del d[a]
 
-        self._init_base__(d)
-        self._init_before_injection__(*self._param_for_cons)
+        _GFBloc_base_data_tail.__init__(self,d)
+        #self._init_before_injection__(*self._param_for_cons)
+        GFBloc_ImFreq_c.__init__(self,*self._param_for_cons)
         del self._param_for_cons
-
+    
     #-----------------------------------------------------
 
     def _plot_(self, OptionsDict):
@@ -95,7 +97,8 @@ class __inject (make_injector(GFBloc_ImFreq), _GFBloc_concept_impl, _GFBloc_base
              * :param x_window: (xmin,xmax) or None [default]
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        M = [self._mesh.get_point(i).imag for i in range(self._mesh.size())]
+        M = [x.imag for x in self._mesh]        
+        #M = [self._mesh.get_point(i).imag for i in range(self._mesh.size())]
         return self._plot_base( OptionsDict,  r'$\omega_n$', lambda name : r'%s$(i\omega_n)$'%name, True, M)
     
     #-----------------------------------------------------

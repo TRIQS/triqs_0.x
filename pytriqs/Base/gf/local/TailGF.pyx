@@ -19,38 +19,47 @@
 #
 ################################################################################
 
-__all__ = ['TailGF']
-from pytriqs_GF3 import TailGF_c
+#__all__ = ['TailGF']
+
+# avec clang
+#  -Wno-reserved-user-defined-literal ou alors le dernier cython...
+
+#from pytriqs_GF2 import TailGF
 import numpy
 import string
-from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
+from ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
+#from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 
-class TailGF (TailGF_c):
-    """ 
+cdef class TailGF2 :
     """
-    
+    SOME DOC goes here ....
+    """
+    cdef tail_view * _c
+    cdef _indL, _indR, __data_array, _omin
+
     def __init__(self, **d):
         """
         """
         self._indL, self._indR = d['IndicesL'], d['IndicesR']
         N1,N2 = len(self._indL), len(self._indR)
-        self.__data_array = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size'])  ,numpy.complex) #,order='F')
+        self.__data_array = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size']),numpy.complex,order='F') 
         self._omin = d['OrderMin']
-        TailGF_c.__init__(self,self.__data_array,self._omin)
+        self._c = new tail_view( array_view[dcomplex,THREE](self.__data_array), self._omin)
+    
+    def __dealloc__(self):
+        del self._c
 
     def _make_slice(self, sl1, sl2):
-        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self.__data_array[sl1,sl2,:], OrderMin = self._omin)
-        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.__data_array[sl1,sl2,:]), OrderMin = self._omin)
+        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.__data_array[sl1,sl2,:]), OrderMin = self._omin)
 
-    def copy(self) : 
-        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
-        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='C'), OrderMin = self._omin)
+    def copy(self) :
+        """makes a new copy"""
+        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
 
     # Should I do more compatibility checks?
     def copyFrom(self, T) : 
         self._omin = T._omin
-        self.__data_array = T.__data_array.copy(order='C')
-        #self.__data_array = T.__data_array.copy(order='F')
+        self.__data_array = T.__data_array.copy(order='F')
  
     def __repr__ (self) :
         return string.join([ "%s"%self[r].array + (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
@@ -83,8 +92,8 @@ class TailGF (TailGF_c):
     def _data(self) : 
         return ArrayViewWithIndexConverter(self.__data_array, self._indL, self._indR, None)
 
-    @_data.setter
-    def _data(self, value) : self.__data_array[:,:,:] = value 
+    #@_data.setter
+    #def _data(self, value) : self.__data_array[:,:,:] = value 
  
     #-----------------------------------------------------
 
@@ -175,6 +184,6 @@ class TailGF (TailGF_c):
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (TailGF)
+#from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
+#register_class (TailGF)
 

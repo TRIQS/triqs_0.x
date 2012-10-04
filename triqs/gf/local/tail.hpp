@@ -20,18 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_LOCAL_TAIL_H
 #define TRIQS_GF_LOCAL_TAIL_H
-#include <triqs/clef/core.hpp>
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/utility/proto/tools.hpp>
-#include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include "triqs/utility/complex_ops.hpp"
-#include <triqs/utility/view_tools.hpp>
-
-#include "../meshes.hpp"
-#include "../domains.hpp"
+#include "../tools.hpp"
 
 namespace triqs { namespace gf { namespace local {
 
@@ -59,7 +48,8 @@ namespace triqs { namespace gf { namespace local {
    typedef tail_view view_type;
    typedef tail      non_view_type;
    
-   typedef arrays::Option::Fortran storage_order;
+   typedef arrays::Option::C storage_order;
+   //typedef arrays::Option::Fortran storage_order;
    typedef arrays::array      <dcomplex,3,storage_order>                         data_non_view_type;
    typedef arrays::array_view <dcomplex,3,storage_order>                         data_view_type;
    typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
@@ -77,6 +67,8 @@ namespace triqs { namespace gf { namespace local {
    typedef tqa::mini_vector<size_t,2> shape_type;
    shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);} 
 
+   bool is_decreasing_at_infinity() const { return (order_min() >=1);}
+   
   protected:
    int omin;
    data_type data;
@@ -117,7 +109,7 @@ namespace triqs { namespace gf { namespace local {
     return this->data(tqa::range(), tqa::range(), n- this->order_min());
    }
 
-   operator domains::freq_infty() const { return domains::freq_infty();}
+   operator freq_infty() const { return freq_infty();}
 
    /// Save in txt file : doc the format  ? ---> prefer serialization or hdf5 !
    void save(std::string file,  bool accumulate=false) const {}
@@ -176,7 +168,9 @@ namespace triqs { namespace gf { namespace local {
   typedef tail_impl <false>  B;
   public : 
   tail():B() {} 
-  tail(size_t N1, size_t N2,  int order_min, size_t size_ ):B(N1,N2,order_min,size_) {} 
+  typedef tqa::mini_vector<size_t,2> shape_type;
+  tail(size_t N1, size_t N2,  int order_min=-1, size_t size_ =5):B(N1,N2,order_min,size_) {} 
+  tail(shape_type const & sh,  int order_min=-1, size_t size_=5 ):B(sh[0],sh[1],order_min,size_) {} 
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){} 
   template<typename GfType> tail(GfType const & x): B() { *this = x;} // to maintain value semantics
@@ -193,7 +187,7 @@ namespace triqs { namespace gf { namespace local {
  };
 
  /// Slice in orbital space
- template<bool V> tail_view slice(tail_impl<V> const & t, tqa::range R1, tqa::range R2) { 
+ template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) { 
   return tail_view(t.data_view()(R1,R2,tqa::range()),t.order_min());
  } 
 
@@ -261,7 +255,8 @@ namespace triqs { namespace gf { namespace local {
     for (int n=1; n< t_inv.size();n++) {
      // 0<= n-p < t.size() ---> p <= n, ok  and p > n- t.size() 
      const int pmin = std::max(0, n - int(t.size()) +1 );
-     for (int p=pmin; p< n ; p++) { t_inv(omin + n) -= t_inv(omin + p)*t(t.order_min() + n-p); }
+     // workaround on the bug on calling lapack with views ....
+     for (int p=pmin; p< n ; p++) { t_inv(omin + n) -= triqs::arrays::matrix<std::complex<double> >(t_inv(omin + p)*t(t.order_min() + n-p)); }
      t_inv(omin + n) *= t_inv(omin);
     }
    }

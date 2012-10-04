@@ -24,7 +24,8 @@ r""" """
 
 import numpy
 from math import *
-from pytriqs_GF2 import GF_Statistic,TailGF,MeshMatsubaraFrequency, MeshRealFrequency
+from pytriqs_GF3 import MeshMatsubaraFrequency #, MeshRealFrequency
+from TailGF import TailGF
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
@@ -72,8 +73,8 @@ class Function (Base):
     def __call__(self,G) :
         if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
         res = G._data.array[:,:,:]
-        try : 
-            for n in range(G._mesh.size()) : res[:,:,n] = self.F(G._mesh.get_point(n))
+        try :
+            for n,om in enumerate(G._mesh) : res[:,:,n] = self.F(om)
         except :
             raise RuntimeError, "The given function has a problem..."
         if self.Tail : G._tail.copyFrom(self.Tail)

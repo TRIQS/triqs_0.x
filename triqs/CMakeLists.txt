@@ -27,8 +27,10 @@ SET (ALLSOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/legendre_matsubara.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/MeshGF.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/TailGF.cpp
+
  ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_base.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_matsubara.cpp
+ ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/density.cpp
 
 )
 

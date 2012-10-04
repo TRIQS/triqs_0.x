@@ -20,7 +20,8 @@
 #
 ################################################################################
 
-from pytriqs_GF2 import GF_Statistic,TailGF
+#from pytriqs_GF2 import GF_Statistic,TailGF
+from TailGF import TailGF 
 from pytriqs.Base.Utility.myUtils import *
 import numpy
 from types import *
@@ -31,7 +32,7 @@ from pytriqs.Base.Plot.protocol import clip_array
 
 class _GFBloc_base_data_tail  :
     
-    def _init_base__(self,d) :
+    def __init__(self,d) :
         if 'Indices' in d: 
             indL = list(d.pop('Indices') )
             indR = indL
@@ -51,7 +52,7 @@ class _GFBloc_base_data_tail  :
         if not self._tail : self._tail = TailGF(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
 
         self.__data_raw = d.pop('Data', None)
-        if self.__data_raw == None: self.__data_raw = numpy.zeros((len(indL),len(indR),d['Mesh'].size()), numpy.complex, order='F')
+        if self.__data_raw == None: self.__data_raw = numpy.zeros((len(indL),len(indR),len(d['Mesh'])), numpy.complex) #, order='F')
 
         self._mesh = d.pop('Mesh')
         self.Name = d.pop('Name','g')
