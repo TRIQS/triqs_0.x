@@ -80,7 +80,9 @@ namespace triqs { namespace arrays {
      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
      const_qcache<M_type> Cm(rhs.M); const_qcache<V_type> Cv(rhs.V);
      resize_or_check_if_view(lhs,make_shape(rhs.size()));
-     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0, lhs);
+     reflexive_qcache<LHS> Clhs(lhs); 
+     typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0,target);
     }
 
    template<typename LHS> 
@@ -93,7 +95,9 @@ namespace triqs { namespace arrays {
     static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
     if (lhs.size() != size()) TRIQS_RUNTIME_ERROR<< "mat_vec_mul : -=/-= operator : size mismatch in M*V "<< lhs.size()<<" vs "<< size(); 
     const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
-    boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), S, lhs);
+    reflexive_qcache<LHS> Clhs(lhs); 
+    typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+    boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), S, target);
    }
    friend std::ostream & operator<<(std::ostream & out, mat_vec_mul_lazy const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
   };

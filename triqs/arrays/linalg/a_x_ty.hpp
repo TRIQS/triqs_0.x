@@ -67,16 +67,17 @@ namespace triqs { namespace arrays {
      const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
      resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
      lhs()=0;
-     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),lhs);
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
     }
 
    //Optimized implementation of +=
    template<typename LHS> 
     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'A'>) {
-     //std::cerr<<" Using optimized += for  a_x_ty_lazy"<< std::endl;
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
      const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
-     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),lhs);
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
     }
 
    //Optimized implementation of -=
@@ -84,7 +85,8 @@ namespace triqs { namespace arrays {
     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'S'>) { 
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
      const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
-     boost::numeric::bindings::blas::ger(-rhs.a, Cx(), Cy(),lhs);
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(-rhs.a, Cx(), Cy(),target);
     }
 
    friend std::ostream & operator<<(std::ostream & out, a_x_ty_lazy const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
