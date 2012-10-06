@@ -26,7 +26,7 @@
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
 #include <iostream>
-#include <triqs/arrays/impl/asserts.hpp>
+#include <triqs/arrays/asserts.hpp>
 
 
 using namespace triqs::arrays;

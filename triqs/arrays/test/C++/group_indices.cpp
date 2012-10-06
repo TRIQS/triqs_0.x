@@ -4,7 +4,7 @@
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/proto/array_algebra.hpp>
 #include <triqs/clef/adapters/array.hpp>
-#include <triqs/arrays/impl/asserts.hpp>
+#include <triqs/arrays/asserts.hpp>
 
 /*
    struct to_vec_ {

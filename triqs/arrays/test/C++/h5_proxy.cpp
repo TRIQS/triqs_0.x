@@ -23,7 +23,7 @@
 #include "./src/h5/array_proxy.hpp"
 #include "./src/h5/simple_read_write.hpp"
 #include <iostream>
-#include "./src/impl/asserts.hpp"
+#include "./src/asserts.hpp"
 
 
 using namespace triqs::arrays;

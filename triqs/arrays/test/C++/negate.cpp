@@ -34,7 +34,7 @@ using namespace storages;
 #include "./src/proto/array_algebra.hpp"
 #include "./src/proto/matrix_algebra.hpp"
 #include <boost/proto/debug.hpp>
-#include "./src/impl/asserts.hpp"
+#include "./src/asserts.hpp"
 #include "./src/algorithms.hpp"
 #include "./src/mapped_functions.hpp"
 

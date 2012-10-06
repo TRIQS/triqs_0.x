@@ -23,7 +23,7 @@
 #include "./src/array.hpp"
 #include "./src/matrix.hpp"
 #include <iostream>
-#include "./src/impl/asserts.hpp"
+#include "./src/asserts.hpp"
 
 
 using namespace triqs::arrays;
