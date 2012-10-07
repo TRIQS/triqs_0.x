@@ -107,9 +107,9 @@ public :
       r2 *= dets_save[a]->determinant();
     }		
     r1 /=r2;
-    //double detratio =  (isfinite(real(r1)) ? real(r1) : 0); //+ I* (isfinite(imag(r1)) ? imag(r1) : 0);
+    //double detratio =  (std::isfinite(real(r1)) ? real(r1) : 0); //+ I* (std::isfinite(imag(r1)) ? imag(r1) : 0);
     // CHANGE Double to the type of determinant to be computed from the class !!!
-    double detratio =  (isfinite((r1)) ? (r1) : 0); //+ I* (isfinite(imag(r1)) ? imag(r1) : 0);
+    double detratio =  (std::isfinite((r1)) ? (r1) : 0); //+ I* (std::isfinite(imag(r1)) ? imag(r1) : 0);
 
 #ifdef DEBUG
     cout<<"About to print"<<endl;
