@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -45,7 +44,8 @@ def oplot (*ob_list, **OptionsDict) :
     """
     plt.figure(1, figsize = OptionsDict.pop('figsize', figsize_default ) )
     __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**OptionsDict)
-    if hasattr(plt.figure(1), "show") : plt.figure(1).show()
+    # remove this in the notebook...
+    #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
 
 mpl.axes.Axes.oplot = lambda self, *ob_list, **OptionsDict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**OptionsDict)
 
@@ -91,83 +91,4 @@ def __oplot_impl (plotFnt,xlabelFnt, ylabelFnt, legendFnt, *ob_list, **OptionsDi
 def use_amsmath():
   rc('text', usetex=True)
   rc('text.latex', preamble="\usepackage{amsmath}")
-
-
-#------------------- OBSOLETE ?? ------------------------
-
-class Plotter_OneGraph (object): 
-    """ This is one of the plots appearing in the Plotter figure. """
-    def __init__(self, *coord) :
-        """ Constructs the graph at coordinate (i,j) in the panel """
-        self.coord = coord
-        for method in ['axis','xlim','ylim','grid','text','draw','setp', 'xlabel', 'ylabel'] : 
-            setattr(self,method, getattr(plt,method))
-        plt.subplot(*coord)
-
-    def _focuss(self) : 
-        plt.subplot(*self.coord)
-        return self
-
-    def apply(self, F) : 
-        """ Apply x,y -> x, F(x,y) to all datas"""
-        plt.subplot(*self.coord)
-        for line in self.gca().get_lines():
-            X,Y = line.get_data()
-            line.set_data(*F(X,Y))
-
-    def clear(self):
-        """ Clear the graph """
-        plt.subplot(*self.coord).clear()
-
-    def plot(self, *args, **kwargs) :
-        """ 
-        Focuss on this graph and call the plot function
-        """
-        plt.subplot(*self.coord)
-        plot(*args, **kwargs)
-
-#############################
-
-class Plotter(object) :
-    """ 
-       A quick interface to a multiple matplotlib figure.
-
-       Each graph is an instance of a *Plotter_OneGraph* and can be accessed with the brackets: 
-       
-       * self [i] is the i-th graph. 
-       * self [i,j] is the graph on row i, col j.
-     """
-
-    def __init__(self, MultiGraph=(1,1)) :
-        """
-        Starts the plotter and open a window with the figure.
-        :param MultiGraph: a tuple (n,m) defining how many graphs are in the plot (n rows, m columns).
-       """
-        for method in ['savefig','xlim','ylim','grid','text','draw','setp']: setattr(self,method, getattr(plt,method))
-        self.__Commands = []
-        plt.figure(1, figsize = (12,8))
-        self.plt = plt
-        self._grid = MultiGraph
-        self.__graphlist = []
-        n=1
-        for i in range (self._grid[0]):
-            for j in range (self._grid[1]):
-                self.__graphlist.append(Plotter_OneGraph ( self._grid[0],self._grid[1], n))
-                n += 1
-        plt.figure(1).show()
-
-    def __getitem__( self, item ):
-        """Access a specific graph.  Can use either p[num] or p[row, col]."""
-        def convert(i,j):
-            if i >= self._grid[0] or j >= self._grid[1]:
-                raise IndexError, 'graph index out of range'
-            return i*self._grid[1] + j
-
-        if type(item) == type(1):
-            return self.__graphlist[item]._focuss()
-        elif type(item) == type( () ) and len(item) <= 2:
-            return self.__graphlist[convert(item[0],item[1])]._focuss()
-        else:
-            raise TypeError, 'graph index must be integer or two integers'
-
 
