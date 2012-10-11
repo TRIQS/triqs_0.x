@@ -93,6 +93,19 @@ namespace triqs { namespace arrays {
     return fs.str();
    }
 
+   mini_vector<T, Rank+1> append (T const & x) const { 
+    mini_vector<T, Rank+1> res;
+    for (int i=0;i<Rank; ++i)  res[i]=_data[i];
+    res[Rank] = x;
+    return res;
+   }
+
+   mini_vector<T, Rank-1> pop () const { 
+    mini_vector<T, Rank-1> res;
+    for (int i=0;i<Rank-1; ++i)  res[i]=_data[i];
+    return res;
+   }
+
    friend std::ostream & operator << ( std::ostream & out, mini_vector const & v ) {return out<<v.to_string();}
    friend std::stringstream & operator << ( std::stringstream & out, mini_vector const & v ) { out<<v.to_string(); return out;}
   }; // class mini_vector
@@ -104,6 +117,14 @@ namespace triqs { namespace arrays {
   }
 
  template <typename T, int R> bool operator !=(mini_vector<T,R> const & v1, mini_vector<T,R> const & v2) { return (!(v1==v2));}
+
+ template <typename T, int R1, int R2> 
+  mini_vector<T, R1+R2> join (mini_vector<T,R1> const & v1, mini_vector<T,R2> const & v2) {
+   mini_vector<T, R1+R2> res;
+   for (int i=0;i<R1; ++i)  res[i]=v1[i];
+   for (int i=0;i<R2; ++i)  res[R1+i]=v2[i];
+   return res;
+  }
 
  template <typename T1, typename T2, int Rank> 
   T1 dot_product(mini_vector<T1,Rank> const & v1, mini_vector<T2,Rank> const & v2) {
@@ -159,6 +180,8 @@ namespace triqs { namespace arrays {
  { return mini_vector<T,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
  BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
 #undef IMPL
+// template<typename T0, typename... T> 
+//  mini_vector<T0, sizeof...(T)+1> make_shape(T0 x0, T... args) { return  mini_vector<T0, sizeof...(T)+1> (x0,args...);}
 
 }}//namespace triqs::arrays 
 #endif
