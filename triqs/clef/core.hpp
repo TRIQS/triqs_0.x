@@ -144,9 +144,11 @@ namespace triqs { namespace clef {
  template <typename T, typename Void =void> struct is_custom_lazy_expression : mpl::false_{};
  template <typename T> struct is_custom_lazy_expression<T, typename T::__triqs_nvl_is_expression_tag> : mpl::true_{};
 
- template <typename T> struct is_lazy : mpl::or_<is_custom_lazy_expression<T>, is_placeholder<T> > {};
+ template <typename T> struct is_lazy : mpl::or_<is_custom_lazy_expression<T>, is_placeholder< T> > {};
  template <> struct is_lazy<void> : mpl::false_ {}; 
  template <typename T> struct is_lazy< FntExpr<T> > : mpl::true_ {};
+ template <typename T> struct is_lazy< T&& > : is_lazy<T> {};
+ template <typename T> struct is_lazy< T& > : is_lazy<T> {};
 
  template<typename T> struct is_not_lazy : mpl::not_< is_lazy <T> > {}; 
 
@@ -694,7 +696,17 @@ namespace triqs { namespace clef {
   typename proto::result_of::as_expr<boost::reference_wrapper<T const> const ,FntDomain>::type 
   lazy(T const & x) { return proto::as_expr<FntDomain>(boost::cref(x));}
 
- namespace result_of {
+  template< typename Obj> struct lazy_call {
+   Obj const & obj; lazy_call(Obj const & obj_): obj(obj_) {}
+#define IMPL(z,N,unused)\
+  template< typename_A(N) >\
+  typename proto::result_of::make_expr< p_tag::function, FntDomain, typename proto::result_of::as_expr<Obj ,FntDomain>::type,_A_const_ref(N)>::type\
+  operator() (_A_const_ref_a(N) ) { return proto::make_expr<p_tag::function, FntDomain>(proto::as_expr<FntDomain>(obj),_a_(N));} 
+  BOOST_PP_REPEAT_FROM_TO(1,TRIQS_CLEF_MAXNARGS, IMPL, nil);
+#undef IMPL
+  };
+ 
+  namespace result_of {
 
   template< typename Obj, typename Arg > struct subscript_enabled_if_arg_is_lazy : 
    enable_if< is_lazy<Arg> , 
@@ -710,8 +722,15 @@ namespace triqs { namespace clef {
   typename proto::result_of::make_expr< p_tag::function, FntDomain, typename proto::result_of::as_expr<Obj ,FntDomain>::type,_A_const_ref(N)>::type\
   >{};
   BOOST_PP_REPEAT_FROM_TO(1,TRIQS_CLEF_MAXNARGS, IMPL, nil);
-
 #undef IMPL
+
+  // not ok on 4.6
+  /*template< typename Obj, typename... Args >
+  struct call_enabled_if_one_arg_is_lazy_v: enable_if< one_is_lazy<Args...>,
+  typename proto::result_of::make_expr< p_tag::function, FntDomain, typename proto::result_of::as_expr<Obj ,FntDomain>::type,Args const & ...>::type
+  >{};
+ */
+ 
  }
 }} //  namespace triqs::clef
 /* *****************************************************************************************
