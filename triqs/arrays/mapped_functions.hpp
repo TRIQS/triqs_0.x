@@ -68,6 +68,38 @@ namespace triqs { namespace arrays {
 #undef AUX  
 #undef MAP_IT
 
+
+ using std::real;
+ struct real_wrap { 
+   template<typename Sig> struct result;
+   template<typename This, typename A> struct result<This(A)> { typedef A type;};
+   template<typename This, typename A> struct result<This(std::complex<A>)> { typedef A type;};
+   static const int arity =1;
+   //   template<typename A> auto operator()( A const & a) const -> decltype(real(a)) { return real(a);}
+   template<typename A> typename result<real_wrap(A)>::type operator()( A const & a) const { return real(a);}
+ };
+
+ template <typename A>
+  //auto real(A const & a) -> decltype( map(real_wrap())(a)) { return map(real_wrap())(a); }
+  //  typename std::result_of<map(real_wrap)(A)>::type real(A const & a) { return map(real_wrap())(a); }
+  typename boost::result_of<map_impl<real_wrap>(A)>::type real(A const & a) { return map(real_wrap())(a); }
+ 
+ using std::imag;
+ struct imag_wrap { 
+   template<typename Sig> struct result;
+   template<typename This, typename A> struct result<This(A)> { typedef A type;};
+   template<typename This, typename A> struct result<This(std::complex<A>)> { typedef A type;};
+   static const int arity =1;
+   //   template<typename A> auto operator()( A const & a) const -> decltype(imag(a)) { return imag(a);}
+   template<typename A> typename result<imag_wrap(A)>::type operator()( A const & a) const { return imag(a);}
+ };
+
+ template <typename A>
+  //auto imag(A const & a) -> decltype( map(imag_wrap())(a)) { return map(imag_wrap())(a); }
+  //  typename std::result_of<map(imag_wrap)(A)>::type imag(A const & a) { return map(imag_wrap())(a); }
+  typename boost::result_of<map_impl<imag_wrap>(A)>::type imag(A const & a) { return map(imag_wrap())(a); }
+
+
 }}//namespace triqs::arrays 
 #endif
 

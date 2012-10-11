@@ -27,14 +27,14 @@
 
 namespace tqa = triqs::arrays;
 
-template<typename T> void test() { 
+template<typename T> void test( T val=1 ) { 
  tqa::matrix<T, tqa::Option::Fortran > A(3,3),B(3,3);
- A() = -2;
 
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
-  { A(i,j) = i+2*j+1; B(i,j) = i-j;}
+  { A(i,j) = (i+2*j+1); B(i,j) = (i-j);}
 
+ A *=val; B*=val;
  T s = 10;
  TEST(A);
  TEST(make_matrix(pow(A,2)));
@@ -46,6 +46,9 @@ template<typename T> void test() {
  TEST(make_matrix(A+ s*B));
  TEST(make_matrix(abs(A+s*B)));
 
+ TEST(make_matrix(real(B)));
+ TEST(make_matrix(imag(B)));
+
 }
 
 int main(int argc, char **argv) {
@@ -54,7 +57,8 @@ int main(int argc, char **argv) {
  test<int>();
  test<long>();
  test<double>();
- test<std::complex<double> >();
+ test<std::complex<double> > ();
+ test<std::complex<double> > (std::complex<double>(-2,3));
 
  return 0;
 }
