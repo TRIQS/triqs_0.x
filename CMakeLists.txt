@@ -213,7 +213,7 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "TRIQS_${CPACK_PACKAGE_VERSION_MAJOR}.${CPAC
 SET(CPACK_STRIP_FILES "bin/pytriqs")
 SET(CPACK_SOURCE_STRIP_FILES "")
 SET(CPACK_PACKAGE_EXECUTABLES "pytriqs" "pytriqs")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "openmpi-bin(>=1.4), libblas-dev (>=1.2), ipython (>=0.12), libfftw3-dev (>=3.2), hdf5-tools (>=1.8) ")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "openmpi-bin(>=1.4), libblas-dev (>=1.2), ipython (>=0.12), libfftw3-dev (>=3.2), hdf5-tools (>=1.8), python-matplotlib (>=1.1) ")
 SET(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CMAKE_CURRENT_BINARY_DIR}/prerm;${CMAKE_CURRENT_BINARY_DIR}/postinst)
 IF(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  SET(CPACK_GENERATOR TGZ DEB)
