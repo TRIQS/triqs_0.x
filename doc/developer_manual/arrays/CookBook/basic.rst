@@ -9,7 +9,7 @@ Declaring and printing an array
 .. compileblock:: 
 
  
-    #include <triqs/arrays/array.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
        tqa::array<double,1> A(20);
@@ -27,8 +27,7 @@ Simple operations
 
 .. compileblock:: 
 
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/arrays/proto/array_algebra.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
       tqa::array<double,1> A(10),B(10);
@@ -42,8 +41,7 @@ Simple functions
 -------------------
 .. compileblock:: 
 
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/arrays/proto/array_algebra.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
       tqa::array<double,1> A(10),B(10);
@@ -58,8 +56,7 @@ Archiving an array into an HDF5 file is easy:
 
 .. compileblock::
 
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/arrays/h5/simple_read_write.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
     
@@ -100,11 +97,7 @@ Arrays must be distinguished from vectors and matrices, which have an algebra of
 
 .. compileblock::
     
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/arrays/matrix.hpp>
-    #include <triqs/arrays/vector.hpp>
-    #include <triqs/arrays/proto/array_algebra.hpp>
-    #include <triqs/arrays/proto/matrix_algebra.hpp>
+    #include <triqs/arrays.hpp>
 
     namespace tqa=triqs::arrays;
     int main(){
@@ -130,10 +123,7 @@ Defining through a lazy expression
 
 .. compileblock::
 
-    #include <triqs/clef/core.hpp>
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/clef/adapters/array.hpp>
-    
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays; namespace tql=triqs::clef;
  
     int main(){
@@ -150,12 +140,9 @@ Linear algebra
 
 .. compileblock::
 
-    #include <triqs/clef/core.hpp>
-    #include <triqs/arrays/matrix.hpp>
-    #include <triqs/arrays/array.hpp>
+    #include <triqs/arrays.hpp>
     #include <triqs/arrays/linalg/inverse.hpp>
     #include <triqs/arrays/linalg/determinant.hpp>
-    #include <triqs/clef/adapters/array.hpp>
     
     namespace tql=triqs::clef; namespace tqa=triqs::arrays;
     int main(){
@@ -178,8 +165,7 @@ Map and fold
 
 .. compileblock::
   
-    #include <triqs/arrays/array.hpp>
-    #include <triqs/arrays/proto/array_algebra.hpp>
+    #include <triqs/arrays.hpp>
     #include <triqs/arrays/functional/map.hpp>
     namespace tqa=triqs::arrays;
     
@@ -209,7 +195,7 @@ By default, there is no bound checking:
 
 .. compileblock::
 
-    #include <triqs/arrays/array.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
         tqa::array<double,2> A(2,2); A() = 3;   
@@ -221,7 +207,7 @@ But one can add bound-checking by adding a preprocessor command:
 .. compileblock::
 
     #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
-    #include <triqs/arrays/array.hpp>
+    #include <triqs/arrays.hpp>
     namespace tqa=triqs::arrays;
     int main(){
         tqa::array<double,2> A(2,2); A() = 3;   
@@ -230,4 +216,4 @@ But one can add bound-checking by adding a preprocessor command:
 
 
 
-
+  
