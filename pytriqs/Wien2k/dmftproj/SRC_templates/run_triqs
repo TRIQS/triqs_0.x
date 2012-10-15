@@ -154,7 +154,7 @@ while ($#argv)
     shift; set next  = $1; sb
 # QDMFT
   case -qdmft:
-    set qdmft=-qdmft; shift; set NSLOTS = $1; sb 
+    set qdmft=-qdmft; set NSLOTS = $1; sb 
 # END QDMFT
   case -hf:
     set hf = -hf; sb
@@ -464,11 +464,12 @@ if ( "$qdmft" == "-qdmft" ) then
   total_exec      lapw2 $para $vresp -almd $cmplx2 $so
   dmftproj $so                              # please check: $so can't be here
   # pytriqs call
-  printf "\n>   Insert a correct call of pytriqs (with mpi loader, if needed) in run_triqs Wien2k script!!\n"	>> $dayfile
+  printf "\n>   ERROR: Insert a correct call of pytriqs (with mpi wrapper, if needed) in run_triqs Wien2k script\n"	>> $dayfile
   printf "\n>   stop\n"			        >> $dayfile
-  printf "\n>   Insert a correct call of pytriqs (with mpi loader, if needed) in run_triqs Wien2k script!!\n"
+  printf "\n>   ERROR: Insert a correct call of pytriqs (with mpi wrapper, if needed) in run_triqs Wien2k script\n"
   exit 0
   # to call pytriqs uncomment and modify the line below to adapt it to your system
+  # the number of core is in NSLOTS variable
   #mpprun  --force-mpi=openmpi/1.3.2-i110074  /home/x_leopo/TRIQS_segment/triqs_install/bin/pytriqs $file.py 
   total_exec      lapw2 $para $vresp -qdmft $cmplx2 $so
 else
