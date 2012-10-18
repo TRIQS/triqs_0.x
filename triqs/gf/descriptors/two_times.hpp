@@ -18,8 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_2TIMES_H
-#define TRIQS_GF_2TIMES_H
+#ifndef TRIQS_GF_DESCRIPTOR_2TIMES_H
+#define TRIQS_GF_DESCRIPTOR_2TIMES_H
 #include "../tools.hpp"
 #include "../gf.hpp"
 #include "../gf_proto.hpp"
@@ -37,15 +37,14 @@ namespace triqs { namespace gf {
    typedef std::array<double,2> point_t; // a fixed size (2) array of double... name is unfortunate, everything is called array !
    double t_max; 
    domain_t (double t_max_) : t_max(t_max_) {} 
-   bool operator == (domain_t const & D) { return ((std::abs(t_max - D.t_max)<1.e-15) );}
+   bool operator == (domain_t const & D) const { return ((std::abs(t_max - D.t_max)<1.e-15) );}
   };
 
   /// The Mesh
   struct mesh_t {
    typedef two_times::domain_t         domain_t;
    typedef typename domain_t::point_t  point_t;
-   //typedef std::array<size_t,2> index_t; // again ...
-   typedef tqa::mini_vector<size_t,2> index_t; // again ...
+   typedef tqa::mini_vector<size_t,2>  index_t; 
 
    mesh_t (double t_max, size_t n_max) : _dom(t_max),L(n_max){}
    mesh_t () : _dom(1),L(0){}
@@ -64,23 +63,23 @@ namespace triqs { namespace gf {
 
    /// The wrapper for the mesh point
    struct mesh_point_t { 
-    mesh_t const & m; index_t index;
+    const mesh_t * m; index_t index;
 
     /// The wrapper for one component of the mesh point
     template<typename Order> struct component : arith_ops_by_cast<component<Order>, double>  { 
-     mesh_point_t const & p; 
-     component (mesh_point_t const & p_):p(p_){}
-     operator double() const { return p.m.index_to_point(p.index,Order());}
+     mesh_point_t const * p; 
+     component (mesh_point_t const & p_):p(&p_){}
+     operator double() const { return p->m->index_to_point(p->index,Order());}
     };
     component<zero_t> t0;
     component<one_t>  t1;
 
-    mesh_point_t(mesh_t const & m_, index_t index_ ) : m(m_), index(index_), t0(*this), t1(*this) { }
-    mesh_point_t(mesh_t const & m_) : m(m_), index{{0,0}}, t0(*this), t1(*this) { }
+    mesh_point_t(mesh_t const & m_, index_t index_ ) : m(&m_), index(index_), t0(*this), t1(*this) { }
+    mesh_point_t(mesh_t const & m_)                  : m(&m_), index(0,0),    t0(*this), t1(*this) { }
 
-    void advance() { ++index[0]; if (index[0]==m.L) { index[0]=0; ++index[1];}}
+    void advance() { ++index[0]; if (index[0]==m->L) { index[0]=0; ++index[1];}}
     typedef domain_t::point_t cast_t;
-    operator cast_t() const { return m.index_to_point(index);}
+    operator cast_t() const { return m->index_to_point(index);}
    };
 
    /// Accessing a point of the mesh
@@ -89,24 +88,27 @@ namespace triqs { namespace gf {
 
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
-   iterator begin() const { return iterator (*this);}
-   iterator end()   const { return iterator (*this, true);}
+   iterator begin() const { return iterator (this);}
+   iterator end()   const { return iterator (this, true);}
 
    /// Mesh comparison
-   friend bool operator == (mesh_t M1, mesh_t M2) { return ((M1._dom == M2._dom) && (M1.L ==M2.L) );}
+   friend bool operator == (mesh_t const & M1, mesh_t const & M2) { return ((M1._dom == M2._dom) && (M1.L ==M2.L) );}
 
    private:
    domain_t _dom;
    size_t L; 
   }; //end mesh_t
 
-  /// The Auxiliary data
-  typedef nothing auxiliary_data_t;
-
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
-//  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
+  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type                                       target_view_t;
+
+  /// 
+  typedef nothing singularity_t;
+
+  /// Symmetry
+  typedef nothing symmetry_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =2;
@@ -123,14 +125,12 @@ namespace triqs { namespace gf {
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !) 
     for (auto & p : mesh) {  
      //std::cout  << " rhs "<< rhs(p.t0,p.t1)<< std::endl;
-     //std::cout  << " p "<< p.index[0] << "  "<< p.index[1]<< std::endl;
-     target_view_t( data(tqa::range(),tqa::range(),p.m.index_to_linear(p.index))) = rhs(p.t0,p.t1); }
+     //std::cout  << " p "<< p.index[0] << "  "<< p.index[1]<< " linear = "<< p.m->index_to_linear(p.index)<< std::endl;
+     target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p.t0,p.t1); }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
    }
 
-  /// Name of the auxiliary data e.g. in hdf5
-  static std::string auxiliary_data_name() { return "tail";}
-
+  static std::string h5_name() { return "two_times";}
  };
 
  // -------------------------------   Expression template --------------------------------------------------

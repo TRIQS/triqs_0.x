@@ -34,11 +34,11 @@ namespace triqs { namespace gf {
 
   /// The domain
   struct domain_t {
-   typedef std::complex<double> point_t;
+   typedef double point_t;
    double beta;
    statistic_enum statistic;
    domain_t (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   bool operator == (domain_t const & D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
+   bool operator == (domain_t const & D) const { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
   /// The Mesh
@@ -58,26 +58,41 @@ namespace triqs { namespace gf {
    /// Conversions point <-> index <-> linear_index
    double index_to_point(index_t n) const {return _delta + n * beta_over_l;}
    size_t index_to_linear(index_t n) const { return n;}
-   index_t point_to_index (domain_t::point_t const & tau) const {index_t res =(size_t) floor( (tau.real()-_delta) / beta_over_l ); return res;} 
-   
+   index_t point_to_index (domain_t::point_t const & tau) const {index_t res =(size_t) floor( (tau - _delta) / beta_over_l ); return res;} 
+
    /// The wrapper for the mesh point
-   struct mesh_point_t : arith_ops_by_cast<mesh_point_t,  double > {
-    mesh_t const & m;  index_t index; mesh_point_t( mesh_t const & mesh, index_t const & index_=0): m(mesh), index(index_) {}
-    void advance() { ++index;}
-    typedef double cast_t;
-    operator cast_t() const { return m.index_to_point(index);} 
-   };
+   typedef mesh_point_t<mesh_t> mesh_point_t;
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this,i);}
 
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
-   iterator begin() const { return iterator (*this);}
-   iterator end()   const { return iterator (*this, true);}
+   iterator begin() const { return iterator (this);}
+   iterator end()   const { return iterator (this, true);}
 
    /// Mesh comparison
-   friend bool operator == (mesh_t M1, mesh_t M2) { return ((M1._dom == M2._dom) && (M1.n_time_slices_ ==M2.n_time_slices_) );}
+   friend bool operator == (mesh_t const& M1, mesh_t const &M2) { return ((M1._dom == M2._dom) && (M1.n_time_slices_ ==M2.n_time_slices_) );}
+
+   /// Write into HDF5
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_t const & m) {
+    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+    h5_write(gr,"Beta",m.domain().beta);
+    h5_write(gr,"Statistic",(m.domain().statistic==Fermion ? 'F' : 'B'));
+    h5_write(gr,"size",m.size());
+    h5_write(gr,"delta",m.delta());
+   }
+
+   /// Read from HDF5
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_t & m){
+    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+    size_t Nmax; double delta, beta; char statistic;
+    h5_read(gr,"Beta",beta);
+    h5_read(gr,"Statistic",statistic);
+    h5_read(gr,"size",Nmax);
+    h5_read(gr,"delta",delta);
+    m = mesh_t(beta,(statistic=='F' ? Fermion : Boson),Nmax,delta);
+   }
 
    private:
    domain_t _dom;
@@ -86,18 +101,22 @@ namespace triqs { namespace gf {
    double beta_over_l;
   }; // end mesh_t
 
-  /// The Auxiliary data
-  typedef local::tail   auxiliary_data_t;
-
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
-//  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
+  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type            target_view_t;
+
+  /// The tail
+  typedef local::tail   singularity_t;
+
+  /// Symmetry
+  typedef nothing symmetry_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
   /// All the possible calls of the gf
+  //ERROR : give a double and interpolate
   template<typename D, typename T>
    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data(arrays::range(), arrays::range(),n); } 
 
@@ -114,9 +133,7 @@ namespace triqs { namespace gf {
     // it uses the fact that tail_non_view_t can be casted into freq_infty 
    }
 
-  /// Name of the auxiliary data e.g. in hdf5
-  static std::string auxiliary_data_name() { return "tail";}
-
+  static std::string h5_name() { return "matsubara_time";}
  };
 
  // -------------------------------   Expression template --------------------------------------------------

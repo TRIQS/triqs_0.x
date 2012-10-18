@@ -30,6 +30,7 @@ SET (ALLSOURCES
 
  ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_base.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_matsubara.cpp
+ # ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/fourier_real.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/gf/local/density.cpp
 
 )

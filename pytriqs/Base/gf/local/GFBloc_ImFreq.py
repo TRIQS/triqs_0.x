@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,18 +20,11 @@
 ################################################################################
 
 __all__ = ['GFBloc_ImFreq']
-#from pytriqs_GF3 import GF_Statistic,TailGF,MeshMatsubaraFrequency
-
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
 from math import pi
-
-#-----------------------------------------------------
-#  Code Injection
-#-----------------------------------------------------
-
-from pytriqs_GF3 import GFBloc_ImFreq_c, MeshMatsubaraFrequency     # the wrapped C++ class.
+from pytriqs_GF3 import GFBloc_ImFreq_c, MeshMatsubaraFrequency  
+from _GFBloc_base_data_tail import _GFBloc_base_data_tail
+from _GFBloc_concept_impl import _GFBloc_concept_impl
 
 class GFBloc_ImFreq (GFBloc_ImFreq_c, _GFBloc_concept_impl, _GFBloc_base_data_tail):
     """ 

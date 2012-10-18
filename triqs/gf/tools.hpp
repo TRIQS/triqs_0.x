@@ -53,14 +53,18 @@ namespace triqs { namespace gf {
  //------------------------------------------------------
 
  struct nothing {
-  template<typename... Args> nothing(Args&&...) {} // takes anything, do nothing...
+  template<typename... Args> nothing(Args...) {} // takes anything, do nothing..
+  nothing() {}
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing non_view_type;
+   
+  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
+  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
  }; 
 
  //------------------------------------------------------
- 
+
  // Derive from this object using CRTP to provide arithmetic operation by casting the final object to C 
  template<typename Derived, typename C> struct arith_ops_by_cast {};
 #define IMPL_OP(OP)\
@@ -73,21 +77,60 @@ namespace triqs { namespace gf {
 
  //------------------------------------------------------
 
+ /// The wrapper for the mesh point
+ template<typename MeshType>
+  struct mesh_point_t : arith_ops_by_cast<mesh_point_t<MeshType>, typename MeshType::domain_t::point_t  > {
+   typedef MeshType mesh_t;
+   mesh_t const * m;  
+   typename mesh_t::index_t index; 
+   mesh_point_t( mesh_t const & mesh, typename mesh_t::index_t const & index_=0): m(&mesh), index(index_) {}
+   void advance() { ++index;}
+   operator typename MeshType::domain_t::point_t () const { return m->index_to_point(index);} 
+  };
+
+ //------------------------------------------------------
+ /*
+ /// The wrapper for the mesh point
+ template<typename MeshType>
+  struct mesh_point_N_t { 
+   typedef MeshType mesh_t;
+   const mesh_t * m; 
+   typename mesh_t::index_t index;
+
+   /// The wrapper for one component of the mesh point
+   template<typename Order> struct component : arith_ops_by_cast<component<Order>, double>  { 
+    mesh_point_N_t const * p; 
+    component (mesh_point_t const & p_):p(&p_){}
+    operator double() const { return p.m->index_to_point(p->index,Order());}
+   };
+   component<zero_t> _0;
+   component<one_t>  _1;
+
+   mesh_point_t(mesh_t const & m_, index_t index_ ) : m(&m_), index(index_), t0(*this), t1(*this) { }
+   mesh_point_t(mesh_t const & m_) : m(&m_), index{{0,0}}, t0(*this), t1(*this) { }
+
+   void advance() { ++index[0]; if (index[0]==m->L) { index[0]=0; ++index[1];}}
+   operator typename MeshType::domain_t::point_t() const { return m->index_to_point(index);}
+  };
+  */
+ //------------------------------------------------------
+
  template<typename MeshType>
   class mesh_pt_generator : 
    public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t const &, boost::forward_traversal_tag, 
    typename MeshType::mesh_point_t const & > {
     friend class boost::iterator_core_access;
-    MeshType const & mesh;
+    MeshType const * mesh;
     size_t u;
     typename MeshType::mesh_point_t pt;
-    void increment() { ++u; pt.advance();}
     typename MeshType::mesh_point_t const & dereference() const { return pt;}
-    bool equal(mesh_pt_generator const & other) const { return ((&mesh == &other.mesh) && (other.u==u) );}
+    bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
     public:
-    mesh_pt_generator( MeshType const & m, bool atEnd = false): mesh(m), u(atEnd ? m.size(): 0), pt(m) {}
-    bool at_end() const { return (u==mesh.size());}
-    typename MeshType::mesh_point_t::cast_t  to_point() const { return pt;}    
+    mesh_pt_generator( MeshType const * m=NULL, bool atEnd = false): mesh(m), u(atEnd ? m->size(): 0), pt(*m) {}
+    //~mesh_pt_generator() { std::cout  << "deleting generator" << std::endl; }
+    void increment() { ++u; pt.advance(); }
+    bool at_end() const { return (u>=mesh->size()-1);}
+    typename MeshType::domain_t::point_t to_point() const { return pt;}    
    };
 }}
 #endif

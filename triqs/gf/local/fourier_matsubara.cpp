@@ -22,7 +22,6 @@
 #include "fourier_base.hpp"
 #include <fftw3.h>
 
-
 namespace triqs { namespace gf { 
 
  namespace impl_local_matsubara {
@@ -42,7 +41,8 @@ namespace triqs { namespace gf {
 
   auto ta = gt(freq_infty());
   matsubara_freq::mesh_t res_mesh(gt.domain().beta, gt.domain().statistic, gt.mesh().size());
-  gf<matsubara_freq> gw (  res_mesh, gt.shape(),ta); 
+  auto gw = make_gf(matsubara_freq(), res_mesh, gt.shape(),ta); 
+  //gf<matsubara_freq> gw (  res_mesh, gt.shape(),ta); 
  
   long numberTimeSlices = gt.mesh().size();
   double Beta = gt.domain().beta, Pi = std::acos(-1);
@@ -90,7 +90,8 @@ namespace triqs { namespace gf {
 
   auto ta = gw(freq_infty());
   matsubara_time::mesh_t res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
-  gf<matsubara_time> gt (  res_mesh,gw.shape(), ta); 
+  auto gt = make_gf(matsubara_time(), res_mesh, gw.shape(),ta); 
+  //gf<matsubara_time> gt (  res_mesh,gw.shape(), ta); 
 
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);

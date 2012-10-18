@@ -18,15 +18,16 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
-#define TRIQS_GF_LOCAL_FOURIER_MATSU_H
+#ifndef TRIQS_GF_LOCAL_FOURIER_REAL_H 
+#define TRIQS_GF_LOCAL_FOURIER_REAL_H
 
-#include <triqs/gf/matsubara.hpp> 
+#include <triqs/gf/descriptors/freq.hpp> 
+#include <triqs/gf/descriptors/one_time.hpp> 
 
 namespace triqs { namespace gf { 
 
- gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt);
- gf<matsubara_time> fourier_inverse (gf<matsubara_freq> const & gw);
+gf<freq> fourier_direct (gf<one_time> const & gt);
+gf<one_time> fourier_inverse (gf<freq> const & gw);
 
 }}
 #endif

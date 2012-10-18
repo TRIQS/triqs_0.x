@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
    double beta;
    statistic_enum statistic;
    domain_t (double Beta, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   bool operator == (domain_t const & D) { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
+   bool operator == (domain_t const & D) const { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
   };
 
   /// The Mesh
@@ -46,35 +46,49 @@ namespace triqs { namespace gf {
    typedef matsubara_freq::domain_t domain_t;
    typedef size_t index_t;
 
+   //mesh_t (domain_t const & dom, size_t N_max=1025): _dom(dom), n_max_(N_max), pi_over_beta(std::acos(-1)/dom.Beta), sh(dom.statistic ==Fermion? 1:0) {}
    mesh_t (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
 
    domain_t const & domain() const { return _dom;}
 
    size_t size() const{ return n_max_;}
 
-   /// Conversions point <-> index <-> linear_index
-   std::complex<double> index_to_point(index_t n) const {return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
+   // Conversions point <-> index <-> linear_index
+   std::complex<double> index_to_point(index_t n) const { return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
    size_t index_to_linear(index_t n) const { return n;}
    index_t point_to_index (domain_t::point_t const & iw) const {index_t res =(size_t) floor( 0.5*(iw.imag() / pi_over_beta -sh) ); return res;} 
    
    /// The wrapper for the mesh point
-   struct mesh_point_t : arith_ops_by_cast<mesh_point_t,  std::complex<double> > {
-    mesh_t const & m;  index_t index; mesh_point_t( mesh_t const & mesh, index_t const & index_=0): m(mesh), index(index_) {}
-    void advance() { ++index;}
-    typedef std::complex<double> cast_t;
-    operator cast_t() const { return m.index_to_point(index);} 
-   };
+  typedef mesh_point_t<mesh_t> mesh_point_t;
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this,i);}
    
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
-   iterator begin() const { return iterator (*this);}
-   iterator end()   const { return iterator (*this, true);}
+   iterator begin() const { return iterator (this);}
+   iterator end()   const { return iterator (this, true);}
 
    /// Mesh comparison
-   friend bool operator == (mesh_t M1, mesh_t M2) { return ((M1._dom == M2._dom) && (M1.n_max_ ==M2.n_max_) );}
+   friend bool operator == (mesh_t const& M1, mesh_t const &M2) { return ((M1._dom == M2._dom) && (M1.n_max_ ==M2.n_max_) );}
+
+   /// Write into HDF5
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_t const & m) {
+    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+    h5_write(gr,"Beta",m.domain().beta);
+    h5_write(gr,"Statistic",(m.domain().statistic==Fermion ? 'F' : 'B'));
+    h5_write(gr,"size",m.size());
+   }
+
+   /// Read from HDF5
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_t & m){
+    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+    size_t Nmax; double beta; char statistic;
+    h5_read(gr,"Beta",beta);
+    h5_read(gr,"Statistic",statistic);
+    h5_read(gr,"size",Nmax);
+    m = mesh_t(beta,(statistic=='F' ? Fermion : Boson),Nmax);
+   }
 
    private:
    domain_t _dom;
@@ -83,13 +97,16 @@ namespace triqs { namespace gf {
    index_t sh;
   };//end mesh_t
 
-  /// The Auxiliary data
-  typedef local::tail   auxiliary_data_t;
-
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
   //typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type            target_view_t;
+
+  /// The tail
+  typedef local::tail   singularity_t;
+ 
+  /// Symmetry
+  typedef nothing symmetry_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =1;
@@ -111,9 +128,7 @@ namespace triqs { namespace gf {
     // it uses the fact that tail_non_view_t can be casted into freq_infty 
    }
 
-  /// Name of the auxiliary data e.g. in hdf5
-  static std::string auxiliary_data_name() { return "tail";}
-
+  static std::string h5_name() { return "matsubara_frequency";}
  };
 
  // -------------------------------   Expression template --------------------------------------------------

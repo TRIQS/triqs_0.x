@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
    typedef double point_t; 
    double w_max; 
    domain_t (double w_max_) : w_max(w_max_) {} 
-   bool operator == (domain_t const & D) { return ((std::abs(w_max - D.w_max)<1.e-15) );}
+   bool operator == (domain_t const & D) const { return ((std::abs(w_max - D.w_max)<1.e-15) );}
   };
 
   /// The Mesh
@@ -48,47 +48,46 @@ namespace triqs { namespace gf {
    typedef freq::domain_t         domain_t;
    typedef size_t index_t; // again ...
 
-   mesh_t (double w_max, size_t nw_max) : _dom(w_max),L(nw_max){}
-   mesh_t () : _dom(1),L(0){}
+   mesh_t (double w_max, size_t nw_max) : _dom(w_max),L(nw_max),dw(w_max/nw_max){}
+   mesh_t () : _dom(1),L(0),dw(0){}
    domain_t const & domain() const { return _dom;}
    size_t size() const {return 2*L+1;}
 
    /// Conversions point <-> index <-> linear_index
    double  index_to_point (index_t ind) const {return ((double)ind/(L+0.5)-1)*domain().w_max;} 
    size_t  index_to_linear(index_t ind) const {return ind;}
-   index_t point_to_index (double w) const {return (size_t)floor( (w+domain().w_max)*L / domain().w_max );} 
+   index_t point_to_index (double w) const {return (size_t)floor( (w+domain().w_max)/dw );} 
 
-   /// The wrapper for the mesh point
-   struct mesh_point_t : arith_ops_by_cast<mesh_point_t,  double > {
-    mesh_t const & m; index_t index; mesh_point_t( mesh_t const & m_, index_t const & index_=0): m(m_), index(index_) {};
-    void advance() { ++index;}
-    typedef double cast_t;
-    operator cast_t() const { return m.index_to_point(index);}
-   };
+  /// The wrapper for the mesh point
+  typedef mesh_point_t<mesh_t> mesh_point_t;
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
 
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
-   iterator begin() const { return iterator (*this);}
-   iterator end()   const { return iterator (*this, true);}
+   iterator begin() const { return iterator (this);}
+   iterator end()   const { return iterator (this, true);}
 
    /// Mesh comparison
-   friend bool operator == (mesh_t M1, mesh_t M2) { return ((M1._dom == M2._dom) && (M1.L ==M2.L) );}
+   friend bool operator == (mesh_t const & M1, mesh_t const & M2) { return ((M1._dom == M2._dom) && (M1.L ==M2.L) );}
 
    private:
    domain_t _dom;
-   size_t L; 
+   size_t L;
+  double dw; 
   }; //end mesh_t
-
-  /// The Auxiliary data
-  typedef local::tail auxiliary_data_t;
 
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
 //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type                                       target_view_t;
+
+  /// The tail
+  typedef local::tail   singularity_t;
+ 
+  /// Symmetry
+  typedef nothing symmetry_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =1;
@@ -108,10 +107,9 @@ namespace triqs { namespace gf {
     for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
-   
-  /// Name of the auxiliary data e.g. in hdf5
-  static std::string auxiliary_data_name() { return "tail";}
 
+  static std::string h5_name() { return "freq";}
+   
  };
 
  // -------------------------------   Expression template --------------------------------------------------

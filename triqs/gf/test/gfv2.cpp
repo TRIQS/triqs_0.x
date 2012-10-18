@@ -1,42 +1,39 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/descriptors/matsubara_freq.hpp> 
-#include <triqs/gf/descriptors/matsubara_time.hpp> 
+#include <triqs/gf/matsubara.hpp> 
 
-//using namespace triqs::gf::local;
-using namespace triqs::gf;
 namespace tql= triqs::clef;
-//namespace tqa= triqs::arrays;
+namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
+using triqs::gf::Fermion;
+using triqs::gf::matsubara_freq;
+using triqs::gf::matsubara_time;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
-std::complex<double> mul2 (std::complex<double> x) { return x*x;}
-
 int main() {
 
- typedef gf<matsubara_freq> Gf_type;
- typedef gf_view<matsubara_freq> Gf_view_type;
- typedef gf<matsubara_time> Gt_type;
- typedef gf_view<matsubara_time> Gt_view_type;
+ triqs::gf::freq_infty inf;
 
- freq_infty inf;
-
- Gf_type G1; // empty
+ triqs::gf::gf<triqs::gf::matsubara_freq> G1; // empty
  TEST( G1( 0) ) ;
 
  double beta =1;
- Gf_type G  (matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
- Gf_type Gc( matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
- Gf_type G3( matsubara_freq::mesh_t(beta,Fermion),make_shape(2,2));
- 
- Gt_type Gt  (matsubara_time::mesh_t(beta,Fermion),make_shape(2,2));
+ auto G = make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
+ auto Gc= make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
+ auto G3= make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
+ auto Gt= make_gf (matsubara_time(), beta, Fermion, make_shape(2,2));
 
- Gf_view_type Gv =G;
+ //triqs::gf::gf_view<triqs::gf::matsubara_freq> Gv =G;
+ auto Gv = G();
  TEST( G( 0) ) ;
+ Gv(0) = 20;
+ TEST( Gv( 0) ) ;
+ TEST( G( 0) ) ;
+ Gv(0) = 0;
 
- Gf_view_type Gv2 = slice_target(G,range(0,1),range(0,1));
+ auto Gv2 = slice_target(G,range(0,1),range(0,1));
  TEST( Gv2( 0) ) ;
  Gv2(0) = 10;
  TEST( Gv2( 0) ) ;
@@ -51,7 +48,7 @@ int main() {
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
  std::cout  <<"-------------lazy assign ------------------"<<std::endl;
- 
+
  Gv(om_) = (0.2 + om_ + 2.1);
  TEST(G(0));
  TEST(G(inf));
@@ -93,7 +90,7 @@ int main() {
  // should not compile
  //G3 = G + Gt;
 
-//#define ALL_TEST
+ //#define ALL_TEST
 #ifdef ALL_TEST
  for (int u=0; u<10; ++u) { 
   TEST( (G + 2.0* Gc)( u) ) ;

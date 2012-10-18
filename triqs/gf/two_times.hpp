@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2012 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -18,17 +18,21 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
-#define TRIQS_GF_LOCAL_FOURIER_MATSU_H
+#ifndef TRIQS_GF_TWO_TIMES_H
+#define TRIQS_GF_TWO_TIMES_H
 
-#include <triqs/gf/matsubara.hpp> 
+#include <triqs/gf/descriptors/two_times.hpp> 
+#include <triqs/gf/gf.hpp>
 
 namespace triqs { namespace gf { 
 
- gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt);
- gf<matsubara_time> fourier_inverse (gf<matsubara_freq> const & gw);
+ /// Make
+ gf<two_times> make_gf(two_times, double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
+  two_times::mesh_t m(tmax,n_time_slices);
+  gf<two_times>::data_non_view_t A(shape.append(m.size())); A() =0;
+  return gf<two_times> (m, std::move(A), nothing(), nothing() ) ;
+ }
 
 }}
 #endif
-
 

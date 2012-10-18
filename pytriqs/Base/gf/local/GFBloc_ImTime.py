@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,20 +20,13 @@
 ################################################################################
 
 __all__ = ['GFBloc_ImTime']
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
 from math import pi
+from pytriqs_GF3 import GFBloc_ImTime_c, MeshMatsubaraTime  
+from _GFBloc_base_data_tail import _GFBloc_base_data_tail
+from _GFBloc_concept_impl import _GFBloc_concept_impl
 
-#-----------------------------------------------------
-#  Code Injection
-#-----------------------------------------------------
-
-from pytriqs.Base.Utility.Injector import make_injector        # inject new code in the SAME class  
-from pytriqs_GF import GFBloc_ImTime     # the wrapped C++ class.
-
-class __inject (make_injector(GFBloc_ImTime) ,_GFBloc_concept_impl, _GFBloc_base_data_tail, GFBloc_ImTime):
+class GFBloc_ImTime (GFBloc_ImTime_c, _GFBloc_concept_impl, _GFBloc_base_data_tail):
     """ 
     A matrix-valued block Green's function in Matsubara time.
     """
@@ -75,8 +67,7 @@ class __inject (make_injector(GFBloc_ImTime) ,_GFBloc_concept_impl, _GFBloc_base
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d['Beta'])
             Nmax = d['NTimeSlices'] if 'NTimeSlices' in d else 10000
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
-            sh = 1 if stat== GF_Statistic.Fermion else 0
+            stat = d['Statistic'] if 'Statistic' in d else 'F'# GF_Statistic.Fermion
             d['Mesh'] = MeshGF( GF_Type.Imaginary_Time,stat,Beta,
                                        numpy.array([ (n+0.5)*Beta/Nmax for n in range(Nmax)]))
             for a in [ 'Beta', 'Statistic', 'NTimeSlices'] : 
@@ -84,10 +75,10 @@ class __inject (make_injector(GFBloc_ImTime) ,_GFBloc_concept_impl, _GFBloc_base
         else : 
             assert d['Mesh'].TypeGF==GF_Type.Imaginary_Time, "You provided a wrong type of mesh !!"
             
-        self._init_base__(d)
-        self._init_before_injection__(*self._param_for_cons)
+        _GFBloc_base_data_tail.__init__(self,d)
+        GFBloc_ImTime_c.__init__(self,*self._param_for_cons)
         del self._param_for_cons
-                
+
     #-----------------------------------------------------
 
     def _plot_(self, OptionsDict):

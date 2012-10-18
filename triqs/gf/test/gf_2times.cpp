@@ -1,6 +1,6 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/descriptors/two_times.hpp> 
+#include <triqs/gf/two_times.hpp> 
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
@@ -16,8 +16,11 @@ int main() {
  typedef gf<two_times> Gf_type;
  typedef gf_view<two_times> Gf_view_type;
 
- Gf_type G   (two_times::mesh_t(10,100),make_shape(2,2));
- Gf_type G2  (two_times::mesh_t(10,100),make_shape(2,2));
+ auto G = make_gf(two_times(), 10,100,make_shape(2,2));
+ auto G2 = make_gf(two_times(), 10,100,make_shape(2,2));
+
+ //Gf_type G   (two_times::mesh_t(10,100),make_shape(2,2));
+ //Gf_type G2  (two_times::mesh_t(10,100),make_shape(2,2));
 
  triqs::clef::placeholder<0> t_;
  triqs::clef::placeholder<1> tp_;
