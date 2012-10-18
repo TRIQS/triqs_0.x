@@ -48,6 +48,7 @@ namespace triqs { namespace gf {
    typedef tqa::mini_vector<size_t,2> index_t; // again ...
 
    mesh_t (double t_max, size_t n_max) : _dom(t_max),L(n_max){}
+   mesh_t () : _dom(1),L(0){}
 
    domain_t const & domain() const { return _dom;}
 
