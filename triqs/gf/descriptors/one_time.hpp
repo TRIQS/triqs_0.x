@@ -34,7 +34,7 @@ namespace triqs { namespace gf {
 
   /// The domain
   struct domain_t {
-   typedef std::array<double,1> point_t; 
+   typedef double point_t; 
    double t_max; 
    domain_t (double t_max_) : t_max(t_max_) {} 
    bool operator == (domain_t const & D) { return ((std::abs(t_max - D.t_max)<1.e-15) );}

@@ -54,20 +54,12 @@ namespace triqs { namespace gf {
 
    size_t size() const {return L*L;}
 
-   // Conversions point <-> index <-> linear_index
+   /// Conversions point <-> index <-> linear_index
    double index_to_point (index_t const & ind, zero_t) const {return ind[0] * domain().t_max/L;} 
    double index_to_point (index_t const & ind, one_t)  const {return ind[1] * domain().t_max/L;} 
-
    size_t index_to_linear(index_t const & ind) const { return ind[0] + ind[1]*L;}
-
-   point_t index_to_point(index_t const & ind) const {
-    double s= domain().t_max/L; domain_t::point_t res = {ind[0]*s, ind[1]*s}; return res;
-   }
-   
-   index_t point_to_index(double t0, double t1) const {
-    index_t res = { (size_t)floor(t0/domain().t_max*L), (size_t)floor(t1/domain().t_max*L)}; return res; 
-   }    
-   
+   point_t index_to_point(index_t const & ind) const { double s= domain().t_max/L; domain_t::point_t res = {ind[0]*s, ind[1]*s}; return res;}
+   index_t point_to_index(double t0, double t1) const { index_t res = { (size_t)floor(t0/domain().t_max*L), (size_t)floor(t1/domain().t_max*L)}; return res; }    
    index_t point_to_index(point_t const & p) const { return point_to_index(p[0],p[1]);}
 
    /// The wrapper for the mesh point
@@ -91,11 +83,11 @@ namespace triqs { namespace gf {
     operator cast_t() const { return m.index_to_point(index);}
    };
 
-   // Accessing a point of the mesh
+   /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
    mesh_point_t operator()(size_t i, size_t j) const { index_t k= {i,j}; return mesh_point_t (*this, k);}
 
-   // Iterating on all the points...
+   /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
    iterator begin() const { return iterator (*this);}
    iterator end()   const { return iterator (*this, true);}

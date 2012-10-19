@@ -52,9 +52,10 @@ namespace triqs { namespace gf {
 
    size_t size() const{ return n_max_;}
 
-   // Conversions point <-> index <-> linear_index
+   /// Conversions point <-> index <-> linear_index
    std::complex<double> index_to_point(index_t n) const {return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
    size_t index_to_linear(index_t n) const { return n;}
+   index_t point_to_index (domain_t::point_t const & iw) const {index_t res =(size_t) floor( 0.5*(iw.imag() / pi_over_beta -sh) ); return res;} 
    
    /// The wrapper for the mesh point
    struct mesh_point_t : arith_ops_by_cast<mesh_point_t,  std::complex<double> > {
@@ -64,10 +65,10 @@ namespace triqs { namespace gf {
     operator cast_t() const { return m.index_to_point(index);} 
    };
 
-   // Accessing a point of the mesh
+   /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this,i);}
    
-   // Iterating on all the points...
+   /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
    iterator begin() const { return iterator (*this);}
    iterator end()   const { return iterator (*this, true);}

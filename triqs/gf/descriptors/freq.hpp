@@ -34,7 +34,8 @@ namespace triqs { namespace gf {
 
   /// The domain
   struct domain_t {
-   typedef std::array<double,1> point_t; 
+   //the domain goes from -w_max to w_max
+   typedef double point_t; 
    double w_max; 
    domain_t (double w_max_) : w_max(w_max_) {} 
    bool operator == (domain_t const & D) { return ((std::abs(w_max - D.w_max)<1.e-15) );}
@@ -42,6 +43,7 @@ namespace triqs { namespace gf {
 
   /// The Mesh
   struct mesh_t {
+   //the mesh goes from -w_max to w_max, with 2*L+1 points including -w_max, w_max and 0. 
     
    typedef freq::domain_t         domain_t;
    typedef size_t index_t; // again ...

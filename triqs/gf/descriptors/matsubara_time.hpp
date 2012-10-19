@@ -55,9 +55,10 @@ namespace triqs { namespace gf {
    size_t size() const{ return n_time_slices_;}
    double delta() const { return _delta;}
 
-   // Conversions point <-> index <-> linear_index
+   /// Conversions point <-> index <-> linear_index
    double index_to_point(index_t n) const {return _delta + n * beta_over_l;}
    size_t index_to_linear(index_t n) const { return n;}
+   index_t point_to_index (domain_t::point_t const & tau) const {index_t res =(size_t) floor( (tau.real()-_delta) / beta_over_l ); return res;} 
    
    /// The wrapper for the mesh point
    struct mesh_point_t : arith_ops_by_cast<mesh_point_t,  double > {
@@ -67,10 +68,10 @@ namespace triqs { namespace gf {
     operator cast_t() const { return m.index_to_point(index);} 
    };
 
-   // Accessing a point of the mesh
+   /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this,i);}
 
-   // Iterating on all the points...
+   /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
    iterator begin() const { return iterator (*this);}
    iterator end()   const { return iterator (*this, true);}
