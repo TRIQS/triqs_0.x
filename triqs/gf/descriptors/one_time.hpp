@@ -57,7 +57,7 @@ namespace triqs { namespace gf {
    index_t point_to_index (double t) const {return (size_t)floor((t-domain().t_min)/dt + 0.5);}    
 
    /// The wrapper for the mesh point
-   typedef mesh_point_t<mesh_t> mesh_point_t;
+   typedef mesh_point_d1<mesh_t> mesh_point_t;
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}

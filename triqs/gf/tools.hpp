@@ -79,11 +79,11 @@ namespace triqs { namespace gf {
 
  /// The wrapper for the mesh point
  template<typename MeshType>
-  struct mesh_point_t : arith_ops_by_cast<mesh_point_t<MeshType>, typename MeshType::domain_t::point_t  > {
+  struct mesh_point_d1 : arith_ops_by_cast<mesh_point_d1<MeshType>, typename MeshType::domain_t::point_t  > {
    typedef MeshType mesh_t;
    mesh_t const * m;  
    typename mesh_t::index_t index; 
-   mesh_point_t( mesh_t const & mesh, typename mesh_t::index_t const & index_=0): m(&mesh), index(index_) {}
+   mesh_point_d1( mesh_t const & mesh, typename mesh_t::index_t const & index_=0): m(&mesh), index(index_) {}
    void advance() { ++index;}
    operator typename MeshType::domain_t::point_t () const { return m->index_to_point(index);} 
   };
