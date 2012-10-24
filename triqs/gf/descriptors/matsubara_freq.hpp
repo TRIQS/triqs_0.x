@@ -46,7 +46,6 @@ namespace triqs { namespace gf {
    typedef matsubara_freq::domain_t domain_t;
    typedef size_t index_t;
 
-   //mesh_t (domain_t const & dom, size_t N_max=1025): _dom(dom), n_max_(N_max), pi_over_beta(std::acos(-1)/dom.Beta), sh(dom.statistic ==Fermion? 1:0) {}
    mesh_t (double Beta=1, statistic_enum s=Fermion, size_t N_max=1025): _dom(Beta,s), n_max_(N_max), pi_over_beta(std::acos(-1)/Beta), sh(s==Fermion? 1:0) {}
 
    domain_t const & domain() const { return _dom;}
@@ -57,13 +56,13 @@ namespace triqs { namespace gf {
    std::complex<double> index_to_point(index_t n) const { return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
    size_t index_to_linear(index_t n) const { return n;}
    index_t point_to_index (domain_t::point_t const & iw) const {index_t res =(size_t) floor( 0.5*(iw.imag() / pi_over_beta -sh) ); return res;} 
-   
+
    /// The wrapper for the mesh point
-  typedef mesh_point_t<mesh_t> mesh_point_t;
+   typedef mesh_point_t<mesh_t> mesh_point_t;
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t(*this,i);}
-   
+
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_t> iterator;
    iterator begin() const { return iterator (this);}
@@ -100,11 +99,12 @@ namespace triqs { namespace gf {
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
   //typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
+  //typedef arrays::matrix_view<std::complex<double> >     target_t;
   typedef typename target_t::view_type            target_view_t;
 
   /// The tail
   typedef local::tail   singularity_t;
- 
+
   /// Symmetry
   typedef nothing symmetry_t;
 
@@ -122,7 +122,8 @@ namespace triqs { namespace gf {
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !) 
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
+    for (auto w: mesh) { target_view_t( data(tqa::range(),tqa::range(),w.index)) = rhs(w); }
+    //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
     // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty, 
     // it uses the fact that tail_non_view_t can be casted into freq_infty 

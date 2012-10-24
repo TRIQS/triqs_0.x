@@ -18,8 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_GF_H
-#define TRIQS_GF_LOCAL_GF_H
+#ifndef TRIQS_GF_GF_H
+#define TRIQS_GF_GF_H
 #include "./tools.hpp"
 #include <triqs/arrays/h5.hpp>
 

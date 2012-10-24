@@ -13,8 +13,8 @@ using triqs::arrays::make_shape;
 
 int main() {
 
- typedef gf<two_times> Gf_type;
- typedef gf_view<two_times> Gf_view_type;
+ //typedef gf<two_times> Gf_type;
+ //typedef gf_view<two_times> Gf_view_type;
 
  auto G = make_gf(two_times(), 10,100,make_shape(2,2));
  auto G2 = make_gf(two_times(), 10,100,make_shape(2,2));
