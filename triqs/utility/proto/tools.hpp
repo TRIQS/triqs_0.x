@@ -157,7 +157,7 @@ template<typename F BOOST_PP_ENUM_TRAILING_PARAMS(NN, typename A)>\
 typename result<call_fnt_t##NN(F BOOST_PP_ENUM_TRAILING_PARAMS(NN,A))>::type\
 operator()(const F & f BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(NN,A, const &a)) const { return f(BOOST_PP_ENUM_PARAMS(NN,a));}\
 };
-BOOST_PP_REPEAT(BOOST_PP_INC(TRIQS_LAZY_MAXNARGS_CALLABLE), AUX, nil)
+BOOST_PP_REPEAT(BOOST_PP_INC(TRIQS_CLEF_MAXNARGS_CALLABLE), AUX, nil)
 #undef AUX
 #undef AUX6
 */

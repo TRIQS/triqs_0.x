@@ -14,10 +14,10 @@ In all  cases:
 Functions
 ------------
 
-The `TRIQS_LAZY_MAKE_FNT_LAZY` macro defines the overload for lazy expressions arguments of a function. Synopsis is ::
+The `TRIQS_CLEF_MAKE_FNT_LAZY` macro defines the overload for lazy expressions arguments of a function. Synopsis is ::
 
  namespace triqs { namespace lazy { 
- TRIQS_LAZY_MAKE_FNT_LAZY (function_arity, function_to_make_lazy);
+ TRIQS_CLEF_MAKE_FNT_LAZY (function_arity, function_to_make_lazy);
  }}
 
 For example:: 
@@ -27,7 +27,7 @@ For example::
  int foo(int x) { return x/2;}
 
  namespace triqs { namespace clef { 
-  TRIQS_LAZY_MAKE_FNT_LAZY (1, foo) ;
+  TRIQS_CLEF_MAKE_FNT_LAZY (1, foo) ;
  }}
 
 Note that : 
@@ -43,7 +43,7 @@ Note that :
     foo (T const & x) { return x+1;}
       
     namespace triqs { namespace clef { 
-     TRIQS_LAZY_MAKE_FNT_LAZY (1, foo) ;
+     TRIQS_CLEF_MAKE_FNT_LAZY (1, foo) ;
     }}
 
 
@@ -54,19 +54,19 @@ Callable objects
 Similarly to functions, classes can define an `operator()` for lazy expressions arguments.
 This is done with one of the two macros :
 
-* TRIQS_LAZY_ADD_LAZY_CALL_REF(Arity, Class)
-* TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY(Arity, Class)
+* TRIQS_CLEF_ADD_LAZY_CALL_REF(Arity, Class)
+* TRIQS_CLEF_ADD_LAZY_CALL_WITH_COPY(Arity, Class)
 
 In both cases, calling the object will return a lazy expression. This operator() is 
 enabled iif at least one argument is a lazy expression.
 
 The two macro differ in the copy behaviour :
 
-* TRIQS_LAZY_ADD_LAZY_CALL_REF : 
+* TRIQS_CLEF_ADD_LAZY_CALL_REF : 
    
   The object is captured by reference.
 
-* TRIQS_LAZY_ADD_LAZY_CALL_WITH_COPY
+* TRIQS_CLEF_ADD_LAZY_CALL_WITH_COPY
 
   The object is captured by value, i.e. a copy is made (or a view is made is some cases, Cf...).
 
@@ -79,7 +79,7 @@ Example ::
   double operator()(double x) const { return 10*x;}
 
   // Add call for lazy expression
-  TRIQS_LAZY_ADD_LAZY_CALL_REF(1,MyObject);
+  TRIQS_CLEF_ADD_LAZY_CALL_REF(1,MyObject);
 
   };
 
@@ -106,7 +106,7 @@ This object is then used as ::
     operator() (Fnt const & f ) const;
      
     // Add call for lazy expression
-    TRIQS_LAZY_ADD_LAZY_CALL_REF(1,MyObject);
+    TRIQS_CLEF_ADD_LAZY_CALL_REF(1,MyObject);
     };
 
   Or with two variables::
@@ -119,7 +119,7 @@ This object is then used as ::
     operator() (F1 const & f1, F2 const & f2) const;
        
     // Add call for lazy expression
-    TRIQS_LAZY_ADD_LAZY_CALL_REF(2,MyObject);
+    TRIQS_CLEF_ADD_LAZY_CALL_REF(2,MyObject);
     };
 
 
