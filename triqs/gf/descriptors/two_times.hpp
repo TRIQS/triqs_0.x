@@ -67,12 +67,15 @@ namespace triqs { namespace gf {
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
+   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !) 
     for (auto & p : mesh) {  
      //std::cout  << " rhs "<< rhs(p.t0,p.t1)<< std::endl;
      //std::cout  << " p "<< p.index[0] << "  "<< p.index[1]<< " linear = "<< p.m->index_to_linear(p.index)<< std::endl;
-     target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p._0(),p._1()); }
+     target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[zero],p[one]); }
+     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[ZERO],p[ONE]); }
+     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[zero_t()],p[one_t()]); }
+     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p._0(),p._1()); }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
    }
 

@@ -49,7 +49,11 @@ namespace triqs { namespace gf {
  struct freq_infty{}; // the point at infinity
 
  struct zero_t{}; struct one_t{}; struct two_t{}; struct three_t{};// to dispatch index_point in mesh...
- 
+ constexpr zero_t zero={};
+ constexpr one_t one={};
+ constexpr two_t two={};
+ constexpr three_t three={};
+
  //------------------------------------------------------
 
  struct nothing {
@@ -89,7 +93,6 @@ namespace triqs { namespace gf {
     bool equal(mesh_pt_generator const & other) const { return ((mesh == other.mesh) && (other.u==u) );}
     public:
     mesh_pt_generator( MeshType const * m=NULL, bool atEnd = false): mesh(m), u(atEnd ? m->size(): 0), pt(*m) {}
-    //~mesh_pt_generator() { std::cout  << "deleting generator" << std::endl; }
     void increment() { ++u; pt.advance(); }
     bool at_end() const { return (u>=mesh->size()-1);}
     typename MeshType::domain_t::point_t to_point() const { return pt;}    
@@ -151,9 +154,12 @@ namespace triqs { namespace gf {
      component (mesh_point_t const & p_):p(&p_){}
      operator CastType() const { return std::get<N>(p->m->m).index_to_point(std::get<N>(p->index));}
     };
-    component<0,typename Mesh0::domain_t::point_t> _0() const { return *this;}
-    component<1,typename Mesh1::domain_t::point_t> _1() const { return *this;}
-
+    //component<0,typename Mesh0::domain_t::point_t> _0() const { return *this;}
+    //component<1,typename Mesh1::domain_t::point_t> _1() const { return *this;}
+    // another choice 
+    component<0,typename Mesh0::domain_t::point_t> operator[](zero_t) const { return *this;}
+    component<1,typename Mesh1::domain_t::point_t> operator[](one_t)  const { return *this;}
+     
     mesh_point_t(mesh_product_2 const & m_, index_t index_ ) : m(&m_), index(index_) {} 
     mesh_point_t(mesh_product_2 const & m_)                  : m(&m_), index()    {} 
 
