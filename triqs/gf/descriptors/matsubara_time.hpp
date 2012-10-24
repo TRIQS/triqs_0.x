@@ -58,7 +58,7 @@ namespace triqs { namespace gf {
    /// Conversions point <-> index <-> linear_index
    double index_to_point(index_t n) const {return _delta + n * beta_over_l;}
    size_t index_to_linear(index_t n) const { return n;}
-   index_t point_to_index (domain_t::point_t const & tau) const {index_t res =(size_t) floor( (tau - _delta) / beta_over_l ); return res;} 
+   //index_t point_to_index (domain_t::point_t const & tau) const {index_t res =(size_t) floor( (tau - _delta) / beta_over_l ); return res;} 
 
    /// The wrapper for the mesh point
    typedef mesh_point_d1<mesh_t> mesh_point_t;

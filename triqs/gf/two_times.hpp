@@ -28,7 +28,9 @@ namespace triqs { namespace gf {
 
  /// Make
  gf<two_times> make_gf(two_times, double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
-  two_times::mesh_t m(tmax,n_time_slices);
+  //two_times::mesh_t m(tmax,n_time_slices);
+  one_time::mesh_t m1(0, tmax,n_time_slices);
+  two_times::mesh_t m(m1,m1);
   gf<two_times>::data_non_view_t A(shape.append(m.size())); A() =0;
   return gf<two_times> (m, std::move(A), nothing(), nothing() ) ;
  }

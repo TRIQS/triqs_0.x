@@ -55,7 +55,7 @@ namespace triqs { namespace gf {
    // Conversions point <-> index <-> linear_index
    std::complex<double> index_to_point(index_t n) const { return std::complex<double>(0,(2*n+sh)*pi_over_beta);}
    size_t index_to_linear(index_t n) const { return n;}
-   index_t point_to_index (domain_t::point_t const & iw) const {index_t res =(size_t) floor( 0.5*(iw.imag() / pi_over_beta -sh) ); return res;} 
+  // index_t point_to_index (domain_t::point_t const & iw) const {index_t res =(size_t) floor( 0.5*(iw.imag() / pi_over_beta -sh) ); return res;} 
 
    /// The wrapper for the mesh point
    typedef mesh_point_d1<mesh_t> mesh_point_t;
