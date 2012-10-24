@@ -700,7 +700,10 @@ class SumK_LDA:
                 if (self.SP==0):
                     for bl in a_list:
                         Ncr[bl] = Ncrtot / len(a_list)
-                
+                # correction for SO: we have only one block in this case, but in DC we need N/2
+                elif (self.SP==1 and self.SO==1):
+                    for bl in a_list:
+                        Ncr[bl] = Ncrtot / 2.0
 
                 if (useval is None):
                               
