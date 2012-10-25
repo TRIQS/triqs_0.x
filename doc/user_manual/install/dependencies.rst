@@ -37,9 +37,9 @@ Tested compilers include :
 
 * C++
 
-  * g++ 4.4, 4.5 [Linux], 4.2 [Os X]
-  * clang++ [ Os X and Linux]
-  * icc 11, icc 12 [ Linux]
+  * g++ 4.7
+  * clang++ 3.1
+  * icc 13
 
 * F90
 
