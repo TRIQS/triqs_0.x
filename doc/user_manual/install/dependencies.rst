@@ -37,7 +37,7 @@ Tested compilers include :
 
 * C++
 
-  * g++ 4.7
+  * g++ 4.6.3
   * clang++ 3.1
   * icc 13
 
