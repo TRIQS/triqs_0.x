@@ -29,6 +29,7 @@
 
 namespace triqs { namespace gf { 
 
+ template<typename Omega_t>
  struct k_matsub { 
 
   /// A tag to recognize the function 
@@ -58,12 +59,28 @@ namespace triqs { namespace gf {
   /// Arity (number of argument in calling the function)
   static const int arity =2;
 
+  static typename mesh_t::index_t point_to_index( mesh_t const & mesh, BZ::mesh_t::point_t const & k,  matsubara_freq::mesh_t::point_t const & om) { 
+   auto & mesh_k  = mesh.component(zero);
+   auto & mesh_om = mesh.component(one);
+   return typename mesh_t::index_t( point_to_index(mesh_k,k), point_to_index(mesh_om,om));
+  }
+
+static typename mesh_t::index_t point_to_index( mesh_t const & mesh, BZ::mesh_t::point_t const & k,  matsubara_freq::mesh_t::point_t const & om) { 
+   return typename mesh_t::index_t( mesh.component(zero).point_to_index(k),  mesh.component(one).point_to_index(om));
+  }
+
+
   /// All the possible calls of the gf
-  template<typename D, typename T>
-   target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0, double t1)  const {
-    auto &  m0 = std::get<0>(mesh.m);
-    double s= m0.domain().t_max/m0.size();
-    return data(arrays::range(), arrays::range(),mesh.index_to_linear( mesh_t::index_t(t0*s, t1*s)));//mesh.index_to_linear(mesh.point_to_index (t1,t2)));
+  template<typename D>
+   target_view_t operator() (mesh_t const & mesh, D const & data, nothing , BZ::mesh_t::point_t const & k,  matsubara_freq::mesh_t::point_t const & om)  const {
+  //  return data(arrays::range(), arrays::range(),mesh.index_to_linear( point_to_index(mesh,k,om)));
+    //return data(arrays::range(), arrays::range(),mesh.index_to_linear( mesh.component(zero).point_to_index(k),  mesh.component(one).point_to_index(om)));
+    //
+    // renvoie un (i,w) : tuple<int,double>
+    int ik; double wk; 
+    std::tie(ik,wk) = point_to_index(...);
+
+    return data(arrays::range(), arrays::range(),mesh.index_to_linear( point_to_index(mesh.component(zero), k),  point_to_index(mesh.component(one),om)));
    } 
 
   /// How to fill a gf from an expression (RHS)
@@ -74,22 +91,22 @@ namespace triqs { namespace gf {
      //std::cout  << " rhs "<< rhs(p.t0,p.t1)<< std::endl;
      //std::cout  << " p "<< p.index[0] << "  "<< p.index[1]<< " linear = "<< p.m->index_to_linear(p.index)<< std::endl;
      target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[zero],p[one]); }
-     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[ZERO],p[ONE]); }
-     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[zero_t()],p[one_t()]); }
-     //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p._0(),p._1()); }
+    //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[ZERO],p[ONE]); }
+    //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p[zero_t()],p[one_t()]); }
+    //target_view_t( data(tqa::range(),tqa::range(),p.m->index_to_linear(p.index))) = rhs(p._0(),p._1()); }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-   }
+}
 
-  static std::string h5_name() { return "k_matsub";}
- };
+static std::string h5_name() { return "k_matsub";}
+};
 
- // -------------------------------   Expression template --------------------------------------------------
+// -------------------------------   Expression template --------------------------------------------------
 
- // A trait to identify objects that have the concept ImmutableGfTwoTimes
- template<typename G> struct ImmutableGfK_Matsub : boost::is_base_of<typename k_matsub::tag,G> {};  
+// A trait to identify objects that have the concept ImmutableGfTwoTimes
+template<typename G> struct ImmutableGfK_Matsub : boost::is_base_of<typename k_matsub::tag,G> {};  
 
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(two_times,local::is_scalar_or_element,ImmutableGfTwoTimes);
+// This defines the expression template with boost::proto (cf gf_proto.hpp).
+// TRIQS_GF_DEFINE_OPERATORS(two_times,local::is_scalar_or_element,ImmutableGfTwoTimes);
 
 }}
 #endif
