@@ -21,7 +21,7 @@
 #ifndef TRIQS_GF_LOCAL_DENSITY_H
 #define TRIQS_GF_LOCAL_DENSITY_H 
 #include "../gf.hpp"
-#include "../descriptors/matsubara_freq.hpp"
+#include "../matsubara_freq.hpp"
 
 namespace triqs { 
  namespace gf { 

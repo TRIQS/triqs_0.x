@@ -1,6 +1,7 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/matsubara.hpp> 
+#include <triqs/gf/matsubara_freq.hpp> 
+#include <triqs/gf/matsubara_time.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
@@ -20,12 +21,11 @@ int main() {
  TEST( G1( 0) ) ;
 
  double beta =1;
- auto G = make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
- auto Gc= make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
- auto G3= make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
- auto Gt= make_gf (matsubara_time(), beta, Fermion, make_shape(2,2));
+ auto G =  matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
+ auto Gc = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G3 = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
+ auto Gt = matsubara_time::make_gf (beta, Fermion, make_shape(2,2));
 
- //triqs::gf::gf_view<triqs::gf::matsubara_freq> Gv =G;
  auto Gv = G();
  TEST( G( 0) ) ;
  Gv(0) = 20;

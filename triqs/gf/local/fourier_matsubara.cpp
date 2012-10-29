@@ -41,8 +41,9 @@ namespace triqs { namespace gf {
  gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt) { 
 
   auto ta = gt(freq_infty());
-  matsubara_freq::mesh_t res_mesh(gt.domain().beta, gt.domain().statistic, gt.mesh().size());
-  auto gw = make_gf(matsubara_freq(), res_mesh, gt.shape(),ta); 
+  //matsubara_freq::mesh_t res_mesh(matsubara_freq::domain_t(gt.domain().beta, gt.domain().statistic), gt.mesh().size());
+  //auto gw = make_gf(matsubara_freq(), res_mesh, gt.shape(),ta); 
+  auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.mesh().size(), gt.shape(),ta); 
   //gf<matsubara_freq> gw (  res_mesh, gt.shape(),ta); 
  
   long numberTimeSlices = gt.mesh().size();
@@ -90,8 +91,9 @@ namespace triqs { namespace gf {
   static bool Green_Function_Are_Complex_in_time = false;
 
   auto ta = gw(freq_infty());
-  matsubara_time::mesh_t res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
-  auto gt = make_gf(matsubara_time(), res_mesh, gw.shape(),ta); 
+//  matsubara_time::mesh_t res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
+//  auto gt = make_gf(matsubara_time(), res_mesh, gw.shape(),ta); 
+  auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.mesh().size(), gw.shape(),ta); 
   //gf<matsubara_time> gt (  res_mesh,gw.shape(), ta); 
 
   double Beta = gt.domain().beta, Pi = std::acos(-1);

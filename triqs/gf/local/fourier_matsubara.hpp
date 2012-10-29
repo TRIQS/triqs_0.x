@@ -21,7 +21,8 @@
 #ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
 #define TRIQS_GF_LOCAL_FOURIER_MATSU_H
 
-#include <triqs/gf/matsubara.hpp> 
+#include <triqs/gf/matsubara_freq.hpp> 
+#include <triqs/gf/matsubara_time.hpp> 
 
 namespace triqs { namespace gf { 
 
