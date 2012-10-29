@@ -21,6 +21,7 @@
 #include "fourier_matsubara.hpp"
 #include "fourier_base.hpp"
 #include <fftw3.h>
+#include <triqs/utility/cint.hpp>
 
 namespace triqs { namespace gf { 
 

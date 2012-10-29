@@ -25,6 +25,7 @@
 #include "../gf_proto.hpp"
 #include <array>
 #include "./one_time.hpp"
+#include "../meshes/product.hpp"
 
 namespace triqs { namespace gf { 
 
@@ -33,15 +34,10 @@ namespace triqs { namespace gf {
   /// A tag to recognize the function 
   struct tag {};
 
-  /// The domain
-  struct domain_t {
-   typedef std::array<double,2> point_t; // a fixed size (2) array of double... name is unfortunate, everything is called array !
-   double t_max; 
-   domain_t (double t_max_) : t_max(t_max_) {} 
-   bool operator == (domain_t const & D) const { return ((std::abs(t_max - D.t_max)<1.e-15) );}
-  };
-
-  typedef mesh_product_2<one_time::mesh_t, one_time::mesh_t> mesh_t;
+  typedef mesh_product<one_time::mesh_t, one_time::mesh_t> mesh_t;
+ 
+ // suppress from the concept : can always be deduced ? 
+  typedef typename mesh_t::domain_t domain_t;
 
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
@@ -60,9 +56,11 @@ namespace triqs { namespace gf {
   /// All the possible calls of the gf
   template<typename D, typename T>
    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0, double t1)  const {
-    auto &  m0 = std::get<0>(mesh.m);
+    auto &  m0 = mesh.component(zero); //std::get<0>(mesh.m_tuple);
+    //auto &  m0 = std::get<0>(mesh.m_tuple);
     double s= m0.domain().t_max/m0.size();
     return data(arrays::range(), arrays::range(),mesh.index_to_linear( mesh_t::index_t(t0*s, t1*s)));//mesh.index_to_linear(mesh.point_to_index (t1,t2)));
+    //return data(arrays::range(), arrays::range(),mesh.index_to_linear( mesh_t::index_t(t0*s, t1*s)));//mesh.index_to_linear(mesh.point_to_index (t1,t2)));
    } 
 
   /// How to fill a gf from an expression (RHS)

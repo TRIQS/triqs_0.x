@@ -22,6 +22,7 @@
 #define TRIQS_GF_TOOLS_H
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
+#include <triqs/utility/cint.hpp>
 #include <triqs/clef/core.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
@@ -48,12 +49,6 @@ namespace triqs { namespace gf {
 
  struct freq_infty{}; // the point at infinity
 
- struct zero_t{}; struct one_t{}; struct two_t{}; struct three_t{};// to dispatch index_point in mesh...
- constexpr zero_t zero={};
- constexpr one_t one={};
- constexpr two_t two={};
- constexpr three_t three={};
-
  //------------------------------------------------------
 
  struct nothing {
@@ -62,7 +57,7 @@ namespace triqs { namespace gf {
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing non_view_type;
-   
+
   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
  }; 
@@ -109,80 +104,6 @@ namespace triqs { namespace gf {
    void advance() { ++index;}
    operator typename MeshType::domain_t::point_t () const { return m->index_to_point(index);} 
   };
-
- //------------------------------------------------------
-
- template<typename Domain1, typename Domain2> 
-  struct domain_product_2 { 
-   typedef std::tuple<typename Domain1::point_t, typename Domain2::point_t> point_t;
-   Domain1 d1; 
-   Domain2 d2;
-   domain_product_2(Domain1 const & dd1, Domain2 const & dd2): d1(dd1), d2(dd2) {}
-  };
-
- //------------------------------------------------------
-
- template<typename Mesh0, typename Mesh1> 
-  struct mesh_product_2 {
-   typedef domain_product_2<typename Mesh0::domain_t, typename Mesh1::domain_t>  domain_t;
-   typedef std::tuple<typename Mesh0::index_t, typename Mesh1::index_t>          index_t; 
-
-   std::tuple<Mesh0,Mesh1> m;
-   mesh_product_2 (Mesh0 const & m0, Mesh1 const & m1) : m(m0,m1), _dom(domain_t(m0.domain(),m1.domain())){}
-   mesh_product_2 () {}
-
-   domain_t const & domain() const { return _dom;}
-
-   size_t size() const {return std::get<0>(m).size() * std::get<1>(m).size();}
-
-   /// Conversions point <-> index <-> linear_index
-   typename domain_t::point_t index_to_point(index_t const & ind) const { 
-    return std::make_tuple( std::get<0>(m).index_to_point(std::get<0>(ind)), std::get<1>(m).index_to_point(std::get<1>(ind)));
-   }
-
-   size_t index_to_linear(index_t const & ind) const { 
-    return std::get<0>(m).index_to_linear(std::get<0>(ind)) + std::get<1>(m).index_to_linear(std::get<1>(ind))*std::get<0>(m).size();
-   }
-
-   /// The wrapper for the mesh point
-   struct mesh_point_t { 
-    const mesh_product_2 * m; index_t index;
-
-    /// The wrapper for one component of the mesh point
-    template<int N, typename CastType> struct component : arith_ops_by_cast<component<N,CastType>, CastType>  { 
-     mesh_point_t const * p; 
-     component (mesh_point_t const & p_):p(&p_){}
-     operator CastType() const { return std::get<N>(p->m->m).index_to_point(std::get<N>(p->index));}
-    };
-    //component<0,typename Mesh0::domain_t::point_t> _0() const { return *this;}
-    //component<1,typename Mesh1::domain_t::point_t> _1() const { return *this;}
-    // another choice 
-    component<0,typename Mesh0::domain_t::point_t> operator[](zero_t) const { return *this;}
-    component<1,typename Mesh1::domain_t::point_t> operator[](one_t)  const { return *this;}
-     
-    mesh_point_t(mesh_product_2 const & m_, index_t index_ ) : m(&m_), index(index_) {} 
-    mesh_point_t(mesh_product_2 const & m_)                  : m(&m_), index()    {} 
-
-    void advance() { ++std::get<0>(index); if (std::get<0>(index)==std::get<0>(m->m).size()) { std::get<0>(index)=0; ++std::get<1>(index);}}
-    typedef typename domain_t::point_t cast_t;
-    operator cast_t() const { return m->index_to_point(index);}
-   };
-
-   /// Accessing a point of the mesh
-   mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
-   mesh_point_t operator()(typename Mesh0::index_t i, typename Mesh1::index_t j) const { return mesh_point_t (*this, std::make_tuple(i,j));}
-
-   /// Iterating on all the points...
-   typedef  mesh_pt_generator<mesh_product_2> iterator;
-   iterator begin() const { return iterator (this);}
-   iterator end()   const { return iterator (this, true);}
-
-   /// Mesh comparison
-   friend bool operator == (mesh_product_2 const & M1, mesh_product_2 const & M2) { return ( (std::get<0>(M1.m)==std::get<0>(M2.m)) && (std::get<1>(M1.m)==std::get<1>(M2.m))); }
-
-   private:
-   domain_t _dom;
-  }; 
 
 }}
 #endif
