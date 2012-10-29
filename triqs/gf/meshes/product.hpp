@@ -18,20 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_DOM_MESH_PRODUCT_H
-#define TRIQS_GF_DOM_MESH_PRODUCT_H
+#ifndef TRIQS_GF_MESH_PRODUCT_H
+#define TRIQS_GF_MESH_PRODUCT_H
 #include "../tools.hpp"
+#include "../domains/product.hpp"
 namespace triqs { namespace gf {
-
- template<typename... Domains> 
-  struct domain_product { 
-   typedef std::tuple<typename Domains::point_t...> point_t;
-   std::tuple<Domains...> domains;
-   domain_product(Domains const & ... doms) : domains(doms...) {}
-   friend bool operator == (domain_product const & D1, domain_product const & D2) { return D1.domains == D2.domains;}
-  };
-
- //------------------------------------------------------
 
  template<typename... Meshes> 
   struct mesh_product {

@@ -36,6 +36,8 @@ namespace triqs { namespace gf {
    domain_t const & domain() const { return _dom;}
    size_t size() const {return L;}
    double delta() const { return _step;}
+   double x_max() const { return xmax;}
+   double x_min() const { return xmin;}
 
    /// Conversions point <-> index <-> linear_index
    domain_pt_t  index_to_point (index_t ind) const {return embed( xmin + ind * _step, mpl::bool_<boost::is_base_of<std::complex<double>, domain_pt_t>::value >()) ;}

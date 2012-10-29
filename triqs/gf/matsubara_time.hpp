@@ -24,6 +24,7 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./gf_proto.hpp"
+#include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 
 namespace triqs { namespace gf { 
@@ -34,13 +35,7 @@ namespace triqs { namespace gf {
   struct tag {};
 
   /// The domain
-  struct domain_t {
-   typedef double point_t;
-   double beta;
-   statistic_enum statistic;
-   domain_t (double Beta=1, statistic_enum s = Fermion): beta(Beta), statistic(s){}
-   bool operator == (domain_t const & D) const { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
-  };
+  typedef matsubara_domain<false> domain_t;
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
@@ -79,12 +74,12 @@ namespace triqs { namespace gf {
 
   static std::string h5_name() { return "matsubara_time";}
 
-   // -------------------------------   Factories  --------------------------------------------------
+  // -------------------------------   Factories  --------------------------------------------------
 
   typedef gf<matsubara_time> gf_t;
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t N_time_slices = 1025) {
-    return mesh_t( domain_t(beta,S), 0, beta, N_time_slices);
+   return mesh_t( domain_t(beta,S), 0, beta, N_time_slices);
   }
 
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) { 
