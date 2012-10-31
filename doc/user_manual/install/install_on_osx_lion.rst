@@ -1,12 +1,17 @@
 .. index:: install_on_osx_lion
 
 .. _install_on_osx_lion:
+.. highlight:: bash
 
+Installation on Mac OS X [Mountain Lion]
+==============================================
 
-Installation on Mac OS X Lion
-=============================
-TRIQS requires a number of dependencies.
+Previous versions of Mac OS X are not supported.
 
+On Mountain Lion, clang (llvm) is the default C++ compiler, 
+instead of the obsolete gcc 4.2 or previous version.
+
+NB: You can install triqs on previous OS X, but only if you install clang (via Apple) or gcc 4.7 (via macports).
 
 Installation of the dependencies
 ________________________________
@@ -37,4 +42,6 @@ __________________
 #. Compile TRIQS, its tests and install it into INSTALL_DIR (default)::
 
       make -j4 && make test && make install 
+
+#. If you use Wien2TRIQS, please complete the installation as described :ref:`here <wien2k_inst>`.
 

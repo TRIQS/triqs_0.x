@@ -2,7 +2,7 @@
 
 .. _wien2k_inst:
 
-Finish the installation of Wien2TRIQS
+Complete the installation of Wien2TRIQS (all platforms)
 -------------------------------------------------------------
 
 If you choose to install the Wien2TRIQS interface to the Wien2K package for doing DMFT calculations of  
