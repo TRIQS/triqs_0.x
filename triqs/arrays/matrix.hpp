@@ -78,6 +78,9 @@ namespace triqs { namespace arrays {
    typedef void has_view_type_tag;
    typedef Opt opt_type;
 
+   typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
+
    /// Build from an IndexMap and a storage 
    template<typename S> matrix_view (typename IMPL_TYPE::indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
@@ -94,6 +97,13 @@ namespace triqs { namespace arrays {
 
    /// Copy construction
    matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
+
+#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
+   matrix_view ():IMPL_TYPE(indexmap_type(),storage_type()) {}
+#endif
+
+   /// Rebind the view
+   void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
    /** Assignement.  The size of the array MUST match exactly.  */
    template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }

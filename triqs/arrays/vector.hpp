@@ -43,6 +43,9 @@ namespace triqs { namespace arrays {
    typedef vector<ValueType,Opt> non_view_type;
    typedef void has_view_type_tag;
 
+   typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
+
    /// Build from an IndexMap and a storage 
    template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
@@ -60,6 +63,13 @@ namespace triqs { namespace arrays {
 
    /// Copy construction
    vector_view(vector_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
+
+#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
+   vector_view ():IMPL_TYPE(indexmap_type(),storage_type()) {}
+#endif
+
+   /// Rebind the view
+   void rebind (vector_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
    /** Assignment.  The size of the array MUST match exactly.  */
    template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X); return *this; }

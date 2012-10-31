@@ -40,6 +40,7 @@ namespace triqs { namespace arrays {
    static_assert( Rank>0, " Rank must be >0");
    public:   
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
    typedef array_view<ValueType,Rank,Opt> view_type;
    typedef array<ValueType,Rank,Opt> non_view_type;
    typedef void has_view_type_tag;
@@ -60,6 +61,13 @@ namespace triqs { namespace arrays {
    /// Build from a numpy.array : throws if X is not a numpy.array 
    explicit array_view (boost::python::object X): IMPL_TYPE(X.ptr(), false, "array_view "){} 
 #endif
+
+#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
+   array_view ():IMPL_TYPE(indexmap_type(),storage_type()) {}
+#endif
+
+   /// Rebind the view
+   void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
    /// Assignment. The size of the array MUST match exactly. 
    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
