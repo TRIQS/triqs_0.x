@@ -4,7 +4,7 @@ export PYTHONPATH=@CMAKE_INSTALL_PREFIX@/@TRIQS_PYTHON_LIB_DEST_ROOT@:$PYTHONPAT
 @PYTHON_INTERPRETER@ -c "
 import sys
 # Add the --pylab option at the end 
-if "--pylab" not in sys.argv :
+if \"--pylab\" not in sys.argv :
  sys.argv.append('--pylab')
 import IPython
 if IPython.__version__ >= '0.11' : 
