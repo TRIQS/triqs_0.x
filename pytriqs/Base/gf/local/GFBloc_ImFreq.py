@@ -2,7 +2,7 @@
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
-# Copyright (C) 2011 by M. Ferrero, O. Parcollet
+# Copyright (C) 2011-2012 by M. Ferrero, O. Parcollet
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -22,11 +22,10 @@
 __all__ = ['GFBloc_ImFreq']
 import numpy
 from math import pi
-from pytriqs_GF3 import GFBloc_ImFreq_c, MeshMatsubaraFrequency  
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
+from pytriqs_GF3 import GFBloc_ImFreq_cython, MeshMatsubaraFrequency  
+from GFBloc_general import _GFBloc_general 
 
-class GFBloc_ImFreq (GFBloc_ImFreq_c, _GFBloc_concept_impl, _GFBloc_base_data_tail):
+class GFBloc_ImFreq (GFBloc_ImFreq_cython, _GFBloc_general):
     """ 
     A matrix-valued block Green's function in Matsubara frequencies.
     """
@@ -67,20 +66,15 @@ class GFBloc_ImFreq (GFBloc_ImFreq_c, _GFBloc_concept_impl, _GFBloc_base_data_ta
         # construct the mesh if needed
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
-            Beta = float(d['Beta'])
-            Nmax = d['NFreqMatsubara'] if 'NFreqMatsubara' in d else 1025
-            stat = d['Statistic'] if 'Statistic' in d else 'F'# GF_Statistic.Fermion
+            Beta = float(d.pop('Beta'))
+            Nmax = d.pop('NFreqMatsubara',1025)
+            stat = d.pop('Statistic','F') # GF_Statistic.Fermion
             sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
             d['Mesh'] = MeshMatsubaraFrequency(Beta,'F',Nmax)
             #d['Mesh'] = MeshMatsubaraFrequency(Beta,GF_Statistic.Fermion,Nmax)
-            for a in [ 'Beta', 'Statistic', 'NFreqMatsubara'] : 
-                if a in d : del d[a]
 
-        _GFBloc_base_data_tail.__init__(self,d)
-        #self._init_before_injection__(*self._param_for_cons)
-        GFBloc_ImFreq_c.__init__(self,*self._param_for_cons)
-        del self._param_for_cons
-    
+        GFBloc_ImFreq_cython.__init__(self,*self._prepare_init(d))
+        
     #-----------------------------------------------------
 
     def _plot_(self, OptionsDict):

@@ -21,20 +21,12 @@
 ################################################################################
 
 __all__ = ['GFBloc_ReFreq']
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
 from math import pi
+from pytriqs_GF3 import GFBloc_ReFreq_cython, MeshReFreq  
+from GFBloc_general import _GFBloc_general 
 
-#-----------------------------------------------------
-#  Code Injection
-#-----------------------------------------------------
-
-from pytriqs.Base.Utility.Injector import make_injector        # inject new code in the SAME class  
-from pytriqs_GF import GFBloc_ReFreq     # the wrapped C++ class.
-
-class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_data_tail, GFBloc_ReFreq):
+class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
     """ 
     A matrix-valued block Green's function in real frequencies.
     """
@@ -72,20 +64,16 @@ class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_
         # construct the mesh if needed
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
-            if 'MeshArray' not in d : raise ValueError, "MeshArray not provided"
-            Beta = float(d['Beta'])
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
-            sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshGF( GF_Type.Real_Frequency,stat,Beta,d['MeshArray'])
-            for a in [ 'Beta', 'Statistic', 'MeshArray'] : 
-                if a in d : del d[a]
-        else : 
-            assert d['Mesh'].TypeGF== GF_Type.Real_Frequency, "You provided a wrong type of mesh !!"
+            Beta = float(d.pop('Beta'))
+            Nmax = d.pop('Nmax',1025)
+            stat = d.pop('Statistic','F') # GF_Statistic.Fermion
+            sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
+            d['Mesh'] = MeshRealFrequency(Beta,Nmax)
+            #if 'MeshArray' not in d : raise ValueError, "MeshArray not provided"
+            #d['Mesh'] = MeshGF( GF_Type.Real_Frequency,stat,Beta,d['MeshArray'])
 
-        self._init_base__(d)
-        self._init_before_injection__(*self._param_for_cons)
-        del self._param_for_cons
-       
+        GFBloc_ReFreq_cython.__init__(self,*self._prepare_init(d))
+  
     #-----------------------------------------------------
 
     def _plot_(self, OptionsDict):

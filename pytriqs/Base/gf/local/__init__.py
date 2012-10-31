@@ -27,21 +27,20 @@ It is imported with the command::
   >>> from pytriqs.Base.gf.local import *
 """
 
-from pytriqs_GF3 import DomainMatsubaraFrequency,MeshMatsubaraFrequency 
+from pytriqs_GF3 import MeshMatsubaraFrequency 
 
 from inverse import inverse
 from TailGF import TailGF
 from GFBloc_ImFreq import GFBloc_ImFreq
-from GFBloc_ImFreq import GFBloc_ImFreq
 #from GFBloc_ReFreq import GFBloc_ReFreq
-#from GFBloc_ImTime import GFBloc_ImTime
+from GFBloc_ImTime import GFBloc_ImTime
 #from GFBloc_ReTime import GFBloc_ReTime
 #from GFBloc_ImLegendre import GFBloc_ImLegendre
-#from GF import GF
+from GF import GF
 from Descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
 
-__all__ = ['MeshMatsubaraFrequency','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGF','GFBloc_ImFreq']
+__all__ = ['MeshMatsubaraFrequency','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGF','GFBloc_ImFreq','GFBloc_ImTime']
 
 #__all__ = ['GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','GFBloc_ImTime','GFBloc_ImFreq','GFBloc_ReFreq','GFBloc_ReTime','GFBloc_ImLegendre','GF', 'inverse']
 

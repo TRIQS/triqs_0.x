@@ -77,6 +77,7 @@ namespace triqs { namespace gf {
   // -------------------------------   Factories  --------------------------------------------------
 
   typedef gf<matsubara_time> gf_t;
+  typedef gf_view<matsubara_time> gf_view_t;
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t N_time_slices = 1025) {
    return mesh_t( domain_t(beta,S), 0, beta, N_time_slices);
@@ -106,5 +107,8 @@ namespace triqs { namespace gf {
  TRIQS_GF_DEFINE_OPERATORS(matsubara_time,local::is_scalar_or_element,ImmutableGfMatsubaraTime);
 
 }}
+
+typedef triqs::gf::matsubara_time           triqs_gf_matsubara_time_desc;
+typedef triqs::gf::matsubara_time::domain_t triqs_gf_matsubara_time_domain_t;
 #endif
 

@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,19 +20,11 @@
 ################################################################################
 
 __all__ = ['GFBloc_ImLegendre']
-from pytriqs_GF import GF_Statistic, GF_Type, MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
+from pytriqs_GF3 import GFBloc_ReTime_cython, MeshReTime 
+from GFBloc_general import _GFBloc_general 
 
-#-----------------------------------------------------
-#  Code Injection
-#-----------------------------------------------------
-
-from pytriqs.Base.Utility.Injector import make_injector        # inject new code in the SAME class  
-from pytriqs_GF import GFBloc_ImLegendre     # the wrapped C++ class.
-
-class __inject (make_injector(GFBloc_ImLegendre) ,_GFBloc_concept_impl,_GFBloc_base_data_tail, GFBloc_ImLegendre):
+class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
     """
     A matrix-valued block Green's function described using Legendre coefficients.
     """
@@ -45,7 +36,7 @@ class __inject (make_injector(GFBloc_ImLegendre) ,_GFBloc_concept_impl,_GFBloc_b
      yourself (see below), or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GFBloc_ImFreq(Indices, Beta, Statistic, NLegendreCoeffs, Data, Tail, Name, Note)
+     GFBloc_ImLegendre(Indices, Beta, Statistic, NLegendreCoeffs, Data, Tail, Name, Note)
 
            * ``Indices``: a list of indices names of the block
            * ``Beta``: the inverse Temperature 
@@ -58,7 +49,7 @@ class __inject (make_injector(GFBloc_ImLegendre) ,_GFBloc_concept_impl,_GFBloc_b
 
      If you already have the mesh, you can use a simpler version:
 
-     GFBloc_ImFreq(Indices, Mesh, Data, Tail, Name,Note)
+     GFBloc_ImLegendre(Indices, Mesh, Data, Tail, Name,Note)
         
            * ``Indices``:  a list of indices names of the block
            * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF == GF_Type.Imaginary_Legendre
@@ -70,22 +61,17 @@ class __inject (make_injector(GFBloc_ImLegendre) ,_GFBloc_concept_impl,_GFBloc_b
 .. warning::
     The Green function take a **view** of the array Data, and a **reference** to the Tail.
     """
-        if 'Mesh' not in d:
-            if 'Beta' not in d: raise ValueError, "Beta not provided"
-            Beta = float(d['Beta'])
-            Nmax = d['NLegendreCoeffs'] if 'NLegendreCoeffs' in d else 30
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
-            sh = 1 if stat == GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshGF( GF_Type.Imaginary_Legendre, stat, Beta,
-                                numpy.array(range(Nmax)) )
-            for a in ['Beta', 'Statistic', 'NLegendreCoeffs']:
-                if a in d : del d[a]
-        else:
-            assert d['Mesh'].TypeGF==GF_Type.Imaginary_Legendre, "You provided a wrong type of mesh !!"
+       # construct the mesh if needed
+        if 'Mesh' not in d : 
+            if 'Beta' not in d : raise ValueError, "Beta not provided"
+            Beta = float(d.pop('Beta'))
+            Nmax = d.pop('NLegendreCoeffs',30)
+            stat = d.pop('Statistic','F') # GF_Statistic.Fermion
+            sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
+            d['Mesh'] = MeshLegendre(Beta,'F',Nmax)
+            #d['Mesh'] = MeshGF( GF_Type.Imaginary_Legendre, stat, Beta, numpy.array(range(Nmax)) )
 
-        self._init_base__(d)
-        self._init_before_injection__(*self._param_for_cons)
-        del self._param_for_cons
+        GFBloc_ImLegendre_cython.__init__(self,*self._prepare_init(d))
                 
     #-----------------------------------------------------
 

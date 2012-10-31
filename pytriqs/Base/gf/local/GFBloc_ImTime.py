@@ -18,15 +18,13 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-
 __all__ = ['GFBloc_ImTime']
 import numpy
 from math import pi
-from pytriqs_GF3 import GFBloc_ImTime_c, MeshMatsubaraTime  
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
+from pytriqs_GF3 import GFBloc_ImTime_cython, MeshMatsubaraTime  
+from GFBloc_general import _GFBloc_general 
 
-class GFBloc_ImTime (GFBloc_ImTime_c, _GFBloc_concept_impl, _GFBloc_base_data_tail):
+class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
     """ 
     A matrix-valued block Green's function in Matsubara time.
     """
@@ -65,19 +63,15 @@ class GFBloc_ImTime (GFBloc_ImTime_c, _GFBloc_concept_impl, _GFBloc_base_data_ta
         # construct the mesh if needed
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
-            Beta = float(d['Beta'])
-            Nmax = d['NTimeSlices'] if 'NTimeSlices' in d else 10000
-            stat = d['Statistic'] if 'Statistic' in d else 'F'# GF_Statistic.Fermion
-            d['Mesh'] = MeshGF( GF_Type.Imaginary_Time,stat,Beta,
-                                       numpy.array([ (n+0.5)*Beta/Nmax for n in range(Nmax)]))
-            for a in [ 'Beta', 'Statistic', 'NTimeSlices'] : 
-                if a in d : del d[a]
-        else : 
-            assert d['Mesh'].TypeGF==GF_Type.Imaginary_Time, "You provided a wrong type of mesh !!"
+            Beta = float(d.pop('Beta'))
+            Nmax = d.pop('NTimeSlices', 10000)
+            stat = d.pop('Statistic','F')
+            d['Mesh'] = MeshMatsubaraTime(Beta,'F',Nmax)
+            # TO RECHECK 
+            #d['Mesh'] = MeshGF( GF_Type.Imaginary_Time,stat,Beta,
+            #                           numpy.array([ (n+0.5)*Beta/Nmax for n in range(Nmax)]))
             
-        _GFBloc_base_data_tail.__init__(self,d)
-        GFBloc_ImTime_c.__init__(self,*self._param_for_cons)
-        del self._param_for_cons
+        GFBloc_ImTime_cython.__init__(self,*self._prepare_init(d))
 
     #-----------------------------------------------------
 

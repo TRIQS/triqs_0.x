@@ -204,6 +204,13 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
   public :
+#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
+  gf_view ():B(){}
+#endif
+  void rebind( gf_view const &X) { 
+   this->_mesh = X._mesh; this->_symmetry = X._symmetry; 
+   this->data.rebind(X.data); this->singularity.rebind(X.singularity); 
+  }
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
   template<typename D, typename T> gf_view (typename B::mesh_t const & m, D const & dat,T const & t,typename B::symmetry_t const & s ) : B(m,dat,t,s) {}
   using B::operator=;// or the default is = synthetized...

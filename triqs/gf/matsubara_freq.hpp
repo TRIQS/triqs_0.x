@@ -97,6 +97,8 @@ namespace triqs { namespace gf {
   }
 
  };
+  
+ typedef gf_view<matsubara_freq> gf_view_matsubara_freq_t;
 
  // -------------------------------   Expression template --------------------------------------------------
 
@@ -107,5 +109,8 @@ namespace triqs { namespace gf {
  TRIQS_GF_DEFINE_OPERATORS(matsubara_freq,local::is_scalar_or_element,ImmutableGfMatsubaraFreq);
 
 }}
+ 
+typedef triqs::gf::matsubara_freq           triqs_gf_matsubara_freq_desc;
+typedef triqs::gf::matsubara_freq::domain_t triqs_gf_matsubara_freq_domain_t;
 #endif
 

@@ -57,7 +57,8 @@ namespace triqs { namespace gf {
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing non_view_type;
-
+  void rebind (nothing){}
+  void operator=(nothing) {}
   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
  }; 
