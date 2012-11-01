@@ -28,7 +28,7 @@ cdef extern from "triqs/gf/matsubara_freq.hpp" namespace "triqs::gf" :
     cdef gf_view_freq matsubara_freq_make_gf "triqs::gf::matsubara_freq::make_gf" (matsubara_freq_mesh, array_view[dcomplex, THREE,COrder], tail_view) except +
 
 cdef extern from "triqs/gf/local/fourier_matsubara.hpp" : 
-    gf_view_freq fourier_direct (gf_view_time & )
+    gf_view_freq lazy_fourier (gf_view_time & )
 
 # ----------- Domain  --------------------------
 #cdef class DomainMatsubaraFrequency:
@@ -68,6 +68,6 @@ cdef class GFBloc_ImFreq_cython:
     
     def setFromFourierOf(self, GFBloc_ImTime_cython gt) :
         """Fills self with the Fourier transform of gt"""
-        #self._c = fourier_direct( gt._c)
+        self._c = lazy_fourier( gt._c)
 
 

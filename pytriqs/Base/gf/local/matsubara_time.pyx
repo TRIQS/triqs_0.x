@@ -28,7 +28,7 @@ cdef extern from "triqs/gf/matsubara_time.hpp" namespace "triqs::gf" :
     cdef gf_view_time matsubara_time_make_gf "triqs::gf::matsubara_time::make_gf" (matsubara_time_mesh, array_view[dcomplex, THREE,COrder], tail_view) except +
 
 cdef extern from "triqs/gf/local/fourier_matsubara.hpp" : 
-    gf_view_time fourier_inverse (gf_view_freq & )
+    gf_view_time lazy_inverse_fourier (gf_view_freq & )
 
 # ----------- Domain  --------------------------
 #cdef class DomainMatsubaraTime:
@@ -66,6 +66,6 @@ cdef class GFBloc_ImTime_cython:
     
     def setFromInverseFourierOf(self, GFBloc_ImFreq_cython gw) : 
         """Fills self with the Inverse Fourier transform of gw"""        
-        #self._c = fourier_inverse( gw._c)
+        self._c = lazy_inverse_fourier( gw._c)
 
 
