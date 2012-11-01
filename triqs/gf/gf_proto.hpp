@@ -50,6 +50,38 @@ namespace triqs { namespace gf {
     ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<gf_eval_t > >
     > {};
 
+   //------ computation of the data of the expression ----
+
+   struct gf_get_data_tr {
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename F> struct result<This(F)> { typedef decltype( std::declval<const F>().data_view()) type; };
+    template<typename F> typename result<gf_get_data_tr(F)>::type operator ()(F const &f) const { return f.data_view(); }
+   };
+
+   struct gf_data_tr : // evaluation of an expression  
+    proto::or_<
+    proto::when<gf_scalar_grammar, proto::_value>
+    ,proto::when<gf_leaf_grammar, gf_get_data_tr(proto::_value) >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<gf_data_tr > >
+    > {};
+
+   //------ computation of the singularity of the expression ----
+
+   struct gf_get_singularity_tr {
+    BOOST_PROTO_CALLABLE();
+    template<typename Sig> struct result;
+    template<typename This, typename F> struct result<This(F)> { typedef decltype( std::declval<const F>().singularity_view()) type; };
+    template<typename F> typename result<gf_get_singularity_tr(F)>::type operator ()(F const &f) const { return f.singularity_view(); }
+   };
+
+   struct gf_singularity_tr : // evaluation of an expression  
+    proto::or_<
+    proto::when<gf_scalar_grammar, proto::_value>
+    ,proto::when<gf_leaf_grammar, gf_get_singularity_tr(proto::_value) >
+    ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::_default<gf_singularity_tr > >
+    > {};
+
    //------ computation of the mesh of the expression ----
 
    struct gf_combine_mesh_t { // a transform that combine the mesh of a node with the State
@@ -74,8 +106,8 @@ namespace triqs { namespace gf {
     ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, gf_mesh_t >() >
     > {};
 
-   //------ computation of the shape of the expression ----
 
+   //------ computation of the shape of the expression ----
 
    struct gf_combine_shape_t { 
     BOOST_PROTO_CALLABLE();
@@ -116,8 +148,16 @@ template<typename Expr> struct gf_expr_##DESC : DESC::tag, proto::extends<Expr, 
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_mesh_t gf_mesh_t;\
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_shape_t gf_shape_t;\
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_eval_t gf_eval_t;\
+ typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_data_tr gf_data_tr;\
+ typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_singularity_tr gf_singularity_tr;\
  \
  gf_expr_##DESC ( Expr const & expr = Expr() ) : proto::extends<Expr, gf_expr_##DESC <Expr>, gf_expr_domain_##DESC> (expr) {}\
+ \
+ typedef typename boost::result_of<gf_singularity_tr(Expr) >::type singularity_t;\
+ singularity_t singularity_view()   const {return gf_singularity_tr() (*this);} \
+ \
+ typedef typename boost::result_of<gf_data_tr(Expr) >::type data_t;\
+ data_t data_view()   const {return gf_data_tr() (*this);} \
  \
  typedef typename boost::result_of<gf_mesh_t(Expr,gf_no_mesh) >::type mesh_t;\
  mesh_t mesh()   const {return gf_mesh_t() (*this,gf_no_mesh());} \
