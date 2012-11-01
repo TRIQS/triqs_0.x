@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_DETMANIP_H
 #define TRIQS_DETMANIP_H
+#include <triqs/utility/first_include.hpp>
 #include <vector>
 #include <iterator>
 #include <triqs/arrays/matrix.hpp>

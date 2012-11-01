@@ -21,7 +21,7 @@
 #ifndef TRIQS_ARRAYS_NUMPY_EXTRACTOR_H
 #define TRIQS_ARRAYS_NUMPY_EXTRACTOR_H 
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../storages/shared_block.hpp"
 #include "triqs/utility/exceptions.hpp"
 #include "numpy/arrayobject.h"

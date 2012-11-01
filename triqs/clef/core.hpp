@@ -25,6 +25,8 @@
 #define TRIQS_CLEF_MAXNARGS 8
 #define TRIQS_CLEF_MAXNARGS_CALLABLE TRIQS_CLEF_MAXNARGS
 
+#include <triqs/utility/first_include.hpp>
+
 #ifdef TRIQS_ARRAYS_ALREADY_INCLUDED
 #error "If you use triqs::clef and triqs::arrays, you MUST include clef first"
 #endif

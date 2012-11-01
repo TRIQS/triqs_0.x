@@ -30,7 +30,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include "./common.hpp"
 #include "../impl/make_const.hpp"
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "./mem_block.hpp"
 #else 
 #include <vector>
@@ -73,7 +73,7 @@ namespace triqs { namespace arrays {
    class shared_block : Tag::shared_block { 
     typedef typename boost::add_const<ValueType>::type const_value_type;
     typedef typename boost::remove_const<ValueType>::type non_const_value_type;
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     typedef details::mem_block<non_const_value_type> block_type;
 #else
     //  typedef details::basic_block<non_const_value_type> block_type;
@@ -95,7 +95,7 @@ namespace triqs { namespace arrays {
 
     explicit shared_block(): sptr() { init_data(); }
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///  Construct from a numpy object
     explicit shared_block(PyObject * arr, bool borrowed): sptr(new block_type(arr,borrowed)) { init_data();}
 #endif
@@ -117,7 +117,7 @@ namespace triqs { namespace arrays {
     /// True copy of the data
     clone_type clone() const { 
      if (empty()) return clone_type ();
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT    
+#ifdef TRIQS_WITH_PYTHON_SUPPORT    
      clone_type res; res.sptr = boost::make_shared<block_type > (*sptr); res.init_data();
 #else
      clone_type res(this->size(), Tag::no_init() ); (*res.sptr) = (*sptr);
@@ -132,7 +132,7 @@ namespace triqs { namespace arrays {
     bool empty() const {return (sptr.get()==NULL);}
     size_t size() const {return (empty () ? 0 : sptr.get()->size());} 
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT    
+#ifdef TRIQS_WITH_PYTHON_SUPPORT    
     PyObject * new_ref_to_guard() const {return sptr->new_ref_to_guard();}
 #endif
 

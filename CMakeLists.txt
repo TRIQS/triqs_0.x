@@ -95,8 +95,16 @@ add_definitions(
 # Adding 
 add_definitions( -DBOOST_PP_VARIADICS=1 )
 
-# Tool to help to include the wrappers in main and declare the built-in module
-Find_package(PythonModuleEmbeddingTool)
+# Python support ?
+#FIRST VERSION : if OFF, we should not try to detect the python at all....
+# TEST AND DEBUG THE OFF OPTION
+option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
+if (PythonSupport)
+ add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
+
+ # Tool to help to include the wrappers in main and declare the built-in module
+ Find_package(PythonModuleEmbeddingTool)
+endif (PythonSupport)
 
 enable_testing()
 
@@ -165,8 +173,9 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #------------------------
 # pytriqs modules
 #------------------------
-
-add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+if (PythonSupport)
+ add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+endif (PythonSupport)
 
 #------------------------
 # build pytriqs main or make the script

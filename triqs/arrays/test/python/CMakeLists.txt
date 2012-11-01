@@ -2,8 +2,6 @@
 find_package(TestCSimple)
 find_package(TestScriptHdf)
 
-add_definitions( -DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT)
-
 # Build python module
 SET(SOURCES_WRAP test1.cpp)
 python_build_module(ArrayTests  _array_tests Base/Tests ${SOURCES_WRAP})

@@ -1,3 +1,4 @@
+#include <triqs/utility/first_include.hpp>
 #include <triqs/utility/proto/tools.hpp>
 #include <boost/type_traits/is_complex.hpp> 
 #include <triqs/arrays/array.hpp>

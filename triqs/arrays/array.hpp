@@ -54,7 +54,7 @@ namespace triqs { namespace arrays {
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP> array_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){} 
 
@@ -120,7 +120,7 @@ namespace triqs { namespace arrays {
      array(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
       IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
     explicit array (PyObject * X): IMPL_TYPE(X, true, "array "){}
 

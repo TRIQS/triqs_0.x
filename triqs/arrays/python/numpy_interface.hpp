@@ -21,7 +21,7 @@
 #ifndef TRIQS_ARRAYS_NUMPY_INTERACE_H
 #define TRIQS_ARRAYS_NUMPY_INTERACE_H
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../array.hpp"
 #include "../matrix.hpp"
 #include "../vector.hpp"

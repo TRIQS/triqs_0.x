@@ -53,7 +53,7 @@ namespace triqs { namespace arrays {
    template<typename ISP>
     vector_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
    explicit vector_view (PyObject * X): IMPL_TYPE(X, false, "vector_view "){}
 
@@ -100,7 +100,7 @@ namespace triqs { namespace arrays {
    ///
    vector(size_t dim):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) {}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
    explicit vector (PyObject * X): IMPL_TYPE(X, true, "vector "){}
 

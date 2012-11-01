@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,40 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef PYTHON_STUFF_H
-#define PYTHON_STUFF_H
+#ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
+#define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
-#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
-
-#ifndef TRIQS_WITH_PYTHON_SUPPORT
-inline void init_python_stuff(int argc, char **argv) { 
-}
-#else
-
-#define AS_STRING(X) AS_STRING2(X)
-#define AS_STRING2(X) #X
-
-#include <Python.h>
-//#include "./src/python/converters.hpp"
-
-//extern "C" { void initmpi();}; 
-
-//void translatorString (std::string const& x) { PyErr_SetString(PyExc_RuntimeError, x.c_str());};
-
-inline void init_python_stuff(int argc, char **argv) { 
-
- //PyImport_AppendInittab((char*)("mpi"), &initmpi);
- //Py_Initialize(); // init the interpreter
- //triqs::arrays::register_boost_converters();
-
- // register the exception translation
- //boost::python::register_exception_translator<std::string>(translatorString);
-
-}
-
-
-#endif
+// including python first remove some warning
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+#include "Python.h"
 #endif
 
-
-
+#endif

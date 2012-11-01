@@ -14,6 +14,8 @@ STRING(COMPARE EQUAL ${dir} "C++_with_py_support" python_support)
 # First the version for pure C, then with python support
 if (NOT python_support)
 
+ add_definitions( -UTRIQS_WITH_PYTHON_SUPPORT)
+
 SET( link_libs ${LAPACK_LIBS}  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES})
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
@@ -36,7 +38,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # Compile main and link the whole thing....
 SET(PythonPathAdd " ${CMAKE_INSTALL_PREFIX}/lib/pytriqs  ")
 add_definitions( 
-  -DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT
   -DPYTHONPATH_ADD=${PythonPathAdd}
   -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
   )

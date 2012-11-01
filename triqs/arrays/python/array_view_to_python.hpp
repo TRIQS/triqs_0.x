@@ -20,8 +20,8 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_TO_PYTHON_H
 #define TRIQS_ARRAYS_TO_PYTHON_H 
-#ifndef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-#error "You must define the macro TRIQS_ARRAYS_WITH_PYTHON_SUPPORT to use Python interface"
+#ifndef TRIQS_WITH_PYTHON_SUPPORT
+#error "You must define the macro TRIQS_WITH_PYTHON_SUPPORT to use Python interface"
 #endif
 #include <triqs/python_tools/converters.hpp>
 #include <complex>

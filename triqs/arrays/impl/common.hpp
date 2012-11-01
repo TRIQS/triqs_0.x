@@ -27,8 +27,8 @@
 #define ARRAY_NRANK_MAX 10
 
 // including python first remove some warning
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-#include <boost/tuple/tuple_io.hpp>
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+//#include <boost/tuple/tuple_io.hpp>
 #include "Python.h"
 #endif
 

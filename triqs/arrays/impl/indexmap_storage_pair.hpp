@@ -39,7 +39,7 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
 #endif
 
@@ -89,7 +89,7 @@ namespace triqs { namespace arrays {
     /// Shallow copy
     indexmap_storage_pair(const indexmap_storage_pair & X):indexmap_(X.indexmap()),storage_(X.storage_){}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) { 
      try { 
       numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, allow_copy);
