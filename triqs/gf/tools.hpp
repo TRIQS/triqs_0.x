@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_TOOLS_H
 #define TRIQS_GF_TOOLS_H
+#include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
 #include <triqs/utility/cint.hpp>
