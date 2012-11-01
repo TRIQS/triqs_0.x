@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_MESH_PRODUCT_H
 #define TRIQS_GF_MESH_PRODUCT_H
-#include "../tools.hpp"
+#include "./mesh_tools.hpp"
 #include "../domains/product.hpp"
 namespace triqs { namespace gf {
 

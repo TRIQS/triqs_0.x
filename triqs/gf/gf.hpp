@@ -230,6 +230,9 @@ namespace triqs { namespace gf {
    g.singularity_view() = rhs.singularity_view();
   }
 
+ // tool for lazy transformation
+ template<typename Tag, typename D> struct gf_keeper{ gf_view<D> g; gf_keeper (gf_view<D> const & g_) : g(g_) {} };
+
  // ---------------------------------- slicing ------------------------------------
 
  template<typename Descriptor, bool V, typename... Args> 

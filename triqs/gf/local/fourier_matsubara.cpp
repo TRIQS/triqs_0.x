@@ -38,14 +38,8 @@ namespace triqs { namespace gf {
 
  //--------------------------------------------------------------------------------------
 
- gf<matsubara_freq> fourier_direct (gf<matsubara_time> const & gt) { 
-
+ void fourier_impl  (gf_view<matsubara_freq> &gw , gf_view<matsubara_time> const & gt){
   auto ta = gt(freq_infty());
-  //matsubara_freq::mesh_t res_mesh(matsubara_freq::domain_t(gt.domain().beta, gt.domain().statistic), gt.mesh().size());
-  //auto gw = make_gf(matsubara_freq(), res_mesh, gt.shape(),ta); 
-  auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.mesh().size(), gt.shape(),ta); 
-  //gf<matsubara_freq> gw (  res_mesh, gt.shape(),ta); 
- 
   long numberTimeSlices = gt.mesh().size();
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);
@@ -77,7 +71,6 @@ namespace triqs { namespace gf {
      gw(w)(n1,n2) = g_out(w.index)*exp(I*2*w.index*Pi/Beta*gt.mesh().delta()) + a1/(w - b1) + a2 / (w-b2) + a3/(w-b3); 
     }
    }
-  return gw;
  }
  //---------------------------------------------------------------------------
 
@@ -86,20 +79,14 @@ namespace triqs { namespace gf {
 
  //---------------------------------------------------------------------------
 
- gf<matsubara_time> fourier_inverse (gf<matsubara_freq> const & gw) { 
-
+ void inverse_fourier_impl (gf_view<matsubara_time> &gt,  gf_view<matsubara_freq> const & gw) { 
   static bool Green_Function_Are_Complex_in_time = false;
-
   auto ta = gw(freq_infty());
-//  matsubara_time::mesh_t res_mesh(gw.domain().beta, gw.domain().statistic, gw.mesh().size());
-//  auto gt = make_gf(matsubara_time(), res_mesh, gw.shape(),ta); 
-  auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.mesh().size(), gw.shape(),ta); 
-  //gf<matsubara_time> gt (  res_mesh,gw.shape(), ta); 
 
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);
   tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out (gt.mesh().size()); 
-  
+
   using namespace impl_local_matsubara;
   for (int n1=0; n1<gt.shape()[0];n1++)
    for (int n2=0; n2<gt.shape()[1];n2++) {
@@ -138,7 +125,6 @@ namespace triqs { namespace gf {
       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index) + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta)+ oneBoson(a3,b3,t,Beta) );
     }
    }
-  return gt;
  }
 
 }}

@@ -26,34 +26,35 @@
 
 namespace triqs { namespace gf { 
 
- // First the implementation of the fourier transform
- void fourier_impl         (gf_view<matsubara_freq> &gw , gf_view<matsubara_time> const & gt);
- void inverse_fourier_impl (gf_view<matsubara_time> &gt,  gf_view<matsubara_freq> const & gw);
+ template<typename Tag, typename D> struct gf_lazy_impl{ gf_view<D> g; gf_lazy_impl (gf_view<D> const & g_) : g(g_) {} };
 
- // Then a good old function make a new gf 
- gf<matsubara_freq> fourier (gf_view<matsubara_time> const & gt) { 
+ namespace tags { struct fourier{}; }
+
+ void triqs_gf_view_assign_delegation( gf_view<matsubara_freq> &g, gf_lazy_impl<tags::fourier,matsubara_time> const & L) { fourier_direct_impl (g,L.g);}
+ void triqs_gf_view_assign_delegation( gf_view<matsubara_time> &g, gf_lazy_impl<tags::fourier,matsubara_freq> const & L) { fourier_inverse_impl(g,L.g);}
+ 
+ gf_lazy_impl<tags::fourier,matsubara_time> lazy_fourier_direct  (gf_view<matsubara_time> const & g) { return g;}
+ gf_lazy_impl<tags::fourier,matsubara_freq> lazy_fourier_inverse (gf_view<matsubara_freq> const & g) { return g;}
+
+ void fourier_direct_impl  (gf_view<matsubara_freq> &gw , gf_view<matsubara_time> const & gt);
+ void fourier_inverse_impl (gf_view<matsubara_time> &gt,  gf_view<matsubara_freq> const & gw);
+
+ gf<matsubara_freq> fourier_direct (gf_view<matsubara_time> const & gt) { 
   auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.mesh().size(), gt.shape(),gt(freq_infty()));
   auto V = gw();
-  fourier_impl(V,gt);
+  fourier_direct_impl(V,gt);
   return gw;
  }
 
- gf<matsubara_time> inverse_fourier (gf_view<matsubara_freq> const & gw) { 
+ gf<matsubara_time> fourier_inverse (gf_view<matsubara_freq> const & gw) { 
   auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.mesh().size(), gw.shape(),gw(freq_infty()));
   auto V = gt();
-  inverse_fourier_impl(V,gw);
+  fourier_inverse_impl(V,gw);
   return gt;
  }
 
- // Finally the lazy system for the = operator for views....
- namespace tags { struct fourier{}; }
-
- gf_keeper<tags::fourier,matsubara_time> lazy_fourier         (gf_view<matsubara_time> const & g) { return g;}
- gf_keeper<tags::fourier,matsubara_freq> lazy_inverse_fourier (gf_view<matsubara_freq> const & g) { return g;}
-
- void triqs_gf_view_assign_delegation( gf_view<matsubara_freq> &g, gf_keeper<tags::fourier,matsubara_time> const & L) { fourier_impl (g,L.g);}
- void triqs_gf_view_assign_delegation( gf_view<matsubara_time> &g, gf_keeper<tags::fourier,matsubara_freq> const & L) { inverse_fourier_impl(g,L.g);}
 
 }}
 #endif
+
 

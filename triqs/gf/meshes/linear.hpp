@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_MESH_LINEAR_H
 #define TRIQS_GF_MESH_LINEAR_H
-#include "../tools.hpp"
+#include "./mesh_tools.hpp"
 namespace triqs { namespace gf { 
 
  template<typename Domain>

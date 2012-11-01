@@ -63,9 +63,6 @@ int main() {
 
  std::cout  <<"-------------------------------------"<<std::endl;
 
-#define SUITE
-#ifdef SUITE
-
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
@@ -121,5 +118,6 @@ int main() {
  // test hdf5 
  H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );
  h5_write(file, "g", G);
-#endif
+
+
 }
