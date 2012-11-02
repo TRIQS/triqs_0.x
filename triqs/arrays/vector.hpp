@@ -239,41 +239,6 @@ namespace triqs { namespace arrays {
    T a = 1/rhs; boost::numeric::bindings::blas::scal(a,lhs);
   } 
 
-
- /*
-    namespace details { 
-
- // = for vector & vector_view.
- template<typename LHS, typename RHS> 
- struct assign_impl<LHS ,RHS, typename boost::enable_if<boost::mpl::and_<is_vector_or_view<LHS>,is_vector_or_view <RHS > > >::type > { 
- LHS & lhs; const RHS & rhs;
- assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
- void invoke() { // std::cerr<<" vector view = with blas"<<std::endl;
- boost::numeric::bindings::blas::copy(rhs,lhs);} 
- };
-
- // *= and /= for scalar RHS, for vector_view.
- template<typename LHS, typename RHS, char OP> 
- struct comp_assign_impl<LHS,RHS,OP, 
- typename boost::enable_if<boost::mpl::and_<_is_MD<OP>, is_scalar_for<RHS,LHS >, is_vector_or_view<LHS> > >::type > { 
- LHS & lhs; const RHS & rhs;
- comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
- void invoke() {  // std::cerr<<" vector *= with blas"<<std::endl;
- typename LHS::value_type  a = (OP=='M' ? rhs : 1/rhs); boost::numeric::bindings::blas::scal(a,lhs);} 
- };
-
- // += and -= for vector with blas
- template<typename LHS, typename RHS,char OP> 
- struct comp_assign_impl<LHS,RHS,OP, 
- typename boost::enable_if<boost::mpl::and_<_is_AS<OP>, is_vector_or_view <RHS >, is_vector_or_view<LHS>  > >::type > { 
- LHS & lhs; const RHS & rhs;
- comp_assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
- void invoke() { //  std::cerr<<" vector += with blas"<<std::endl;
- typename LHS::value_type a = (OP=='A' ? 1.0 : -1.0); boost::numeric::bindings::blas::axpy(a,rhs,lhs);} 
- };
-
- }
- */
  // swapping 2 vector 
  template <typename V, typename S1, typename S2>
   void swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
