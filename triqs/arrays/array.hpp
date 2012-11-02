@@ -57,9 +57,6 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){} 
-
-   /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit array_view (boost::python::object X): IMPL_TYPE(X.ptr(), false, "array_view "){} 
 #endif
 
 #ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
@@ -123,9 +120,6 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
     explicit array (PyObject * X): IMPL_TYPE(X, true, "array "){}
-
-    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-    explicit array (boost::python::object X): IMPL_TYPE(X.ptr(), true, "array "){}
 #endif
 
     /** 

@@ -21,6 +21,7 @@
 #ifndef TRIQS_ARRAYS_BOOST_CONVERTER_H
 #define TRIQS_ARRAYS_BOOST_CONVERTER_H
 #include "./array_view_to_python.hpp"
+#include <boost/python.hpp>
 #include <triqs/python_tools/converters.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>

@@ -40,7 +40,7 @@ namespace triqs { namespace lattice_tools {
  bravais_lattice::bravais_lattice( boost::python::object units__, boost::python::object orbitals__) : 
   units_(3,3), dim_(boost::python::len(units__)), orbitals_() { 
   //units_(3,3), dim_(units__.len(0)), orbitals_() { 
-   cons_deleg(array<double,2>(units__));
+   cons_deleg(array<double,2>(units__.ptr()));
    //if (orbitals__) 
     orbitals_ = python_tools::converter<orbital_type>::Py2C(orbitals__);
    //else { R_type z(3); z()=0; orbitals_.insert(std::make_pair("",z));}

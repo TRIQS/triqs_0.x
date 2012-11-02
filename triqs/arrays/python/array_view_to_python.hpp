@@ -23,9 +23,7 @@
 #ifndef TRIQS_WITH_PYTHON_SUPPORT
 #error "You must define the macro TRIQS_WITH_PYTHON_SUPPORT to use Python interface"
 #endif
-#include <triqs/python_tools/converters.hpp>
 #include <complex>
-#include <boost/python/handle.hpp>
 #include "../array.hpp"
 
 namespace triqs { namespace arrays { namespace numpy_interface  {

@@ -25,13 +25,16 @@
 #include "../storages/shared_block.hpp"
 #include "triqs/utility/exceptions.hpp"
 #include "numpy/arrayobject.h"
-#include <boost/python.hpp>
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
- namespace bpy= boost::python;
- inline std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
- inline std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
+ //inline std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
+ //inline std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
+ 
+ inline std::string object_to_string (PyObject * p) { 
+  if (!PyString_Check(p)) TRIQS_RUNTIME_ERROR<<" Internal error, expected a python string .....";
+  return PyString_AsString(p); 
+ } 
 
  template <class T> struct numpy_to_C_type;
 #define CONVERT(C,P) template <> struct numpy_to_C_type<C> { enum {arraytype = P}; }

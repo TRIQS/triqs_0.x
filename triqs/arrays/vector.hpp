@@ -56,9 +56,6 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
    explicit vector_view (PyObject * X): IMPL_TYPE(X, false, "vector_view "){}
-
-   /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit vector_view (boost::python::object X): IMPL_TYPE(X.ptr(), false, "vector_view "){}
 #endif
 
    /// Copy construction
@@ -103,9 +100,6 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
    explicit vector (PyObject * X): IMPL_TYPE(X, true, "vector "){}
-
-   ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-   explicit vector (boost::python::object X): IMPL_TYPE(X.ptr(), true, "vector "){}
 #endif
 
    /** Makes a true (deep) copy of the data. */
