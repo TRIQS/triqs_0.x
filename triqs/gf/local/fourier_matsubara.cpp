@@ -46,8 +46,8 @@ namespace triqs { namespace gf {
   tqa::vector<dcomplex> g_in(gt.mesh().size()), g_out (gw.mesh().size()); 
 
   using namespace impl_local_matsubara;
-  for (int n1=0; n1<gw.shape()[0];n1++)
-   for (int n2=0; n2<gw.shape()[1];n2++) {
+  for (int n1=0; n1<gw.data_view().shape()[0];n1++)
+   for (int n2=0; n2<gw.data_view().shape()[1];n2++) {
     dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
     double b1, b2, b3;
     dcomplex a1, a2, a3;
@@ -88,8 +88,8 @@ namespace triqs { namespace gf {
   tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out (gt.mesh().size()); 
 
   using namespace impl_local_matsubara;
-  for (int n1=0; n1<gt.shape()[0];n1++)
-   for (int n2=0; n2<gt.shape()[1];n2++) {
+  for (int n1=0; n1<gt.data_view().shape()[0];n1++)
+   for (int n2=0; n2<gt.data_view().shape()[1];n2++) {
     dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
 
     double b1, b2, b3;

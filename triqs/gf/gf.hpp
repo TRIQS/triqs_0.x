@@ -70,8 +70,8 @@ namespace triqs { namespace gf {
 
    symmetry_t const & symmetry() const { return _symmetry;}
 
-   typedef tqa::mini_vector<size_t,target_t::rank> shape_t;
-   shape_t shape() const { return data.shape().pop(); }
+   //typedef tqa::mini_vector<size_t,target_t::rank> shape_t;
+   //shape_t shape() const { return data.shape().pop(); }
 
   protected:
    mesh_t _mesh;

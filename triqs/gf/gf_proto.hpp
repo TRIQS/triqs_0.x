@@ -108,7 +108,7 @@ namespace triqs { namespace gf {
 
 
    //------ computation of the shape of the expression ----
-
+/*
    struct gf_combine_shape_t { 
     BOOST_PROTO_CALLABLE();
     template<typename Sig> struct result;
@@ -130,7 +130,7 @@ namespace triqs { namespace gf {
     ,proto::when< gf_leaf_grammar, gf_combine_shape_t (proto::_value, proto::_state) >
     ,proto::when<proto::nary_expr<proto::_, proto::vararg<proto::_> >,  proto::fold<proto::_, proto::_state, gf_shape_t >() >
     > {};
-
+*/
   };
 }}
 
@@ -146,7 +146,6 @@ typedef tup::domain_with_copy<gf_proto_tools<ST,GFT,DESC::arity>::gf_grammar,gf_
 template<typename Expr> struct gf_expr_##DESC : DESC::tag, proto::extends<Expr, gf_expr_##DESC<Expr>, gf_expr_domain_##DESC> {\
  \
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_mesh_t gf_mesh_t;\
- typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_shape_t gf_shape_t;\
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_eval_t gf_eval_t;\
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_data_tr gf_data_tr;\
  typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_singularity_tr gf_singularity_tr;\
@@ -162,10 +161,7 @@ template<typename Expr> struct gf_expr_##DESC : DESC::tag, proto::extends<Expr, 
  typedef typename boost::result_of<gf_mesh_t(Expr,gf_no_mesh) >::type mesh_t;\
  mesh_t mesh()   const {return gf_mesh_t() (*this,gf_no_mesh());} \
  \
- typedef typename boost::result_of<gf_shape_t(Expr,gf_no_shape) >::type shape_t;\
- shape_t shape() const {return gf_shape_t()(*this,gf_no_shape());} \
- \
- template<typename T> typename boost::result_of<gf_eval_t(Expr,bf::vector<T>)>::type \
+template<typename T> typename boost::result_of<gf_eval_t(Expr,bf::vector<T>)>::type \
  operator()(T const & x) const {return gf_eval_t()(*this,bf::make_vector(x));}\
  \
  template<typename T1,typename T2> typename boost::result_of<gf_eval_t(Expr,bf::vector<T1,T2>)>::type \
@@ -174,5 +170,12 @@ template<typename Expr> struct gf_expr_##DESC : DESC::tag, proto::extends<Expr, 
  friend std::ostream &operator <<(std::ostream &sout, gf_expr_##DESC <Expr> const &expr) { return tup::print_algebra(sout,expr);} \
 };\
 BOOST_PROTO_DEFINE_OPERATORS(GFT, gf_expr_domain_##DESC);
+ 
 
+/*
+ * typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_shape_t gf_shape_t;\
+ typedef typename boost::result_of<gf_shape_t(Expr,gf_no_shape) >::type shape_t;\
+ shape_t shape() const {return gf_shape_t()(*this,gf_no_shape());} \
+ \
+*/ 
 #endif

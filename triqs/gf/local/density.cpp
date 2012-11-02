@@ -30,7 +30,7 @@ namespace triqs { namespace gf {
  // ------------------------------------------------------
  tqa::matrix<double> density( gf_view<matsubara_freq> const & G) { 
   dcomplex I(0,1);
-  auto sh = G.shape();
+  auto sh = G.data_view().shape().pop();
   auto Beta = G.domain().beta;
   local::tail_view t = G(freq_infty());
   if (!t.is_decreasing_at_infinity())  TRIQS_RUNTIME_ERROR<<" density computation : Green Function is not as 1/omega or less !!!";
