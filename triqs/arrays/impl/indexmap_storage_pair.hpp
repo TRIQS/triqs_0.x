@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAY_IMPL_INDEX_STORAGE_PAIR_H
 #define TRIQS_ARRAY_IMPL_INDEX_STORAGE_PAIR_H
 
@@ -48,21 +46,17 @@ namespace triqs { namespace arrays {
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
  template < class V, int R, class Opt, class ViewTag > struct ViewFactory;
- namespace details { 
 
-  template <typename IndexMapType, typename StorageType, typename Opt,  typename ViewTag > 
-   class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray),
-    public sliceable_object <
-    typename StorageType::value_type,
-    IndexMapType,
-    Opt,
-    ViewTag, 
-    ViewFactory,
-    indexmaps::slicer,
-    indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag>
-    >
-  {    
-    
+ template <typename IndexMapType, typename StorageType, typename Opt,  typename ViewTag > 
+  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray),
+  public sliceable_object < typename StorageType::value_type,
+  IndexMapType,
+  Opt,
+  ViewTag, 
+  ViewFactory,
+  indexmaps::slicer,
+  indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag> > {    
+
    public : 
     typedef typename StorageType::value_type value_type;
     typedef StorageType storage_type;
@@ -72,6 +66,8 @@ namespace triqs { namespace arrays {
    protected:
     indexmap_type indexmap_;
     storage_type storage_;
+
+    indexmap_storage_pair() {}
 
     indexmap_storage_pair (const indexmap_type & IM, const storage_type & ST):
      indexmap_(IM),storage_(ST){
@@ -98,14 +94,20 @@ namespace triqs { namespace arrays {
      catch(numpy_interface::copy_exception s){// intercept only this one...
       TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
-     //  <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
+       //  <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
        <<"\n   Opt = "<< triqs::utility::typeid_name(Opt())
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X) 
        <<"\nThe error was :\n "<<s.what();
      }
     }
-    
+
 #endif
+
+     void swap_me( indexmap_storage_pair & X) {
+     std::swap(this->indexmap_,X.indexmap_); std::swap (this->storage_, X.storage_);
+    }
+
+    friend void swap( indexmap_storage_pair & A, indexmap_storage_pair & B) { A.swap_me(B);}
 
    public:
 
@@ -164,11 +166,10 @@ namespace triqs { namespace arrays {
       ar & boost::serialization::make_nvp("indexmap",this->indexmap_);
      }
   };// end class
- }//details
 
  // pretty print of the array
  template <typename I, typename S ,class Opt, typename V> 
-  std::ostream & operator << (std::ostream & out, const triqs::arrays::details::indexmap_storage_pair<I,S,Opt,V> & A) {
+  std::ostream & operator << (std::ostream & out, const triqs::arrays::indexmap_storage_pair<I,S,Opt,V> & A) {
    //std::cerr<< "Lengths = "<<A.indexmap().lengths()<<"Strides = "<<A.indexmap().strides()<< "  ";
    if (A.storage().size()==0) out<<"empty ";
    else pretty_print(out, A.indexmap().domain(),A);

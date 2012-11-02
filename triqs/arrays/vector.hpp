@@ -33,7 +33,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- implementation --------------------------------
 
-#define IMPL_TYPE details::indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
+#define IMPL_TYPE indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
  
  /** */
  template <typename ValueType, typename Opt >
@@ -62,7 +62,7 @@ namespace triqs { namespace arrays {
    vector_view(vector_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
-   vector_view ():IMPL_TYPE(indexmap_type(),storage_type()) {}
+   vector_view () {}
 #endif
 
    /// Rebind the view
@@ -92,7 +92,10 @@ namespace triqs { namespace arrays {
    typedef void has_view_type_tag;
 
    /// Empty vector.
-   vector():IMPL_TYPE(indexmap_type(),storage_type()) {}
+   vector(){}
+
+   // Move
+   explicit vector(vector && X) { this->swap_me(X); }
 
    ///
    vector(size_t dim):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) {}
@@ -141,12 +144,15 @@ namespace triqs { namespace arrays {
      return *this; 
     }
 
+   /// Move assignment
+   vector & operator=(vector && X) { swap(*this, X); return *this;}
+
    ///
    size_t size() const { return this->shape()[0];} 
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
- };//vector class
+  };//vector class
 }}//namespace triqs::arrays
 
 #undef IMPL_TYPE
@@ -241,11 +247,17 @@ namespace triqs { namespace arrays {
 
  // swapping 2 vector 
  template <typename V, typename S1, typename S2>
-  void swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
+  void deep_swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
 
  template <typename V, typename S1, typename S2>
-  void swap(vector <V,S1> & x, vector<V,S2>  & y) { boost::numeric::bindings::blas::swap(x,y);} 
+  void deep_swap(vector <V,S1> & x, vector<V,S2>  & y) { boost::numeric::bindings::blas::swap(x,y);} 
 
 }}
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std { 
+ template <typename V, typename S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
+}
 #endif
 

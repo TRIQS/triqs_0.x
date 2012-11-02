@@ -414,12 +414,12 @@ namespace triqs { namespace det_manip {
      {
       range R(0,N);
       if (w1.jreal !=N-1){
-       triqs::arrays::swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
+       triqs::arrays::deep_swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
        y_values[w1.jreal] = y_values[N-1]; 
       }
 
       if (w1.ireal !=N-1){
-       triqs::arrays::swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
+       triqs::arrays::deep_swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
        x_values[w1.ireal] = x_values[N-1];
       }
      }
@@ -494,19 +494,19 @@ namespace triqs { namespace det_manip {
      range R(0,N);
 
      if (j_real_max != N-1) { 
-      triqs::arrays::swap( mat_inv(j_real_max,R), mat_inv(N-1,R));
+      triqs::arrays::deep_swap( mat_inv(j_real_max,R), mat_inv(N-1,R));
       y_values[ j_real_max ] = y_values[N-1];
      }
      if (j_real_min != N-2) { 
-      triqs::arrays::swap( mat_inv(j_real_min,R), mat_inv(N-2,R));
+      triqs::arrays::deep_swap( mat_inv(j_real_min,R), mat_inv(N-2,R));
       y_values[ j_real_min ] = y_values[N-2];
      }
      if (i_real_max != N-1) { 
-      triqs::arrays::swap (mat_inv(R,i_real_max),  mat_inv(R,N-1));
+      triqs::arrays::deep_swap (mat_inv(R,i_real_max),  mat_inv(R,N-1));
       x_values[ i_real_max ] = x_values[N-1];
      }
      if (i_real_min != N-2) { 
-      triqs::arrays::swap (mat_inv(R,i_real_min),  mat_inv(R,N-2));
+      triqs::arrays::deep_swap (mat_inv(R,i_real_min),  mat_inv(R,N-2));
       x_values[ i_real_min ] = x_values[N-2];
      }
 

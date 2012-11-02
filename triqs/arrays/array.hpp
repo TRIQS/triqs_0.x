@@ -33,7 +33,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- implementation --------------------------------
 
-#define IMPL_TYPE details::indexmap_storage_pair<typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > 
+#define IMPL_TYPE indexmap_storage_pair<typename R_Opt_2_IM<Rank,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::array_view > 
 
  template <typename ValueType, int Rank, typename Opt>
   class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE {   
@@ -60,7 +60,7 @@ namespace triqs { namespace arrays {
 #endif
 
 #ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
-   array_view ():IMPL_TYPE(indexmap_type(),storage_type()) {}
+   array_view (){}
 #endif
 
    /// Rebind the view
@@ -88,7 +88,7 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty array.
-    array():IMPL_TYPE(indexmap_type(),storage_type()) {}
+    array() {} 
 
     /// From a domain
     explicit array( typename indexmap_type::domain_type const & dom):IMPL_TYPE(indexmap_type(dom)){}
@@ -107,6 +107,9 @@ namespace triqs { namespace arrays {
 
      // Makes a true (deep) copy of the data. 
      array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
+
+     // Move
+     explicit array(array && X) { this->swap_me(X); } 
 
     /** 
      * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
@@ -131,6 +134,9 @@ namespace triqs { namespace arrays {
     /// Assignement resizes the array.  All references to the storage are therefore invalidated.
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
+    /// Move assignment
+    array & operator=(array && X) { swap(*this, X); return *this;}
+
     /** 
      * Assignement resizes the array (if necessary).
      * All references to the storage are therefore invalidated.
@@ -150,6 +156,14 @@ namespace triqs { namespace arrays {
 }}//namespace triqs::arrays
 
 #undef IMPL_TYPE
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std { 
+ template <typename V, int R,  typename Opt >
+  void swap( triqs::arrays::array_view<V,R,Opt> & a , triqs::arrays::array_view<V,R,Opt> & b)= delete;
+}
+
 #ifdef TRIQS_HAS_LAZY_EXPRESSIONS
 #include <triqs/clef/adapters/array.hpp>
 #endif

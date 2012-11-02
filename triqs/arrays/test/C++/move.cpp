@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,46 +18,30 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
-
+#include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include <iostream>
 
-using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::vector<double> V(5), W;
+ {
+  array<double, 1> A (3); A() = 9;
+  array<double,1> B( std::move(A));
+  std::cout  << " A = "<< A << " B = "<< B << std::endl ; 
+ }
 
- for (int i =0; i<5; ++i) 
- V(i) = i+1;
-
- std::cout<< V<<std::endl; 
- W = V;
- std::cout<< W <<std::endl; 
- std::cout<< V<<std::endl; 
-
- triqs::arrays::vector<double> A(3);
- A() = 10; 
- W(range(0,6,2)) = A;
- std::cout<< W <<std::endl; 
-
- W +=V;
- std::cout<< W <<std::endl; 
-
- W -=V;
- std::cout<< W <<std::endl; 
-
- V *=2;
- std::cout<< "W = "<<W <<std::endl; 
- std::cout<< "V = "<<V <<std::endl; 
- triqs::arrays::deep_swap(W,V);
- std::cout<< "W = "<<W <<std::endl; 
- std::cout<< "V = "<<V <<std::endl; 
+ {
+  array<double, 1> A (3); A() = 9;
+  array<double,1> B;
+  B = std::move(A);
+  std::cout  << " A = "<< A << " B = "<< B << std::endl ; 
+ }
 
  return 0;
 }
+
