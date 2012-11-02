@@ -63,9 +63,9 @@ cdef class GFBloc_ImTime_cython:
     cdef object _mesh
     def __init__(self, MeshMatsubaraTime mesh, data, TailGF_c tail):
         self._c.rebind( gf_view_time ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c, nothing() ))
+        self._mesh = mesh
     
     def setFromInverseFourierOf(self, GFBloc_ImFreq_cython gw) : 
         """Fills self with the Inverse Fourier transform of gw"""        
         self._c = lazy_inverse_fourier( gw._c)
-
 

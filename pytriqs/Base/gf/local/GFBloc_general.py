@@ -76,7 +76,10 @@ class _GFBloc_general :
         self._tail.copyFrom(G._tail)
 
     #------------------  Access to data ---------------------------------------
- 
+    @property
+    def mesh(self):
+             return self._mesh  
+
     @property
     def _data(self) : 
         return ArrayViewWithIndexConverter(self.__data_raw, self._IndicesL, self._IndicesR, None)
