@@ -56,14 +56,18 @@ namespace triqs { namespace gf {
   static const int arity =1;
 
   /// All the possible calls of the gf
-  template<typename D, typename T>
-   target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double w0)  const {
-    return data(arrays::range(), arrays::range(),mesh.index_to_linear(mesh.point_to_index (w0))); 
-   } 
+  struct evaluator { 
+   template<typename D, typename T>
+    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double w0)  const {
+     return data(arrays::range(), arrays::range(),mesh.index_to_linear(mesh.point_to_index (w0))); 
+    } 
 
-  template<typename D, typename T>
-   local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+   template<typename D, typename T>
+    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+  };
 
+  struct bracket_evaluator {};
+  
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 

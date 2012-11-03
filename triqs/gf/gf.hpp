@@ -18,10 +18,11 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_GF_H
-#define TRIQS_GF_GF_H
+#ifndef TRIQS_GF_GFBASECLASS_H
+#define TRIQS_GF_GFBASECLASS_H
 #include "./tools.hpp"
 #include <triqs/arrays/h5.hpp>
+#include <vector>
 
 namespace triqs { namespace gf { 
 
@@ -30,6 +31,51 @@ namespace triqs { namespace gf {
 
  // ---------------------- implementation --------------------------------
 
+ // A class to store the values of the gf on a mesh when they are not array/matrix
+ // Like a vector, but dressed ....
+ 
+ template< typename T, bool IsView> class vector_storage { 
+ public:
+  typedef typename view_type_if_exists_else_type<T>::type  T_view_t;
+  typedef typename mpl::if_c<IsView, T_view_t, T>::type    T_t;
+  typedef typename mpl::if_c<!IsView, T_view_t, T>::type   T_other_t;
+  
+  typedef void has_view_type_tag;  // Idiom : ValueView  
+  typedef vector_storage<T,true>  view_type;
+  typedef vector_storage<T,false> non_view_type;
+
+  vector_storage( vector_storage const &x) : data( x.data) {}
+  vector_storage( vector_storage &&x)      : data( std::move(x.data)) {}
+  vector_storage( vector_storage<T, !IsView> const & V) { data.reserve(V.data.size()); for (auto & x : V.data ) data.push_back(x); } 
+
+  vector_storage( std::vector<T_t>  const &V) : data(V){ } 
+  vector_storage( std::vector<T_t>  &&V) : data( std::move(V)) { }
+
+  vector_storage( std::vector<T_other_t>  const &V){ data.reserve(V.size()); for (auto & x : V ) data.push_back(x); }
+  vector_storage( std::vector<T_other_t>  &&V)     { data.reserve(V.size()); for (auto & x : V ) data.push_back(x); } 
+ 
+  template<typename V2>
+  ENABLE_IFC(IsView) rebind (V2 const & v) { size_t i=0; for (auto & x : v ) data[i++].rebind(x); }
+
+ // NB size must be the same. Add some safety
+  vector_storage & operator = ( vector_storage             const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x;  }
+  vector_storage & operator = ( vector_storage<T, !IsView> const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x;  }
+
+  T_view_t operator()(tqa::ellipsis, size_t i) const { return data[i];} // ellipsis just here to make later code simpler below...
+  T_view_t operator[](size_t i) const { return data[i];} 
+
+ private :
+  friend class vector_storage<T,!IsView>; 
+  std::vector<T_t> data;
+ };
+
+ // to metacompute the storage type
+
+ template <typename Target, typename SO, bool UsingBigArray> struct gf_storage_type;
+ template <typename Target, typename SO> struct gf_storage_type<Target,SO,true>  { typedef arrays::array < typename Target::value_type,Target::rank +1,SO> type;};
+ template <typename Target, typename SO> struct gf_storage_type<Target,SO,false> { typedef vector_storage <Target, false> type;};
+
+ //------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
  template<typename Descriptor,bool IsView> class gf_impl : Descriptor::tag {
   public : 
@@ -38,6 +84,9 @@ namespace triqs { namespace gf {
    typedef typename mesh_t::domain_t              domain_t;
    typedef typename Descriptor::target_t          target_t;
    typedef typename target_t::value_type          value_t;
+
+   typedef typename target_t::value_type          value_type; // CLEAN THIS EVERYWHERE !!!
+
    typedef typename mesh_t::mesh_point_t          mesh_point_t;
    typedef typename mesh_t::index_t               mesh_index_t;
    typedef typename Descriptor::singularity_t     singularity_non_view_t;
@@ -53,9 +102,12 @@ namespace triqs { namespace gf {
 
    typedef arrays::Option::C storage_order;
    //typedef arrays::Option::Fortran storage_order;
-   typedef arrays::array   <value_t,target_t::rank +1,storage_order>          data_non_view_t;
-   typedef typename data_non_view_t::view_type                                data_view_t;
-   typedef typename mpl::if_c<IsView, data_view_t, data_non_view_t>::type  data_t;
+
+   constexpr static bool using_big_array_storage = arrays::is_amv_value_class<target_t>::value; // let descriptor decide ?
+
+   typedef typename gf_storage_type<target_t, storage_order,using_big_array_storage>::type     data_non_view_t;
+   typedef typename data_non_view_t::view_type                                   data_view_t;
+   typedef typename mpl::if_c<IsView, data_view_t, data_non_view_t>::type        data_t;
 
    typedef typename mpl::if_c<IsView, singularity_view_t, singularity_non_view_t>::type   singularity_t;
 
@@ -70,14 +122,13 @@ namespace triqs { namespace gf {
 
    symmetry_t const & symmetry() const { return _symmetry;}
 
-   //typedef tqa::mini_vector<size_t,target_t::rank> shape_t;
-   //shape_t shape() const { return data.shape().pop(); }
-
   protected:
    mesh_t _mesh;
    data_t data;
    singularity_t singularity;
    symmetry_t _symmetry;
+   typename Descriptor::evaluator _evaluator;
+   typename Descriptor::bracket_evaluator _bracket_evaluator;
 
    // Constructors : protected, see gf/gf_view later for public one
    gf_impl() {} // all arrays of zero size (empty)
@@ -85,14 +136,13 @@ namespace triqs { namespace gf {
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(x.data_view()), singularity(x.singularity_view()), _symmetry(x.symmetry()){} 
 
    // from the data directly
-   // NOT GOOD : use the move !!
    gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s ) : 
-   _mesh(m), data(dat), singularity(ad),_symmetry(s){}
-   //gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s ) : 
-   // _mesh(m), data(std::forward<data_t>(dat)), singularity(ad),_symmetry(s){}
+    _mesh(m), data(dat), singularity(ad),_symmetry(s){}
+   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s ) : 
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s){}
 
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
-  
+
   public:
 
    /// Calls are (perfectly) forwarded to the Descriptor::operator(), except mesh_point_t and when 
@@ -103,9 +153,9 @@ namespace triqs { namespace gf {
     boost::is_base_of< typename std::remove_reference<Arg0>::type, mesh_point_t>,  // Arg0 is (a & or a &&) to a mesh_point_t 
     clef::one_is_lazy<Arg0, Args...>                          // One of Args is a lazy expression
      >,                                                       // end of OR 
-    std::result_of<Descriptor(mesh_t, data_t, singularity_t, Arg0, Args...)> // what is the result type of call
+    std::result_of<typename Descriptor::evaluator(mesh_t, data_t, singularity_t, Arg0, Args...)> // what is the result type of call
      >::type     // end of lazy_disable_if 
-     operator() (Arg0&& arg0, Args&&... args) const {return Descriptor()(_mesh, data, singularity, std::forward<Arg0>( arg0), std::forward<Args>(args)...);}
+     operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(_mesh, data, singularity, std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
    /// A direct access to the grid point 
    target_view_t operator() (mesh_point_t const & x)       { return data(tqa::ellipsis(),x.m->index_to_linear(x.index));}
@@ -138,6 +188,23 @@ namespace triqs { namespace gf {
    // Interaction with the CLEF library : auto assignment of the gf (gf(om_) = expression fills the functions by evaluation of expression)
    TRIQS_CLEF_HAS_AUTO_ASSIGN(); 
    template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
+
+   /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
+   //except when there is at least one lazy argument ...
+   template<typename Arg >   
+    typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
+    clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
+    std::result_of<typename Descriptor::evaluator(mesh_t, data_t, singularity_t, Arg)> // what is the result type of call
+     >::type     // end of lazy_disable_if 
+     operator[] (Arg&& arg) const {return _bracket_evaluator(_mesh, data, singularity, std::forward<Arg>( arg));}
+
+   // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+   template<typename Arg>
+    typename boost::lazy_enable_if<    // enable the template if
+    clef::one_is_lazy<Arg>,  // One of Args is a lazy expression
+    std::result_of<clef::lazy_call<view_type>(Arg)>
+     >::type     // end of lazy_enable_if 
+     operator[](Arg arg) const { return clef::lazy_call<view_type>(*this)(arg); }
 
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
@@ -179,7 +246,7 @@ namespace triqs { namespace gf {
 
   gf():B() {} 
 
-  gf(gf const & g): B(g){}
+  gf(gf const & g): B(g){ std::cout  << "gf copy const"<< std::endl ;}
 
   gf(gf_view<Descriptor> const & g): B(g){} 
 
@@ -187,9 +254,9 @@ namespace triqs { namespace gf {
 
   gf(typename B::mesh_t const & m, typename B::data_view_t const & dat, typename B::singularity_view_t const & si, typename B::symmetry_t const & s ) : 
    B(m,dat,si,s) {}
-  
+
   void operator = (gf const & rhs) { this->_mesh = rhs.mesh(); this->data = rhs.data; this->singularity = rhs.singularity;}
-  
+
   template<typename RHS> void operator = (RHS const & rhs) { 
    this->_mesh = rhs.mesh();
    this->data = rhs.data_view();
@@ -207,17 +274,17 @@ namespace triqs { namespace gf {
 #ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
   gf_view ():B(){}
 #endif
-  
+
   void rebind( gf_view const &X) { 
    this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->data.rebind(X.data); this->singularity.rebind(X.singularity); 
   }
-  
+
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
-  
+
   template<typename D, typename T> gf_view (typename B::mesh_t const & m, D const & dat,T const & t,typename B::symmetry_t const & s ) : B(m,dat,t,s) {}
-  
+
   void operator = (gf_view const & rhs)  { triqs_gf_view_assign_delegation(*this,rhs);}
-  
+
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
  };
 
@@ -225,7 +292,7 @@ namespace triqs { namespace gf {
  template<typename Descriptor, typename RHS> 
   void triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, RHS && rhs) { 
    if (!(g.mesh()  == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh";
-   if (!(g.shape() == rhs.shape())) TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible target shape";
+   //if (!(g.shape() == rhs.shape())) TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible target shape";
    g.data_view() = rhs.data_view();
    g.singularity_view() = rhs.singularity_view();
   }

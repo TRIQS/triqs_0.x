@@ -56,17 +56,21 @@ namespace triqs { namespace gf {
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
-  /// All the possible calls of the gf
-  template<typename D, typename T>
-   target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
-    size_t index; double w; bool in;
-    std::tie(index,w,in) = mesh.closest_point(t0);
-    // do something is in ==false !!
-    return data(arrays::range(), arrays::range(),mesh.index_to_linear(index)); 
-   } 
+  struct evaluator { 
+   /// All the possible calls of the gf
+   template<typename D, typename T>
+    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
+     size_t index; double w; bool in;
+     std::tie(index,w,in) = mesh.closest_point(t0);
+     // do something is in ==false !!
+     return data(arrays::range(), arrays::range(),mesh.index_to_linear(index)); 
+    } 
 
-  template<typename D, typename T>
-   local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+   template<typename D, typename T>
+    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+  };
+
+  struct bracket_evaluator {};
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
@@ -76,7 +80,7 @@ namespace triqs { namespace gf {
    }
 
   static std::string h5_name() { return "one_real_time";}
- 
+
   // -------------------------------   Factories  --------------------------------------------------
 
   typedef gf<one_real_time> gf_t;

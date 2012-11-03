@@ -56,11 +56,15 @@ namespace triqs { namespace gf {
 
   /// All the possible calls of the gf
   //ERROR : give a double and interpolate
+  struct evaluator { 
   template<typename D, typename T>
    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data(arrays::range(), arrays::range(),n); } 
 
   template<typename D, typename T>
    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+  };
+
+  struct bracket_evaluator {};
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 

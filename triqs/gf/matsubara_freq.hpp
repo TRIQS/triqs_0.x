@@ -55,11 +55,15 @@ namespace triqs { namespace gf {
   static const int arity =1;
 
   /// All the possible calls of the gf
-  template<typename D, typename T>
-   target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data(arrays::range(), arrays::range(),n); } 
+  struct evaluator { 
+   template<typename D, typename T>
+    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data(arrays::range(), arrays::range(),n); } 
 
-  template<typename D, typename T>
-   local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+   template<typename D, typename T>
+    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+  };
+
+  struct bracket_evaluator {};
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
@@ -97,7 +101,7 @@ namespace triqs { namespace gf {
   }
 
  };
-  
+
  typedef gf_view<matsubara_freq> gf_view_matsubara_freq_t;
 
  // -------------------------------   Expression template --------------------------------------------------
@@ -109,7 +113,7 @@ namespace triqs { namespace gf {
  TRIQS_GF_DEFINE_OPERATORS(matsubara_freq,local::is_scalar_or_element,ImmutableGfMatsubaraFreq);
 
 }}
- 
+
 typedef triqs::gf::matsubara_freq           triqs_gf_matsubara_freq_desc;
 typedef triqs::gf::matsubara_freq::domain_t triqs_gf_matsubara_freq_domain_t;
 #endif

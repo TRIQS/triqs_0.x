@@ -53,6 +53,7 @@ namespace triqs { namespace gf {
   static const int arity =2;
 
   /// All the possible calls of the gf
+  struct evaluator { 
   template<typename D, typename T>
    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0, double t1)  const {
     auto & m0 = mesh.component(zero); //std::get<0>(mesh.m_tuple);
@@ -60,7 +61,10 @@ namespace triqs { namespace gf {
     double s= m0.x_max()/m0.size();
     return data(arrays::range(), arrays::range(),mesh.index_to_linear( mesh_t::index_t(t0*s, t1*s)));//mesh.index_to_linear(mesh.point_to_index (t1,t2)));
    } 
+  };
 
+  struct bracket_evaluator {};
+  
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
