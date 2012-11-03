@@ -268,12 +268,9 @@ namespace triqs { namespace gf {
  ///The View class of GF
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
-
-  public :
-
-#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
   gf_view ():B(){}
-#endif
+  friend class view_proxy<gf_view>; // only one that can build empty views....
+  public :
 
   void rebind( gf_view const &X) { 
    this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->data.rebind(X.data); this->singularity.rebind(X.singularity); 
