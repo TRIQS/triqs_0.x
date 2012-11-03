@@ -60,8 +60,7 @@ solution evolves towards an insulator.
 
 .. literalinclude:: Mott.py
 
-The result of this script is an animated gif. Reload this page to see it from
-the beginning.
+The result of this script is an animated gif:
 
 .. image:: Mott.gif
    :width: 700

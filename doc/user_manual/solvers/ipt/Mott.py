@@ -73,7 +73,7 @@ for u in U:
 
 # Create an animated GIF
 # (you need to have 'convert' utility installed; it is a part of ImageMagick suite) 
-convert_cmd = "convert -delay 25 -loop 1"
+convert_cmd = "convert -delay 25 -loop 0"
 convert_cmd += " " + ' '.join(DOS_files)
 convert_cmd += " " + "DOS.gif"
 
