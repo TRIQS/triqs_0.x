@@ -30,6 +30,18 @@ namespace triqs {
  template<typename T> struct const_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
  // template<typename T> struct const_view_type_if_exists_else_type<const T, typename T::has_view_type_tag> {typedef const typename T::view_type type;}; 
 
+
+ // This is a little proxy, the only class allowed to build a view empty !
+ template<typename V> class view_proxy {
+  V _v;
+  public:
+  view_proxy() {}
+  void rebind( V const & v) { _v.rebind(v);}
+  V & operator() () { return _v;}
+  V const & operator() () const { return _v;}
+  template<typename V2> void operator <<( V2 && v) { _v = v;} 
+ };
+
 }//namespace triqs
 #endif
 
