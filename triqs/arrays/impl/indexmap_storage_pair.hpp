@@ -28,6 +28,7 @@
 #include "./sliceable_object.hpp"
 #include "triqs/utility/exceptions.hpp"
 #include "triqs/utility/typeid_name.hpp"
+#include "triqs/utility/view_tools.hpp"
 
 #include <boost/type_traits/add_const.hpp>
 #include <boost/shared_ptr.hpp>
