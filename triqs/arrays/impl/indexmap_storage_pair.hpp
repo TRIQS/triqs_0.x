@@ -37,6 +37,8 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
 
+#include <type_traits>
+
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
 #endif
@@ -59,6 +61,7 @@ namespace triqs { namespace arrays {
 
    public : 
     typedef typename StorageType::value_type value_type;
+    //static_assert(std::is_default_constructible<value_type>::value, "array/array_view and const operate only on values");
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static const unsigned int rank = IndexMapType::domain_type::rank;
