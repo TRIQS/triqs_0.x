@@ -114,7 +114,5 @@ namespace triqs { namespace gf {
 
 }}
 
-typedef triqs::gf::matsubara_freq           triqs_gf_matsubara_freq_desc;
-typedef triqs::gf::matsubara_freq::domain_t triqs_gf_matsubara_freq_domain_t;
 #endif
 

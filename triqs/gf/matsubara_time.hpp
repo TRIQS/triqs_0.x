@@ -112,7 +112,5 @@ namespace triqs { namespace gf {
 
 }}
 
-typedef triqs::gf::matsubara_time           triqs_gf_matsubara_time_desc;
-typedef triqs::gf::matsubara_time::domain_t triqs_gf_matsubara_time_domain_t;
 #endif
 
