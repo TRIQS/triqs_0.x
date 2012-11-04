@@ -36,6 +36,7 @@ namespace triqs {
   V _v;
   public:
   view_proxy() {}
+  view_proxy(V const &v) :_v(v){}
   void rebind( V const & v) { _v.rebind(v);}
   V & operator() () { return _v;}
   V const & operator() () const { return _v;}
