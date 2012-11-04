@@ -44,6 +44,12 @@ namespace triqs { namespace gf {
   typedef vector_storage<T,true>  view_type;
   typedef vector_storage<T,false> non_view_type;
 
+#ifndef TRIQS_ALLOW_EMPTY_VIEW
+ private:
+#endif
+  vector_storage(){}
+
+ public:
   vector_storage( vector_storage const &x) : data( x.data) {}
   vector_storage( vector_storage &&x)      : data( std::move(x.data)) {}
   vector_storage( vector_storage<T, !IsView> const & V) { data.reserve(V.data.size()); for (auto & x : V.data ) data.push_back(x); } 
@@ -51,19 +57,24 @@ namespace triqs { namespace gf {
   vector_storage( std::vector<T_t>  const &V) : data(V){ } 
   vector_storage( std::vector<T_t>  &&V) : data( std::move(V)) { }
 
-  vector_storage( std::vector<T_other_t>  const &V){ data.reserve(V.size()); for (auto & x : V ) data.push_back(x); }
-  vector_storage( std::vector<T_other_t>  &&V)     { data.reserve(V.size()); for (auto & x : V ) data.push_back(x); } 
- 
-  template<typename V2>
-  ENABLE_IFC(IsView) rebind (V2 const & v) { size_t i=0; for (auto & x : v ) data[i++].rebind(x); }
+  vector_storage( std::vector<T_other_t>  const &V){ data.reserve(V.size()); for (auto & x : V) data.push_back(x); }
+  vector_storage( std::vector<T_other_t>  &&V)     { data.reserve(V.size()); for (auto & x : V) data.push_back(x); } 
 
- // NB size must be the same. Add some safety
-  vector_storage & operator = ( vector_storage             const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x;  }
-  vector_storage & operator = ( vector_storage<T, !IsView> const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x;  }
+  template<typename V2, bool _is_view = IsView>
+   ENABLE_IFC(_is_view) rebind (V2 const & v) { data.clear(); for (auto & x : v ) data.push_back(x); }
+
+  // NB size must be the same. Add some safety
+  vector_storage & operator = ( vector_storage             const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this;  }
+  vector_storage & operator = ( vector_storage<T, !IsView> const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this; }
 
   T_view_t operator()(tqa::ellipsis, size_t i) const { return data[i];} // ellipsis just here to make later code simpler below...
   T_view_t operator[](size_t i) const { return data[i];} 
 
+  typedef typename std::vector<T_t>::const_iterator const_iterator;
+  const_iterator begin() const { return data.begin();}
+  const_iterator end() const { return data.end();}
+
+  bool is_empty() const { return data.size()==0;}
  private :
   friend class vector_storage<T,!IsView>; 
   std::vector<T_t> data;
@@ -142,6 +153,8 @@ namespace triqs { namespace gf {
     _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s){}
 
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
+
+   bool is_empty() const { return data.is_empty();}
 
   public:
 
@@ -246,7 +259,7 @@ namespace triqs { namespace gf {
 
   gf():B() {} 
 
-  gf(gf const & g): B(g){ std::cout  << "gf copy const"<< std::endl ;}
+  gf(gf const & g): B(g){}
 
   gf(gf_view<Descriptor> const & g): B(g){} 
 
@@ -268,19 +281,23 @@ namespace triqs { namespace gf {
  ///The View class of GF
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
+
+#ifdef TRIQS_ALLOW_EMPTY_VIEW
+  public:
+#endif
   gf_view ():B(){}
-  friend class view_proxy<gf_view>; // only one that can build empty views....
+  
+  //friend class view_proxy<gf_view>; // only one that can build empty views....
   public :
 
-  void rebind( gf_view const &X) { 
-   this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->data.rebind(X.data); this->singularity.rebind(X.singularity); 
-  }
+  void rebind( gf_view const &X) { this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->data.rebind(X.data); this->singularity.rebind(X.singularity); }
 
+  gf_view(gf_view const & g): B(g){}
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
 
   template<typename D, typename T> gf_view (typename B::mesh_t const & m, D const & dat,T const & t,typename B::symmetry_t const & s ) : B(m,dat,t,s) {}
 
-  void operator = (gf_view const & rhs)  { triqs_gf_view_assign_delegation(*this,rhs);}
+  void operator = (gf_view const & rhs)  { if (this->is_empty()) { rebind(rhs); return;} triqs_gf_view_assign_delegation(*this,rhs);}
 
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
  };

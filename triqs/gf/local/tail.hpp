@@ -152,15 +152,19 @@ namespace triqs { namespace gf { namespace local {
  ///The View class of GF
  class tail_view : public tail_impl <true> { 
   typedef tail_impl <true>  B;
+#ifdef TRIQS_ALLOW_EMPTY_VIEW
+  public:
+  tail_view ():B(){}
+#endif
   public :
   template<bool V> tail_view(tail_impl<V> const & t): B(t){}
   tail_view(B::data_type const &d, int order_min): B(d,order_min){}
-#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
-  tail_view ():B(){}
-#endif
   void rebind( tail_view const &X) { omin = X.omin; data.rebind(X.data);}
  
   using B::operator=; // import operator = from impl. class or the default = is synthetized 
+  tail_view & operator=(const tail_view & rhs) { 
+   if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; 
+  }
   using B::operator(); // import all previously defined operator() for overloading
   TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}

@@ -27,7 +27,7 @@ It is imported with the command::
   >>> from pytriqs.Base.gf.local import *
 """
 
-from pytriqs_GF3 import MeshMatsubaraFrequency 
+from pytriqs_GF3 import MeshMatsubaraFrequency, test_block 
 
 from inverse import inverse
 from TailGF import TailGF
@@ -40,7 +40,7 @@ from GF import GF
 from Descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
 
-__all__ = ['MeshMatsubaraFrequency','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGF','GFBloc_ImFreq','GFBloc_ImTime']
+__all__ = ['test_block', 'MeshMatsubaraFrequency','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGF','GFBloc_ImFreq','GFBloc_ImTime']
 
 #__all__ = ['GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','GFBloc_ImTime','GFBloc_ImFreq','GFBloc_ReFreq','GFBloc_ReTime','GFBloc_ImLegendre','GF', 'inverse']
 
