@@ -5,6 +5,7 @@ cimport cython
 from gf_matsubara_freq cimport *
 from gf_matsubara_time cimport *
 from fourier_matsubara cimport *
+from arrays cimport *   
 from libcpp.vector cimport vector
 
 cdef class TailGF_c:
@@ -15,6 +16,7 @@ cdef class TailGF_c:
 include "./matsubara_freq.pyx"
 include "./matsubara_time.pyx"  
 
+import numpy
 
 cdef extern from "pytriqs/Base/gf/local/a.hpp" namespace "triqs::gf" : 
 
@@ -23,18 +25,31 @@ cdef extern from "pytriqs/Base/gf/local/a.hpp" namespace "triqs::gf" :
     
     cdef gf_block_view_c make_gf_block_view_c "triqs::gf::block<matsubara_freq>::make_gf_view" (  vector[gf_view_freq_c] &) 
 
+    cdef void test_gf_c "test_gf" ( gf_view_freq_c &)  
     cdef void test_block_c "test_block" ( gf_block_view_c&)  
+    cdef void test2_c "test2" ( matrix_view[double,COrder] &) except + 
+    cdef void test3_c "test3" ( vector[matrix_view[double,COrder] ] &) except + 
+    #cdef void test3_c "test3" ( vector[double] &)  
 
 def test_block (G) : 
-    cdef vector[gf_view_freq_c] v
+    cdef vector[gf_view_freq_c] v_c
     for item in G:
-        v.push_back((<GFBloc_ImFreq_cython>item)._c)
+        v_c.push_back((<GFBloc_ImFreq_cython>item)._c)
     
-    cdef gf_block_view_c GG = make_gf_block_view_c (v)  
+    cdef gf_block_view_c GG = make_gf_block_view_c (v_c)  
     test_block_c (GG)
     
-    test_block_c (make_gf_block_view_c (v) )
+    test_block_c (make_gf_block_view_c (v_c) )
+     
+    #test_gf_c (G[0]) 
+def test2():
+    a = numpy.array([[1,2],[3,4]])
+    test2_c(a)
 
-
+def test3():
+    a = numpy.array([[1.0,2],[3,4]])
+    w = [a,a]
+    test3_c(w)
+    print a
 
 

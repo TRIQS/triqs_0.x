@@ -83,8 +83,10 @@ namespace triqs { namespace gf {
  // to metacompute the storage type
 
  template <typename Target, typename SO, bool UsingBigArray> struct gf_storage_type;
- template <typename Target, typename SO> struct gf_storage_type<Target,SO,true>  { typedef arrays::array < typename Target::value_type,Target::rank +1,SO> type;};
- template <typename Target, typename SO> struct gf_storage_type<Target,SO,false> { typedef vector_storage <Target, false> type;};
+ template <typename Target, typename SO> struct gf_storage_type<Target,SO,true>  
+ { typedef arrays::array < typename Target::value_type,Target::rank +1,SO> type;};
+ template <typename Target, typename SO> struct gf_storage_type<Target,SO,false> 
+ { typedef vector_storage <Target, false> type;};
 
  //------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
