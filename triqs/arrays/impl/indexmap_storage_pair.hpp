@@ -135,7 +135,8 @@ namespace triqs { namespace arrays {
 
     size_t num_elements() const { return domain().number_of_elements();}
 
-    bool is_empty() const { return this->num_elements()==0;}
+    //bool is_empty() const { return this->num_elements()==0;}
+    bool is_empty() const { return this->storage_.empty();}
 
     //  Evaluation. Slices are made by Sliceable object 
     typedef typename domain_type::index_value_type key_type;

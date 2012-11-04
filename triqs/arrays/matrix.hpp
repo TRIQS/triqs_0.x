@@ -95,9 +95,11 @@ namespace triqs { namespace arrays {
     /// Copy construction
     matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
-#ifdef TRIQS_ARRAYS_ALLOW_EMPTY_VIEW
-    matrix_view (){}
+#ifndef TRIQS_ALLOW_EMPTY_VIEW
+   private:
 #endif
+   matrix_view (){}
+   public:
 
     /// Rebind the view
     void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
@@ -105,7 +107,8 @@ namespace triqs { namespace arrays {
     /** Assignement.  The size of the array MUST match exactly.  */
     template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
 
-    matrix_view & operator=(matrix_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+    matrix_view & operator=(matrix_view const & X) { 
+     if (this->is_empty()) rebind(X); else triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
     _IMPL_MATRIX_COMMON;
