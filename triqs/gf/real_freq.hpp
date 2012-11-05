@@ -20,14 +20,14 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_FREQ_H
 #define TRIQS_GF_FREQ_H
-#include "../tools.hpp"
-#include "../gf.hpp"
-#include "../local/tail.hpp"
-#include "../gf_proto.hpp"
+#include "./tools.hpp"
+#include "./gf.hpp"
+#include "./local/tail.hpp"
+#include "./gf_proto.hpp"
 
 namespace triqs { namespace gf {
 
- struct freq {
+ struct real_freq {
 
   /// A tag to recognize the function 
   struct tag {};
@@ -75,14 +75,14 @@ namespace triqs { namespace gf {
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
 
-  static std::string h5_name() { return "freq";}
+  static std::string h5_name() { return "real_freq";}
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  typedef gf<one_real_freq> gf_t;
+  typedef gf<real_freq> gf_t;
 
   static gf_t make_gf(double tmax, double n_freq, tqa::mini_vector<size_t,2> shape) { 
-   one_real_freq::mesh_t m(one_real_freq::domain_t(),0, tmax,n_freq);
+   real_freq::mesh_t m(real_freq::domain_t(),0, tmax,n_freq);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), local::tail(shape), nothing() ) ;
   }
@@ -92,10 +92,10 @@ namespace triqs { namespace gf {
  // -------------------------------   Expression template --------------------------------------------------
 
  // A trait to identify objects that have the concept ImmutableGfFreq
- template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename freq::tag,G> {};  
+ template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename real_freq::tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(freq,local::is_scalar_or_element,ImmutableGfFreq);
+ // TRIQS_GF_DEFINE_OPERATORS(real_freq,local::is_scalar_or_element,ImmutableGfFreq);
 
 }}
 #endif
