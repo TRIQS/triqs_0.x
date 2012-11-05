@@ -10,6 +10,4 @@ add_subdirectory(Tools)
 add_subdirectory(Base)
 add_subdirectory(Wien2k)
 add_subdirectory(Solvers)
-add_subdirectory(Solvers/HybridizationExpansion)
-add_subdirectory(Solvers/HubbardI)
 
