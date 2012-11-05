@@ -92,6 +92,9 @@ add_definitions(
  -D__HOSTNAME__=${myHostName}
  )
 
+# Adding 
+add_definitions( -DBOOST_PP_VARIADICS=1 )
+
 # Tool to help to include the wrappers in main and declare the built-in module
 Find_package(PythonModuleEmbeddingTool)
 

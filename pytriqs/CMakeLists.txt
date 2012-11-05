@@ -2,7 +2,10 @@
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 # we do use triqs_array with python support
-add_definitions ( -DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT)
+add_definitions (-DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT)
+
+#
+add_definitions (-DTRIQS_ARRAYS_ALLOW_EMPTY_VIEW)
 
 install (FILES ${TRIQS_SOURCE_DIR}/pytriqs/__init__.py  DESTINATION ${TRIQS_PYTHON_LIB_DEST} )
 
