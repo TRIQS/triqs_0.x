@@ -30,3 +30,9 @@ cdef extern from "triqs/gf/matsubara_time.hpp" namespace "triqs::gf" :
 
     cdef gf_view_time_c matsubara_time_make_gf "triqs::gf::matsubara_time::make_gf" (matsubara_time_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c) except +
 
+cdef class MeshMatsubaraTime: 
+    cdef matsubara_time_mesh_c _c
+
+cdef class GFBloc_ImTime_cython:
+    cdef gf_view_time_c _c
+    cdef object _mesh

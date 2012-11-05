@@ -6,4 +6,6 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         tail_view_c(array_view[dcomplex,THREE,COrder] , int) #except +
         void rebind (tail_view_c &)
 
-
+cdef class TailGF_c:
+    cdef tail_view_c _c
+ 

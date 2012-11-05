@@ -30,3 +30,21 @@ cdef extern from "triqs/gf/matsubara_freq.hpp" namespace "triqs::gf" :
 
     cdef gf_view_freq_c matsubara_freq_make_gf "triqs::gf::matsubara_freq::make_gf" (matsubara_freq_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c) except +
 
+cdef class MeshMatsubaraFrequency: 
+    cdef matsubara_freq_mesh_c  _c
+
+cdef class GFBloc_ImFreq_cython:
+    cdef object _mesh
+    cdef gf_view_freq_c _c
+
+#cdef inline gf_view_freq_c   to_gf_view_freq_c (GFBloc_ImFreq_cython g) : 
+#    return g._c
+
+#cdef inline gf_block_view_c  to_gf_block_view_c (G):
+#    cdef vector[gf_view_freq_c] v_c
+#    for item in G:
+#        v_c.push_back(to_gf_view_freq_c(item))
+#    return make_gf_block_view_c (v_c) 
+
+
+

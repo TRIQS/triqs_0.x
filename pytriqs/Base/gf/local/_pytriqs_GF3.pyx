@@ -7,9 +7,10 @@ from gf_matsubara_time cimport *
 from fourier_matsubara cimport *
 from arrays cimport *   
 from libcpp.vector cimport vector
+#from tail cimport *
 
 cdef class TailGF_c:
-    cdef tail_view_c _c
+    #cdef tail_view_c _c
     def __init__(self, a, int omin):
         self._c =  tail_view_c( array_view[dcomplex,THREE,COrder](a), omin)
 
@@ -32,14 +33,14 @@ cdef extern from "pytriqs/Base/gf/local/a.hpp" namespace "triqs::gf" :
     #cdef void test3_c "test3" ( vector[double] &)  
 
 def test_block (G) : 
-    cdef vector[gf_view_freq_c] v_c
-    for item in G:
-        v_c.push_back((<GFBloc_ImFreq_cython>item)._c)
+    #cdef vector[gf_view_freq_c] v_c
+    #for item in G:
+    #    #v_c.push_back((<GFBloc_ImFreq_cython>item)._c)
+    #    v_c.push_back(to_C_GFBloc_ImFreq(item))
     
-    cdef gf_block_view_c GG = make_gf_block_view_c (v_c)  
-    test_block_c (GG)
+    #cdef gf_block_view_c GG = make_gf_block_view_c (v_c)  
+    test_block_c (to_gf_block_view_c(G)) 
     
-    test_block_c (make_gf_block_view_c (v_c) )
      
     #test_gf_c (G[0]) 
 def test2():
