@@ -1,6 +1,6 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/two_times.hpp> 
+#include <triqs/gf/two_real_times.hpp> 
 
 //using namespace triqs::gf::local;
 using namespace triqs::gf;
