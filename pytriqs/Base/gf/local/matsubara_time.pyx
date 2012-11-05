@@ -27,10 +27,10 @@ cdef class MeshMatsubaraTime:
 # ----------- The GF  --------------------------
 
 cdef class GFBloc_ImTime_cython:
-    #cdef gf_view_time_c _c
+    #cdef gf_im_time_c _c
     #cdef object _mesh
     def __init__(self, MeshMatsubaraTime mesh, data, TailGF_c tail):
-        self._c =  gf_view_time_c ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c, nothing() )
+        self._c =  gf_im_time_c ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c, nothing() )
         self._mesh = mesh
     
     def setFromInverseFourierOf(self,  gw) : 

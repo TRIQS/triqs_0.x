@@ -24,7 +24,7 @@ r""" """
 
 import numpy
 from math import *
-from pytriqs_GF3 import MeshMatsubaraFrequency #, MeshRealFrequency
+from gf import MeshMatsubaraFrequency #, MeshRealFrequency
 from TailGF import TailGF
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter

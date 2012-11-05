@@ -17,7 +17,7 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Base/gf)
 
 # Build cython module 
 
-cython_module( GF3 _pytriqs_GF3 Base/gf/local ${CMAKE_CURRENT_SOURCE_DIR}/TailGF.pyx )
+cython_module( GF3 gf Base/gf/local )
 
 
 

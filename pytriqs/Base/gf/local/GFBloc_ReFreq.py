@@ -23,7 +23,7 @@
 __all__ = ['GFBloc_ReFreq']
 import numpy
 from math import pi
-from pytriqs_GF3 import GFBloc_ReFreq_cython, MeshReFreq  
+from gf import GFBloc_ReFreq_cython, MeshReFreq  
 from GFBloc_general import _GFBloc_general 
 
 class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):

@@ -27,7 +27,7 @@ It is imported with the command::
   >>> from pytriqs.Base.gf.local import *
 """
 
-from pytriqs_GF3 import MeshMatsubaraFrequency, test_block, test2 , test3
+from gf import MeshMatsubaraFrequency, test_block, test2 , test3
 
 from inverse import inverse
 from TailGF import TailGF

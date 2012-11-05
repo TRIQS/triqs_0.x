@@ -21,7 +21,7 @@
 
 __all__ = ['GFBloc_ImLegendre']
 import numpy
-from pytriqs_GF3 import GFBloc_ReTime_cython, MeshReTime 
+from gf import GFBloc_ReTime_cython, MeshReTime 
 from GFBloc_general import _GFBloc_general 
 
 class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):

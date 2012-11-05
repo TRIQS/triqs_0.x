@@ -20,7 +20,7 @@
 ################################################################################
 
 __all__ = ['TailGF']
-from pytriqs_GF3 import TailGF_c
+from gf import TailGF_c
 import numpy
 import string
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter

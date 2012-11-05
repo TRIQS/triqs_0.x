@@ -22,7 +22,7 @@
 __all__ = ['GFBloc_ImFreq']
 import numpy
 from math import pi
-from pytriqs_GF3 import GFBloc_ImFreq_cython, MeshMatsubaraFrequency  
+from gf import GFBloc_ImFreq_cython, MeshMatsubaraFrequency  
 from GFBloc_general import _GFBloc_general 
 
 class GFBloc_ImFreq (GFBloc_ImFreq_cython, _GFBloc_general):

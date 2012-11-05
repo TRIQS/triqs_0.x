@@ -21,7 +21,7 @@
 __all__ = ['GFBloc_ImTime']
 import numpy
 from math import pi
-from pytriqs_GF3 import GFBloc_ImTime_cython, MeshMatsubaraTime  
+from gf import GFBloc_ImTime_cython, MeshMatsubaraTime  
 from GFBloc_general import _GFBloc_general 
 
 class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
