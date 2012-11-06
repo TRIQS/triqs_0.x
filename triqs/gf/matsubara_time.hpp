@@ -41,7 +41,7 @@ namespace triqs { namespace gf {
   typedef linear_mesh<domain_t> mesh_t;
 
   /// The target
-  typedef arrays::matrix<std::complex<double> >     target_t;
+  typedef arrays::matrix<double >     target_t;
   //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type            target_view_t;
 

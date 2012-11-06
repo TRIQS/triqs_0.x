@@ -210,7 +210,16 @@ namespace triqs { namespace gf {
    template<typename Arg >   
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
     clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
-    std::result_of<typename Descriptor::evaluator(mesh_t, data_t, singularity_t, Arg)> // what is the result type of call
+    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t &, singularity_t &, Arg)> // what is the result type of call
+     >::type     // end of lazy_disable_if 
+     operator[] (Arg&& arg) {return _bracket_evaluator(_mesh, this->data, singularity, std::forward<Arg>( arg));}
+
+   /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
+   //except when there is at least one lazy argument ...
+   template<typename Arg >   
+    typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
+    clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
+    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t &, singularity_t&, Arg)> // what is the result type of call
      >::type     // end of lazy_disable_if 
      operator[] (Arg&& arg) const {return _bracket_evaluator(_mesh, data, singularity, std::forward<Arg>( arg));}
 

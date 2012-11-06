@@ -51,12 +51,14 @@ namespace triqs { namespace gf {
   static const int arity =1;
 
   struct evaluator { 
-   /// All the possible calls of the gf
    template<typename D, typename T>
     target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data[n]; }
   };
 
-  struct bracket_evaluator {};
+  struct bracket_evaluator {
+   template<typename D, typename T>
+    target_view_t  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
+  };
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
