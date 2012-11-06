@@ -39,7 +39,10 @@ def test_block (G) :
     
     #cdef gf_block_view_c GG = make_gf_block_view_c (v_c)  
     test_block_c (as_gf_block_im_freq_c(G)) 
-    
+   
+    #cdef GFBloc_ImFreq Res = 
+    #Res._c = as_gf_block_im_freq_c(G)
+    #return Res
      
     #test_gf_c (G[0]) 
 

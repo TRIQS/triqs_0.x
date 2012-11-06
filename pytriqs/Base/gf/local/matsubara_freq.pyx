@@ -26,13 +26,37 @@ cdef class MeshMatsubaraFrequency:
 
 # ----------- GF  --------------------------
 
+
+cdef extern from * :
+    object PyCObject_FromVoidPtr(void* cobj, void *)
+    void* PyCObject_AsVoidPtr(object self)
+
+from GFBloc_ImFreq import GFBloc_ImFreq 
+
+cdef inline toPy_gf_im_freq_c ( gf_im_freq_c & c) : 
+    return GFBloc_ImFreq( C_Object = PyCObject_FromVoidPtr (&c, NULL))
+    #return GFBloc_ImFreq_cython( C_Object = c.address_as_opaque_python_object())
+
 cdef class GFBloc_ImFreq_cython:
     #cdef object _mesh
     #cdef gf_im_freq_c _c
     
-    def __init__(self, MeshMatsubaraFrequency mesh, data, TailGF_c tail):
+    def __init__(self, *l, **d):
+        def  deleg (MeshMatsubaraFrequency mesh, data, TailGF_c tail):
             self._c =  gf_im_freq_c ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing())
             self._mesh = mesh
+        if len(l)==0 and d.keys()==['C_Object'] : 
+            self._c = deref(<gf_im_freq_c *>PyCObject_AsVoidPtr(d['C_Object']))
+            self._mesh = mesh
+            #self._c = gf_im_freq_c ( d['C_Object'],0)
+        else : 
+            deleg(*l,**d)
+
+    def test(self) :
+        return toPy_gf_im_freq_c(self._c)
+ 
+    #def pr(self) :
+    #    print &self._c
 
     def setFromFourierOf(self, gt) :
         """Fills self with the Fourier transform of gt"""

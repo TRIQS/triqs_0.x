@@ -53,6 +53,9 @@ cdef extern from "triqs/gf/matsubara_freq.hpp" namespace "triqs::gf" :
     
     cdef cppclass gf_im_freq_c "triqs::gf::gf_view<triqs::gf::matsubara_freq>" :
         gf_im_freq_c()
+        gf_im_freq_c(gf_im_freq_c &)
+        gf_im_freq_c(object,int)
+        object address_as_opaque_python_object()
         # The constructor must be no_except, or the cython code won't be correct...
         gf_im_freq_c(matsubara_freq_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c, nothing) #except +
         void rebind( gf_im_freq_c&)
