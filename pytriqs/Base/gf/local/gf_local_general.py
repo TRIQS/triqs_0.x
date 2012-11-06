@@ -28,7 +28,7 @@ from types import *
 import GF_Initializers
 import lazy_expressions,Descriptors
 
-class _GFBloc_general :
+class GfLocalGeneral :
 
     def _prepare_init(self,d) :
         if 'Indices' in d: 

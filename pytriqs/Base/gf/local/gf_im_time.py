@@ -18,13 +18,13 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-__all__ = ['GFBloc_ImTime']
+__all__ = ['GfImTime']
 import numpy
 from math import pi
-from gf import GFBloc_ImTime_cython, MeshMatsubaraTime  
-from GFBloc_general import _GFBloc_general 
+from gf import GfImTime_cython, MeshImTime  
+from gf_local_general import GfLocalGeneral 
 
-class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
+class GfImTime (GfImTime_cython,  GfLocalGeneral):
     """ 
     A matrix-valued block Green's function in Matsubara time.
     """
@@ -35,7 +35,7 @@ class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
      Matsubara frequencies yourself, or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GFBloc_ImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name,Note)
+     GfImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name,Note)
            * ``Indices``:  a list of indices names of the block
            * ``Beta``:  Inverse Temperature 
            * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
@@ -47,7 +47,7 @@ class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
 
      If you already have the mesh, you can use a simpler version :
 
-     GFBloc_ImTime (Indices, Mesh, Data, Tail, Name,Note)
+     GfImTime (Indices, Mesh, Data, Tail, Name,Note)
         
            * ``Indices``:  a list of indices names of the block
            * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
@@ -66,12 +66,12 @@ class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
             Beta = float(d.pop('Beta'))
             Nmax = d.pop('NTimeSlices', 10000)
             stat = d.pop('Statistic','F')
-            d['Mesh'] = MeshMatsubaraTime(Beta,'F',Nmax)
+            d['Mesh'] = MeshImTime(Beta,'F',Nmax)
             # TO RECHECK 
             #d['Mesh'] = MeshGF( GF_Type.Imaginary_Time,stat,Beta,
             #                           numpy.array([ (n+0.5)*Beta/Nmax for n in range(Nmax)]))
             
-        GFBloc_ImTime_cython.__init__(self,*self._prepare_init(d))
+        GfImTime_cython.__init__(self,*self._prepare_init(d))
 
     #-----------------------------------------------------
 
@@ -90,6 +90,6 @@ class GFBloc_ImTime (GFBloc_ImTime_cython,  _GFBloc_general):
 #-----------------------------------------------------
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (GFBloc_ImTime)
+register_class (GfImTime)
 
 

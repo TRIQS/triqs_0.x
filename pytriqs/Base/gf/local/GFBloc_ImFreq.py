@@ -63,10 +63,6 @@ class GFBloc_ImFreq (GFBloc_ImFreq_cython, _GFBloc_general):
     The Green function take a **view** of the array Data, and a **reference** to the Tail.
 
          """
-        if d.keys()==['C_Object'] :
-            GFBloc_ImFreq_cython.__init__(self,**d)
-            return
-
         # construct the mesh if needed
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"

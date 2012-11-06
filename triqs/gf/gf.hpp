@@ -303,11 +303,6 @@ namespace triqs { namespace gf {
   void operator = (gf_view const & rhs)  { if (this->is_empty()) { rebind(rhs); return;} triqs_gf_view_assign_delegation(*this,rhs);}
 
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
-
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-  explicit gf_view(PyObject * obj, int): B( *(static_cast<gf_view *>(PyCObject_AsVoidPtr(obj))) ){}
-  PyObject * address_as_opaque_python_object()  { return PyCObject_FromVoidPtr( static_cast<void*>(this), NULL); }
-#endif
  };
 
  // delegate = so that I can overload it for specific RHS...

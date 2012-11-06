@@ -72,23 +72,31 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     
     cdef gf_block_im_freq_c  make_gf_block_im_freq_c "triqs::gf::block<matsubara_freq>::make_gf_view" (  vector[gf_im_freq_c] &) 
 
-
-cdef class MeshMatsubaraFrequency: 
+cdef class MeshImFreq: 
     cdef matsubara_freq_mesh_c  _c
 
-cdef class GFBloc_ImFreq_cython:
+cdef class GfImFreq_cython:
     cdef object _mesh
     cdef gf_im_freq_c _c
 
-cdef inline gf_im_freq_c  as_gf_im_freq_c (GFBloc_ImFreq_cython g) except +: 
+cdef inline gf_im_freq_c  as_gf_im_freq_c (GfImFreq_cython g) except +: 
     return g._c
 
 cdef inline gf_block_im_freq_c  as_gf_block_im_freq_c (G) except +:
     cdef vector[gf_im_freq_c] v_c
     for item in G:
-        v_c.push_back((<GFBloc_ImFreq_cython>item)._c)
+        v_c.push_back((<GfImFreq_cython>item)._c)
         v_c.push_back(as_gf_im_freq_c(item))
     return make_gf_block_im_freq_c (v_c) 
+
+from gf_im_freq import GfImFreq 
+
+#cdef inline MeshImFreq_from_c ( matsubara_freq_mesh_c & c) :
+#    return MeshImFreq(c.beta(),c.Nmax
+
+#cdef inline GfImFreq_from_c  ( gf_im_freq_c& c) : 
+#    return GfImFreq( MeshImFreq_from_c(c.mesh()), c.data_view(), TailGf_from_c (c.tail()), nothing())
+
 
 ###############  IM TIME #########################
 
@@ -125,14 +133,14 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     
     cdef gf_block_im_time_c  make_gf_block_im_time_c "triqs::gf::block<matsubara_time>::make_gf_view" (  vector[gf_im_time_c] &) 
 
-cdef class MeshMatsubaraTime: 
+cdef class MeshImTime:
     cdef matsubara_time_mesh_c _c
 
-cdef class GFBloc_ImTime_cython:
+cdef class GfImTime_cython:
     cdef gf_im_time_c _c
     cdef object _mesh
 
-cdef inline gf_im_time_c  as_gf_im_time_c (GFBloc_ImTime_cython g) : 
+cdef inline gf_im_time_c  as_gf_im_time_c (GfImTime_cython g) : 
     return g._c
 
 cdef inline gf_block_im_time_c  as_gf_block_im_time_c (G):
