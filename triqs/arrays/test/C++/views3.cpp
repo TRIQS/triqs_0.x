@@ -26,7 +26,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 ///
@@ -45,14 +45,14 @@ void f(AA & A) {
    for (int k=0; k<4; ++k) 
     A(i,j,k) = 100*(i+1)+ 10*(j+1) + (k+1);
 
- print_in_indexmap_order(cout,A.indexmap(),A);cout<<endl;
+ print_in_indexmap_order(std::cout,A.indexmap(),A);std::cout<<std::endl;
 
- cout<< A(0,range(), range())<<endl;
- cout<< A(1,range(), range())<<endl;
- cout<< A(range(), 0, range())<<endl;
- cout<< A(range(), range(),1)<<endl;
- cout<< A(range(), 0,1)<<endl;
- cout<<"-------------------------------------------------- "<<endl;
+ std::cout<< A(0,range(), range())<<std::endl;
+ std::cout<< A(1,range(), range())<<std::endl;
+ std::cout<< A(range(), 0, range())<<std::endl;
+ std::cout<< A(range(), range(),1)<<std::endl;
+ std::cout<< A(range(), 0,1)<<std::endl;
+ std::cout<<"-------------------------------------------------- "<<std::endl;
 }
 
 int main(int argc, char **argv) {
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
  catch (const char * ERR) { 
 
- cout<<"Error is "<<ERR<<endl;
+ std::cout<<"Error is "<<ERR<<std::endl;
  }
 
 

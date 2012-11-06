@@ -23,7 +23,7 @@
 #include "indexmaps/cuboid/cuboid_map.hpp"
 #include "indexmaps/cuboid/cuboid_slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
-#include "impl/compound_assign.hpp"
+#include "impl/assignment.hpp"
 #include "vector.hpp"
 
 namespace triqs { namespace arrays {
@@ -55,140 +55,160 @@ namespace triqs { namespace arrays {
   typedef typename boost::mpl::if_c<R == 1, vector_view<V,Opt >, matrix_view<V,Opt > >::type type;
  };
 
- #define _IMPL_MATRIX_COMMON \
-  size_t dim0() const { return this->shape()[0];}\
-  size_t dim1() const { return this->shape()[1];}\
-  bool is_square() const { return dim0() == dim1();}\
-  \
-  static const char order = details::order_as_char<typename Opt::IndexOrderTag>::val;\
-  typedef matrix_view<ValueType, Option::options<typename details::flip_order<order>::type, typename Opt::StorageTag > > transpose_return_type;\
-  transpose_return_type transpose() const {\
-   typedef typename transpose_return_type::indexmap_type im_type; typedef Permutations::permutation<1,0> P;\
-   return transpose_return_type( im_type(eval_permutation<P>(this->indexmap().lengths()), eval_permutation<P>(this->indexmap().strides()),\
-      this->indexmap().start_shift()), this->storage());\
-  }
+#define _IMPL_MATRIX_COMMON \
+ size_t dim0() const { return this->shape()[0];}\
+ size_t dim1() const { return this->shape()[1];}\
+ bool is_square() const { return dim0() == dim1();}\
+ \
+ static const char order = details::order_as_char<typename Opt::IndexOrderTag>::val;\
+ typedef matrix_view<ValueType, Option::options<typename details::flip_order<order>::type, typename Opt::StorageTag > > transpose_return_type;\
+ transpose_return_type transpose() const {\
+  typedef typename transpose_return_type::indexmap_type im_type; typedef Permutations::permutation<1,0> P;\
+  return transpose_return_type( im_type(eval_permutation<P>(this->indexmap().lengths()), eval_permutation<P>(this->indexmap().strides()),\
+     this->indexmap().start_shift()), this->storage());\
+ }
 
-#define _IMPL_ISP_TYPE(V,Opt) details::indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
+#define IMPL_TYPE indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
 
  template <typename ValueType, typename Opt >
-  class matrix_view : Tag::matrix_view, Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
-   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
-   typedef matrix_view<ValueType,Opt> view_type;
-   typedef matrix<ValueType,Opt>      non_view_type;
-   typedef void has_view_type_tag;
-   typedef Opt opt_type;
+    typedef matrix_view<ValueType,Opt> view_type;
+    typedef matrix<ValueType,Opt>      non_view_type;
+    typedef void has_view_type_tag;
+    typedef Opt opt_type;
 
-   /// Build from an IndexMap and a storage 
-   template<typename S> matrix_view (typename impl_type::indexmap_type const & Ind,S const & Mem): impl_type(Ind, Mem) {}
+    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+    typedef typename IMPL_TYPE::storage_type storage_type;
 
-   /// Build from anything that has an indexmap and a storage compatible with this class
-   template<typename ISP> matrix_view(const ISP & X): impl_type(X.indexmap(),X.storage()) {}
+    /// Build from an IndexMap and a storage 
+    template<typename S> matrix_view (typename IMPL_TYPE::indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit matrix_view (PyObject * X); // implemented in python/numpy_interface : include before use
+    /// Build from anything that has an indexmap and a storage compatible with this class
+    template<typename ISP> matrix_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+    /// Build from a numpy.array : throws if X is not a numpy.array 
+    explicit matrix_view (PyObject * X): IMPL_TYPE(X, false, "matrix_view "){}
 #endif
 
-   /// Copy construction
-   matrix_view( matrix_view const & X): impl_type(X.indexmap(),X.storage()) {}
+    /// Copy construction
+    matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
-   /** Assignement.  The size of the array MUST match exactly.  */
-   template<typename RHS> matrix_view & operator=(const RHS & X) {assignment(*this,X); return *this; }
+#ifndef TRIQS_ALLOW_EMPTY_VIEW
+   private:
+#endif
+   matrix_view (){}
+   public:
 
-   matrix_view & operator=(matrix_view const & X) { assignment(*this,X); return *this; }//cf array_view class comment
+    /// Rebind the view
+    void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
-   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
-   _IMPL_MATRIX_COMMON;
+    /** Assignement.  The size of the array MUST match exactly.  */
+    template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
+
+    matrix_view & operator=(matrix_view const & X) { 
+     if (this->is_empty()) rebind(X); else triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+
+    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
+    _IMPL_MATRIX_COMMON;
   };
 
  //--------------------------------------------------
 
  template <typename ValueType, typename Opt >
-  class matrix: Tag::matrix,Tag::matrix_algebra_expression_terminal, public _IMPL_ISP_TYPE(ValueType,Opt) {
-   typedef _IMPL_ISP_TYPE(ValueType,Opt) impl_type;
+  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
-   typedef typename impl_type::value_type value_type;
-   typedef typename impl_type::storage_type storage_type;
-   typedef typename impl_type::indexmap_type indexmap_type;
-   typedef matrix_view<ValueType,Opt> view_type;
-   typedef matrix<ValueType,Opt> non_view_type;
-   typedef void has_view_type_tag;
-   typedef Opt opt_type;
+    typedef typename IMPL_TYPE::value_type value_type;
+    typedef typename IMPL_TYPE::storage_type storage_type;
+    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+    typedef matrix_view<ValueType,Opt> view_type;
+    typedef matrix<ValueType,Opt> non_view_type;
+    typedef void has_view_type_tag;
+    typedef Opt opt_type;
 
-   /// Empty matrix.
-   matrix():impl_type(indexmap_type(),storage_type()) {}
+    /// Empty matrix.
+    matrix(){}
 
-   matrix(size_t dim1, size_t dim2) : impl_type(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
+    // Move
+    explicit matrix(matrix && X) { this->swap_me(X); } 
 
-   /** Makes a true (deep) copy of the data. */
-   matrix(const matrix & X): impl_type(X.indexmap(),X.storage().clone()) {}
+    ///
+    matrix(size_t dim1, size_t dim2) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
 
-   /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
-   template <typename T> 
-    matrix(const T & X, typename boost::enable_if< is_array_assign_lhs<T> >::type *dummy =0):
-     impl_type(indexmap_type(X.domain())) { assignment(*this,X); }
+    ///
+    matrix(mini_vector<size_t,2> const & sha) : IMPL_TYPE(indexmap_type(sha)) {}
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
-   /**
-    * Build from a numpy : only if TRIQS_ARRAYS_WITH_PYTHON_SUPPORT is defined
-    */
-   explicit matrix (PyObject * X); // implemented in python/numpy_interface : include before use
+    /** Makes a true (deep) copy of the data. */
+    matrix(const matrix & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
+
+    /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
+    template <typename T> 
+     matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+      IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+    explicit matrix (PyObject * X): IMPL_TYPE(X, true, "matrix "){}
 #endif
 
-   /** 
-    * Resizes the matrix. NB : all references to the storage is invalidated.
-    * Does not initialize the matrix by default
-    */
-   matrix & resize (size_t n1, size_t n2) { impl_type::resize(typename impl_type::domain_type (mini_vector<size_t,2>(n1,n2))); return *this;}
+    /** 
+     * Resizes the matrix. NB : all references to the storage is invalidated.
+     * Does not initialize the matrix by default
+     */
+    matrix & resize (size_t n1, size_t n2) { IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(n1,n2))); return *this;}
 
-   /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
-   matrix & operator=(const matrix & X) { impl_type::resize_and_clone_data(X); return *this; }
+    /** 
+     * Resizes the matrix. NB : all references to the storage is invalidated.
+     * Does not initialize the matrix by default
+     */
+    matrix & resize (const indexmaps::cuboid_domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
-   /** 
-    * Assignement resizes the matrix.  All references to the storage are therefore invalidated.
-    * NB : to avoid that, do make_view(A) = X instead of A = X
-    */
-   template<typename RHS> 
-    matrix & operator=(const RHS & X) { 
-     static_assert(  is_array_assign_lhs<RHS>::value, "Assignment : RHS not supported");
-     impl_type::resize(X.domain());
-     assignment(*this,X);
-     return *this; 
-    }
+    /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
+    matrix & operator=(const matrix & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
-   TRIQS_DEFINE_COMPOUND_OPERATORS(matrix);
-   _IMPL_MATRIX_COMMON;
+    /// Move assignment
+    matrix & operator=(matrix && X) { swap(*this, X); return *this;}
+
+    /** 
+     * Assignement resizes the matrix.  All references to the storage are therefore invalidated.
+     * NB : to avoid that, do make_view(A) = X instead of A = X
+     */
+    template<typename RHS> 
+     matrix & operator=(const RHS & X) { 
+      static_assert(  ImmutableArray<RHS>::value, "Assignment : RHS not supported");
+      IMPL_TYPE::resize(X.domain());
+      triqs_arrays_assign_delegation(*this,X);
+      return *this; 
+     }
+
+    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix);
+    _IMPL_MATRIX_COMMON;
   };//matrix class
 #undef _IMPL_MATRIX_COMMON
-#undef _IMPL_ISP_TYPE
- namespace details { 
+#undef IMPL_TYPE
 
-  template <typename T, int R> 
-   bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));} 
+ template <typename T, int R> 
+  bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));} 
 
-  // assignment for scalar RHS // write a specific one if it is not a view : plain loop
-  // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
-  template <typename V, typename Opt, typename RHS> 
-   struct assign_impl<matrix_view<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > { 
-    typedef matrix_view<V,Opt> LHS;
-    typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
-    LHS & lhs; const RHS & rhs;
-    assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-    void operator()(V & p, index_value_type const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
-    void invoke() { foreach(*this,lhs); } // if contiguous : plain loop else foreach...
-   };
+ // assignment for scalar RHS // write a specific one if it is not a view : plain loop
+ // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
 
-  template <typename V, typename Opt, typename RHS> 
-   struct assign_impl<matrix<V,Opt>,RHS,typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type > : 
-   assign_impl<matrix_view<V,Opt>,RHS > {
-    typedef matrix<V,Opt> LHS;
-    assign_impl(LHS & lhs_, const RHS & rhs_): assign_impl<matrix_view<V,Opt>,RHS > (lhs_,rhs_){}
-   }; 
+ template <typename V, typename RHS> struct __looper { 
+  RHS rhs;
+  __looper(const RHS & rhs_): rhs(rhs_) {}
+  template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
+ };
 
- } //details
+ template<typename RHS, typename V, typename Opt> 
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+
+ template<typename RHS, typename V, typename Opt> 
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+
+
 }}//namespace triqs::arrays
 
 #include <boost/numeric/bindings/detail/adaptor.hpp>
@@ -232,5 +252,13 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
   struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
 
 }}}} // namespace detail, namespace binding, namespace numeric, namespace boost
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std { 
+ template <typename V, typename Opt >
+  void swap( triqs::arrays::matrix_view<V,Opt> & a , triqs::arrays::matrix_view<V,Opt> & b)= delete;
+}
+
 #endif
 

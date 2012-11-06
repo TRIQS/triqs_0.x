@@ -11,6 +11,7 @@ endif (Sphinx_Math_Generator_MathJax)
 add_subdirectory(user_manual)
 add_subdirectory(developer_manual)
 
-file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl ../foreignlibs/autocompile DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#file(COPY ../foreignlibs/sandbox DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 

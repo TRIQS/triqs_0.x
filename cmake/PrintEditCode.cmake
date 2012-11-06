@@ -21,15 +21,5 @@ if (PsPrintCodes)
   add_custom_target(print_code_${CODENAME} ALL DEPENDS ${code_filenameh} ${code_filenamec} )
  endif (ENSCRIPT_EXECUTABLE)
 
- if (NOT VIM_EXECUTABLE)
-  find_package(Vim)
- endif (NOT VIM_EXECUTABLE)
-
- if (VIM_EXECUTABLE)
-  SET(edit_code_top ${CMAKE_CURRENT_BINARY_DIR}/edit_code.fake)
-  add_custom_command (OUTPUT ${edit_code_top} COMMAND ${VIM_EXECUTABLE} -p ${SOURCES_CPP} ${SOURCES_HPP} )
-  add_custom_target(edit_code_${CODENAME} DEPENDS ${edit_code_top})
- endif (VIM_EXECUTABLE)
-
 endif (PsPrintCodes)
 

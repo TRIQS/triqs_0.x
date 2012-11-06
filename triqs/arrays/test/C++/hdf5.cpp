@@ -20,16 +20,17 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
 #include "./src/h5/simple_read_write.hpp"
-#include "./python_stuff.hpp"
 
-using namespace std;
-using namespace triqs::arrays;
+using std::cout; using std::endl;
+namespace tqa = triqs::arrays;
+using tqa::range;
 
 template <typename T> 
-ostream & operator << (ostream & out, std::vector<T> const & v) { 
+std::ostream & operator << (std::ostream & out, std::vector<T> const & v) { 
 for (size_t i =0; i<v.size(); ++i) out<< v[i];
 return out;
 }
@@ -40,16 +41,16 @@ int main(int argc, char **argv) {
 
  try { 
 
- array<long,2> A (2,3),B,vc;
- array<double,2> D (2,3), D2;
+ tqa::array<long,2> A (2,3),B,vc;
+ tqa::array<double,2> D (2,3), D2;
 
- array<long,2,Option::Fortran> Af,Bf,vf;
+ tqa::array<long,2,tqa::Option::Fortran> Af,Bf,vf;
 
- array<complex<double>,1> C(5), C2;
- complex<double> z(1,2);
+ tqa::array<std::complex<double>,1> C(5), C2;
+ std::complex<double> z(1,2);
 
  for (int i =0; i<5; ++i) {
-  C(i) = complex<double>(i,i);
+  C(i) = std::complex<double>(i,i);
  }
 
  for (int i =0; i<2; ++i)
@@ -61,32 +62,43 @@ int main(int argc, char **argv) {
 
  Af = A;
 
- cout<<" A= "<<A<<endl;
- cout<<" D= "<<D<<endl;
- cout<<" C= "<<C<<endl;
- cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<endl;
+ std::cout<<" A= "<<A<<std::endl;
+ std::cout<<" D= "<<D<<std::endl;
+ std::cout<<" C= "<<C<<std::endl;
+ std::cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<std::endl;
 
- h5::H5File file( "ess.h5", H5F_ACC_TRUNC );
- h5::write(file,"A",A);
- h5::write(file,"Af",Af);
- h5::write(file,"C",C);
- h5::write(file,"D",D);
+ H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
+ h5_write(file,"A",A);
+ h5_write(file,"Af",Af);
+ h5_write(file,"C",C);
+ h5_write(file,"D",D);
 
+ // testing scalar
+ double x=2.3;
+ tqa::h5::h5_write(file, "x",x);
+
+ tqa::h5::h5_write(file, "s", std::string("a nice chain"));
  file.createGroup("G");
- h5::write(file,"G/A",A);
+ h5_write(file,"G/A",A);
 
- h5::Group G = file.openGroup("G");
- h5::write(G, "A2",A);
+ H5::Group G = file.openGroup("G");
+ h5_write(G, "A2",A);
 
- h5::read (file, "A",B);   cout<< "B = "<< B<<endl;
- h5::read (file, "Af",Bf); cout<< "Bf = "<< Bf<<endl;
- h5::read (file, "D",D2);  cout<< "D = "<< D2<<endl;
- h5::read (file, "C",C2);  cout<< "C = "<< C2<<endl;
+ h5_read (file, "A",B);   std::cout<< "B = "<< B<<std::endl;
+ h5_read (file, "Af",Bf); std::cout<< "Bf = "<< Bf<<std::endl;
+ h5_read (file, "D",D2);  std::cout<< "D = "<< D2<<std::endl;
+ h5_read (file, "C",C2);  std::cout<< "C = "<< C2<<std::endl;
 
- //array<long,1> E; h5::read (file, "A",E);   cout<< "E = "<< E<<endl;
+ double xx =0; tqa::h5::h5_read(file, "x",xx); TEST(xx);
+
+ std::string s2 ("----------------------------------");
+ tqa::h5::h5_read(file, "s", s2);
+ TEST(s2);
+
+ //tqa::array<long,1> E; h5_read (file, "A",E);   std::cout<< "E = "<< E<<std::endl;
 
  } 
- catch( const char * err) { cout<<err<<endl;}
+ catch( const char * err) { std::cout<<err<<std::endl;}
 
  return 0;
 }

@@ -19,18 +19,16 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
+#include <Python.h>
 #include "./src/array.hpp"
 #include <iostream>
 #include <boost/python.hpp>
-#include "./src/python/numpy_interface.hpp"
-//#include "./src/../utility/typeid_name.hpp"
 #include "./src/python/converters.hpp"
 
-using namespace boost;
 using boost::python::object;
 using namespace std;
 using namespace triqs::arrays;
+namespace tqa = triqs::arrays;
 
 template<typename T> void f(T const & x) { std::cout<<" x = "<<x<<endl;}
 
@@ -40,7 +38,6 @@ class AA { int x; };
 
 template<> void f(AA const & x) { std::cout<<" AA object" <<endl;}
 
-//--------------------------------
 
 template<class T>
 boost::python::object print_array_view( array_view<T,2 > M ) { 
@@ -59,7 +56,7 @@ boost::python::object print_array( triqs::arrays::array<T,2 > M ) {
 //boost::python::object make_array( ) { 
 PyObject * make_array( ) { 
 
- PyObject * r =  Py_None;
+ PyObject * r =  NULL; //Py_None;
 
  {
  triqs::arrays::array<int,2 > M (2,3); 
@@ -70,7 +67,7 @@ for (int i =0; i<2; ++i)
  cout<<" The array is "<<M<<endl;
  array_view<int,2> V(M);
 
- r = numpy_interface::from_array_view (V);
+ r = numpy_interface::array_view_to_python (V);
 
  cerr<< " r ref "<< r->ob_refcnt<<endl;
 
@@ -96,12 +93,7 @@ boost::python::object test1( boost::python::object  M ) {
 
  array_view<long,2> A2(M.ptr());
  array_view<long,2> V(A2);
- cerr << V<< endl;
-
- cout<<A2.storage()[0]<<endl;
- cout<<A2.storage()[1]<<endl;
- cout<<A2.storage()[2]<<endl;
- cout<<A2.storage()[3]<<endl;
+ cout << V<< endl;
 
  A2(0,0) = 100;
 
@@ -115,7 +107,7 @@ boost::python::object test1( boost::python::object  M ) {
 }
 
 
-boost::python::object test2( boost::python::object  M, range const & R1, range const & R2) { 
+boost::python::object test2( boost::python::object  M, tqa::range const & R1, tqa::range const & R2) { 
  cerr<<" entring test2 "<<endl;
  array_view<long,2> A (M.ptr());
  array_view<long,2> V(A(R1,R2));
@@ -123,9 +115,9 @@ boost::python::object test2( boost::python::object  M, range const & R1, range c
  return boost::python::object(V);
 }
 
-boost::python::object test3(range const & R) { return boost::python::object(R);}
+boost::python::object test3(tqa::range const & R) { return boost::python::object(R);}
 
-boost::python::object test4( boost::python::object  M, range const & R1, int j) { 
+boost::python::object test4( boost::python::object  M, tqa::range const & R1, int j) { 
  cerr<<" entring test4 "<<endl;
  array_view<long,2> A(M.ptr());
  array_view<long,1> V(A(R1,j));
@@ -133,7 +125,7 @@ boost::python::object test4( boost::python::object  M, range const & R1, int j) 
  return boost::python::object(V);
 }
 
-boost::python::object test5( boost::python::object  M, int i, range const & R1) { 
+boost::python::object test5( boost::python::object  M, int i, tqa::range const & R1) { 
  array_view<long,2> A(M.ptr());
  array_view<long,1> V(A(i,R1));
  return boost::python::object(V);
@@ -145,17 +137,26 @@ boost::python::object test6() {
   for (int j=0; j<3; ++j) 
    A(i,j) = 10*i+ j;
 
- triqs::arrays::array_view<long,2> V(A(range(0,2),range(0,1)));
+ triqs::arrays::array_view<long,2> V(A(tqa::range(0,2),tqa::range(0,1)));
+ triqs::arrays::array_view<long,2> V0(A);
  //cout<<A<<V<<endl;
- return boost::python::make_tuple(A,V);
+ return boost::python::make_tuple(triqs::python_tools::make_object(A),V);
 }
-
 
 #include <boost/python.hpp>
 #include <boost/python/def.hpp>
 
-BOOST_PYTHON_MODULE(_testarray)
+BOOST_PYTHON_MODULE(_array_tests)
 {
+ triqs::python_tools::register_converter< tqa::range >();
+ triqs::python_tools::register_converter< tqa::array_view<long,2> >();
+ triqs::python_tools::register_converter< tqa::array_view<long,1> >();
+ triqs::python_tools::register_converter< tqa::array_view<double,2> >();
+ triqs::python_tools::register_converter< tqa::array_view<double,1> >();
+// triqs::python_tools::register_converter< tqa::array<long,2> >();
+// triqs::python_tools::register_converter< tqa::array<long,1> >();
+// triqs::python_tools::register_converter< tqa::array<double,2> >();
+// triqs::python_tools::register_converter< tqa::array<double,1> >();
  using namespace boost::python;
  def("test1", test1, "DOC");
  def("test2", test2, "DOC");
@@ -163,8 +164,10 @@ BOOST_PYTHON_MODULE(_testarray)
  def("test4", test4, "DOC");
  def("test5", test5, "DOC");
  def("test6", test6, "DOC");
- def("print_array_i", print_array<long>, "DOC");
- def("print_array_f", print_array<double>, "DOC");
+ def("print_array_i", print_array_view<long>, "DOC");
+ def("print_array_f", print_array_view<double>, "DOC");
+ //def("print_array_i", print_array<long>, "DOC");
+ //def("print_array_f", print_array<double>, "DOC");
  def("print_array_view_i", print_array_view<long>, "DOC");
  def("print_array_view_f", print_array_view<double>, "DOC");
  def("make_array", make_array , "DOC");

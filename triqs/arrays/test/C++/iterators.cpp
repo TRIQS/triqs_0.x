@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -37,53 +37,53 @@ int main(int argc, char **argv) {
 
  // first print the index generator
  for (array<long,2>::indexmap_type::domain_type::generator it = A.indexmap().domain().begin(); it; ++it)
-  cout<<"  "<<*it<<endl;
+  std::cout<<"  "<<*it<<std::endl;
 
- cout<<endl;
+ std::cout<<std::endl;
 
  for (indexmaps::cuboid_index_generator< array<long,2>::indexmap_type::domain_type, Permutations::permutation<0,1> >
    it(A.indexmap().domain()); it; ++it)
-  cout<<"  "<<*it<<endl;
+  std::cout<<"  "<<*it<<std::endl;
 
- cout<<endl;
+ std::cout<<std::endl;
 
  for (indexmaps::cuboid_index_generator< array<long,2>::indexmap_type::domain_type, Permutations::permutation<1,0> >
    it(A.indexmap().domain()); it; ++it)
-  cout<<"  "<<*it<<endl;
+  std::cout<<"  "<<*it<<std::endl;
 
- cout<<endl;
+ std::cout<<std::endl;
 
- cout<<" C order : traversal"<<endl;
+ std::cout<<" C order : traversal"<<std::endl;
 
  for (array<long,2>::iterator it = A.begin(); it; ++it) { 
   *it =it.indices()[0] + 10 *it.indices()[1] ;
-  cout<<" i,j = "<<it.indices()<<endl;
+  std::cout<<" i,j = "<<it.indices()<<std::endl;
  }
- cout <<"A = i + 10*j"<<A<<endl;
+ std::cout <<"A = i + 10*j"<<A<<std::endl;
 
  int u=0;
  for (array<long,2>::iterator it = A.begin(); it; ++it,++u) { 
   *it =u;
-  cout<<" i,j = "<<it.indices()<<endl;
+  std::cout<<" i,j = "<<it.indices()<<std::endl;
  }
- cout <<"A = order of visit "<<A<<endl;
+ std::cout <<"A = order of visit "<<A<<std::endl;
 
 
- cout<<" F order : traversal"<<endl; 
+ std::cout<<" F order : traversal"<<std::endl; 
  array<long,2,Option::Fortran> Af (2,3);
 
  for (array<long,2,Option::Fortran>::iterator it = Af.begin(); it; ++it) { 
   *it =it.indices()[0] + 10 *it.indices()[1] ;
-  cout<<" i,j = "<<it.indices()<<endl;
+  std::cout<<" i,j = "<<it.indices()<<std::endl;
  }
- cout <<"A = i + 10*j"<<Af<<endl;
+ std::cout <<"A = i + 10*j"<<Af<<std::endl;
 
  u=0;
  for (array<long,2,Option::Fortran>::iterator it = Af.begin(); it; ++it,++u) { 
   *it = -u;
-  cout<<" i,j = "<<it.indices()<<endl;
+  std::cout<<" i,j = "<<it.indices()<<std::endl;
  }
- cout <<"Af = order of visit "<<Af<<endl;
+ std::cout <<"Af = order of visit "<<Af<<std::endl;
 
  return 0;
 }

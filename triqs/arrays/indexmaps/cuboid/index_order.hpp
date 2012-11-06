@@ -168,8 +168,8 @@ namespace triqs { namespace arrays {
  //-----------------------------------------------------------
  // checks if two static order are identical
  template<typename T1, typename T2>
-  typename boost::enable_if<boost::mpl::and_< triqs::arrays::Tag::check<triqs::arrays::Tag::index_order_static,T1>, 
-	   triqs::arrays::Tag::check<triqs::arrays::Tag::index_order_static,T2> >, bool >::type 
+  typename boost::enable_if<boost::mpl::and_< boost::is_base_of<triqs::arrays::Tag::index_order_static,T1>, 
+	   boost::is_base_of<triqs::arrays::Tag::index_order_static,T2> >, bool >::type 
 	    operator ==( T1 const & x1, T2 const & x2)  { 
 	     return ( (x1.rank==x2.rank) && Permutations::is_equal<typename T1::perm,typename T2::perm>::value) ;
 	    }

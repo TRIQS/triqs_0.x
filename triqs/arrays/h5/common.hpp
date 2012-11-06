@@ -74,17 +74,22 @@ namespace triqs { namespace arrays { namespace h5 {
    return native_type_from_C(typename remove_complex<typename ArrayType::value_type>::type());
   }
 
+ template <typename S >
+  PredType data_type_mem_scalar ( S const & A) { 
+   return native_type_from_C(typename remove_complex<S>::type());
+  }
+
  // the type of data to put in the file_or_group
  template <typename V >
   PredType data_type_file ( V const & ) { return h5_type_from_C(typename remove_complex<V>::type());}
 
  // the pointer on the start of data
  template <typename ArrayType > 
-  DISABLE_IF ( boost::is_complex<typename ArrayType::value_type>, void * )
+  TYPE_DISABLE_IF ( void *, boost::is_complex<typename ArrayType::value_type> )
   data ( ArrayType const & A) { return &(A.storage()[0]);}
 
  template <typename ArrayType > 
-  ENABLE_IF ( boost::is_complex<typename ArrayType::value_type>, void * )
+  TYPE_ENABLE_IF ( void *, boost::is_complex<typename ArrayType::value_type> )
   data ( ArrayType const & A) {
    typedef typename ArrayType::value_type::value_type T; 
    std::complex<T> * p =  &(A.storage()[0]);
@@ -127,30 +132,24 @@ namespace triqs { namespace arrays { namespace h5 {
    static const bool is_complex =  boost::is_complex<typename ArrayType::value_type>::value;
    return dataspace_from_LS<R,is_complex > ( A.indexmap().domain().lengths(),A.indexmap().domain().lengths(), S);
   }
- 
+
  /********************   resize or check the size ****************************************************/
 
- template <typename A> ENABLE_IF( is_value_class<A>, void) 
+ template <typename A> ENABLE_IF(is_amv_value_class<A>) 
   resize_or_check ( A & a, mini_vector<size_t,A::rank> const & dimsf ) { a.resize( indexmaps::cuboid_domain<A::rank>( dimsf)); }
 
- template <typename A> ENABLE_IF( is_view_class<A>, void) 
+ template <typename A> ENABLE_IF(is_amv_view_class<A>) 
   resize_or_check ( A const & a, mini_vector<size_t,A::rank> const & dimsf ) { 
    if (a.indexmap().domain().lengths() != dimsf) TRIQS_RUNTIME_ERROR<<"Dimension error : the view can not be resized : " 
     << "\n in file  : "<< dimsf.to_string() 
      << "\n in view  : "<<a.indexmap().domain().lengths().to_string() ;
   }
-
- /********************* exists *************************************************/
-
- template < typename FileGroupType >
-  bool exists (FileGroupType file_or_group, std::string name) { return (H5Lexists(file_or_group.getId(), name.c_str(), H5P_DEFAULT)); } 
-
  /****************** WRITE attribute *********************************************/
 
  inline void write_attribute ( DataSet & dataset, std::string name, std::string value ) { 
   DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
   // Create new string datatype for attribute
-  StrType strdatatype(PredType::C_S1, 25); // of length 256 characters
+  StrType strdatatype(PredType::C_S1, value.size()); 
   // Set up write buffer for attribute
   const H5std_string strwritebuf (value);
   // Create attribute and write to it

@@ -160,12 +160,12 @@ IF (PYTHON_FOUND AND NOT PYTHON_VISTRAILS_OVERRIDE)
     endif(NOT WIN32)
 
   # Correction on Mac
-  IF(APPLE)
-      SET (PYTHON_LINK_FOR_SHARED -u _PyMac_Error -framework Python)
-      SET (PYTHON_LINK_MODULE -bundle -undefined dynamic_lookup)
-  ELSE(APPLE)
-      SET (PYTHON_LINK_MODULE -shared)
-  ENDIF(APPLE)
+  #IF(APPLE)
+  #    SET (PYTHON_LINK_FOR_SHARED -u _PyMac_Error -framework Python)
+  #    SET (PYTHON_LINK_MODULE -bundle -undefined dynamic_lookup)
+  #ELSE(APPLE)
+  #    SET (PYTHON_LINK_MODULE -shared)
+  #ENDIF(APPLE)
 ENDIF (PYTHON_FOUND AND NOT PYTHON_VISTRAILS_OVERRIDE)
 
 set (PYTHONLIBS_FOUND ${PYTHON_FOUND})

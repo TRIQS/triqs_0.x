@@ -16,7 +16,7 @@ macro (BuildF2pyModule target_name modulename module_pyf_name filelist1)
  SET(filename ${CMAKE_CURRENT_BINARY_DIR}/${filename} )
  FILE(WRITE ${filename} "import sys\n")
  FILE(APPEND ${filename} "from numpy.f2py import main\n")
- FILE(APPEND ${filename} "sys.argv = [''] +'-c --f90exec=${CMAKE_Fortran_COMPILER} -m ${modulename} ${modulename}.pyf ${filelist} -llapack'.split()\n") 
+ FILE(APPEND ${filename} "sys.argv = [''] +'-c --f77exec=${CMAKE_Fortran_COMPILER} --f90exec=${CMAKE_Fortran_COMPILER} -m ${modulename} ${modulename}.pyf ${filelist} -llapack'.split()\n")
  FILE(APPEND ${filename} "main()\n")
 
  # We had the normal target of the module

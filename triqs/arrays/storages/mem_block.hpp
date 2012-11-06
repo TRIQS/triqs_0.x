@@ -19,119 +19,110 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_MEM_BLOCK_H 
 #define TRIQS_MEM_BLOCK_H
 #include "../../utility/exceptions.hpp"
-#include <boost/noncopyable.hpp>
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include "./common.hpp"
+
 #ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
 #include <iostream>
+#define TRACE_MEM_DEBUG(X) std::cerr<< X << std::endl; 
+#else
+#define TRACE_MEM_DEBUG(X) 
 #endif
-
+ 
 namespace triqs { namespace arrays { namespace storages { namespace details { 
 
- template<typename ValueType >
-  class mem_block : boost::noncopyable {
+ template<typename ValueType> class mem_block {
 
    typedef typename boost::remove_const<ValueType>::type non_const_value_type;
    size_t size_;
    non_const_value_type * restrict p;
    PyObject * py_obj;
-   static void delete_pointeur( void *ptr ) { 
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< "deleting data block"<<(non_const_value_type*) ptr<< std::endl; 
-#endif
-    delete [] ( (non_const_value_type*) ptr) ;
-   }   
-
-   static void import_numpy_array() { 
-    static bool init = false;
-    //if (init) { std::cerr<<" memblock import arry : already done"<<std::endl; return;}
-    int _r = _import_array();assert(_r==0);
-    //std::cerr<<" memblock import array done"<<std::endl;
-    init = true;
-   }
+   static void import_numpy_array() { if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";}
 
    public : 
 
    mem_block():size_(0),p(NULL),py_obj(NULL){}
 
-   mem_block (size_t s):size_(s),p(new non_const_value_type[s]),py_obj(NULL){
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< " construct meme block from C :p ="<<p<< "  py_obj = "<< py_obj<<std::endl;
-#endif
+   mem_block (size_t s):size_(s),py_obj(NULL){
+    //p = new non_const_value_type[s]; // check speed penalty for try ??
+    try { p = new non_const_value_type[s];}
+    catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error : bad_alloc : "<< ba.what();}
    }
 
    mem_block (PyObject * obj, bool borrowed ) { 
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< " construct meme block from pyobject"<<obj<< " # ref ="<<obj->ob_refcnt<<" borrowed = "<< borrowed<<std::endl; 
-#endif 
-    mem_block::import_numpy_array(); 
-    //std::cerr<<"  ref o obj = "<< obj->ob_refcnt<<std::endl;
+    TRACE_MEM_DEBUG(" construct memblock from pyobject"<<obj<< " # ref ="<<obj->ob_refcnt<<" borrowed = "<< borrowed); 
+    assert(obj); import_numpy_array(); 
     if (borrowed) Py_INCREF(obj);
-    py_obj = obj;
-    //assert(obj);
-    if ( (!obj) || (!PyArray_Check(obj))) TRIQS_RUNTIME_ERROR<<"Internal error : mem_block construct from pyo : obj is not an array";
+    if (!PyArray_Check(obj)) TRIQS_RUNTIME_ERROR<<"Internal error : mem_block construct from pyo : obj is not an array";
     PyArrayObject * arr = (PyArrayObject *)(obj);
     size_ = PyArray_SIZE(arr);
     this->p = (non_const_value_type*)PyArray_DATA(arr); 
+    py_obj = obj;
    }
 
-   void activate_python() { 
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< " activating python "<<p<< "  py_obj = "<< py_obj<< std::endl;
-#endif
-    if (py_obj==NULL) { py_obj = PyCObject_FromVoidPtr( (void*) p, &mem_block<ValueType>::delete_pointeur);} 
-   }
-
-   // delete memory manually iif py_obj is not set. Otherwise the python interpreter will do that for us.
-   ~mem_block(){ 
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< "deleting mem block p ="<<p<< "  py_obj = "<< py_obj<< std::endl;
-    if (py_obj) std::cerr<<"    ref of py obj"<<py_obj->ob_refcnt<<std::endl;
-#endif
-    if (py_obj==NULL) {
-     if (p) {
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-      std::cerr<< "deleting data block 2"<<std::endl; 
-#endif
-      delete[] p;
-     }
-    } 
+   ~mem_block(){ // delete memory manually iif py_obj is not set. Otherwise the python interpreter will do that for us.
+    TRACE_MEM_DEBUG("deleting mem block p ="<<p<< "  py_obj = "<< py_obj << "    ref of py obj if exists"<<(py_obj ? py_obj->ob_refcnt: -1));
+    if (py_obj==NULL) { if (p) { delete[] p;} } 
     else Py_DECREF(py_obj); 
    } 
 
+   private:
+   // copy such that it is a fast memcpy for scalar / pod objects
+   template<typename T>
+   typename boost::enable_if<is_scalar_or_pod<T> ,void>::type
+   memcopy (T * restrict p1, T * restrict p2, size_t size) { memcpy (p1, p2 , size * sizeof(T)); }
+
+   // when not a scalar object, loop on elements
+   template<typename T>
+   typename boost::disable_if<is_scalar_or_pod<T> ,void>::type
+   memcopy (T * restrict p1, T * restrict p2, size_t size) { for (size_t i = 0; i < size; ++i) p1[i] = p2[i]; }
+
+   public:
+
    void operator=(const mem_block & X) {
     assert( py_obj==NULL); assert(size_==X.size_);assert(p); assert(X.p);
-    memcpy (p,X.p,size_ * sizeof(ValueType));
+    this->memcopy (p, X.p, size_);
    }
 
-   mem_block * clone () const  { 
-#ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
-    std::cerr<< "cloning "<<std::endl; 
-#endif
-    mem_block * r= new mem_block(size_); 
-    if ((py_obj==NULL) || (PyCObject_Check(py_obj))) { (*r) = (*this); return r;}
-    // else make a new copy of the numpy ...
-    mem_block::import_numpy_array(); 
-    assert(PyArray_Check(py_obj));
-    //std::cerr<< " python cloning "<<std::endl; 
-    if ( ( PyArray_ISFORTRAN(py_obj)) || (PyArray_ISCONTIGUOUS(py_obj)))  { 
-     memcpy (r->p,PyArray_DATA(py_obj),size_ * sizeof(ValueType));
+   mem_block ( mem_block const & X): size_(X.size()), py_obj(NULL) { 
+    //p = new non_const_value_type[s]; // check speed penalty for try ??
+    try { p = new non_const_value_type[X.size()];}
+    catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error : bad_alloc : "<< ba.what();}
+    if ((X.py_obj==NULL) || (PyCObject_Check(X.py_obj))) { (*this) = X; }
+    else { 
+     // else make a new copy of the numpy ...
+     import_numpy_array(); 
+     assert(PyArray_Check(X.py_obj));
+     if (!is_scalar_or_pod<ValueType>::value) TRIQS_RUNTIME_ERROR << "Internal Error : memcpy on non-scalar";
+     if ( ( PyArray_ISFORTRAN(X.py_obj)) || (PyArray_ISCONTIGUOUS(X.py_obj)))  { 
+      memcpy (p,PyArray_DATA(X.py_obj),size_ * sizeof(ValueType));
+     }
+     else { // if the X.py_obj is not contiguous, first let numpy copy it properly
+      PyObject * na = PyObject_CallMethod(X.py_obj,(char *)"copy",NULL);
+      assert(na); assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
+      memcpy (p,PyArray_DATA(na),size_ * sizeof(ValueType));
+      Py_DECREF(na);
+     }
     }
-    else { // if the py_obj is not contiguous, first let numpy copy it properly
-     PyObject * na = PyObject_CallMethod(py_obj,(char *)"copy",NULL);
-     assert(na); assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
-     memcpy (r->p,PyArray_DATA(na),size_ * sizeof(ValueType));
-     Py_DECREF(na);
-    }
-    return r;
    }
 
-   PyObject * new_ref_to_guard() { activate_python(); Py_INCREF(py_obj); return py_obj;} 
+   static void delete_pointeur( void *ptr ) { 
+    TRACE_MEM_DEBUG("deleting data block"<<(non_const_value_type*) ptr); 
+    delete [] ( (non_const_value_type*) ptr) ;
+   }   
+
+   PyObject * new_ref_to_guard() { 
+    if (py_obj==NULL) { 
+    TRACE_MEM_DEBUG(" activating python guard for C++ block"<<p<< "  py_obj = "<< py_obj);
+     py_obj = PyCObject_FromVoidPtr( (void*) p, &mem_block<ValueType>::delete_pointeur);
+    } 
+    Py_INCREF(py_obj); 
+    return py_obj;
+   } 
 
    non_const_value_type & operator[](size_t i) {return p[i];}
 
@@ -151,7 +142,9 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
      for (size_t i=0; i<size_; ++i) ar >> p[i]; 
     }
    BOOST_SERIALIZATION_SPLIT_MEMBER();
-  };
+ };
 }}}}//namespace triqs::arrays 
+
+#undef TRACE_MEM_DEBUG
 #endif
 

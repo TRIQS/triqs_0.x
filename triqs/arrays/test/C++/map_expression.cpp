@@ -19,17 +19,15 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
-#include "./src/expressions/map.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/functional/map.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include <iostream>
 #include <algorithm>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
-using namespace triqs::arrays::function_object;
 
 template<class T> T mmax(T const & x, T const &  y) { return std::max(x,y);}
 
@@ -44,17 +42,14 @@ int main(int argc, char **argv) {
   for (int j=0; j<3; ++j)
   { A(i,j) = i+2*j+1; B(i,j) = i-j;}
 
- //auto Abs = map( static_cast< double (*)(double)> (std::abs) );
- triqs::arrays::result_of::map<double (*)(double)>::type  Abs = map( static_cast< double (*)(double)> (std::abs) );
+ BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
+ BOOST_AUTO( Max ,  map( boost::function<double(double,double)>(mmax<double>) ) );
 
- //auto Max = map( mmax<double> );
- triqs::arrays::result_of::map<double (*)(const double&, const double&)>::type Max = map( mmax<double> );
-
- cout<< " A " << A<<endl<<endl;
- cout<< " B " << B<<endl<<endl;
- cout<<" abs(B+B) = "<<eval(Abs(B+B)) <<endl<<endl;
- cout<<" A+10*B = "<<eval(A+10*B) <<endl<<endl;
- cout<<" Abs(A+10*B) = "<<eval(Abs(A+10*B)) <<endl<<endl;
- cout<<" Max(A,10*B)"<< eval(Max(A,10*B))<<endl<<endl;
+ std::cout<< " A " << A<<std::endl<<std::endl;
+ std::cout<< " B " << B<<std::endl<<std::endl;
+ std::cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<std::endl<<std::endl;
+ std::cout<<" A+10*B = "<<make_matrix(A+10*B) <<std::endl<<std::endl;
+ std::cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<std::endl<<std::endl;
+ std::cout<<" Max(A,10*B)"<< make_matrix(Max(A,10*B))<<std::endl<<std::endl;
  return 0;
 }

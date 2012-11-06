@@ -24,13 +24,13 @@
 #define GLOBAL_MOVES_H
 
 #include "Configuration.hpp"
-#include "triqs/mc_tools/polymorphic_random_generator.hpp"
+#include "triqs/mc_tools/random_generator.hpp"
 
 
 class Global_Move { 
   const std::string name;
   Configuration & Config;
-  mc_tools::polymorphic_random_generator & Random;  
+  mc_tools::random_generator & Random;  
   const vector<const Hloc::Operator*> mapping;
   vector<Configuration::DET_TYPE*> dets_save;
 public :  
@@ -38,7 +38,7 @@ public :
   typedef std::complex<double> mc_weight_type;
 
   
-  Global_Move(string name_, Configuration & Config_, mc_tools::polymorphic_random_generator & RNG, 
+  Global_Move(string name_, Configuration & Config_, mc_tools::random_generator & RNG, 
 	      const vector<const Hloc::Operator*> & mapping_ ):
     name(string("Global_Move_") + name_),
     Config(Config_), Random(RNG),
@@ -107,9 +107,9 @@ public :
       r2 *= dets_save[a]->determinant();
     }		
     r1 /=r2;
-    //double detratio =  (isfinite(real(r1)) ? real(r1) : 0); //+ I* (isfinite(imag(r1)) ? imag(r1) : 0);
+    //double detratio =  (std::isfinite(real(r1)) ? real(r1) : 0); //+ I* (std::isfinite(imag(r1)) ? imag(r1) : 0);
     // CHANGE Double to the type of determinant to be computed from the class !!!
-    double detratio =  (isfinite((r1)) ? (r1) : 0); //+ I* (isfinite(imag(r1)) ? imag(r1) : 0);
+    double detratio =  (std::isfinite((r1)) ? (r1) : 0); //+ I* (std::isfinite(imag(r1)) ? imag(r1) : 0);
 
 #ifdef DEBUG
     cout<<"About to print"<<endl;

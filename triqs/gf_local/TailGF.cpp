@@ -315,7 +315,9 @@ TailGF TailGF::conjugate(bool is_matsubara_expansion) const {
  TailGF r = TailGF(OrderMinMIN, OrderMaxMAX, Mt , this->OrderMax(),IndicesL,IndicesR );
  // In the Matsubara frequency case
  if (is_matsubara_expansion) 
-  for (int n= OrderMinMIN; n<OrderMaxMAX; ++n) r.M(n,ALL,ALL) *= ( n%2 ==1 ? -1 : 1);
+  for (int n= OrderMinMIN; n<=OrderMaxMAX; ++n) {
+    r.M(n,ALL,ALL) *= ( ((n%2 ==1) || (n%2 == -1)) ? -1 : 1);
+  }
  return r;
 }
 

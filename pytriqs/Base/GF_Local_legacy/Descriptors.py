@@ -218,23 +218,21 @@ class SemiCircular (Base):
         if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
         elif G.mesh.TypeGF == GF_Type.Real_Frequency: 
-            dos = _SemiCircularDOS (D)
-            f = lambda om : -1j*pi*dos(om)*Id
+            def f(om):
+              if (om > -D) and (om < D):
+                return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
+              else:
+                return (2.0/D**2) * (om - sign(om) * sqrt(om**2 - D**2))
         else :
             raise TypeError, "This initializer is only correct in frequency"
 
         t =G._tail
         t.zero()
-        if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
-            for i in range(G.N1):
-                t[1].array[i,i] = 1.0
-                t[3].array[i,i] = D**2/4.0
-                t[5].array[i,i] = D**4/8.0
+        for i in range(G.N1):
+          t[1].array[i,i] = 1.0
+          t[3].array[i,i] = D**2/4.0
+          t[5].array[i,i] = D**4/8.0
  
-        #t[1].array[:,:] = 1.0
-        #t[3].array[:,:] = D**2/4.0
-        #t[5].array[:,:] = D**4/8.0
-
         t.changeOrderMax(5) # expansion is not valid above this
         Function(f,None)(G)
         return G

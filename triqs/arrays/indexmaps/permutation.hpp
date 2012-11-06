@@ -84,7 +84,8 @@ namespace triqs { namespace arrays { namespace Permutations {
 
  // is_permutation<P>::value == true iif P is a permutation. Unicity is by construction.
  template <typename P, int shift =0>
-  struct is_permutation : mpl::bool_< ((mpl::max_element<P>::type::value ==  mpl::size<P>::type::value -1) &&  (mpl::min_element<P>::type::value ==  0) )> {};
+  struct is_permutation : mpl::bool_< ((mpl::deref< typename mpl::max_element<typename P::V>::type>::type::value ==  mpl::size<typename P::V>::type::value -1) 
+    &&  (mpl::deref< typename mpl::min_element<typename P::V>::type>::type::value ==  0) )> {};
 
  // length of the permutation
  template <typename P> struct length : mpl::size<typename P::V> {};

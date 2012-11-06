@@ -57,3 +57,22 @@ foreach (module_name ${PYTHON_STATIC_MODULES_LIST})
  file (APPEND ${Main_appendinittab_file} "PyImport_AppendInittab((char*)(\"${module_name}\"), &init${module_name});\n")
 endforeach (module_name ${PYTHON_STATIC_MODULES_LIST})
 endfunction (generate_python_header_for_main)
+
+
+# This function add the target to build a python module
+#
+# NickName =  
+# ModuleName = the python name of the module 
+# ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] 
+macro (cython_module NickName ModuleName ModuleDest  )
+ MESSAGE(STATUS "Preparing cython module  ${NickName} ")
+ get_filename_component(CYTHON_EXECUTABLE_PATH ${PYTHON_INTERPRETER} PATH)
+ SET(CYTHON_EXECUTABLE ${CYTHON_EXECUTABLE_PATH}/cython CACHE STRING "Path to the cython executable")
+ SET(cython_src ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}.pyx )
+ FILE(GLOB all_pyx_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.pyx *.pxd )
+ SET(cython_wrap  ${CMAKE_CURRENT_BINARY_DIR}/wrap_${NickName}_by_cython.cpp)
+ add_custom_command (OUTPUT ${cython_wrap} DEPENDS ${all_pyx_src} ${ARGN} COMMAND ${CYTHON_EXECUTABLE} ${cython_src} -I ${CMAKE_CURRENT_SOURCE_DIR}/ --cplus -o ${cython_wrap}  )
+ add_custom_target(cython_${NickName} ALL DEPENDS ${cython_wrap})
+ python_build_module(${NickName} ${ModuleName} ${ModuleDest} ${cython_wrap} )
+endmacro (cython_module)
+

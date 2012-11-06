@@ -24,7 +24,7 @@
 #define MOVE_MOVE_CC_H_w3hbv45
 
 #include "Configuration.hpp"
-#include "triqs/mc_tools/polymorphic_random_generator.hpp"
+#include "triqs/mc_tools/random_generator.hpp"
 
 /************************
 
@@ -34,7 +34,7 @@
 class Move_C_Delta { 
   const std::string name;
   Configuration & Config;
-  mc_tools::polymorphic_random_generator & Random;
+  mc_tools::random_generator & Random;
   Configuration::DET_TYPE * det;
   Configuration::DET_TYPE::RollDirection roll_matrix;
 
@@ -45,7 +45,7 @@ public:
   typedef std::complex<double> mc_weight_type;
 
 
-  Move_C_Delta(Configuration & Config_, mc_tools::polymorphic_random_generator & RNG ): name("Move_C_Delta"), 
+  Move_C_Delta(Configuration & Config_, mc_tools::random_generator & RNG ): name("Move_C_Delta"), 
     Config(Config_), Random(RNG) {}
 
   //----------------

@@ -48,7 +48,8 @@ namespace triqs { namespace lattice_tools {
    typedef boost::unordered_map<std::string, R_type> orbital_type; // name -> position in space
    
    bravais_lattice( units_type const & units__, orbital_type const & orbitals__); 
-   bravais_lattice( tqa::array<double,2> const & units__, boost::python::object orbitals__); 
+   bravais_lattice( boost::python::object units__, boost::python::object orbitals__); 
+   //bravais_lattice( tqa::array_view<double,2> const & units__, boost::python::object orbitals__); 
    size_t n_orbitals() const {return orbitals_.size();}
    units_type const & units() const { return units_;}
    size_t dim() const { return dim_; }   
@@ -57,7 +58,8 @@ namespace triqs { namespace lattice_tools {
     * @param[in] x : coordinates in the basis :unit_i
     * @return  Coordinates in R^3 ("real" coordinates) 
     */
-   R_view_type lattice_to_real_coordinates(R_type const & x) const;
+   R_view_type lattice_to_real_coordinates(R_view_type const & x) const;
+   //R_view_type lattice_to_real_coordinates(R_type const & x) const;
 
    protected :
    units_type units_;

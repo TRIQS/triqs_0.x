@@ -21,12 +21,14 @@ import sys, os
 # General configuration
 # ---------------------
 
-sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe", "@CMAKE_BINARY_DIR@/doc/mpl", "@CMAKE_BINARY_DIR@/doc"]
+sys.path +=["@CMAKE_BINARY_DIR@/doc/breathe",
+"@CMAKE_BINARY_DIR@/doc/mpl","@CMAKE_BINARY_DIR@/doc/autocompile",
+"@CMAKE_BINARY_DIR@/doc/sandbox","@CMAKE_BINARY_DIR@/doc"]
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 #extensions = ['sphinx.ext.autodoc','sphinx.ext.pngmath']
-extensions = ['sphinx.ext.autodoc','sphinx.ext.pngmath','breathe','doxylink']
+extensions = ['sphinx.ext.autodoc','sphinx.ext.@SPHINX_MATH_GENERATOR@','breathe','doxylink']
 
 # adding support for matplotlib plots
 extensions += [
@@ -37,9 +39,19 @@ extensions += [
        # 'inheritance_diagram',
         'numpydoc']
 
+extensions += ['autocompile']
+#extensions += ['sandbox']
+
+autocompile_opts = dict(compiler = "@CMAKE_CXX_COMPILER@", 
+        link = "@DOC_AUTOCOMPILE_LINK@".replace(';',' '), 
+        ld_library_path = "@DOC_AUTOCOMPILE_LD_LIBRARY_PATH@".replace(';',' '), 
+        include =''.join([ " -I%s"%arg for arg in "@DOC_AUTOCOMPILE_INCLUDE@".split(';')] ),
+        definitions =''.join([ " %s"%arg for arg in "@DOC_AUTOCOMPILE_DEFINITIONS@".split(';')] )
+        )
 autoclass_content = "both"
 
 #pngmath_dvipng_args = ['-gamma 1.2', '-D 150', '-bg Transparent']
+mathjax_path = "MathJax/MathJax.js?config=default"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['@TRIQS_SOURCE_DIR@/doc/developer_manual/.templates']
@@ -105,8 +117,8 @@ pygments_style = 'sphinx'
 # -----------------------------
 
 breathe_projects = {
-        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/mctools/xml/",
-        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/arrays/xml/",
+        "mc_tools":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
+        "arrays":"@CMAKE_CURRENT_BINARY_DIR@/xml/",
         }
 
 breathe_default_project = "mc_tools"
@@ -114,10 +126,7 @@ breathe_default_project = "mc_tools"
 # Options for doxylink extension
 # -----------------------------
 
-doxylink = {
-        'mctools_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/mctools/doxy.tag', 'doxy_mctools'),
-        'arrays_doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/arrays/doxy.tag', 'doxy_arrays'),
-        }
+doxylink = { 'doxy' : ('@CMAKE_CURRENT_BINARY_DIR@/doxy.tag', 'doxy_triqs') }
 
 # Options for HTML output
 # -----------------------

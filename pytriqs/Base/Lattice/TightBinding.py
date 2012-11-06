@@ -68,7 +68,9 @@ class TBLattice :
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
     def latt_to_real_x(self, p) : 
-        return self.bl.lattice_to_real_coordinates (p ) #numpy.array(p.float64))
+        return self.bl.lattice_to_real_coordinates (numpy.array(p, numpy.float64))
+        # modified since array are not converted automatically any more
+        ##return self.bl.lattice_to_real_coordinates (p ) #numpy.array(p.float64))
 
     def HoppingDictionnary(self) : return self._hop
 

@@ -19,14 +19,14 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
+
 #include "./src/array.hpp"
 #define TRIQS_ARRAYS_CACHE_COPY_VERBOSE
 #include "./src/cache.hpp"
-#include "./src/expressions/array_algebra.hpp"
-#include "./python_stuff.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
-using namespace std;
 using namespace triqs::arrays;
 
 void f( array_view<long,2> & A, long u) { 
@@ -44,33 +44,33 @@ int main(int argc, char **argv) {
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
-   cout<<"A "<<A(i,j)<<endl;
+   std::cout<<"A "<<A(i,j)<<std::endl;
 
  array<long,2 > Ac (A);
 
- cout<<"A = "<<A<<endl;
- cout<<"Ac = "<<Ac<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"Ac = "<<Ac<<std::endl;
 
- cout<<"----------"<<endl;
- cout<<"Expr = "<< make_const_cache_C_order(2*A).view() <<endl;
+ std::cout<<"----------"<<std::endl;
+ std::cout<<"Expr = "<< make_const_cache(2*A, Option::C() ).view() <<std::endl;
 
- cout<<"----------"<<endl;
- cout<<"A F->C = "<< make_const_cache_C_order(A).view() <<endl;
+ std::cout<<"----------"<<std::endl;
+ std::cout<<"A F->C = "<< make_const_cache(A, Option::C()).view() <<std::endl;
 
- cout<<"----------"<<endl;
- cout<<"A C->C = "<< make_const_cache_C_order(Ac).view() <<endl;
+ std::cout<<"----------"<<std::endl;
+ std::cout<<"A C->C = "<< make_const_cache(Ac, Option::C()).view() <<std::endl;
 
- cout<<"----------"<<endl;
- f(make_cache_C_order(Ac),287);
- cout<<"Ac = "<<Ac<<endl;
+ std::cout<<"----------"<<std::endl;
+ f(make_cache(Ac, Option::C()),287);
+ std::cout<<"Ac = "<<Ac<<std::endl;
 
- cout<<"----------"<<endl;
- f(make_cache_C_order(A),287);
- cout<<"A = "<<A<<endl;
+ std::cout<<"----------"<<std::endl;
+ f(make_cache(A, Option::C() ),287);
+ std::cout<<"A = "<<A<<std::endl;
 
- cout<<"----------"<<endl;
- cout<<"A = "<<A<<endl;
- cout<<"A(range(0,1),range(1,2) ) = "<<A( range(0,1),range(1,2) )<<endl;
+ std::cout<<"----------"<<std::endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"A(range(0,1),range(1,2) ) = "<<A( range(0,1),range(1,2) )<<std::endl;
 
  array_view <long,2,Option::Fortran> V(A(range(0,1), range(1,2)));
  array_view <long,2> Vc(Ac(range(0,1), range(1,2)));
@@ -78,12 +78,12 @@ int main(int argc, char **argv) {
  Vc(0,0) = 300;
 
  V = Vc;
- cout<<"A = "<<A<<endl;
- cout<<"Ac = "<<Ac<<endl;
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"Ac = "<<Ac<<std::endl;
 
- f(make_cache_C_order(V),156);
- cout<<"A = "<<A<<endl;
- cout<<"Ac = "<<Ac<<endl;
+ f(make_cache(V, Option::C()),156);
+ std::cout<<"A = "<<A<<std::endl;
+ std::cout<<"Ac = "<<Ac<<std::endl;
 
 
  return 0;

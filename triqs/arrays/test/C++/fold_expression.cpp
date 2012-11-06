@@ -22,25 +22,16 @@
 
 #include "./python_stuff.hpp"
 
-#include "./src/expressions/fold.hpp"
-#include "./src/expressions/map.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/functional/fold.hpp"
+#include "./src/functional/map.hpp"
+#include "./src/proto/matrix_algebra.hpp"
+#include "./src/algorithms.hpp"
 #include <iostream>
-#include <functional>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
-#include "./src/expressions/min_max.hpp"
-#include "./src/expressions/sum_prod.hpp"
-
-// template<class T> T mmax(T const & x, T const &  y) { return std::max(x,y);}
-//auto max_element = fold ( mmax<double>); 
-// non C++0x version : 
-// result_of::fold<double (*)(const double&, const double&)>::type max_element = fold ( mmax<double>); 
-
-//auto Abs = map( static_cast< double (*)(double)> (std::abs) );
-triqs::arrays::result_of::map<double (*)(double)>::type  Abs = map( static_cast< double (*)(double)> (std::abs) );
+BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
 
 int main(int argc, char **argv) {
 
@@ -54,16 +45,16 @@ int main(int argc, char **argv) {
   { A(i,j) = i+2*j+1; B(i,j) = i-3*j;}
 
  C = A+ B ;
- cout<< " A " << A<<endl;
- cout<< " B " << B<<endl;
- cout<< " A+B " << C<<endl;
+ std::cout<< " A " << A<<std::endl;
+ std::cout<< " B " << B<<std::endl;
+ std::cout<< " A+B " << C<<std::endl;
 
- cout<< " max A : "<<triqs::arrays::max_element(A)<<endl;
- cout<< " max B : "<<triqs::arrays::max_element(B)<<endl;
- cout<< " max abs(B) : "<<triqs::arrays::max_element(Abs(B))<<endl;
- cout<< " max A+B : "<<triqs::arrays::max_element(A+B)<<endl;
+ std::cout<< " max A : "<<triqs::arrays::max_element(A)<<std::endl;
+ std::cout<< " max B : "<<triqs::arrays::max_element(B)<<std::endl;
+ std::cout<< " max abs(B) : "<<triqs::arrays::max_element(Abs(B))<<std::endl;
+ std::cout<< " max A+B : "<<triqs::arrays::max_element(A+B)<<std::endl;
 
- cout <<" sum(A) "<< sum(A)<<endl;
- cout <<" prod(A) "<< prod(A)<<endl;
+ std::cout <<" sum(A) "<< sum(A)<<std::endl;
+ std::cout <<" prod(A) "<< prod(A)<<std::endl;
  return 0;
 }

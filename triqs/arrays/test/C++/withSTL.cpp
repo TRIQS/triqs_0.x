@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 #include <vector>
@@ -44,10 +44,10 @@ int main(int argc, char **argv) {
  std::vector<array<long,2> > VV;
  VV.push_back(A);
 
- map<string, array<long,2> > MAP;
+ std::map<std::string, array<long,2> > MAP;
  MAP["1"] = A;
- cout<<"printing map"<<endl;
- cout<<MAP["1"]<<endl;
+ std::cout<<"printing map"<<std::endl;
+ std::cout<<MAP["1"]<<std::endl;
 
  // Trying to put a vector in an array
  std::vector<int> V (10);
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 
  // copy to B. Iterators on array are STL compliant so STL algorithms work.
  std::copy(V.begin(),V.end(),B.begin()); 
- cout<<" B = "<< B<<endl;
+ std::cout<<" B = "<< B<<std::endl;
 
  // change B
  for (int i =0; i<10; ++i) B(i)*=2;
@@ -70,27 +70,27 @@ int main(int argc, char **argv) {
  std::copy(V.begin(),V.end(),std::ostream_iterator<int>(std::cout,","));
 
  // countif
- cout<<" B= "<< B<<endl;
- cout<<" Number of elements <25 : "<< std::count_if(B.begin(), B.end(),te)<<endl;
- //cout<<" Number of elements <25"<< std::count_if(B.begin(), B.end(),[](int x){ return x<25;});
+ std::cout<<" B= "<< B<<std::endl;
+ std::cout<<" Number of elements <25 : "<< std::count_if(B.begin(), B.end(),te)<<std::endl;
+ //std::cout<<" Number of elements <25"<< std::count_if(B.begin(), B.end(),[](int x){ return x<25;});
  
  // max_element
  B(9) = 0; B(8) = 18;
- cout<<" B= "<< B<<endl;
- cout<<" max(B) "<< *std::max_element(B.begin(),B.end())<<endl;
- cout<<" max(B) position "<< std::max_element(B.begin(),B.end()).indices()[0]<<endl;
+ std::cout<<" B= "<< B<<std::endl;
+ std::cout<<" max(B) "<< *std::max_element(B.begin(),B.end())<<std::endl;
+ std::cout<<" max(B) position "<< std::max_element(B.begin(),B.end()).indices()[0]<<std::endl;
 
  // replace_if
  std::replace_if (B.begin(), B.end(), te, 0);
- cout<<" B= "<< B<<endl;
+ std::cout<<" B= "<< B<<std::endl;
  
  //swap
  C()=0;
- cout<<" B= "<< B<<endl;
- cout<<" C= "<< C<<endl;
+ std::cout<<" B= "<< B<<std::endl;
+ std::cout<<" C= "<< C<<std::endl;
  std::swap(B,C);
- cout<<" B= "<< B<<endl;
- cout<<" C= "<< C<<endl;
+ std::cout<<" B= "<< B<<std::endl;
+ std::cout<<" C= "<< C<<std::endl;
 
  return 0;
 }

@@ -2,68 +2,48 @@
 
 .. _installation:
 
+.. highlight:: bash
+
 Installation 
 ============
+ 
+* TRIQS is hosted on **GitHub**, where you can : 
 
-Here is a *quick installation* procedure assuming that  
-every :ref:`necessary librairies and tools <dependencies>` are present on your machine (see below). 
-More specific cases and options are described in the following paragraphs.
-
-#. Get the code::
+ * Download `the current version <https://github.com/TRIQS/TRIQS>`_ (recommended) ::
 
      git clone git://github.com/TRIQS/TRIQS.git path_to_triqs_sources
 
-#. Download the `sources of boost <http://ipht.cea.fr/triqs/download/boost_src.tar.bz2>`_ and untar them into ``path_to_boost_sources``.
-   **Don't compile boost**.
+   NB : this version is normally never broken (developments are done elsewhere). 
 
-#. Create a build directory (different from the TRIQS source directory nor a subdirectory thereof) ::
-    
-    mkdir triqs_build && cd triqs_build 
- 
-#. Configure ::
+ * Download `an older release <https://github.com/TRIQS/TRIQS/tags>`_, which may require less recent versions of compilers, libs...
 
-    cmake path_to_triqs_sources -DBOOST_SOURCE_DIR=path_to_boost_sources \
-          -DCMAKE_INSTALL_PREFIX=path_to_install_directory
-
-   [NB : the install directory is optional, the default value is `triqs_build/INSTALL_DIR`]
- 
-   Successful run of cmake will finish with ::
-
-     -- Build files have been written to: *path_to_triqs_build*
-
-#. Build TRIQS, test it and install it with (N being the number of cores of your machine) ::
+ * Use the GitHub *Issues* tracker for any problem, questions.
   
-    make -jN   && make test && make -jN install 
- 
-   [NB : the tests SingleSite and CDMFT-v2  take longer than the other ones (30s to 1 min) ].
+   *Please do NOT contact the developers directly by email*
 
-#. You're done! Now just launch ``pytriqs`` (all the files have been installed under ``path_to_install_directory``).
-   
+Complete installation instructions for standard systems 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+     
+   Ubuntu
+   linux
+   install_on_osx_lion
+ 
+Details
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. toctree::
    :maxdepth: 1
    
-   install_on_osx_lion
-   downloading
-   dependencies
-   install_options
-   ipython 
    wien2k_inst
-   where_are_things
-   binary
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   dependencies
+   python
+   clang
+   intel
+   install_options
+   get_started
+   changelog
 
 

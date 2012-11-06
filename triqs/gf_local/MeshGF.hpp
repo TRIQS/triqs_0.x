@@ -52,6 +52,9 @@ public :
   // Another view on the same array
   MeshGF(const MeshGF & X);
   
+  // Another view on the same array, but with different statistics
+  MeshGF(const MeshGF & X, const Statistic_GF & stat);
+  
   const double Beta; 
   const Statistic_GF Statistic;
   const Type_GF typeGF;     

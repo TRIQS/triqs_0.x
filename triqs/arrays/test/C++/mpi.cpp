@@ -18,17 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 // order of include in horrible : on mac + clang, array (in fact boost::tuple) must come before boost::mpi
 // on icc, mpi must come before boost::proto expression of arithmetic.... messy
 #include "./src/array.hpp"
 #include <boost/mpi.hpp>
-#include "./src/expressions/array_algebra.hpp"
-#include "./python_stuff.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 #include <sstream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 namespace mpi=boost::mpi;
 
@@ -44,12 +44,12 @@ int main(int argc, char* argv[])
   for (int j=0; j<2; ++j) 
   { A(i,j) = (1+world.rank())*(10*i+ j);}
 
- if (world.rank() ==0) cout<<" A = "<<A<<endl;
+ if (world.rank() ==0) std::cout<<" A = "<<A<<std::endl;
 
  boost::mpi::reduce (world, A,C, std::plus<array<long,2> >(),0);
 
  int s= world.size();
- if (world.rank() ==0) cout<<" C = "<<C<< "  should be "<< array<long,2>( (s*(s+1)/2) * A) <<endl;
+ if (world.rank() ==0) std::cout<<" C = "<<C<< "  should be "<< array<long,2>( (s*(s+1)/2) * A) <<std::endl;
 
  return 0;
 }
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
    world.recv(0, 0, C);
   }                    
   world.barrier();
-  if (world.rank() ==1) cerr<<" node "<<world.rank()<<" C = "<<C<<endl;
+  if (world.rank() ==1) std::cerr<<" node "<<world.rank()<<" C = "<<C<<std::endl;
  }
 
  */ 

@@ -135,8 +135,9 @@ namespace triqs { namespace arrays {
 
   // compute the indexmap from the dimension and the IndexOrderTag.
   template<int D, typename P, bool BC> struct dim_iotag_2_imap { 
-   static_assert( (Tag::check<Permutations::perm_tag,P>::value), "IndexOrderTag must be Tag::C, Tag::Fortran or a Permutation");
+   static_assert( (boost::is_base_of<Permutations::perm_tag,P>::value), "IndexOrderTag must be Tag::C, Tag::Fortran or a Permutation");
    static_assert( (Permutations::length<P>::value==D), "Error : dimension and size of the permutation must be equal");
+   static_assert( (Permutations::is_permutation<P>::value), "Error : not a permutation");
    typedef cuboid_map<IndexOrder::custom<P>, BC > type;
   };
   template<int D, bool BC> struct dim_iotag_2_imap<D,Tag::C,BC> { typedef cuboid_map<IndexOrder::C<D>, BC >  type;};

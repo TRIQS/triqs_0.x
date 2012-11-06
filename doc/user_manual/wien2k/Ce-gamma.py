@@ -1,5 +1,5 @@
 from pytriqs.Wien2k.SumK_LDA import *
-from pytriqs.Wien2k.SumK_LDA_Wien2K_input import *
+from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
 from pytriqs.Solvers.HubbardI.Solver_HubbardI import Solver_HubbardI 
 
 LDAFilename = 'Ce-gamma'
@@ -11,13 +11,13 @@ Mix = 0.7                        # Mixing factor in QMC
 DC_type = 0                      # 0...FLL, 1...Held, 2... AMF, 3...Lichtenstein
 DC_Mix = 1.0                     # 1.0 ... all from imp; 0.0 ... all from Gloc   
 useBlocs = False                 # use bloc structure from LDA input
-useMatrix = True                 # U matrix calculated from Slater coefficients 
+useMatrix = True                 # use the U matrix calculated from Slater coefficients instead of (U+2J, U, U-J)
 
 HDFfilename = LDAFilename+'.h5'
 
 # Convert DMFT input:
 # Can be commented after the first run
-Converter = SumK_LDA_Wien2K_input(Filename=LDAFilename,repacking=True)
+Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
 Converter.convert_DMFT_input()
 
 #check if there are previous runs:
@@ -167,4 +167,5 @@ if (MPI.IS_MASTER_NODE()):
     f=open(LDAFilename+'.qdmft','a')
     f.write("%.16f\n"%correnerg)
     f.close()
+
 

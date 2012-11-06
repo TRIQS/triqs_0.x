@@ -21,7 +21,7 @@
 #ifndef TRIQS_ARRAYS_H5_STACK_H
 #define TRIQS_ARRAYS_H5_STACK_H
 #include "../array.hpp"
-#include "./common.hpp"
+#include "./group_or_file.hpp" 
 
 namespace triqs { namespace arrays { namespace h5 { 
  using namespace H5;
@@ -38,7 +38,7 @@ namespace triqs { namespace arrays { namespace h5 {
   template<class T, class Opt> T & slice0( array<T,1,Opt> & A, size_t ind) { return A(ind);}
 
   template<typename B, typename Enable = void> struct get_value_type { typedef B type; static const size_t rank = 0;};
-  template<typename B> struct get_value_type<B, typename boost::enable_if<is_value_class<B> >::type > { 
+  template<typename B> struct get_value_type<B, typename boost::enable_if<is_amv_value_class<B> >::type > { 
    typedef typename B::value_type type;static const size_t rank = B::rank;};
 
  }
@@ -53,7 +53,7 @@ namespace triqs { namespace arrays { namespace h5 {
  template< typename BaseElementType>
   class array_stack {
    typedef BaseElementType base_element_type;
-   static_assert( (is_value_class<BaseElementType>::value || is_scalar<BaseElementType>::value), "BaseElementType must be an array/matrix/vector or a simple number");
+   static_assert( (is_amv_value_class<BaseElementType>::value || is_scalar<BaseElementType>::value), "BaseElementType must be an array/matrix/vector or a simple number");
    typedef typename details::get_value_type<BaseElementType>::type T;
    static const size_t dim = details::get_value_type<BaseElementType>::rank; 
    static const bool base_is_array = dim >0;

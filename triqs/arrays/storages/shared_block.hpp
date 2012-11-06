@@ -30,7 +30,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include "./common.hpp"
 #include "../impl/make_const.hpp"
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "./mem_block.hpp"
 #else 
 #include <vector>
@@ -73,7 +73,7 @@ namespace triqs { namespace arrays {
    class shared_block : Tag::shared_block { 
     typedef typename boost::add_const<ValueType>::type const_value_type;
     typedef typename boost::remove_const<ValueType>::type non_const_value_type;
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     typedef details::mem_block<non_const_value_type> block_type;
 #else
     //  typedef details::basic_block<non_const_value_type> block_type;
@@ -95,39 +95,32 @@ namespace triqs { namespace arrays {
 
     explicit shared_block(): sptr() { init_data(); }
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///  Construct from a numpy object
     explicit shared_block(PyObject * arr, bool borrowed): sptr(new block_type(arr,borrowed)) { init_data();}
 #endif
 
     /// Shallow copy
-    template <typename  ValueType2> 
-     shared_block(const shared_block<ValueType2> & X): sptr() {
-      static_assert( (details::const_check<ValueType,ValueType2>::value), "shared_block : type mismatch");      
-      sptr = X.sptr; // so that the static_assert appears first
-      init_data();
-     }
-
+    shared_block(const shared_block<const_value_type> & X): sptr(X.sptr) { init_data(); }
+  
     /// Shallow copy
-    shared_block(const shared_block & X): sptr(X.sptr) { init_data(); }
+    shared_block(const shared_block<non_const_value_type> & X): sptr(X.sptr) { init_data(); }
 
     void operator=(const shared_block & X) { sptr=X.sptr; init_data(); } 
 
     /// raw copy from another 
-    template <class ValueType2> 
-     void raw_copy_from(const shared_block<ValueType2> & X){
-      static_assert( (details::const_check<ValueType,ValueType2>::value), "shared_block : can not create a block. type mismatch");      
-      if (!empty()) (*sptr) = (*X.sptr);     
-     }
+    void raw_copy_from(const shared_block<non_const_value_type> & X){assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
+
+    /// raw copy from another 
+    void raw_copy_from(const shared_block<const_value_type> & X){ assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
 
     /// True copy of the data
     clone_type clone() const { 
      if (empty()) return clone_type ();
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT    
-     clone_type res; res.sptr = boost::shared_ptr<block_type > (sptr->clone()); res.init_data();
+#ifdef TRIQS_WITH_PYTHON_SUPPORT    
+     clone_type res; res.sptr = boost::make_shared<block_type > (*sptr); res.init_data();
 #else
-     clone_type res(this->size(), Tag::no_init() );
-     (*res.sptr) = (*sptr);
+     clone_type res(this->size(), Tag::no_init() ); (*res.sptr) = (*sptr);
 #endif
      return res;
     }
@@ -139,7 +132,7 @@ namespace triqs { namespace arrays {
     bool empty() const {return (sptr.get()==NULL);}
     size_t size() const {return (empty () ? 0 : sptr.get()->size());} 
 
-#ifdef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT    
+#ifdef TRIQS_WITH_PYTHON_SUPPORT    
     PyObject * new_ref_to_guard() const {return sptr->new_ref_to_guard();}
 #endif
 
@@ -151,7 +144,6 @@ namespace triqs { namespace arrays {
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("ptr",sptr); init_data(); }
    };
-
  }
 
  namespace details { 

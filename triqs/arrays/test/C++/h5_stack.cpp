@@ -20,13 +20,13 @@
  *
  ******************************************************************************/
 
+#include "./python_stuff.hpp"
 #include "./src/h5/array_stack.hpp"
 #include "./src/h5/simple_read_write.hpp"
 #include <iostream>
-#include "./python_stuff.hpp"
-#include "./src/impl/asserts.hpp"
+#include "./src/asserts.hpp"
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 template < class T>
@@ -76,21 +76,21 @@ void test(std::string filename, T init) {
  // now we read the file and compare
 
  h5::H5File file2( filename.c_str() ,H5F_ACC_RDONLY );
- h5::read (file2, "A",A_stack_compare); 
- cerr<< "A keep      "<< A_stack_keep<<endl;
- cerr<< "A in file   "<< A_stack_compare<<endl;
+ h5_read (file2, "A",A_stack_compare); 
+ std::cerr<< "A keep      "<< A_stack_keep<<std::endl;
+ std::cerr<< "A in file   "<< A_stack_compare<<std::endl;
  
  assert_all_close (A_stack_keep, A_stack_compare, 1.e-13);
 
- h5::read (file2, "B",B_stack_compare); 
- cerr<< "B keep      "<< B_stack_keep<<endl;
- cerr<< "B in file   "<< B_stack_compare<<endl;
+ h5_read (file2, "B",B_stack_compare); 
+ std::cerr<< "B keep      "<< B_stack_keep<<std::endl;
+ std::cerr<< "B in file   "<< B_stack_compare<<std::endl;
  
  assert_all_close (B_stack_keep, B_stack_compare, 1.e-13);
 
- h5::read (file2, "C",C_stack_compare); 
- cerr<< "C keep      "<< C_stack_keep<<endl;
- cerr<< "C in file   "<< C_stack_compare<<endl;
+ h5_read (file2, "C",C_stack_compare); 
+ std::cerr<< "C keep      "<< C_stack_keep<<std::endl;
+ std::cerr<< "C in file   "<< C_stack_compare<<std::endl;
  
  assert_all_close (C_stack_keep, C_stack_compare, 1.e-13);
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  test("stack_d.h5", 1.0 );
- test("stack_c.h5", complex<double>(1,2) );
+ test("stack_c.h5", std::complex<double>(1,2) );
 
 }
 

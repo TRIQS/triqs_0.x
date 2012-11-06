@@ -30,6 +30,9 @@ inline COMPLEX oneFermion(COMPLEX a,double b,double tau,double Beta) {
  return -a*( b >=0 ? exp(-b*tau)/(1+exp(-Beta*b)) : exp(b*(Beta-tau))/(1+exp(Beta*b)) );
 }
 
+inline COMPLEX oneBoson(COMPLEX a,double b,double tau,double Beta) {
+ return a*( b >=0 ? exp(-b*tau)/(exp(-Beta*b)-1) : exp(b*(Beta-tau))/(1-exp(b*Beta)) );
+}
 //--------------------------------------------------------------------------------------
 
 void fourier_base(const Array<COMPLEX,1> &in, Array<COMPLEX,1> &out, bool direct) {
@@ -63,7 +66,7 @@ void fourier_base(const Array<COMPLEX,1> &in, Array<COMPLEX,1> &out, bool direct
 //
 void fourier_direct  (GF_Bloc_ImTime const & Gt, GF_Bloc_ImFreq & Gw, bool time_mesh_starts_at_half_bin) { 
  double Beta = Gw.Beta;
- assert(Gw.Statistic==Fermion); // Boson not implemented.
+ //assert(Gw.Statistic==Fermion); // Boson not implemented.
  check_have_same_structure (Gw,Gt,false,true);
  assert (Gw.mesh.index_min==0);
 
@@ -77,18 +80,31 @@ void fourier_direct  (GF_Bloc_ImTime const & Gt, GF_Bloc_ImFreq & Gw, bool time_
  double t;
 
  for (int n1=1; n1<=N1;n1++)
-  for (int n2=1; n2<=N2;n2++)
+  for(int n2=1; n2<=N2;n2++)
   {
    COMPLEX d= Gw.tail[1](n1,n2), A= Gw.tail[2](n1,n2),B = Gw.tail[3](n1,n2);
-   double b1 = 0,b2 =1, b3 =-1;
-   COMPLEX a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2;
+   double b1, b2, b3;
+   COMPLEX a1, a2, a3;
+   if (Gw.Statistic == Fermion){ 
+      b1 = 0; b2 =1; b3 =-1;
+      a1 = d-B; a2 = (A+B)/2; a3 = (B-A)/2;
+   }
+   else {
+      b1 = -0.5; b2 =-1; b3 =1;
+      a1=4*(d-B)/3; a2=B-(d+A)/2; a3=d/6+A/2+B/3;
+      }
    G_in = 0;
 
    for (int i =Gt.mesh.index_min; i <= Gt.mesh.index_max ; i++)
    {
     t = real(Gt.mesh[i]);
+    if  (Gw.Statistic == Fermion){
     G_in(i) = Gt.data_const(n1,n2,i) - ( oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
     G_in(i) *= exp(I*Pi*t/Beta);
+    }
+    else {
+     G_in(i) = Gt.data_const(n1,n2,i) - ( oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta)+ oneBoson(a3,b3,t,Beta) );
+    }
    }
    G_in *= Beta/Gt.numberTimeSlices;
 
@@ -99,9 +115,12 @@ void fourier_direct  (GF_Bloc_ImTime const & Gt, GF_Bloc_ImFreq & Gw, bool time_
    {
     COMPLEX om1 = Gw.mesh[om];
     if (time_mesh_starts_at_half_bin) {
-     Gw.data(n1,n2,om) = G_out(om)*exp(I*om*Pi/Gt.numberTimeSlices) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); }
-    else {
-     Gw.data(n1,n2,om) = G_out(om) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); }
+      Gw.data(n1,n2,om) = G_out(om)*exp(I*om*Pi/Gt.numberTimeSlices) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3);
+    } else {
+      Gw.data(n1,n2,om) = G_out(om) + a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3); 
+    }
+     
+
    }
   }
 }
@@ -116,7 +135,7 @@ void fourier_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImTime & Gt, bool time_
 
  if (abs(Gw.Beta - Gt.Beta)> 1.e-10) TRIQS_RUNTIME_ERROR<<"The time and frequency Green function are not at the same Beta";
  double Beta = Gw.Beta;
- assert(Gw.Statistic==Fermion); // Boson not implemented.
+ //assert(Gw.Statistic==Fermion); // Boson not implemented.
  check_have_same_structure (Gw,Gt,false,true);
  assert (Gw.mesh.index_min==0);
 
@@ -132,10 +151,19 @@ void fourier_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImTime & Gt, bool time_
   for (int n2=1; n2<=N2;n2++) 
   {
    COMPLEX d= Gt.tail[1](n1,n2), A= Gt.tail[2](n1,n2),B = Gt.tail[3](n1,n2);
-   double b1 = 0,b2 =1, b3 =-1;
-   COMPLEX a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2;
+   //double b1 = 0,b2 =1, b3 =-1;
+   //COMPLEX a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2;
+   double b1, b2, b3;
+   COMPLEX a1, a2, a3;
+   if (Gw.Statistic == Fermion){ 
+      b1 = 0; b2 =1; b3 =-1;
+      a1 = d-B; a2 = (A+B)/2; a3 = (B-A)/2;
+   }
+   else {
+      b1 = -0.5; b2 =-1; b3 =1;
+      a1=4*(d-B)/3; a2=B-(d+A)/2; a3=d/6+A/2+B/3;
+      }
    G_in = 0;
-
    for (int i = Gw.mesh.index_min; i <= Gw.mesh.index_max ; i++) 
    {
     COMPLEX om1 = Gw.mesh[i];
@@ -143,6 +171,8 @@ void fourier_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImTime & Gt, bool time_
     // you need an extra factor if the time mesh starts at 0.5*Beta/L
     if (time_mesh_starts_at_half_bin) G_in(i) *=  exp(-i*I*Pi/Gt.numberTimeSlices);
    }
+   // for bosons GF(w=0) is divided by 2 to avoid counting it twice
+   if (Gw.Statistic == Boson && !Green_Function_Are_Complex_in_time ) G_in(Gw.mesh.index_min) *= 0.5; 
 
    G_out = 0;
    fourier_base(G_in, G_out, false);
@@ -154,7 +184,10 @@ void fourier_inverse (GF_Bloc_ImFreq const & Gw, GF_Bloc_ImTime & Gt, bool time_
    for (int i =Gt.mesh.index_min; i<= Gt.mesh.index_max ; i++) 
    { 
     t= real(Gt.mesh[i]);
-    Gt.data(n1,n2,i) = convert_green(G_out(i)*exp(-I*Pi*t/Beta) + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
+    if(Gw.Statistic == Fermion){
+      Gt.data(n1,n2,i) = convert_green(G_out(i)*exp(-I*Pi*t/Beta) + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );}
+    else {
+      Gt.data(n1,n2,i) = convert_green(G_out(i) + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta)+ oneBoson(a3,b3,t,Beta) );}
    }
   }
 }

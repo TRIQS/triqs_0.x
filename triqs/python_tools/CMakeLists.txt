@@ -1,1 +1,0 @@
-add_definitions(-DTRIQS_ARRAYS_WITH_PYTHON_SUPPORT)

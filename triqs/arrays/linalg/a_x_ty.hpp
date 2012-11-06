@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_EXPRESSION_A_X_TY_H
 #define TRIQS_ARRAYS_EXPRESSION_A_X_TY_H
 #include <boost/type_traits/is_same.hpp>
@@ -27,74 +25,71 @@
 #include "../matrix.hpp"
 #include "../vector.hpp"
 #include <boost/numeric/bindings/blas/level2/ger.hpp>
+#include "../qcache.hpp"
 
 namespace triqs { namespace arrays { 
 
- namespace linalg { namespace details { template<typename ScalarType, typename VectorType1, typename VectorType2> struct a_x_ty_impl; }}  // impl below
- namespace result_of { template<typename ScalarType,typename VectorType1, typename VectorType2> struct a_x_ty { 
-  typedef linalg::details::a_x_ty_impl<ScalarType,VectorType1,VectorType2> type;}; 
- }
+ ///
+ template<typename ScalarType, typename VectorType1, typename VectorType2> class a_x_ty_lazy;
 
- namespace linalg { 
+ ///
+ template<typename ScalarType, typename VectorType1, typename VectorType2>
+  a_x_ty_lazy<ScalarType,VectorType1,VectorType2> a_x_ty (ScalarType a, VectorType1 const & x, VectorType2 const & y) 
+  { return a_x_ty_lazy<ScalarType,VectorType1,VectorType2>(a,x,y); }
 
-  template<typename ScalarType, typename VectorType1, typename VectorType2>
-   details::a_x_ty_impl<ScalarType,VectorType1,VectorType2> a_x_ty (ScalarType a, VectorType1 const & x, VectorType2 const & y) { return details::a_x_ty_impl<ScalarType,VectorType1,VectorType2>(a,x,y); }
+ //------------- IMPLEMENTATION -----------------------------------
 
-  //------------- IMPLEMENTATION -----------------------------------
+ template<typename ScalarType, typename VectorType1, typename VectorType2> 
+  class a_x_ty_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
+   typedef typename boost::remove_const<typename VectorType1::value_type>::type V1;
+   typedef typename boost::remove_const<typename VectorType2::value_type>::type V2;
+   static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
 
-  namespace details {
+   public:
+   typedef BOOST_TYPEOF_TPL( V1() * V2() * ScalarType()) value_type;
+   typedef indexmaps::cuboid_domain<2> domain_type;
+   typedef typename const_view_type_if_exists_else_type<VectorType1>::type X_type; 
+   typedef typename const_view_type_if_exists_else_type<VectorType2>::type Y_type;
+   const X_type x; const Y_type y; const ScalarType a;
 
-   template<typename ScalarType, typename VectorType1, typename VectorType2> 
-    class a_x_ty_impl : Tag::expression_terminal, Tag::has_special_assign, Tag::has_special_infix<'A'>, Tag::has_special_infix<'S'>,  Tag::has_immutable_array_interface {
+   public:
+   a_x_ty_lazy( ScalarType a_, VectorType1 const & x_, VectorType2 const & y_):a(a_),x(x_),y(y_){}
 
-     // first check that VectorType1 and VectorType2 are matrices. 
-     static_assert( (is_vector_or_view<VectorType1>::value), "a_x_ty : the first argument must be a vector"); 
-     static_assert( (is_vector_or_view<VectorType2>::value), "a_x_ty : the second argument must be a vector"); 
+   domain_type domain() const { return domain_type(mini_vector<size_t,2>(x.size(), y.size()));}
+   size_t dim0() const { return x.size();} 
+   size_t dim1() const { return y.size();} 
 
-     typedef typename VectorType1::value_type V1;
-     typedef typename VectorType2::value_type V2;
-     static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
+   template<typename KeyType> value_type operator[] (KeyType const & key) const { return a * x(key[0]) * y(key[1]); }
 
-     public:
-     typedef BOOST_TYPEOF_TPL( V1() + V2() + ScalarType()) value_type;
-     typedef indexmaps::cuboid_domain<2> domain_type;
-     ScalarType a;VectorType1 const & x; VectorType2 const & y; 
+   // Optimized implementation of =
+   template<typename LHS> 
+    friend void triqs_arrays_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs)  {
+     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
+     resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
+     lhs()=0;
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
+    }
 
-     private: 
-     typedef typename VectorType2::non_view_type vector_type;
+   //Optimized implementation of +=
+   template<typename LHS> 
+    friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'A'>) {
+     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
+     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
+    }
 
-     public:
-     a_x_ty_impl( ScalarType a_, VectorType1 const & x_, VectorType2 const & y_):a(a_),x(x_),y(y_){}
-     domain_type domain() const { return domain_type(mini_vector<size_t,2>(x.dim0(), y.dim0()));}
-     value_type operator[] (typename domain_type::index_value_type const & key) const { 
-      return a * x(key[0]) * y(key[1]); }
+   //Optimized implementation of -=
+   template<typename LHS> 
+    friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'S'>) { 
+     static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
+     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
+     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
+     boost::numeric::bindings::blas::ger(-rhs.a, Cx(), Cy(),target);
+    }
 
-     // Optimized implementation of =
-     template<typename LHS> 
-      void assign_invoke (LHS & lhs) const { 
-       static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-       lhs()=0;
-       boost::numeric::bindings::blas::ger(a, x, y,lhs);
-      }
-
-     //Optimized implementation of +=
-     template<typename LHS> 
-      void assign_add_invoke (LHS & lhs) const { 
-       static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-       boost::numeric::bindings::blas::ger(a, x, y,lhs);
-      }
-
-     //Optimized implementation of -=
-     template<typename LHS> 
-      void assign_sub_invoke (LHS & lhs) const { 
-       static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-       boost::numeric::bindings::blas::ger(-a, x, y,lhs);
-      }
-
-    };
-   template<typename S, typename VectorType1, typename VectorType2> 
-    std::ostream & operator<<(std::ostream & out, a_x_ty_impl<S,VectorType1,VectorType2> const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
-  }
- } // linalg::details
+   friend std::ostream & operator<<(std::ostream & out, a_x_ty_lazy const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
+  };
 }} // namespace triqs_arrays 
 #endif

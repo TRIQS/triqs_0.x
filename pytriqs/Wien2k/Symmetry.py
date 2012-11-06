@@ -145,28 +145,28 @@ class Symmetry:
                                                         self.mat[iNs][iorb].conjugate().transpose()) / self.Ns
                         
      
-       
-        if ((self.SO==0) and (self.SP==0)):
-            # add time inv:
+# This does not what it is supposed to do, check how this should work:       
+#        if ((self.SO==0) and (self.SP==0)):
+#            # add time inv:
             #MPI.report("Add time inversion")
-            for iorb in range(self.N_orbits):
-                if (isinstance(symm_obj[0],GF)):
-                    tmp = symm_obj[iorb].copy()
-                    tmp <<= tmp.transpose()
-                    for sig,gf in tmp: tmp[sig].from_L_G_R(self.mat_tinv[iorb],tmp[sig],self.mat_tinv[iorb].transpose().conjugate())
-                    symm_obj[iorb] += tmp
-                    symm_obj[iorb] /= 2.0
-                    
-                else:
-                    if (type(symm_obj[iorb])==DictType):
-                        for ii in symm_obj[iorb]:
-                            symm_obj[iorb][ii] += numpy.dot(numpy.dot(self.mat_tinv[iorb],symm_obj[iorb][ii].conjugate()),
-                                                            self.mat_tinv[iorb].transpose().conjugate())
-                            symm_obj[iorb][ii] /= 2.0
-                    else:
-                        symm_obj[iorb] += numpy.dot(numpy.dot(self.mat_tinv[iorb],symm_obj[iorb].conjugate()),
-                                                    self.mat_tinv[iorb].transpose().conjugate())
-                        symm_obj[iorb] /= 2.0
+#            for iorb in range(self.N_orbits):
+#                if (isinstance(symm_obj[0],GF)):
+#                    tmp = symm_obj[iorb].copy()
+#                    tmp <<= tmp.transpose()
+#                    for sig,gf in tmp: tmp[sig].from_L_G_R(self.mat_tinv[iorb],tmp[sig],self.mat_tinv[iorb].transpose().conjugate())
+#                    symm_obj[iorb] += tmp
+#                    symm_obj[iorb] /= 2.0
+#                    
+#                else:
+#                    if (type(symm_obj[iorb])==DictType):
+#                        for ii in symm_obj[iorb]:
+#                            symm_obj[iorb][ii] += numpy.dot(numpy.dot(self.mat_tinv[iorb],symm_obj[iorb][ii].conjugate()),
+#                                                            self.mat_tinv[iorb].transpose().conjugate())
+#                            symm_obj[iorb][ii] /= 2.0
+#                    else:
+#                        symm_obj[iorb] += numpy.dot(numpy.dot(self.mat_tinv[iorb],symm_obj[iorb].conjugate()),
+#                                                    self.mat_tinv[iorb].transpose().conjugate())
+#                        symm_obj[iorb] /= 2.0
                                 
     
         return symm_obj

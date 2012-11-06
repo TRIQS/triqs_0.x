@@ -19,11 +19,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef PYTHON_STUFF_H
 #define PYTHON_STUFF_H
 
-#ifndef TRIQS_ARRAYS_WITH_PYTHON_SUPPORT
+#define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl;
+
+#ifndef TRIQS_WITH_PYTHON_SUPPORT
 inline void init_python_stuff(int argc, char **argv) { 
 }
 #else
@@ -31,6 +32,7 @@ inline void init_python_stuff(int argc, char **argv) {
 #define AS_STRING(X) AS_STRING2(X)
 #define AS_STRING2(X) #X
 
+#include <Python.h>
 //#include "./src/python/converters.hpp"
 
 //extern "C" { void initmpi();}; 

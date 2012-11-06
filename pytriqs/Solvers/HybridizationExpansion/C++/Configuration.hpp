@@ -23,6 +23,7 @@
 #ifndef CONFIGURATION_H_37j3hrf
 #define CONFIGURATION_H_37j3hrf
 
+#include <triqs/python_tools/improved_python_dict.hpp>
 #include <triqs/gf_local/GF_C.hpp>
 #include "detManip.hpp"
 #include "DynamicTrace.hpp"
@@ -85,7 +86,7 @@ struct Configuration {
  map<string, O_Odag_Insertions_type > O1_K_O2_Insertions; 
 
  ///
- Configuration(triqs::mc_tools::mcparams_python params);
+ Configuration(triqs::python_tools::improved_python_dict params);
 
  /// 
  // Configuration (const Configuration & C);

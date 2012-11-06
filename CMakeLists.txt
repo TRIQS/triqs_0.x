@@ -12,7 +12,9 @@ MESSAGE(STATUS "Installation directory is ${CMAKE_INSTALL_PREFIX}")
 
 # Forbid compilation in the source dir... to force good practice
 # and because I have not checked it (copy of various file before compilation may mess it up), blitz in particular....
-find_package(ForbidCompilationInSource)
+IF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+ MESSAGE(FATAL_ERROR "I am sorry, the on-site compilation is disabled at the moment. Use another directory")
+ENDIF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 
 # nasty policy for escaping in string....
 cmake_policy(SET CMP0011 OLD)
@@ -90,8 +92,19 @@ add_definitions(
  -D__HOSTNAME__=${myHostName}
  )
 
-# Tool to help to include the wrappers in main and declare the built-in module
-Find_package(PythonModuleEmbeddingTool)
+# Adding 
+add_definitions( -DBOOST_PP_VARIADICS=1 )
+
+# Python support ?
+#FIRST VERSION : if OFF, we should not try to detect the python at all....
+# TEST AND DEBUG THE OFF OPTION
+option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
+if (PythonSupport)
+ add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
+
+ # Tool to help to include the wrappers in main and declare the built-in module
+ Find_package(PythonModuleEmbeddingTool)
+endif (PythonSupport)
 
 enable_testing()
 
@@ -129,7 +142,7 @@ if(BOOST_SOURCE_DIR)
  FILE(COPY ${TRIQS_SOURCE_DIR}/foreignlibs/boost DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ FILES_MATCHING PATTERN *.py PATTERN *.svn EXCLUDE )
 else(BOOST_SOURCE_DIR)
  if(NOT BOOST_MODULE_DIR)
-   EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
+  EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
  endif(NOT BOOST_MODULE_DIR)
  execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost)
  install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
@@ -145,7 +158,7 @@ SET(TRIQS_LINK_LIBS
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}
  ${LAPACK_LIBS}
-)
+ )
 
 #------------------------
 # General triqs libraries
@@ -160,8 +173,9 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 #------------------------
 # pytriqs modules
 #------------------------
-
-add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+if (PythonSupport)
+ add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
+endif (PythonSupport)
 
 #------------------------
 # build pytriqs main or make the script
@@ -211,7 +225,7 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "TRIQS_${CPACK_PACKAGE_VERSION_MAJOR}.${CPAC
 SET(CPACK_STRIP_FILES "bin/pytriqs")
 SET(CPACK_SOURCE_STRIP_FILES "")
 SET(CPACK_PACKAGE_EXECUTABLES "pytriqs" "pytriqs")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "openmpi-bin(>=1.4), libblas-dev (>=1.2), ipython (>=0.10), libfftw3-dev (>=3.2)")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "openmpi-bin(>=1.4), libblas-dev (>=1.2), ipython (>=0.12), libfftw3-dev (>=3.2), hdf5-tools (>=1.8), python-matplotlib (>=1.1) ")
 SET(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${CMAKE_CURRENT_BINARY_DIR}/prerm;${CMAKE_CURRENT_BINARY_DIR}/postinst)
 IF(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  SET(CPACK_GENERATOR TGZ DEB)

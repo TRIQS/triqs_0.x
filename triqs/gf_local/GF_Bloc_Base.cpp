@@ -123,8 +123,10 @@ inline vector<string>  my_indices(const python::object & IND)
 
 //-------------------------------------------------------------
 
-inline double real(double x){ return x;}
-inline double imag(double x){ return 0;}
+inline double real_(double x){ return x;}
+inline double real_(std::complex<double> x){ return x.real();}
+inline double imag_(double x){ return 0;}
+inline double imag_(std::complex<double> x){ return x.imag();}
 template <typename DataType> inline DataType myset(double r2, double r3);
 template<> inline double myset<double>(double r2, double r3) { return r2;}
 template<> inline COMPLEX myset<COMPLEX> (double r2, double r3) {return (r2 + I *r3);}
@@ -149,13 +151,13 @@ void GF_Bloc_Base<DataType>::save(string file, bool accumulate) const
         switch (mesh.typeGF) { 
           case Imaginary_Time : 
           case Imaginary_Legendre :
-            f<<real(mesh[i])<<"  "<<data(n1,n2,i) <<endl;
+            f<<real_(mesh[i])<<"  "<<data(n1,n2,i) <<endl;
             break;
           case Imaginary_Frequency : 
-            f<<imag(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
+            f<<imag_(mesh[i])<<"  "<<real_(data(n1,n2,i))<<"   "<<imag_(data(n1,n2,i)) <<endl;
             break;
           default : 
-            f<<real(mesh[i])<<"  "<<real(data(n1,n2,i))<<"   "<<imag(data(n1,n2,i)) <<endl;
+            f<<real_(mesh[i])<<"  "<<real_(data(n1,n2,i))<<"   "<<imag_(data(n1,n2,i)) <<endl;
             break;
         }      
       }
@@ -197,12 +199,12 @@ void GF_Bloc_Base<DataType>::load(string filename)
                     if (f.fail()) { REPORT <<"NOT enough data : completing with 0"<<endl; break;}
 		    if ((mesh.typeGF == Imaginary_Time)||(mesh.typeGF == Imaginary_Legendre)) {
                       f >> r1 >> r2;
-                      r_check = real(mesh[i]);
+                      r_check = real_(mesh[i]);
                       r3=0;
                     } else {
                       f >> r1 >> r2 >> r3;
-                      if (mesh.typeGF == Imaginary_Frequency) r_check = imag(mesh[i]);
-                      if (mesh.typeGF == Real_Frequency) r_check = real(mesh[i]);
+                      if (mesh.typeGF == Imaginary_Frequency) r_check = imag_(mesh[i]);
+                      if (mesh.typeGF == Real_Frequency) r_check = real_(mesh[i]);
                     }
 		    if (abs(r1 - r_check) >1e-6) 
 		      {

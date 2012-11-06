@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,11 +18,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
+#include <iostream>
 
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/matmul.hpp"
 #include "./src/linalg/mat_vec_mul.hpp"
 #include "./src/linalg/inverse.hpp"
@@ -31,12 +32,8 @@
 #include "./src/linalg/a_x_ty.hpp"
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 
-#include "./python_stuff.hpp"
-#include <iostream>
 
-using namespace std;
 using namespace triqs::arrays;
-using linalg::a_x_ty;
 
 int main(int argc, char **argv) {
 
@@ -52,25 +49,25 @@ int main(int argc, char **argv) {
   {  MC(i) = i;MB(i)=10*(i+1); }
 
  range R(1,3);
- cout<<" MC(R) = "<<MC(R)<< endl<<endl;
- cout<<" MB(R) = "<<MB(R)<< endl<<endl;
+ std::cout<<" MC(R) = "<<MC(R)<< std::endl<<std::endl;
+ std::cout<<" MB(R) = "<<MB(R)<< std::endl<<std::endl;
 
  A(R,R) += a_x_ty(1.0,MC(R),MB(R));
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
 
  A(R,R) += a_x_ty(1.0,MB(R),MC(R));
 
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
 
  A(R,R) = a_x_ty(1.0,MB(R),MC(R));
 
- cout<<" A(R,R) = "<<A(R,R)<< endl<<endl;
+ std::cout<<" A(R,R) = "<<A(R,R)<< std::endl<<std::endl;
  
- cout<<" full A"<< A<<endl<<endl;
+ std::cout<<" full A"<< A<<std::endl<<std::endl;
 
 
- cout<< " MB, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MB,MC)<<endl;
- cout<< " MC, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MC,MC)<<endl;
+ std::cout<< " MB, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MB,MC)<<std::endl;
+ std::cout<< " MC, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MC,MC)<<std::endl;
 
 }
 

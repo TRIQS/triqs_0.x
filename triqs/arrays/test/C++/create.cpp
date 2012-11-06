@@ -24,7 +24,7 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
  array<long,2> A ;
  A.resize(make_shape(3,3));
 
- cout << A.shape() <<endl;
+ std::cout << A.shape() <<std::endl;
    
  matrix<double> M;
  M.resize( 3,3); 

@@ -27,7 +27,7 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {

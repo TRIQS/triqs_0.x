@@ -18,14 +18,14 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#include "./python_stuff.hpp"
 
 #include "./src/h5/array_proxy.hpp"
 #include "./src/h5/simple_read_write.hpp"
 #include <iostream>
-#include "./python_stuff.hpp"
-#include "./src/impl/asserts.hpp"
+#include "./src/asserts.hpp"
 
-using namespace std;
+
 using namespace triqs::arrays;
 
 template < class T>
@@ -33,7 +33,7 @@ void test(std::string filename, T init) {
 
  h5::H5File file( filename.c_str(), H5F_ACC_TRUNC );
 
- const size_t N = 12, bufsize = 5, d= 2;
+ const size_t N = 12, d= 2;
 
  array<T,2> A(d,d+1), A2(d,d+1);
  array<T,3> A_stack_keep(N,d,d+1), A_stack_compare(N,d,d+1);
@@ -56,10 +56,10 @@ void test(std::string filename, T init) {
   for (int v = 0; v<6; ++v)
    M(u,v) = 10*u + v;
 
- h5::write( file, "A", A_stack_keep);
- h5::write( file, "A2", A_stack_keep);
- h5::write( file, "B", B_stack_keep);
- h5::write( file, "M", M);
+ h5_write( file, "A", A_stack_keep);
+ h5_write( file, "A2", A_stack_keep);
+ h5_write( file, "B", B_stack_keep);
+ h5_write( file, "M", M);
 
  h5::array_proxy<T,3,3> P( file, "A2");
  P (0,range(), range())  = T(2) *A;
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  test("proxy_d.h5", 1.0 );
- test("proxy_c.h5", complex<double>(1,2) );
+ test("proxy_c.h5", std::complex<double>(1,2) );
 
 }
 

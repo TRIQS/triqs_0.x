@@ -45,6 +45,6 @@ BOOST_PYTHON_MODULE(_pytriqs_Solver_HybridizationExpansion) {
 
  def ("MC_solve",&MC_Hybridization_Matsu::solve);
 
- def ("Random_Generators_Available", &triqs::mc_tools::polymorphic_random_generator::random_generator_names);
+ def ("Random_Generators_Available", &triqs::mc_tools::random_generator::random_generator_names);
 
 };

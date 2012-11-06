@@ -15,7 +15,7 @@ SET(PYTHON_SOURCES
  )
 
 SET( D ${CMAKE_CURRENT_SOURCE_DIR}/dmftproj/SRC_templates/)
-SET(WIEN_SRC_TEMPL_FILES ${D}/case.cf_f_mm2  ${D}/case.cf_p_cubic  ${D}/case.indmftpr)
+SET(WIEN_SRC_TEMPL_FILES ${D}/case.cf_f_mm2  ${D}/case.cf_p_cubic  ${D}/case.indmftpr ${D}/run_triqs ${D}/runsp_triqs)
 
 #
 python_register_dynamic_module(${NickName})

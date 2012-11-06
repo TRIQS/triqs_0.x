@@ -1,5 +1,0 @@
-A complete example
-===================
-
-
-

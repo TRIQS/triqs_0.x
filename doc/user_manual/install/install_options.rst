@@ -2,56 +2,17 @@
 
 .. _install_options:
 
-Installation options
---------------------
+.. highlight:: bash
 
-.. _install_without_boost:
+Customizing installation : cmake options
+----------------------------------------------------
 
-Installation with your own version of boost  
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Specifying the compiler or compile/link flags
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you have a sufficiently recent version of boost already installed in your system you may
-link TRIQS with it instead of compiling a new version of boost from sources.
+To specify the compiler with cmake one may use the CXX, CXXFLAGS variables, e.g. ::
 
-In this case, the cmake instruction is ::
-
-   cmake path_to_TRIQS_source_directory \
-        -DBOOST_INSTALL_DIR=root_path_to_Boost_installation\
-        -DCMAKE_INSTALL_PREFIX=path_to_TRIQS_install_directory
-
-The cmake option `DBOOST_INSTALL_DIR` is the path to the **boost** libraries. 
-The default value is  : 
- 
- * BOOST_INSTALL_DIR : /usr 
-
-So if boost is at the right place, you can just say::
-
-   cmake path_to_TRIQS_source_directory
-
-**Obviously, you should not specify `DBOOST_SOURCE_DIR` in this case!**
-
-Specifying the compiler
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To specify the compiler with cmake one may use the CXX variable. 
-
-clang
-..............
-
-For example, to use clang++ (recommended on OS X), say (provided clang++ is your path of course) ::
-
-   CXX=clang++ cmake path_to_TRIQS_source_directory \
-        -DBOOST_SOURCE_DIR=path_to_Boost_source_directory \
-        -DCMAKE_INSTALL_PREFIX=path_to_TRIQS_install_directory \
-        -DCMAKE_COMPILER_IS_GNUCXX=1
-
-gcc higher version 
-........................
-
-E.g. on a mac, you can install gcc 4.5 or 4.6 with macports and say::
-
-  CXX=g++-mp-4.5 cmake path_to_TRIQS_source_directory -DBOOST_SOURCE_DIR=path_to_Boost_source_directory -DCMAKE_INSTALL_PREFIX=path_to_TRIQS_install_directory
-
+   CXX=clang++ CXXFLAGS cmake path_to_TRIQS_source_directory  ..... 
 
 Customize the installation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -85,10 +46,32 @@ You may change all other installation options (like locations of libraries, the 
 
 After having corrected your options you may build, test and install TRIQS as described in :ref:`installation`.
  
+.. _install_without_boost:
+Installation with your own version of boost  [-DBOOST_INSTALL_DIR=...]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you have a sufficiently recent version of boost already installed in your system you may
+link TRIQS with it instead of compiling a new version of boost from sources.
+
+In this case, the cmake instruction is ::
+
+   cmake path_to_TRIQS_source_directory -DBOOST_INSTALL_DIR=root_path_to_Boost_installation ....
+
+
+The cmake option `DBOOST_INSTALL_DIR` is the path to the **boost** libraries. 
+The default value is  : 
+ 
+ * BOOST_INSTALL_DIR : /usr 
+
+So if boost is at the right place, you can just say::
+
+   cmake path_to_TRIQS_source_directory
+
+**Obviously, you should not specify `DBOOST_SOURCE_DIR` in this case!**
 .. _static_dyn :
 
-Static versus dynamic linking [Advanced]
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Static versus dynamic linking [-DBUILD_SHARED_LIBS=OFF]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TRIQS can be compiled in two different ways: 
 
@@ -119,4 +102,4 @@ In any case, both the scripts and the way to call them remain the same in both c
 
 The choice is made with the cmake option ::
    
- -DBUILD_SHARED=ON/OFF
+ -DBUILD_SHARED_LIBS=OFF/ON

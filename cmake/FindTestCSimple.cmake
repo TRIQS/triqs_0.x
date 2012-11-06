@@ -6,6 +6,9 @@
 #
 macro(add_test_C_simple testname ) 
  enable_testing()
+
+ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
  add_test(${testname}${ARGN}
   ${CMAKE_COMMAND}
   -Dname=${testname}
@@ -13,6 +16,11 @@ macro(add_test_C_simple testname )
   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
   -P ${TRIQS_SOURCE_DIR}/cmake/run_test_simple.cmake
   )
+
+  else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+ add_test(${testname}${ARGN} ${testname}${ARGN} )
+  endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
 endmacro(add_test_C_simple)
 
 

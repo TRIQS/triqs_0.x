@@ -24,7 +24,7 @@
 #include "./src/array.hpp"
 #include <iostream>
 
-using namespace std;
+using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  {
-  cout<<"test doc eg"<<endl;
+  std::cout<<"test doc eg"<<std::endl;
   array<int,2> *p = new array<int,2> (2,3); // create an array p
   for (int i =0; i<2; ++i)
    for (int j=0; j<3; ++j)
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   array_view<int,2> B(*p); // making a view
   delete p; // p is gone...
   B(0,0) = 314;
-  cout<<B<<endl<<"Done"<<endl; // ok, but B (and the data) is still alive
+  std::cout<<B<<std::endl<<"Done"<<std::endl; // ok, but B (and the data) is still alive
  }
 
  array<long,2> A (2,3);
@@ -50,29 +50,29 @@ int main(int argc, char **argv) {
 
  array_view<long const ,2 > AA (A);
 
- cout<<"A is "<<A<<endl;
- cout<<"another view : "<<AA<<endl;
+ std::cout<<"A is "<<A<<std::endl;
+ std::cout<<"another view : "<<AA<<std::endl;
 
  {
   array_view<long,1>  SL( A(0,range(0,3)));
   array_view<long,1>  SL2( A(1,range(0,2)));
   array_view<long,1>  SL2b( A(1,range(1,3)));
 
-  cout<<"SLICE : A(0,range(0,3))  "<<SL<<endl;
-  cout<<"SLICE : A(1,range(0,2))  "<<SL2<<endl;
-  cout<<"SLICE : A(1,range(1,3))  "<<SL2b<<endl;
+  std::cout<<"SLICE : A(0,range(0,3))  "<<SL<<std::endl;
+  std::cout<<"SLICE : A(1,range(0,2))  "<<SL2<<std::endl;
+  std::cout<<"SLICE : A(1,range(1,3))  "<<SL2b<<std::endl;
  }
  {
   array_view<long,1>  SL( A(range(0,2),0));
   array_view<long,1>  SL2( A(range(0,2),1));
 
-  cout<<"SLICE : A(range(0,2),0))  "<<SL<<endl;
-  cout<<"SLICE : A(range(0,2),1))  "<<SL2<<endl;
+  std::cout<<"SLICE : A(range(0,2),0))  "<<SL<<std::endl;
+  std::cout<<"SLICE : A(range(0,2),1))  "<<SL2<<std::endl;
  }
 
  array_view<long,2> V(A);
- cout<< V(0,0)<<endl;
- cout<< V<<endl;
+ std::cout<< V(0,0)<<std::endl;
+ std::cout<< V<<std::endl;
 
  return 0;
 }

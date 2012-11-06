@@ -23,7 +23,7 @@
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
-using namespace std;
+
 using namespace triqs::arrays;
 using namespace indexmaps;
 using namespace storages;
@@ -32,7 +32,7 @@ using namespace storages;
 #include "./src/matrix.hpp"
 //#include "./src/vector.hpp"
 
-#include "./src/expressions/array_algebra.hpp"
+#include "./src/proto/array_algebra.hpp"
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/proto/debug.hpp>
  
@@ -43,7 +43,7 @@ namespace ExpressionTools {
    */
   namespace details { 
    template<typename Obj, typename Expr> 
-    struct map_impl : Tag::expression, Tag::array_algebra_expression_terminal {
+    struct map_impl : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
      typedef typename Expr::value_type   value_type;
      typedef typename Expr::domain_type  domain_type;
      Expr const & a;Obj const & obj;std::string name;
@@ -66,7 +66,7 @@ namespace ExpressionTools {
   namespace details { 
 
    template<typename Expr> 
-    struct transpose_impl : Tag::expression, Tag::array_algebra_expression_terminal {
+    struct transpose_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
      typedef typename Expr::value_type   value_type;
      typedef typename Expr::domain_type  domain_type;
      Expr const & a;
@@ -81,7 +81,7 @@ namespace ExpressionTools {
 
 
    template<class Expr, template <class Expr2> class Transfo>
-    struct transfo_impl : Transfo<Expr>,  Tag::expression, Tag::array_algebra_expression_terminal { 
+    struct transfo_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) ,Transfo<Expr> { //,  Tag::expression, Tag::array_algebra_expression_terminal { 
      Expr const & a; transfo_impl( Expr const & a_):a(a_){}
      typedef Transfo<Expr> T;
      typename T::domain_type domain() const { return T::domain(a);}
@@ -97,7 +97,7 @@ namespace ExpressionTools {
 
   template<typename Expr> 
    struct transpose_  {
-    static_assert(  has_immutable_array_interface<Expr>::value, "transpose_ : the type of the template argument is incorrect, it does not support ArrayImmutableInterface");
+    static_assert(  ImmutableArray<Expr>::value, "transpose_ : the type of the template argument is incorrect, it does not model ImmutableArray");
     // static checks here on Expr
     static std::string name() { return "Transpose";}
     typedef typename Expr::value_type   value_type;
@@ -137,20 +137,20 @@ int main(int argc, char **argv) {
    F(i) = 2.5 + i;
   }
 
-  cout<<" A = "<<A<<endl;
-  cout<<" B = "<<B<<endl;
-  cout<<" C = "<<C<<endl;
-  cout<<" F = "<<F<<endl;
+  std::cout<<" A = "<<A<<std::endl;
+  std::cout<<" B = "<<B<<std::endl;
+  std::cout<<" C = "<<C<<std::endl;
+  std::cout<<" F = "<<F<<std::endl;
 
   array<double,1> V1(3), V2(3);
 
   //proto::display_expr(A);
-  // cout<< (A+B) <<endl;
-  // cout<<V1 + V2 <<endl;
+  // std::cout<< (A+B) <<std::endl;
+  // std::cout<<V1 + V2 <<std::endl;
 
   // type computation 
-  expressions::print_structure(cout, A+ F);
-  cout<<" A + F = "<< array<double,1>(A+F)<<endl;
+  triqs::utility::proto::print_structure(std::cout, A+ F);
+  std::cout<<" A + F = "<< array<double,1>(A+F)<<std::endl;
 
  }
 
@@ -159,49 +159,49 @@ int main(int argc, char **argv) {
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j) 
    { A(i,j) = 10*i+ j;B(i,j) = i+ 2*j;}
-  cout<<" A = "<<A<<endl;
-  cout<<" B = "<<B<<endl;
+  std::cout<<" A = "<<A<<std::endl;
+  std::cout<<" B = "<<B<<std::endl;
 
   matrix<double> M1(2,2);
-  //cout<<M1 + A<<endl; // this should NOT COMPILE
+  //std::cout<<M1 + A<<std::endl; // this should NOT COMPILE
 
-  cout<< (A+2*B) <<endl;
-  cout<<"-------"<<endl;
+  std::cout<< (A+2*B) <<std::endl;
+  std::cout<<"-------"<<std::endl;
 
-  cout<< (A+2*B).domain()<<endl;
-  cout<<"----EVAL ---"<<endl;
+  std::cout<< (A+2*B).domain()<<std::endl;
+  std::cout<<"----EVAL ---"<<std::endl;
 
   C= A + 2*B;
-  cout<<" C = "<<C<<endl;
+  std::cout<<" C = "<<C<<std::endl;
 
   C= std::plus<array<long,2> >()(A,B);
-  cout<<" C = "<<C<<endl;
+  std::cout<<" C = "<<C<<std::endl;
 
   // array multiplication 
   C = A* B;
-  cout<<" C = A*B "<<C<<endl;
+  std::cout<<" C = A*B "<<C<<std::endl;
 
   // array division
   array<double,2> Af (2,2), Bf(2,2),Cf(2,2);
   Af = A; Bf = B; Bf(0,0) = 1;
-  cout<<" Af = "<<Af<<endl;
-  cout<<" Bf = "<<Bf<<endl;
+  std::cout<<" Af = "<<Af<<std::endl;
+  std::cout<<" Bf = "<<Bf<<std::endl;
   Cf = Af / Bf;
-  cout<<" Cf = Af/Bf "<<Cf<<endl;
+  std::cout<<" Cf = Af/Bf "<<Cf<<std::endl;
 
   C = A + Transpose(B);
-  cout<<" C = "<<C<<endl;
+  std::cout<<" C = "<<C<<std::endl;
 
   C = A + Transpose(B + B);
-  cout<<" C = "<<C<<endl;
+  std::cout<<" C = "<<C<<std::endl;
 
   C = Transpose(B);
-  cout<<" C = "<<C<<endl;
+  std::cout<<" C = "<<C<<std::endl;
 
-  cout<<" t A"<<Transpose(A)<<endl;
+  std::cout<<" t A"<<Transpose(A)<<std::endl;
 
   array<double,2> F( 0.5 * A);
-  cout << " 0.5 * A = "<<F <<endl;
+  std::cout << " 0.5 * A = "<<F <<std::endl;
 
   // non square
   array<long,2> R(2,3),Rt(3,2);
@@ -209,11 +209,11 @@ int main(int argc, char **argv) {
    for (int j=0; j<3; ++j) 
    { R(i,j) = 10*i+ j;}
 
-  //cout<<" R = "<< 1 + R<<endl;
-  cout<<" R = "<< array<long,2>(Transpose(R)) <<endl;
+  //std::cout<<" R = "<< 1 + R<<std::endl;
+  std::cout<<" R = "<< array<long,2>(Transpose(R)) <<std::endl;
 
   C =  map_expr(&sqr,A);
-  cout<<" C = "<< map_expr(&sqr,A,"SQR")<<" = "<<C<<endl;
+  std::cout<<" C = "<< map_expr(&sqr,A,"SQR")<<" = "<<C<<std::endl;
 
  }
  return 0;
