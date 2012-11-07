@@ -47,6 +47,14 @@ namespace triqs { namespace gf {
    h5_read(gr,"Nmax",n);
    d = discrete_domain(n);
   }
+ 
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+   void serialize(Archive & ar, const unsigned int version) {
+    ar & boost::serialization::make_nvp("Nmax",Nmax);
+   }
+
  };
 
 }}

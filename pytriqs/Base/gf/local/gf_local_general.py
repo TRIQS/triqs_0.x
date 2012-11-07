@@ -50,7 +50,8 @@ class GfLocalGeneral :
         if not self._tail : self._tail = TailGF(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
 
         self.__data_raw = d.pop('Data', None)
-        if self.__data_raw == None: self.__data_raw = numpy.zeros((len(indL),len(indR),len(d['Mesh'])), numpy.complex) #, order='F')
+        data_type = d.pop('DataType', numpy.complex)
+        if self.__data_raw == None: self.__data_raw = numpy.zeros((len(indL),len(indR),len(d['Mesh'])), data_type) #, order='F')
 
         self._mesh = d.pop('Mesh')
         self.Name = d.pop('Name','g')
@@ -279,12 +280,12 @@ class GfLocalGeneral :
         return X, data
         
     #--------  LAZY expression system -----------------------------------------
+    def _is_compatible_for_ops(self, g): 
+        m1,m2  = self._mesh, g._mesh
+        return m1 is m2 or m1 == m2
 
     def __lazy_expr_eval_context__(self) : 
 
-        def _is_compatible_for_ops(self, g): 
-            m1,m2  = self._mesh, g._mesh
-            return m1 is m2 or m1 == m2
 
         class ctx : 
             def __init__ (self, G) : 
@@ -408,7 +409,6 @@ class GfLocalGeneral :
             for n in range(t.OrderMin,t.OrderMax+1):
                 t[n].array[:,:] *= arg
         else:
-          print type(arg)
           raise NotImplementedError
         return self
 
@@ -460,6 +460,7 @@ class GfLocalGeneral :
         d = self._data.array
         for om in range (d.shape[-1]) : 
             d[:,:,om ] = numpy.linalg.inv(d[:,:,om])
+        print self._tail
         self._tail.invert()
 
     def replaceByTail(self,start) : 

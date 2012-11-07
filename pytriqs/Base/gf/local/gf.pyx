@@ -15,6 +15,8 @@ cdef class TailGF_c:
     #cdef tail_view_c _c
     def __init__(self, a, int omin):
         self._c =  tail_view_c( array_view[dcomplex,THREE,COrder](a), omin)
+    def invert(self) :
+        self._c = 1.0/self._c
 
 ###############  Frequences  #########################
 
@@ -43,6 +45,10 @@ cdef class MeshImFreq:
         while not g.at_end() : 
             yield g.to_point()
             g.increment()
+
+    def __richcmp__(MeshImFreq self, MeshImFreq other,int op) : 
+        if op ==2 : # ==
+            return self._c == other._c
 
 # ----------- GF  --------------------------
 
@@ -86,14 +92,14 @@ cdef class MeshImTime:
         while not g.at_end() : 
             yield g.to_point()
             g.increment()
-
+ 
 # ----------- The GF  --------------------------
 
 cdef class GfImTime_cython:
     #cdef gf_im_time_c _c
     #cdef object _mesh
     def __init__(self, MeshImTime m, data, TailGF_c tail):
-        self._c =  gf_im_time_c ( m._c, array_view[dcomplex,THREE,COrder](data), tail._c, nothing() )
+        self._c =  gf_im_time_c ( m._c, array_view[double,THREE,COrder](data), tail._c, nothing() )
         self._mesh = m
     
     def setFromInverseFourierOf(self,  gw) : 

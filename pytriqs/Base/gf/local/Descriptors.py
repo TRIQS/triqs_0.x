@@ -89,7 +89,7 @@ class Const(Base):
          
     def __call__(self,G) :
         C = self.C
-        if type(G._mesh) not in [MeshImFreq, MeshRealFrequency]:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(C,numpy.ndarray) : 
@@ -111,7 +111,7 @@ class Omega_(Base):
     r"""The function :math:`\omega \rightarrow \omega` """
     def __str__(self) : return "Omega" 
     def __call__(self,G) :
-        if type(G._mesh) not in [MeshImFreq, MeshRealFrequency]:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         t = G._tail
@@ -134,7 +134,7 @@ class A_Omega_Plus_B(Base):
          
     def __call__(self,G) :
         A,B = self.A, self.B
-        if type(G._mesh) not in [MeshImFreq, MeshRealFrequency]:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(A,numpy.ndarray) : A = A*numpy.identity(G.N1) 

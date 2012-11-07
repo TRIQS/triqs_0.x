@@ -70,7 +70,7 @@ class GfImTime (GfImTime_cython,  GfLocalGeneral):
             # TO RECHECK 
             #d['Mesh'] = MeshGF( GF_Type.Imaginary_Time,stat,Beta,
             #                           numpy.array([ (n+0.5)*Beta/Nmax for n in range(Nmax)]))
-            
+        d['DataType'] = numpy.float64
         GfImTime_cython.__init__(self,*self._prepare_init(d))
 
     #-----------------------------------------------------

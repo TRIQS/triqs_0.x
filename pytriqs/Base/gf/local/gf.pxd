@@ -28,8 +28,14 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
 cdef extern from "triqs/gf/local/tail.hpp" : 
     cdef cppclass tail_view_c "triqs::gf::local::tail_view"  :
         tail_view_c()
-        tail_view_c(array_view[dcomplex,THREE,COrder] , int) #except +
+        tail_view_c(array_view[dcomplex,THREE,COrder] , int) except +
         void rebind (tail_view_c &)
+        tail_view_c operator +( tail_view_c &) 
+        tail_view_c operator -( tail_view_c &) 
+    cdef tail_view_c operator *( double, tail_view_c &) except + 
+    cdef tail_view_c operator *( tail_view_c &, double) except + 
+    cdef tail_view_c operator /( double, tail_view_c &) except + 
+    cdef tail_view_c operator /( tail_view_c &, double) except + 
 
 cdef class TailGF_c:
     cdef tail_view_c _c
@@ -48,7 +54,8 @@ cdef extern from "triqs/gf/matsubara_freq.hpp" namespace "triqs::gf" :
         matsubara_freq_mesh_c (matsubara_freq_mesh_c &)
         matsubara_freq_domain_c & domain()
         long size()
-   
+        bint operator ==( matsubara_freq_mesh_c &)
+
     cdef matsubara_freq_mesh_c matsubara_freq_make_mesh "triqs::gf::matsubara_freq::make_mesh" (double beta, statistic_enum S, size_t Nmax)
     
     cdef cppclass gf_im_freq_c "triqs::gf::gf_view<triqs::gf::matsubara_freq>" :
@@ -118,10 +125,10 @@ cdef extern from "triqs/gf/matsubara_time.hpp" namespace "triqs::gf" :
     cdef cppclass gf_im_time_c "triqs::gf::gf_view<triqs::gf::matsubara_time>" :
         gf_im_time_c()
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_im_time_c(matsubara_time_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c, nothing) #except +
+        gf_im_time_c(matsubara_time_mesh_c, array_view[double, THREE,COrder], tail_view_c, nothing) #except +
         void rebind( gf_im_time_c&)
         matsubara_time_mesh_c mesh() 
-        array_view[dcomplex, THREE,COrder] data_view()
+        array_view[double, THREE,COrder] data_view()
         tail_view_c auxiliary_data_view() 
 
     cdef gf_im_time_c matsubara_time_make_gf "triqs::gf::matsubara_time::make_gf" (matsubara_time_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c) except +

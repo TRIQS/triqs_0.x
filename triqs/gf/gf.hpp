@@ -68,6 +68,9 @@ namespace triqs { namespace gf {
   vector_storage & operator = ( vector_storage             const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this;  }
   vector_storage & operator = ( vector_storage<T, !IsView> const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this; }
 
+  template< bool _is_view = IsView>
+   ENABLE_IFC(_is_view) operator = (typename T::value_type const & y) { for (auto & x : data ) x=y; }
+
   T_view_t operator()(tqa::ellipsis, size_t i) const { return data[i];} // ellipsis just here to make later code simpler below...
   T_view_t operator[](size_t i) const { return data[i];} 
 
@@ -80,6 +83,10 @@ namespace triqs { namespace gf {
   friend class vector_storage<T,!IsView>; 
   std::vector<T_t> data;
  };
+
+ // 
+ template<typename T> struct _basic_scalar { typedef T type; };
+ template<typename D> struct _basic_scalar<gf_view<D>> : _basic_scalar<typename D::target_t::value_type >{};
 
  // to metacompute the storage type
 
@@ -322,6 +329,9 @@ namespace triqs { namespace gf {
    g.data_view() = rhs.data_view();
    g.singularity_view() = rhs.singularity_view();
   }
+
+ template<typename Descriptor, typename T>
+ ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, T const & x) { g.data_view() = x; g.singularity_view() = x;}
 
  // tool for lazy transformation
  template<typename Tag, typename D> struct gf_keeper{ gf_view<D> g; gf_keeper (gf_view<D> const & g_) : g(g_) {} };

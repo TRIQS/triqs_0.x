@@ -48,6 +48,15 @@ namespace triqs { namespace gf {
    h5_read(gr,"Statistic",statistic);
    d = matsubara_domain(beta,(statistic=='F' ? Fermion : Boson));
   }
+ 
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+   void serialize(Archive & ar, const unsigned int version) {
+    ar & boost::serialization::make_nvp("Beta",beta);
+    ar & boost::serialization::make_nvp("Statistic",statistic);
+   }
+
  };
 
 }}

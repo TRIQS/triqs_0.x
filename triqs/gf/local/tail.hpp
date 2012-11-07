@@ -165,6 +165,7 @@ namespace triqs { namespace gf { namespace local {
   tail_view & operator=(const tail_view & rhs) { 
    if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; 
   }
+  tail_view & operator=(std::complex<double> const & x) { this->data = x; return *this;} 
   using B::operator(); // import all previously defined operator() for overloading
   TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
