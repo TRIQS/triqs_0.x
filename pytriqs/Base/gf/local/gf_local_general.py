@@ -315,8 +315,11 @@ class GfLocalGeneral :
             A2= Descriptors.convert_scalar_to_Const(A)
             def e_t (x) : 
                 if not isinstance(x, Descriptors.Base) : return x
+                print x, self._tail
                 tmp = self.copy()
+                print tmp._tail
                 x(tmp)
+                print "final ", tmp._tail
                 return tmp
             #e_t2 = self.__lazy_expr_eval_context__()
             self.copyFrom ( lazy_expressions.eval_lazy_expr(e_t, A2) )

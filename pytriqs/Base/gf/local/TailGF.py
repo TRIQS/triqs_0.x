@@ -34,36 +34,35 @@ class TailGF (TailGF_c):
         """
         self._indL, self._indR = d['IndicesL'], d['IndicesR']
         N1,N2 = len(self._indL), len(self._indR)
-        self.__data_array = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size'])  ,numpy.complex) #,order='F')
+        data_array = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size'])  ,numpy.complex) #,order='F')
         self._omin = d['OrderMin']
-        TailGF_c.__init__(self,self.__data_array,self._omin)
+        TailGF_c.__init__(self,data_array,self._omin)
 
     def _make_slice(self, sl1, sl2):
-        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self.__data_array[sl1,sl2,:], OrderMin = self._omin)
-        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.__data_array[sl1,sl2,:]), OrderMin = self._omin)
+        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self._data_raw[sl1,sl2,:], OrderMin = self._omin)
+        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self._data_raw[sl1,sl2,:]), OrderMin = self._omin)
 
     def copy(self) : 
-        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='F'), OrderMin = self._omin)
-        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.__data_array.copy(order='C'), OrderMin = self._omin)
+        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self._data_raw.copy(order='F'), OrderMin = self._omin)
+        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self._data_raw.copy(order='C'), OrderMin = self._omin)
 
     # Should I do more compatibility checks?
     def copyFrom(self, T) : 
         self._omin = T._omin
-        self.__data_array = T.__data_array.copy(order='C')
-        #self.__data_array = T.__data_array.copy(order='F')
- 
+        self._data_raw = T._data_raw.copy(order='C')
+
     def __repr__ (self) :
         return string.join([ "%s"%self[r].array + (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return ArrayViewWithIndexConverter(self.__data_array[:,:,i-self.OrderMin], self._indL, self._indR)
+        return ArrayViewWithIndexConverter(self._data_raw[:,:,i-self.OrderMin], self._indL, self._indR)
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        self.__data_array[:,:,i-self._omin] = val
+        self._data_raw[:,:,i-self._omin] = val
 
     def has_coef(self, i):
         return (i >= self.OrderMin) and (i <= self.OrderMax)
@@ -75,17 +74,9 @@ class TailGF (TailGF_c):
     def OrderMax(self) : return self._omin+self.size-1
 
     @property
-    def size(self) : return self.__data_array.shape[2]
+    def size(self) : return self._data_raw.shape[2]
 
-    #---------------------------------------------------------------------------------
- 
-    @property
-    def _data(self) : 
-        return ArrayViewWithIndexConverter(self.__data_array, self._indL, self._indR, None)
 
-    @_data.setter
-    def _data(self, value) : self.__data_array[:,:,:] = value 
- 
     #-----------------------------------------------------
 
     def __reduce_to_dict__(self):
@@ -95,7 +86,7 @@ class TailGF (TailGF_c):
         assert(eval(indR)==tuple(self._indR))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
-                'array' : self.__data_array,
+                'array' : self._data_raw,
                 'OrderMin' : self.OrderMin,
                 'size' : self.size }
 
@@ -111,16 +102,16 @@ class TailGF (TailGF_c):
  
     ########################################## TEMPORARY
     def __iadd__(self,arg):
-        self.__data_array += arg.__data_array
+        self._data_raw += arg._data_raw
         return self
     def __isub__(self,arg):
-        self.__data_array -= arg.__data_array
+        self._data_raw -= arg._data_raw
         return self
     def __imul__(self,arg):
-        self.__data_array *= arg
+        self._data_raw *= arg
         return self
     def __idiv__(self,arg):
-        self.__data_array /= arg
+        self._data_raw /= arg
         return self
     ########################################## TEMPORARY
 
@@ -151,11 +142,11 @@ class TailGF (TailGF_c):
     #---- other operations ----
     def __call__(self, n) :
         if not self.has_coef(n) : raise IndexError, "Index %s is out of range"%n
-        return self.__data_array[:,:,n-self.OrderMin]
+        return self._data_raw[:,:,n-self.OrderMin]
 
     def zero(self) : 
         """Sets the expansion to 0"""
-        self.__data_array[:,:,:] =0
+        self._data_raw[:,:,:] =0
 
     def from_L_T_R(self,L,R) : 
       """Multiply Left & right with Matrices :  G <- L* G2 * R"""

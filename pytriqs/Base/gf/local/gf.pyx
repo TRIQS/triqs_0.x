@@ -2,6 +2,7 @@
 #cython: embedsignature=True
 from cython.operator cimport dereference as deref, preincrement as inc #dereference and increment operators
 cimport cython  
+from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 
 ###############  Fourier  #########################
 
@@ -17,7 +18,41 @@ cdef class TailGF_c:
         self._c =  tail_view_c( array_view[dcomplex,THREE,COrder](a), omin)
     def invert(self) :
         self._c = 1.0/self._c
+    
+    def print_me(self) : 
+        self._c.print_me()
 
+    def __fill_a( self,a, value) : 
+        if hasattr(value,'shape') : 
+            if a.shape[:2] != value.shape[:2] : 
+                raise RuntimeError, "shape mismatch"
+            m = min(value.shape[2],a.shape[2]) 
+            if a.shape[2] > value.shape[2] : 
+                a[:,:,m:] =0
+            a[:,:, 0:m] = value[:,:, 0:m]
+        else : 
+            a = value
+
+    property _data_raw : 
+        """Access to the data array"""
+    
+        def __get__(self) : 
+            return self._c.data_view().to_python()
+
+        def __set__ (self, value) :
+            cdef object a = self._c.data_view().to_python()
+            self.__fill_a(a,value)   
+    
+    property _data : 
+        """Access to the data array"""
+    
+        def __get__(self) : 
+            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self._indL, self._indR, None)
+
+        def __set__ (self, value) :
+            cdef object a = self._c.data_view().to_python()
+            self.__fill_a(a,value)   
+ 
 ###############  Frequences  #########################
 
 # ----------- Domain  --------------------------

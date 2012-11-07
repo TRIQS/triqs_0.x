@@ -169,6 +169,8 @@ namespace triqs { namespace gf { namespace local {
   using B::operator(); // import all previously defined operator() for overloading
   TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
+ 
+ void print_me() const { std::cout  << *this << std::endl ; }
  };
 
  // -----------------------------

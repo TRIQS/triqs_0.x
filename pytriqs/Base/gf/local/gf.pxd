@@ -31,7 +31,9 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         tail_view_c(array_view[dcomplex,THREE,COrder] , int) except +
         void rebind (tail_view_c &)
         tail_view_c operator +( tail_view_c &) 
-        tail_view_c operator -( tail_view_c &) 
+        tail_view_c operator -( tail_view_c &)
+        void print_me()
+        array_view[dcomplex,THREE,COrder] data_view()
     cdef tail_view_c operator *( double, tail_view_c &) except + 
     cdef tail_view_c operator *( tail_view_c &, double) except + 
     cdef tail_view_c operator /( double, tail_view_c &) except + 
@@ -39,6 +41,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
 
 cdef class TailGF_c:
     cdef tail_view_c _c
+    #cdef array_view[dcomplex,THREE,COrder] _ac
 
 ###############  IM FREQ #########################
 
