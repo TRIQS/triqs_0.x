@@ -49,7 +49,7 @@ namespace triqs { namespace gf {
     public:
     mesh_pt_generator( MeshType const * m=NULL, bool atEnd = false): mesh(m), u(atEnd ? m->size(): 0), pt(*m) {}
     void increment() { ++u; pt.advance(); }
-    bool at_end() const { return (u>=mesh->size()-1);}
+    bool at_end() const { return (u>=mesh->size());}
     typename MeshType::domain_t::point_t to_point() const { return pt;}    
    };
 

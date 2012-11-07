@@ -97,6 +97,16 @@ namespace triqs { namespace gf {
     m = linear_mesh(std::move(dom), xmin,xmax,Nmax);
    }
 
+   //  BOOST Serialization
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("Domain",_dom);
+     ar & boost::serialization::make_nvp("min",xmin);
+     ar & boost::serialization::make_nvp("max",xmax);
+     ar & boost::serialization::make_nvp("size",L);
+    }
+
    private:
    domain_t _dom;
    double xmin, xmax;
