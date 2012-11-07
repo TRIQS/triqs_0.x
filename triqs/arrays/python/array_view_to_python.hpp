@@ -24,14 +24,16 @@
 #error "You must define the macro TRIQS_WITH_PYTHON_SUPPORT to use Python interface"
 #endif
 #include <complex>
-#include "../array.hpp"
+#include "../impl/indexmap_storage_pair.hpp"
+//#include "../array.hpp"
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
- template<typename T,int rank, typename Opt >
-  PyObject * array_view_to_python (array_view<T,rank,Opt > const & A, bool copy=false) {
+ template<typename ArrayViewType >
+  PyObject * array_view_to_python ( ArrayViewType const & A, bool copy=false) {
    _import_array();
-   typedef typename array_view<T,rank,Opt >::value_type value_type;
+   typedef typename ArrayViewType::value_type value_type;
+   static const int rank = ArrayViewType::rank;
    const int elementsType (numpy_to_C_type<typename boost::remove_const<value_type>::type>::arraytype);
    npy_intp dims[rank],  strides[rank];
    for(size_t i =0; i<rank; ++i) { dims[i] = A.indexmap().lengths()[i]; strides[i] = A.indexmap().strides()[i]*sizeof(value_type); }

@@ -25,6 +25,9 @@
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "impl/option.hpp"
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+#include "./python/array_view_to_python.hpp"
+#endif
 
 namespace triqs { namespace arrays {
 
@@ -56,7 +59,10 @@ namespace triqs { namespace arrays {
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
    /// Build from a numpy.array : throws if X is not a numpy.array 
-   explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){} 
+   explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
+
+   ///
+   PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
 #endif
 
 #ifndef TRIQS_ALLOW_EMPTY_VIEW
