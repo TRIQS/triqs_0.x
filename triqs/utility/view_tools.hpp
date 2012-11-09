@@ -24,6 +24,9 @@
 
 namespace triqs { 
 
+  template<typename T, typename Void =void> struct non_view_type_if_exists_else_type {typedef T type;}; 
+ template<typename T> struct non_view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::non_view_type type;}; 
+ 
  template<typename T, typename Void =void> struct view_type_if_exists_else_type {typedef T type;}; 
  template<typename T> struct view_type_if_exists_else_type<T, typename T::has_view_type_tag> {typedef typename T::view_type type;}; 
  
