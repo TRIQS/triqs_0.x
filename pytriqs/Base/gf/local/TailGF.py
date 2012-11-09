@@ -76,7 +76,6 @@ class TailGF (TailGF_c):
     @property
     def size(self) : return self._data_raw.shape[2]
 
-
     #-----------------------------------------------------
     def __reduce__(self):
         return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())

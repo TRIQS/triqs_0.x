@@ -7,15 +7,15 @@ from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndex
 ###############  Fourier  #########################
 
 cdef extern from "triqs/gf/local/fourier_matsubara.hpp" : 
-    gf_im_freq_c lazy_fourier          (gf_im_time_c & )
-    gf_im_time_c lazy_inverse_fourier  (gf_im_freq_c & )
+    gf_imfreq lazy_fourier          (gf_imtime & )
+    gf_imtime lazy_inverse_fourier  (gf_imfreq & )
 
 ###############  Tail  #########################
 
-cdef class TailGF_c:
-    #cdef tail_view_c _c
+cdef class TailGF:
+    #cdef tail_view _c
     def __init__(self, a, int omin):
-        self._c =  tail_view_c( array_view[dcomplex,THREE,COrder](a), omin)
+        self._c =  tail_view( array_view[dcomplex,THREE,COrder](a), omin)
     def invert(self) :
         self._c = 1.0/self._c
     
@@ -61,7 +61,7 @@ cdef class TailGF_c:
 
 # ----------- Mesh  --------------------------
 cdef class MeshImFreq: 
-    #cdef matsubara_freq_mesh_c  _c
+    #cdef matsubara_freq_mesh  _c
 
     def __init__(self, Beta, stat, int Nmax): 
         self._c =  matsubara_freq_make_mesh(Beta,{'F' :Fermion, 'B' : Boson}[stat] ,Nmax) 
@@ -76,7 +76,7 @@ cdef class MeshImFreq:
         def __get__(self): return 'F' if self._c.domain().statistic==Fermion else 'B'
     
     def __iter__(self) : # I use the C++ generator !
-        cdef mesh_pt_generator[matsubara_freq_mesh_c ] g = mesh_pt_generator[matsubara_freq_mesh_c ](&self._c)
+        cdef mesh_pt_generator[matsubara_freq_mesh ] g = mesh_pt_generator[matsubara_freq_mesh ](&self._c)
         while not g.at_end() : 
             yield g.to_point()
             g.increment()
@@ -86,25 +86,25 @@ cdef class MeshImFreq:
             return self._c == other._c
 
 # C -> Python 
-cdef inline make_MeshImFreq ( matsubara_freq_mesh_c x) :
+cdef inline make_MeshImFreq ( matsubara_freq_mesh x) :
     return MeshImFreq(C_Object = encapsulate (&x))
 
 # ----------- GF  --------------------------
 
 cdef class GfImFreq_cython:
     #cdef object _mesh
-    #cdef gf_im_freq_c _c
+    #cdef gf_imfreq _c
     
     def __init__(self, **d):
 
         c_obj = d.pop('C_Object', None)
         if c_obj :
             assert d == {}
-            self._c = extractor [gf_im_freq_c] (c_obj) () 
+            self._c = extractor [gf_imfreq] (c_obj) () 
             self._mesh = make_MeshImFreq (self._c.mesh())
         else : 
-            def deleg (MeshImFreq mesh, data, TailGF_c tail):
-                self._c =  gf_im_freq_c ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing())
+            def deleg (MeshImFreq mesh, data, TailGF tail):
+                self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing())
                 self._mesh = mesh
             deleg(**d)
 
@@ -136,7 +136,7 @@ cdef class MeshImTime:
         def __get__(self): return 'F' if self._c.domain().statistic==Fermion else 'B'
     
     def __iter__(self) :
-        cdef mesh_pt_generator[matsubara_time_mesh_c] g = mesh_pt_generator[matsubara_time_mesh_c](&self._c)
+        cdef mesh_pt_generator[matsubara_time_mesh] g = mesh_pt_generator[matsubara_time_mesh](&self._c)
         while not g.at_end() : 
             yield g.to_point()
             g.increment()
@@ -144,10 +144,10 @@ cdef class MeshImTime:
 # ----------- The GF  --------------------------
 
 cdef class GfImTime_cython:
-    #cdef gf_im_time_c _c
+    #cdef gf_imtime _c
     #cdef object _mesh
-    def __init__(self, MeshImTime m, data, TailGF_c tail):
-        self._c =  gf_im_time_c ( m._c, array_view[double,THREE,COrder](data), tail._c, nothing() )
+    def __init__(self, MeshImTime m, data, TailGF tail):
+        self._c =  gf_imtime ( m._c, array_view[double,THREE,COrder](data), tail._c, nothing() )
         self._mesh = m
     
     def setFromInverseFourierOf(self,  gw) : 
@@ -158,8 +158,8 @@ cdef class GfImTime_cython:
 
 cdef extern from "pytriqs/Base/gf/local/a.hpp" namespace "triqs::gf" : 
 
-    cdef void test_gf_c "test_gf" ( gf_im_freq_c &)  
-    cdef void test_block_c "test_block" ( gf_block_im_freq_c&)  
+    cdef void test_gf_c "test_gf" ( gf_imfreq &)  
+    cdef void test_block_c "test_block" ( gf_block_imfreq&)  
     cdef void test2_c "test2" ( matrix_view[double,COrder] &) except + 
     cdef void test3_c "test3" ( vector[matrix_view[double,COrder] ] &) except + 
     #cdef void test3_c "test3" ( vector[double] &)  
@@ -173,10 +173,10 @@ def test_block (G) :
     #    v_c.push_back(to_C_GfImFreq(item))
     
     #cdef gf_block_view_c GG = make_gf_block_view_c (v_c)  
-    test_block_c (as_gf_block_im_freq_c(G)) 
+    test_block_c (as_gf_block_imfreq(G)) 
    
     #cdef GfImFreq Res = 
-    #Res._c = as_gf_block_im_freq_c(G)
+    #Res._c = as_gf_block_imfreq(G)
     #return Res
      
     #test_gf_c (G[0]) 

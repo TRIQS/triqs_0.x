@@ -27,84 +27,84 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
 ###############  TAIL #########################
 
 cdef extern from "triqs/gf/local/tail.hpp" : 
-    cdef cppclass tail_view_c "triqs::gf::local::tail_view"  :
-        tail_view_c()
-        tail_view_c(array_view[dcomplex,THREE,COrder] , int) except +
-        void rebind (tail_view_c &)
-        tail_view_c operator +( tail_view_c &) 
-        tail_view_c operator -( tail_view_c &)
+    cdef cppclass tail_view "triqs::gf::local::tail_view"  :
+        tail_view()
+        tail_view(array_view[dcomplex,THREE,COrder] , int) except +
+        void rebind (tail_view &)
+        tail_view operator +( tail_view &) 
+        tail_view operator -( tail_view &)
         void print_me()
         array_view[dcomplex,THREE,COrder] data_view()
-    cdef tail_view_c operator *( double, tail_view_c &) except + 
-    cdef tail_view_c operator *( tail_view_c &, double) except + 
-    cdef tail_view_c operator /( double, tail_view_c &) except + 
-    cdef tail_view_c operator /( tail_view_c &, double) except + 
+    cdef tail_view operator *( double, tail_view &) except + 
+    cdef tail_view operator *( tail_view &, double) except + 
+    cdef tail_view operator /( double, tail_view &) except + 
+    cdef tail_view operator /( tail_view &, double) except + 
 
-cdef class TailGF_c:
-    cdef tail_view_c _c
+cdef class TailGF:
+    cdef tail_view _c
     #cdef array_view[dcomplex,THREE,COrder] _ac
 
 ###############  IM FREQ #########################
 
 cdef extern from "triqs/gf/matsubara_freq.hpp" namespace "triqs::gf" : 
   
-    cdef cppclass matsubara_freq_domain_c :
+    cdef cppclass matsubara_freq_domain :
         double beta
         statistic_enum statistic
-        matsubara_freq_domain_c ()
+        matsubara_freq_domain ()
 
-    cdef cppclass matsubara_freq_mesh_c "triqs::gf::linear_mesh<triqs::gf::matsubara_freq::domain_t>"  :
-        matsubara_freq_mesh_c ()
-        matsubara_freq_mesh_c (matsubara_freq_mesh_c &)
-        matsubara_freq_mesh_c(object,int)
-        matsubara_freq_domain_c & domain()
+    cdef cppclass matsubara_freq_mesh "triqs::gf::linear_mesh<triqs::gf::matsubara_freq::domain_t>"  :
+        matsubara_freq_mesh ()
+        matsubara_freq_mesh (matsubara_freq_mesh &)
+        matsubara_freq_mesh(object,int)
+        matsubara_freq_domain & domain()
         long size()
-        bint operator ==( matsubara_freq_mesh_c &)
+        bint operator ==( matsubara_freq_mesh &)
 
-    cdef matsubara_freq_mesh_c matsubara_freq_make_mesh "triqs::gf::matsubara_freq::make_mesh" (double beta, statistic_enum S, size_t Nmax)
+    cdef matsubara_freq_mesh matsubara_freq_make_mesh "triqs::gf::matsubara_freq::make_mesh" (double beta, statistic_enum S, size_t Nmax)
     
-    cdef cppclass gf_im_freq_c "triqs::gf::gf_view<triqs::gf::matsubara_freq>" :
-        gf_im_freq_c()
-        gf_im_freq_c(gf_im_freq_c &)
+    cdef cppclass gf_imfreq "triqs::gf::gf_view<triqs::gf::matsubara_freq>" :
+        gf_imfreq()
+        gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_im_freq_c(matsubara_freq_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c, nothing) #except +
-        matsubara_freq_mesh_c mesh() 
+        gf_imfreq(matsubara_freq_mesh, array_view[dcomplex, THREE,COrder], tail_view, nothing) #except +
+        matsubara_freq_mesh mesh() 
         array_view[dcomplex, THREE,COrder] data_view()
-        tail_view_c auxiliary_data_view() 
+        tail_view auxiliary_data_view() 
 
-    cdef gf_im_freq_c make_gf_im_freq_c "triqs::gf::matsubara_freq::make_gf" (matsubara_freq_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c) except +
+    cdef gf_imfreq make_gf_imfreq "triqs::gf::matsubara_freq::make_gf" (matsubara_freq_mesh, array_view[dcomplex, THREE,COrder], tail_view) except +
 
 cdef class MeshImFreq: 
-    cdef matsubara_freq_mesh_c  _c
+    cdef matsubara_freq_mesh  _c
 
 cdef class GfImFreq_cython:
     cdef object _mesh
-    cdef gf_im_freq_c _c
+    cdef gf_imfreq _c
 
 # Python -> C
-cdef inline gf_im_freq_c  as_gf_im_freq_c (GfImFreq_cython g) except +: 
+cdef inline gf_imfreq  as_gf_imfreq (GfImFreq_cython g) except +: 
     return g._c
 
 # C -> Python 
-cdef inline make_GfImFreq ( gf_im_freq_c x) : 
-    from gf_im_freq import GfImFreq 
+cdef inline make_GfImFreq ( gf_imfreq x) : 
+    from gf_imfreq import GfImFreq 
     return GfImFreq(C_Object = encapsulate (&x))
 
 ###############  Blocks of Im Freq #########################
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_im_freq_c "triqs::gf::gf_view<triqs::gf::block<triqs::gf::matsubara_freq> >" :
-        gf_block_im_freq_c()
+    cdef cppclass gf_block_imfreq "triqs::gf::gf_view<triqs::gf::block<triqs::gf::matsubara_freq> >" :
+        gf_block_imfreq()
     
-    cdef gf_block_im_freq_c  make_gf_block_im_freq_c "triqs::gf::block<triqs::gf::matsubara_freq>::make_gf_view" (  vector[gf_im_freq_c] &) 
+    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::block<triqs::gf::matsubara_freq>::make_gf_view" (  vector[gf_imfreq] &) 
 
-cdef inline gf_block_im_freq_c  as_gf_block_im_freq_c (G) except +:
-    cdef vector[gf_im_freq_c] v_c
+cdef inline gf_block_imfreq  as_gf_block_imfreq (G) except +:
+    cdef vector[gf_imfreq] v_c
     for item in G:
         v_c.push_back((<GfImFreq_cython>item)._c)
-        v_c.push_back(as_gf_im_freq_c(item))
-    return make_gf_block_im_freq_c (v_c) 
+        v_c.push_back(as_gf_imfreq(item))
+    return make_gf_block_imfreq (v_c) 
 
 
 
@@ -112,51 +112,51 @@ cdef inline gf_block_im_freq_c  as_gf_block_im_freq_c (G) except +:
 
 cdef extern from "triqs/gf/matsubara_time.hpp" namespace "triqs::gf" : 
   
-    cdef cppclass matsubara_time_domain_c :
+    cdef cppclass matsubara_time_domain :
         double beta
         statistic_enum statistic
-        matsubara_time_domain_c ()
+        matsubara_time_domain ()
 
-    cdef cppclass matsubara_time_mesh_c "triqs::gf::linear_mesh<triqs::gf::matsubara_time::domain_t>"  :
-        matsubara_time_mesh_c ()
-        matsubara_time_mesh_c (matsubara_time_mesh_c&)
-        matsubara_time_domain_c & domain()
+    cdef cppclass matsubara_time_mesh "triqs::gf::linear_mesh<triqs::gf::matsubara_time::domain_t>"  :
+        matsubara_time_mesh ()
+        matsubara_time_mesh (matsubara_time_mesh&)
+        matsubara_time_domain & domain()
         long size()
     
-    cdef matsubara_time_mesh_c matsubara_time_make_mesh "triqs::gf::matsubara_time::make_mesh" (double beta, statistic_enum S, size_t Nmax)
+    cdef matsubara_time_mesh matsubara_time_make_mesh "triqs::gf::matsubara_time::make_mesh" (double beta, statistic_enum S, size_t Nmax)
 
-    cdef cppclass gf_im_time_c "triqs::gf::gf_view<triqs::gf::matsubara_time>" :
-        gf_im_time_c()
+    cdef cppclass gf_imtime "triqs::gf::gf_view<triqs::gf::matsubara_time>" :
+        gf_imtime()
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_im_time_c(matsubara_time_mesh_c, array_view[double, THREE,COrder], tail_view_c, nothing) #except +
-        void rebind( gf_im_time_c&)
-        matsubara_time_mesh_c mesh() 
+        gf_imtime(matsubara_time_mesh, array_view[double, THREE,COrder], tail_view, nothing) #except +
+        void rebind( gf_imtime&)
+        matsubara_time_mesh mesh() 
         array_view[double, THREE,COrder] data_view()
-        tail_view_c auxiliary_data_view() 
+        tail_view auxiliary_data_view() 
 
-    cdef gf_im_time_c matsubara_time_make_gf "triqs::gf::matsubara_time::make_gf" (matsubara_time_mesh_c, array_view[dcomplex, THREE,COrder], tail_view_c) except +
+    cdef gf_imtime matsubara_time_make_gf "triqs::gf::matsubara_time::make_gf" (matsubara_time_mesh, array_view[dcomplex, THREE,COrder], tail_view) except +
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_im_time_c "triqs::gf::gf_view<triqs::gf::block<triqs::gf::matsubara_time> >" :
-        gf_block_im_time_c()
+    cdef cppclass gf_block_imtime "triqs::gf::gf_view<triqs::gf::block<triqs::gf::matsubara_time> >" :
+        gf_block_imtime()
     
-    cdef gf_block_im_time_c  make_gf_block_im_time_c "triqs::gf::block<triqs::gf::matsubara_time>::make_gf_view" (  vector[gf_im_time_c] &) 
+    cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::matsubara_time>::make_gf_view" (  vector[gf_imtime] &) 
 
 cdef class MeshImTime:
-    cdef matsubara_time_mesh_c _c
+    cdef matsubara_time_mesh _c
 
 cdef class GfImTime_cython:
-    cdef gf_im_time_c _c
+    cdef gf_imtime _c
     cdef object _mesh
 
-cdef inline gf_im_time_c  as_gf_im_time_c (GfImTime_cython g) : 
+cdef inline gf_imtime  as_gf_imtime (GfImTime_cython g) : 
     return g._c
 
-cdef inline gf_block_im_time_c  as_gf_block_im_time_c (G):
-    cdef vector[gf_im_time_c] v_c
+cdef inline gf_block_imtime  as_gf_block_imtime (G):
+    cdef vector[gf_imtime] v
     for item in G:
-        v_c.push_back(as_gf_im_time_c(item))
-    return make_gf_block_im_time_c (v_c) 
+        v.push_back(as_gf_imtime(item))
+    return make_gf_block_imtime (v) 
 
 
