@@ -64,7 +64,7 @@ cdef class MeshImFreq:
     #cdef matsubara_freq_mesh_c  _c
 
     def __init__(self, Beta, stat, int Nmax): 
-        self._c =  matsubara_freq_make_mesh(Beta,{ 'F' :Fermion, 'B' : Boson}[stat] ,Nmax) 
+        self._c =  matsubara_freq_make_mesh(Beta,{'F' :Fermion, 'B' : Boson}[stat] ,Nmax) 
     
     def __len__ (self) : return self._c.size()
     
@@ -85,18 +85,31 @@ cdef class MeshImFreq:
         if op ==2 : # ==
             return self._c == other._c
 
+# C -> Python 
+cdef inline make_MeshImFreq ( matsubara_freq_mesh_c x) :
+    return MeshImFreq(C_Object = encapsulate (&x))
+
 # ----------- GF  --------------------------
 
 cdef class GfImFreq_cython:
     #cdef object _mesh
     #cdef gf_im_freq_c _c
     
-    def __init__(self, MeshImFreq m, data, TailGF_c tail):
-        self._c =  gf_im_freq_c ( m._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing())
-        self._mesh = m
+    def __init__(self, **d):
 
-    #def test(self) :
-        #return toPy_gf_im_freq(self._c)
+        c_obj = d.pop('C_Object', None)
+        if c_obj :
+            assert d == {}
+            self._c = extractor [gf_im_freq_c] (c_obj) () 
+            self._mesh = make_MeshImFreq (self._c.mesh())
+        else : 
+            def deleg (MeshImFreq mesh, data, TailGF_c tail):
+                self._c =  gf_im_freq_c ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing())
+                self._mesh = mesh
+            deleg(**d)
+
+    def test(self) :
+        return make_GfImFreq(self._c)
  
     def setFromFourierOf(self, gt) :
         """Fills self with the Fourier transform of gt"""

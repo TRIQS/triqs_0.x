@@ -58,7 +58,7 @@ class GfLocalGeneral :
         self.Note = d.pop('Note','') 
         
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
-        return  (self._mesh, self.__data_raw, self._tail)
+        return  dict (mesh = self._mesh, data = self.__data_raw, tail = self._tail)
 
     #-------------   COPY ----------------------------------------
 

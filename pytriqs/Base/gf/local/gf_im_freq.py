@@ -64,6 +64,10 @@ class GfImFreq (GfImFreq_cython, GfLocalGeneral):
 
          """
         # construct the mesh if needed
+        if 'C_Object' in d :
+            GfImFreq_cython.__init__(self,**d)
+            return
+
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d.pop('Beta'))
@@ -73,7 +77,7 @@ class GfImFreq (GfImFreq_cython, GfLocalGeneral):
             d['Mesh'] = MeshImFreq(Beta,'F',Nmax)
             #d['Mesh'] = MeshImFreq(Beta,GF_Statistic.Fermion,Nmax)
 
-        GfImFreq_cython.__init__(self,*self._prepare_init(d))
+        GfImFreq_cython.__init__(self,**self._prepare_init(d))
         
     #-----------------------------------------------------
 

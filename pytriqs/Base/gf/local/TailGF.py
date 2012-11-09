@@ -78,7 +78,9 @@ class TailGF (TailGF_c):
 
 
     #-----------------------------------------------------
-
+    def __reduce__(self):
+        return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
+  
     def __reduce_to_dict__(self):
         indL = repr(tuple(self._indL))
         indR = repr(tuple(self._indR))
