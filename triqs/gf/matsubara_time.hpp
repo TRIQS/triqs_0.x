@@ -96,8 +96,12 @@ namespace triqs { namespace gf {
    return make_gf(make_mesh(beta,S), shape, local::tail(shape));
   }
 
-  static gf_t make_gf(double beta, statistic_enum S, size_t N_time_slices, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) { 
-   return make_gf(make_mesh(beta,S,N_time_slices), shape, t);
+  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) { 
+   return make_gf(make_mesh(beta,S,Nmax), shape, local::tail(shape));
+  }
+
+  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) { 
+   return make_gf(make_mesh(beta,S,Nmax), shape, t);
   }
 
  };
@@ -108,7 +112,7 @@ namespace triqs { namespace gf {
  template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename matsubara_time::tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(matsubara_time,local::is_scalar_or_element,ImmutableGfMatsubaraTime);
+ TRIQS_GF_DEFINE_OPERATORS(matsubara_time,matsubara_time::tag, 1,local::is_scalar_or_element,ImmutableGfMatsubaraTime);
 
 }}
 

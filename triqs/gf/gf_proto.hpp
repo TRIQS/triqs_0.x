@@ -138,17 +138,17 @@ namespace triqs { namespace gf {
 // Indeed gf_expr must be in the same namespace as gf<DESC>, for proper ADL 
 // and gf_expr can not be templated on anything else than Expr...
 // And I want a separate expression domain for each kind of GF to detect errors early
-// Usage is : TRIQS_GF_DEFINE_OPERATORS (DescriptorName, ScalarIdentificationTrait, GFIdentificationTrait)
+// Usage is : TRIQS_GF_DEFINE_OPERATORS (DescriptorName, Tag, Arity, ScalarIdentificationTrait, GFIdentificationTrait)
 
-#define TRIQS_GF_DEFINE_OPERATORS(DESC,ST,GFT) \
+#define TRIQS_GF_DEFINE_OPERATORS(DESC,TAG, ARITY,ST,GFT) \
  template <typename Expr> struct gf_expr_##DESC;\
-typedef tup::domain_with_copy<gf_proto_tools<ST,GFT,DESC::arity>::gf_grammar,gf_expr_##DESC> gf_expr_domain_##DESC;\
-template<typename Expr> struct gf_expr_##DESC : DESC::tag, proto::extends<Expr, gf_expr_##DESC<Expr>, gf_expr_domain_##DESC> {\
+typedef tup::domain_with_copy<gf_proto_tools<ST,GFT,ARITY>::gf_grammar,gf_expr_##DESC> gf_expr_domain_##DESC;\
+template<typename Expr> struct gf_expr_##DESC : TAG, proto::extends<Expr, gf_expr_##DESC<Expr>, gf_expr_domain_##DESC> {\
  \
- typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_mesh_t gf_mesh_t;\
- typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_eval_t gf_eval_t;\
- typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_data_tr gf_data_tr;\
- typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_singularity_tr gf_singularity_tr;\
+ typedef gf_proto_tools<ST,GFT,ARITY>::gf_mesh_t gf_mesh_t;\
+ typedef gf_proto_tools<ST,GFT,ARITY>::gf_eval_t gf_eval_t;\
+ typedef gf_proto_tools<ST,GFT,ARITY>::gf_data_tr gf_data_tr;\
+ typedef gf_proto_tools<ST,GFT,ARITY>::gf_singularity_tr gf_singularity_tr;\
  \
  gf_expr_##DESC ( Expr const & expr = Expr() ) : proto::extends<Expr, gf_expr_##DESC <Expr>, gf_expr_domain_##DESC> (expr) {}\
  \
@@ -171,11 +171,4 @@ template<typename T> typename boost::result_of<gf_eval_t(Expr,bf::vector<T>)>::t
 };\
 BOOST_PROTO_DEFINE_OPERATORS(GFT, gf_expr_domain_##DESC);
  
-
-/*
- * typedef gf_proto_tools<ST,GFT,DESC::arity>::gf_shape_t gf_shape_t;\
- typedef typename boost::result_of<gf_shape_t(Expr,gf_no_shape) >::type shape_t;\
- shape_t shape() const {return gf_shape_t()(*this,gf_no_shape());} \
- \
-*/ 
 #endif

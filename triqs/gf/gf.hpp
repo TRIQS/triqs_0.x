@@ -38,6 +38,7 @@ namespace triqs { namespace gf {
  template< typename T, bool IsView> class vector_storage { 
  public:
   typedef typename view_type_if_exists_else_type<T>::type  T_view_t;
+  typedef typename non_view_type_if_exists_else_type<T>::type  T_non_view_t;
   typedef typename mpl::if_c<IsView, T_view_t, T>::type    T_t;
   typedef typename mpl::if_c<!IsView, T_view_t, T>::type   T_other_t;
   
@@ -45,9 +46,9 @@ namespace triqs { namespace gf {
   typedef vector_storage<T,true>  view_type;
   typedef vector_storage<T,false> non_view_type;
 
-#ifndef TRIQS_ALLOW_EMPTY_VIEW
- private:
-#endif
+//#ifndef TRIQS_ALLOW_EMPTY_VIEW
+// private:
+//#endif
   vector_storage(){}
 
  public:
@@ -79,9 +80,26 @@ namespace triqs { namespace gf {
   const_iterator end() const { return data.end();}
 
   bool is_empty() const { return data.size()==0;}
+
+  size_t size() const { return data.size(); }
+
+  friend vector_storage operator +(vector_storage const & A, vector_storage const & B) {
+   if (A.size() != B.size()) TRIQS_RUNTIME_ERROR << " Trying to add 2 gf of different size";
+   std::vector<T_non_view_t> r; r.reserve(A.size());
+   for (size_t i=0; i<A.size(); ++i) r.push_back(A.data[i] + B.data[i]); 
+   return vector_storage(r); 
+  }
+
  private :
   friend class vector_storage<T,!IsView>; 
   std::vector<T_t> data;
+
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+   void serialize(Archive & ar, const unsigned int version) {
+    ar & boost::serialization::make_nvp("data",data);
+   }
  };
 
  // 
@@ -305,7 +323,12 @@ namespace triqs { namespace gf {
   public:
 #endif
   gf_view ():B(){}
-  
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+  explicit gf_view(PyObject * obj, int): B( *(static_cast<gf_view *>(PyCObject_AsVoidPtr(obj))) ){}
+  // gf_view(PyObject * obj) : B( triqs::python::extract<gf_view>(obj) ) {} // add runtime safety here ...
+#endif
+
   //friend class view_proxy<gf_view>; // only one that can build empty views....
   public :
 
@@ -331,7 +354,7 @@ namespace triqs { namespace gf {
   }
 
  template<typename Descriptor, typename T>
- ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, T const & x) { g.data_view() = x; g.singularity_view() = x;}
+  ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, T const & x) { g.data_view() = x; g.singularity_view() = x;}
 
  // tool for lazy transformation
  template<typename Tag, typename D> struct gf_keeper{ gf_view<D> g; gf_keeper (gf_view<D> const & g_) : g(g_) {} };

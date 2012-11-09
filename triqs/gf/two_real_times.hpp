@@ -95,7 +95,7 @@ namespace triqs { namespace gf {
  template<typename G> struct ImmutableGfTwoTimes : boost::is_base_of<typename two_times::tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(two_times,local::is_scalar_or_element,ImmutableGfTwoTimes);
+ // TRIQS_GF_DEFINE_OPERATORS(two_times,2,local::is_scalar_or_element,ImmutableGfTwoTimes);
 
 }}
 #endif

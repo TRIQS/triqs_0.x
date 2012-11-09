@@ -28,11 +28,13 @@
 
 namespace triqs { namespace gf { 
 
+ struct block_tag {};
+
  template<typename Target>
  struct block { 
 
   /// A tag to recognize the function 
-  struct tag {};
+  struct tag : block_tag {};
 
   /// The Mesh
   typedef discrete_mesh mesh_t;
@@ -73,6 +75,13 @@ namespace triqs { namespace gf {
 
   static gf_t make_gf(std::vector<gf<Target>> const & V)  { return gf_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
   static gf_t make_gf(std::vector<gf<Target>> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
+  
+  template<typename... Args> 
+  static gf_t make_gf(int N, Args&& ...args)  { 
+   std::vector<gf<Target>> V; 
+   V.push_back( Target::make_gf (args...));
+   return make_gf(V);
+  }
 
   static gf_view_t make_gf_view(std::vector<gf<Target>> const & V)      { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
   static gf_view_t make_gf_view(std::vector<gf<Target>> && V)           { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
@@ -85,10 +94,10 @@ namespace triqs { namespace gf {
  // -------------------------------   Expression template --------------------------------------------------
 
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
- //template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename block::tag,G> {};  
+ template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- //TRIQS_GF_DEFINE_OPERATORS(block,local::is_scalar_or_element,ImmutableGfMatsubaraFreq);
+ TRIQS_GF_DEFINE_OPERATORS(block,block_tag, 0,local::is_scalar_or_element,ImmutableBlockGf);
 
 }}
 

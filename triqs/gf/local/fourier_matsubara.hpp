@@ -32,14 +32,14 @@ namespace triqs { namespace gf {
 
  // Then a good old function make a new gf 
  gf<matsubara_freq> fourier (gf_view<matsubara_time> const & gt) { 
-  auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.mesh().size(), gt.data_view().shape().pop(),gt(freq_infty()));
+  auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
   auto V = gw();
   fourier_impl(V,gt);
   return gw;
  }
 
  gf<matsubara_time> inverse_fourier (gf_view<matsubara_freq> const & gw) { 
-  auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.mesh().size(), gw.data_view().shape().pop(),gw(freq_infty()));
+  auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
   auto V = gt();
   inverse_fourier_impl(V,gw);
   return gt;

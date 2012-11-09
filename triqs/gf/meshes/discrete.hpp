@@ -74,6 +74,13 @@ namespace triqs { namespace gf {
     h5_read(gr,"Domain",m._dom);
     m = discrete_mesh(std::move(dom));
    }
+ 
+   //  BOOST Serialization
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("Domain",_dom);
+    }
 
    private:
    domain_t _dom;

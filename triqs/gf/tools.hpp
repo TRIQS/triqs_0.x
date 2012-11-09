@@ -62,6 +62,12 @@ namespace triqs { namespace gf {
   void operator=(nothing) {}
   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+   void serialize(Archive & ar, const unsigned int version) {
+   }
+  friend nothing operator +( nothing, nothing) { return nothing();}
  }; 
 
  //------------------------------------------------------

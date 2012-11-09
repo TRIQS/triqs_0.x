@@ -137,6 +137,23 @@ namespace triqs { namespace gf {
      h5_read_impl(gr,cint<N+1>());
     }
    void h5_read_impl (tqa::h5::group_or_file gr, cint<dim>) {}
+ 
+   //  BOOST Serialization
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("Domain",_dom);
+    }
+    m.h5_read_impl(gr,cint<0>());
+   }
+
+   private:
+   template<class Archive, int N> void ser_impl (Archive & ar, const unsigned int version, cint<N> n) {
+     std::stringstream fs; fs <<"MeshComponent"<< N; 
+     ar & boost::serialization::make_nvp(fs.str(),this->component(n));
+     ser_impl(ar,version,cint<N+1>());
+    }
+   template<class Archive> void ser_impl (Archive & ar, const unsigned int version, cint<dim>) {}
 
    private:
    m_tuple_t  m_tuple;
