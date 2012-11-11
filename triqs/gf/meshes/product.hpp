@@ -143,9 +143,8 @@ namespace triqs { namespace gf {
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("Domain",_dom);
+    ser_impl(ar,version,cint<0>());
     }
-    m.h5_read_impl(gr,cint<0>());
-   }
 
    private:
    template<class Archive, int N> void ser_impl (Archive & ar, const unsigned int version, cint<N> n) {

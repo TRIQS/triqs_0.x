@@ -21,7 +21,7 @@
 #ifndef TRIQS_GF_LOCAL_DENSITY_H
 #define TRIQS_GF_LOCAL_DENSITY_H 
 #include "../gf.hpp"
-#include "../matsubara_freq.hpp"
+#include "../imfreq.hpp"
 
 namespace triqs { 
  namespace gf { 
@@ -30,13 +30,13 @@ namespace triqs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  tqa::matrix<double> density( gf_view<matsubara_freq> const & G);
+  tqa::matrix<double> density( gf_view<imfreq> const & G);
 
   // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
   // Here I choose to create G and call the function to avoid creating one code for each expression...
   template<typename GfType>
    TYPE_ENABLE_IF (tqa::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
-   density( GfType const & G) { return density( gf<matsubara_freq>(G));} 
+   density( GfType const & G) { return density( gf<imfreq>(G));} 
 
  }
 

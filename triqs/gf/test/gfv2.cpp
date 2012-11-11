@@ -1,15 +1,15 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/matsubara_freq.hpp> 
-#include <triqs/gf/matsubara_time.hpp> 
+#include <triqs/gf/imfreq.hpp> 
+#include <triqs/gf/imtime.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
 using tqa::range;
 using triqs::arrays::make_shape;
 using triqs::gf::Fermion;
-using triqs::gf::matsubara_freq;
-using triqs::gf::matsubara_time;
+using triqs::gf::imfreq;
+using triqs::gf::imtime;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -17,14 +17,14 @@ int main() {
 
  triqs::gf::freq_infty inf;
 
- triqs::gf::gf<triqs::gf::matsubara_freq> G1; // empty
+ triqs::gf::gf<triqs::gf::imfreq> G1; // empty
  TEST( G1( 0) ) ;
 
  double beta =1;
- auto G =  matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
- auto Gc = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
- auto G3 = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
- auto Gt = matsubara_time::make_gf (beta, Fermion, make_shape(2,2));
+ auto G =  imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto Gc = imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto Gt = imtime::make_gf (beta, Fermion, make_shape(2,2));
 
  auto Gv = G();
  TEST( G( 0) ) ;
@@ -113,7 +113,7 @@ int main() {
 
  tqa::array<double,9> A(1,2,3,4,5,6,7,8,9);
  A()=0;
- //auto x = local::impl::gf_impl<triqs::gf::meshes::matsubara_freq, true>::wrap_infty (G.tail_view()) + 2.0;
+ //auto x = local::impl::gf_impl<triqs::gf::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
  // test hdf5 
  H5::H5File file("ess_gf.h5", H5F_ACC_TRUNC );

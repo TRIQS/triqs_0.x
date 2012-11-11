@@ -1,7 +1,7 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include <triqs/gf/matsubara_freq.hpp> 
-#include <triqs/gf/matsubara_time.hpp> 
+#include <triqs/gf/imfreq.hpp> 
+#include <triqs/gf/imtime.hpp> 
 #include <triqs/gf/block.hpp> 
 
 namespace tql= triqs::clef;
@@ -12,27 +12,27 @@ using triqs::gf::gf;
 using triqs::gf::gf_view;
 using triqs::gf::block;
 using triqs::gf::Fermion;
-using triqs::gf::matsubara_freq;
-using triqs::gf::matsubara_time;
+using triqs::gf::imfreq;
+using triqs::gf::imtime;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
 
  double beta =1;
- auto G1 = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
- auto G2 = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
- auto G3 = matsubara_freq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G1 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G2 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
 
- std::vector<gf<matsubara_freq> >  V = { G1,G2,G3};
- std::vector<gf_view<matsubara_freq> >  Vv = { G1,G2,G3};
+ std::vector<gf<imfreq> >  V = { G1,G2,G3};
+ std::vector<gf_view<imfreq> >  Vv = { G1,G2,G3};
 
  std::cout <<" Building gf_view of view"<< std::endl ;
- auto GF_v = triqs::gf::block<matsubara_freq>::make_gf_view (Vv);
+ auto GF_v = triqs::gf::block<imfreq>::make_gf_view (Vv);
 
  std::cout <<" Building gf_view of gf"<< std::endl ;
- auto GF =  triqs::gf::block<matsubara_freq>::make_gf_view (V); //{G1,G2,G3});
- //auto GF = triqs::gf::block<matsubara_freq>::make_gf_view ( std::vector<gf_view<matsubara_freq> > {G1,G2,G3});
+ auto GF =  triqs::gf::block<imfreq>::make_gf_view (V); //{G1,G2,G3});
+ //auto GF = triqs::gf::block<imfreq>::make_gf_view ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
  auto  g0 = GF(0);
  auto  g0v = GF_v(0)();

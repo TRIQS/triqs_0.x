@@ -28,7 +28,7 @@ namespace triqs { namespace gf {
  //-------------------------------------------------------
  // For Imaginary Matsubara Frequency functions
  // ------------------------------------------------------
- tqa::matrix<double> density( gf_view<matsubara_freq> const & G) { 
+ tqa::matrix<double> density( gf_view<imfreq> const & G) { 
   dcomplex I(0,1);
   auto sh = G.data_view().shape().pop();
   auto Beta = G.domain().beta;

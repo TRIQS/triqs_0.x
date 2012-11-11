@@ -23,7 +23,7 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./gf_proto.hpp"
-#include "./real_time.hpp"
+#include "./retime.hpp"
 #include "./meshes/product.hpp"
 
 namespace triqs { namespace gf { 
@@ -33,7 +33,7 @@ namespace triqs { namespace gf {
   /// A tag to recognize the function 
   struct tag {};
 
-  typedef mesh_product<one_real_time::mesh_t, one_real_time::mesh_t> mesh_t;
+  typedef mesh_product<retime::mesh_t, retime::mesh_t> mesh_t;
 
   // suppress from the concept : can always be deduced ? 
   typedef typename mesh_t::domain_t domain_t;
@@ -48,6 +48,9 @@ namespace triqs { namespace gf {
 
   /// Symmetry
   typedef nothing symmetry_t;
+
+  /// Indices
+  typedef nothing indices_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =2;
@@ -81,7 +84,7 @@ namespace triqs { namespace gf {
   typedef gf<two_times> gf_t;
 
   static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
-   one_real_time::mesh_t m1(one_real_time::domain_t(),0, tmax,n_time_slices);
+   retime::mesh_t m1(retime::domain_t(),0, tmax,n_time_slices);
    mesh_t m(m1,m1);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), nothing(), nothing() ) ;

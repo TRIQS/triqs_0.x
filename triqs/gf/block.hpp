@@ -49,6 +49,9 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
+  /// Indices
+  typedef nothing indices_t;
+
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 

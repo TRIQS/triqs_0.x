@@ -46,12 +46,8 @@ namespace triqs { namespace gf {
   typedef vector_storage<T,true>  view_type;
   typedef vector_storage<T,false> non_view_type;
 
-//#ifndef TRIQS_ALLOW_EMPTY_VIEW
-// private:
-//#endif
   vector_storage(){}
 
- public:
   vector_storage( vector_storage const &x) : data( x.data) {}
   vector_storage( vector_storage &&x)      : data( std::move(x.data)) {}
   vector_storage( vector_storage<T, !IsView> const & V) { data.reserve(V.data.size()); for (auto & x : V.data ) data.push_back(x); } 
@@ -129,8 +125,8 @@ namespace triqs { namespace gf {
    typedef typename mesh_t::mesh_point_t          mesh_point_t;
    typedef typename mesh_t::index_t               mesh_index_t;
    typedef typename Descriptor::singularity_t     singularity_non_view_t;
-   //typedef typename Descriptor::indices_t  indices_t;
    typedef typename Descriptor::symmetry_t        symmetry_t;
+   typedef typename Descriptor::indices_t         indices_t;
 
    typedef typename view_type_if_exists_else_type<target_t>::type          target_view_t;
    typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type     singularity_view_t;
@@ -150,8 +146,6 @@ namespace triqs { namespace gf {
 
    typedef typename mpl::if_c<IsView, singularity_view_t, singularity_non_view_t>::type   singularity_t;
 
-   //typedef typename mpl::if_c<IsView, array_view<std::string,2>, array<std::string,2> >::type   indices_t;
-
    mesh_t const & mesh() const                 { return _mesh;}
    domain_t const & domain() const             { return _mesh.domain();}
    data_view_t data_view()                     { return data;} 
@@ -160,25 +154,28 @@ namespace triqs { namespace gf {
    const singularity_view_t singularity_view() const { return singularity;}
 
    symmetry_t const & symmetry() const { return _symmetry;}
+   indices_t const & indices() const { return _indices;}
 
   protected:
    mesh_t _mesh;
    data_t data;
    singularity_t singularity;
    symmetry_t _symmetry;
+   indices_t _indices;
    typename Descriptor::evaluator _evaluator;
    typename Descriptor::bracket_evaluator _bracket_evaluator;
 
    // Constructors : protected, see gf/gf_view later for public one
    gf_impl() {} // all arrays of zero size (empty)
-   gf_impl(gf_impl const & x)                    : _mesh(x._mesh), data(x.data), singularity(x.singularity), _symmetry(x._symmetry){}
-   gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(x.data_view()), singularity(x.singularity_view()), _symmetry(x.symmetry()){} 
+   gf_impl(gf_impl const & x)                    : _mesh(x._mesh), data(x.data), singularity(x.singularity), _symmetry(x._symmetry), _indices(x._indices){}
+   gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(x.data_view()), singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()){} 
 
    // from the data directly
-   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s ) : 
-    _mesh(m), data(dat), singularity(ad),_symmetry(s){}
-   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s ) : 
-    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s){}
+   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) : 
+    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind){}
+
+   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) : 
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind) {}
 
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
 
@@ -302,15 +299,22 @@ namespace triqs { namespace gf {
 
   template<typename GfType> gf(GfType const & x): B() { *this = x;} 
 
-  gf(typename B::mesh_t const & m, typename B::data_view_t const & dat, typename B::singularity_view_t const & si, typename B::symmetry_t const & s ) : 
-   B(m,dat,si,s) {}
+  gf(typename B::mesh_t const & m, 
+    typename B::data_view_t const & dat, 
+    typename B::singularity_view_t const & si, 
+    typename B::symmetry_t const & s , 
+    typename B::indices_t const & ind = typename B::indices_t () ) : 
+   B(m,dat,si,s, ind) {}
 
-  void operator = (gf const & rhs) { this->_mesh = rhs.mesh(); this->data = rhs.data; this->singularity = rhs.singularity;}
+  void operator = (gf const & rhs) { 
+   this->_mesh = rhs.mesh(); this->data = rhs.data; this->singularity = rhs.singularity;
+   this->_symmetry = rhs._symmetry; this->_indices = rhs._indices;
+  }
 
   template<typename RHS> void operator = (RHS const & rhs) { 
-   this->_mesh = rhs.mesh();
-   this->data = rhs.data_view();
-   this->singularity = rhs.singularity_view();
+   this->_mesh = rhs.mesh(); this->data = rhs.data_view(); this->singularity = rhs.singularity_view();
+   // There is a pb hrer : gf_proto has no symmetry .....
+//   this->_symmetry = rhs.symmetry(); this->_indices = rhs._indices();
   }
  };
 
@@ -332,12 +336,18 @@ namespace triqs { namespace gf {
   //friend class view_proxy<gf_view>; // only one that can build empty views....
   public :
 
-  void rebind( gf_view const &X) { this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->data.rebind(X.data); this->singularity.rebind(X.singularity); }
+  void rebind( gf_view const &X) { 
+   this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->_indices = X._indices; 
+   this->data.rebind(X.data); this->singularity.rebind(X.singularity); 
+  }
 
   gf_view(gf_view const & g): B(g){}
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
 
-  template<typename D, typename T> gf_view (typename B::mesh_t const & m, D const & dat,T const & t,typename B::symmetry_t const & s ) : B(m,dat,t,s) {}
+  template<typename D, typename T> 
+   gf_view (typename B::mesh_t const & m, 
+    D const & dat,T const & t,typename B::symmetry_t const & s, 
+    typename B::indices_t const & ind = typename B::indices_t () ) : B(m,dat,t,s,ind) {}
 
   void operator = (gf_view const & rhs)  { if (this->is_empty()) { rebind(rhs); return;} triqs_gf_view_assign_delegation(*this,rhs);}
 

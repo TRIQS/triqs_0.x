@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
 
  //--------------------------------------------------------------------------------------
 
- void fourier_impl  (gf_view<matsubara_freq> &gw , gf_view<matsubara_time> const & gt){
+ void fourier_impl  (gf_view<imfreq> &gw , gf_view<imtime> const & gt){
   auto ta = gt(freq_infty());
   long numberTimeSlices = gt.mesh().size();
   double Beta = gt.domain().beta, Pi = std::acos(-1);
@@ -79,7 +79,7 @@ namespace triqs { namespace gf {
 
  //---------------------------------------------------------------------------
 
- void inverse_fourier_impl (gf_view<matsubara_time> &gt,  gf_view<matsubara_freq> const & gw) { 
+ void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw) { 
   static bool Green_Function_Are_Complex_in_time = false;
   auto ta = gw(freq_infty());
 
@@ -115,7 +115,7 @@ namespace triqs { namespace gf {
     // CORRECT FOR COMPLEX G(tau) !!!
     typedef double gt_result_type;
     //typedef boost::mpl::if_<gt_result_type;
-    //typedef typename gf<matsubara_time>::mesh_type::gf_result_type gt_result_type;
+    //typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
     if (gw.domain().statistic == Fermion){
      for (auto & t : gt.mesh()) 
       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)*exp(-I*Pi*t/Beta) + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );

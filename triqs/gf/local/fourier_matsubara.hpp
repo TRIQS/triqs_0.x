@@ -21,25 +21,25 @@
 #ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
 #define TRIQS_GF_LOCAL_FOURIER_MATSU_H
 
-#include <triqs/gf/matsubara_freq.hpp> 
-#include <triqs/gf/matsubara_time.hpp> 
+#include <triqs/gf/imfreq.hpp> 
+#include <triqs/gf/imtime.hpp> 
 
 namespace triqs { namespace gf { 
 
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<matsubara_freq> &gw , gf_view<matsubara_time> const & gt);
- void inverse_fourier_impl (gf_view<matsubara_time> &gt,  gf_view<matsubara_freq> const & gw);
+ void fourier_impl         (gf_view<imfreq> &gw , gf_view<imtime> const & gt);
+ void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw);
 
  // Then a good old function make a new gf 
- gf<matsubara_freq> fourier (gf_view<matsubara_time> const & gt) { 
-  auto gw = matsubara_freq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
+ gf<imfreq> fourier (gf_view<imtime> const & gt) { 
+  auto gw = imfreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
   auto V = gw();
   fourier_impl(V,gt);
   return gw;
  }
 
- gf<matsubara_time> inverse_fourier (gf_view<matsubara_freq> const & gw) { 
-  auto gt = matsubara_time::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
+ gf<imtime> inverse_fourier (gf_view<imfreq> const & gw) { 
+  auto gt = imtime::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
   auto V = gt();
   inverse_fourier_impl(V,gw);
   return gt;
@@ -48,11 +48,11 @@ namespace triqs { namespace gf {
  // Finally the lazy system for the = operator for views....
  namespace tags { struct fourier{}; }
 
- gf_keeper<tags::fourier,matsubara_time> lazy_fourier         (gf_view<matsubara_time> const & g) { return g;}
- gf_keeper<tags::fourier,matsubara_freq> lazy_inverse_fourier (gf_view<matsubara_freq> const & g) { return g;}
+ gf_keeper<tags::fourier,imtime> lazy_fourier         (gf_view<imtime> const & g) { return g;}
+ gf_keeper<tags::fourier,imfreq> lazy_inverse_fourier (gf_view<imfreq> const & g) { return g;}
 
- void triqs_gf_view_assign_delegation( gf_view<matsubara_freq> &g, gf_keeper<tags::fourier,matsubara_time> const & L) { fourier_impl (g,L.g);}
- void triqs_gf_view_assign_delegation( gf_view<matsubara_time> &g, gf_keeper<tags::fourier,matsubara_freq> const & L) { inverse_fourier_impl(g,L.g);}
+ void triqs_gf_view_assign_delegation( gf_view<imfreq> &g, gf_keeper<tags::fourier,imtime> const & L) { fourier_impl (g,L.g);}
+ void triqs_gf_view_assign_delegation( gf_view<imtime> &g, gf_keeper<tags::fourier,imfreq> const & L) { inverse_fourier_impl(g,L.g);}
 
 }}
 #endif

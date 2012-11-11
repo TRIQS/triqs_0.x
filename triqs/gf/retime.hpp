@@ -18,16 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_FREQ_H
-#define TRIQS_GF_FREQ_H
+#ifndef TRIQS_GF_ONE_REAL_TIME_H
+#define TRIQS_GF_ONE_REAL_TIME_H
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./gf_proto.hpp"
+#include "./meshes/linear.hpp"
 
-namespace triqs { namespace gf {
+namespace triqs { namespace gf { 
 
- struct real_freq {
+ struct retime {
 
   /// A tag to recognize the function 
   struct tag {};
@@ -40,7 +41,7 @@ namespace triqs { namespace gf {
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
-   
+ 
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
   //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
@@ -52,14 +53,20 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
+  /// Indices
+  typedef std::vector<std::vector<std::string>> indices_t;
+
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
-  /// All the possible calls of the gf
   struct evaluator { 
+   /// All the possible calls of the gf
    template<typename D, typename T>
-    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double w0)  const {
-     return data(arrays::range(), arrays::range(),mesh.index_to_linear(mesh.point_to_index (w0))); 
+    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
+     size_t index; double w; bool in;
+     std::tie(index,w,in) = mesh.closest_point(t0);
+     // do something is in ==false !!
+     return data(arrays::range(), arrays::range(),mesh.index_to_linear(index)); 
     } 
 
    template<typename D, typename T>
@@ -67,7 +74,7 @@ namespace triqs { namespace gf {
   };
 
   struct bracket_evaluator {};
-  
+
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
@@ -75,27 +82,27 @@ namespace triqs { namespace gf {
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
 
-  static std::string h5_name() { return "real_freq";}
+  static std::string h5_name() { return "retime";}
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  typedef gf<real_freq> gf_t;
+  typedef gf<retime> gf_t;
 
-  static gf_t make_gf(double tmax, double n_freq, tqa::mini_vector<size_t,2> shape) { 
-   real_freq::mesh_t m(real_freq::domain_t(),0, tmax,n_freq);
+  static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
+   retime::mesh_t m(retime::domain_t(),0, tmax,n_time_slices);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t (m, std::move(A), local::tail(shape), nothing() ) ;
+   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t() ) ;
   }
 
  };
 
  // -------------------------------   Expression template --------------------------------------------------
 
- // A trait to identify objects that have the concept ImmutableGfFreq
- template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename real_freq::tag,G> {};  
+ // A trait to identify objects that have the concept ImmutableGfOneTime
+ template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(real_freq,local::is_scalar_or_element,ImmutableGfFreq);
+ // TRIQS_GF_DEFINE_OPERATORS(times,local::is_scalar_or_element,ImmutableGfOneRealTime);
 
 }}
 #endif
