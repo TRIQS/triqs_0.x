@@ -36,6 +36,8 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
     cdef gf_imtime operator *( matrix[double,COrder] &, gf_imtime &) except + 
     cdef gf_imtime operator *( gf_imtime &, matrix[double,COrder]&) except + 
 
+cdef extern from "triqs/gf/imtime.hpp" : 
+
     cdef gf_imtime inverse   (gf_imtime &)
     cdef gf_imtime transpose (gf_imtime &)
     cdef gf_imtime conjugate (gf_imtime &)

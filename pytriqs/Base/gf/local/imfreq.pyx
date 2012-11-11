@@ -26,12 +26,15 @@ cdef class MeshImFreq:
 
 # C -> Python 
 cdef inline make_MeshImFreq ( mesh_imfreq x) :
-    return MeshImFreq(C_Object = encapsulate (&x))
+    return MeshImFreq( x.domain().beta, 'F', x.size() )
+    #return MeshImFreq( x.domain().beta, x.domain().statistic, x.size() )
+    #return MeshImFreq(C_Object = encapsulate (&x))
 
 # ----------- GF --------------------------
 
 cdef class GfImFreq(_ImplGfLocal) :
     #cdef gf_imfreq _c
+    #object _myIndicesGFBlocL, _myIndicesGFBlocR, Name, dtype
 
     def __init__(self, **d):
         """
@@ -67,6 +70,8 @@ cdef class GfImFreq(_ImplGfLocal) :
         if c_obj :
             assert d == {}
             self._c = extractor [gf_imfreq] (c_obj) () 
+            n0,n1 = self._c.data_view().shape(0),self._c.data_view().shape(1)
+            _ImplGfLocal.__init__(self, IndicesL = range(n0), IndicesR = range(n1), Name = "")
             return
 
         if 'Mesh' not in d : 
@@ -79,19 +84,17 @@ cdef class GfImFreq(_ImplGfLocal) :
 
         self.dtype = numpy.complex_
         indL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-        indR = list ( d.pop('IndicesR',()) or d.pop('Indices',()) )
-        assert self.N1 == len(indL) and self.N2 == len(indR)
+        indR = list ( d.pop('IndicesR',()) or indL )
 
         cdef MeshImFreq mesh = d.pop('Mesh')
         data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indL),len(indR),len(mesh)), self.dtype )
         cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
 
-        self.Name = d.pop('Name','g')
-        
+        _ImplGfLocal.__init__(self, IndicesL = indL, IndicesR = indR, Name =  d.pop('Name','g'))
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
+        
         self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing()) # add here the indices ...
-        self._myIndicesGFBlocL = _IndicesConverter(indL)
-        self._myIndicesGFBlocR = _IndicesConverter(indR)
+        assert self.N1 == len(indL) and self.N2 == len(indR)
         # end of construction ...
     
     # Access to elements of _c, only via C++
@@ -101,12 +104,16 @@ cdef class GfImFreq(_ImplGfLocal) :
     
     property _tail : 
         def __get__(self): return make_TailGf (self._c.singularity_view()) 
+        def __set__(self,TailGf t): 
+                assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
+                cdef tail t2 = self._c.singularity_view()
+                t2 = t._c 
 
     property N1 : 
-        def __get__(self): self._c.data_view().dim(0)
+        def __get__(self): return self._c.data_view().shape(0)
 
     property N2 : 
-        def __get__(self): self._c.data_view().dim(1)
+        def __get__(self): return self._c.data_view().shape(1)
 
     property _data_raw : 
         """Access to the data array"""
@@ -118,8 +125,8 @@ cdef class GfImFreq(_ImplGfLocal) :
     
     property _data : 
         """Access to the data array"""
-        def __get__(self) : 
-            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self._indL, self._indR, None)
+        def __get__(self) :
+            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self.indicesL, self.indicesR, None)
         def __set__ (self, value) :
             cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
@@ -195,7 +202,7 @@ cdef class GfImFreq(_ImplGfLocal) :
             res._c = as_dcomplex(arg) * self._c
         else : 
             a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
-            res._c =  a * self._c  if s else self._c *a
+            #res._c =  a * self._c  if s else self._c *a
         return res
 
     def __mul__(self,arg):
@@ -224,11 +231,13 @@ cdef class GfImFreq(_ImplGfLocal) :
 
     def from_L_G_R (self, L,G,R):
         """ For all argument, replace the matrix by L *matrix * R"""
-        self._c = matrix_view[dcomplex,COrder](L) * self._c * matrix_view[dcomplex,COrder](R) 
+        pass
+        #self._c = matrix_view[dcomplex,COrder](L) * self._c * matrix_view[dcomplex,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""
-        self._c = inverse (self._c)
+        pass
+        #self._c = inverse (self._c)
 
     def replace_by_tail(self,start) : 
         d = self._data_raw

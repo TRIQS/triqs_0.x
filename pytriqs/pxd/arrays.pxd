@@ -28,7 +28,7 @@ cdef extern from "<triqs/arrays.hpp>" namespace "triqs::arrays" :
         array_view operator *( array_view &) 
         array_view operator /( array_view &) 
         object to_python()
-        int dim(int)
+        int shape(int)
 
     cdef cppclass array "triqs::arrays::array" [T,R,Opt] : 
         array()

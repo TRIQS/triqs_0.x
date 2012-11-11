@@ -24,9 +24,10 @@ r""" """
 
 import numpy
 from math import *
-from gf import MeshImFreq,TailGf #, MeshRealFrequency
+from gf import MeshImFreq #, MeshRealFrequency
+from TailGF import TailGf
 from pytriqs.Base.Utility.myUtils import sign
-from pytriqs.Base.gf.local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
+from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
 
 def is_scalar (x) : 
@@ -73,7 +74,7 @@ class Function (Base):
         if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
         res = G._data.array[:,:,:]
         try :
-            for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
+            for n,om in enumerate(G._mesh) : res[:,:,n] = self.F(om)
         except :
             raise RuntimeError, "The given function has a problem..."
         if self.Tail : G._tail.copyFrom(self.Tail)
@@ -88,7 +89,7 @@ class Const(Base):
          
     def __call__(self,G) :
         C = self.C
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(C,numpy.ndarray) : 
@@ -110,7 +111,7 @@ class Omega_(Base):
     r"""The function :math:`\omega \rightarrow \omega` """
     def __str__(self) : return "Omega" 
     def __call__(self,G) :
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         t = G._tail
@@ -133,7 +134,7 @@ class A_Omega_Plus_B(Base):
          
     def __call__(self,G) :
         A,B = self.A, self.B
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G._mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(A,numpy.ndarray) : A = A*numpy.identity(G.N1) 
@@ -215,9 +216,9 @@ class SemiCircular (Base):
     def __call__(self,G) :
         D= self.HalfBandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
-        if type(G.mesh) == MeshImFreq:
+        if type(G._mesh) == MeshImFreq:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
-        elif type(G.mesh) == MeshRealFrequency:
+        elif type(G._mesh) == MeshRealFrequency:
             def f(om):
               if (om > -D) and (om < D):
                 return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
@@ -227,8 +228,9 @@ class SemiCircular (Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        t = G._tail
-        G._tail = TailGf(IndicesL=t.indicesL, IndicesR=t.indicesR, size=t.size, OrderMin=1)
+        oldL = G._tail._indL
+        oldR = G._tail._indR
+        G._tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
         for i in range(G.N1):
             G._tail[1].array[i,i] = 1.0
             G._tail[3].array[i,i] = D**2/4.0
@@ -260,9 +262,9 @@ class Wilson (Base):
         D = self.HalfBandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
 
-        if type(G.mesh) == MeshImFreq:
+        if type(G._mesh) == MeshImFreq:
             f = lambda om : (-1/(2.0*D)) * numpy.log((om-D)/(om+D)) * Id
-        elif type(G.mesh) == MeshRealFrequency:
+        elif type(G._mesh) == MeshRealFrequency:
             def f(om):
               if (om > -D) and (om < D):
                 return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D) - 1j*pi*Id/(2*D)

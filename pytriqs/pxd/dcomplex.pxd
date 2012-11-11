@@ -3,7 +3,8 @@ cdef extern from "<complex>" namespace "std":
          dcomplex()
          dcomplex(dcomplex &)
          dcomplex(double,double)
-         double real, imag
+         double real()
+         double imag()
 
 # Python -> C
 cdef inline dcomplex as_dcomplex (a) : 
@@ -12,9 +13,12 @@ cdef inline dcomplex as_dcomplex (a) :
 
 # C -> Python 
 cdef inline make_dcomplex (dcomplex z) :
-    return complex(z.real, z.imag)
+    return complex(z.real(), z.imag())
 
 
-
+# Python -> C
+#cdef inline double as_double (a) : 
+#    x = double(a)
+#    return double (a) 
 
 

@@ -4,10 +4,17 @@ cdef class TailGf:
     """
     
     cdef tail _c
-    
+    cdef object _indL, _indR 
     def __init__(self, **d):
         """
         """
+        c_obj = d.pop('C_Object', None)
+        if c_obj :
+            assert d == {}
+            self._c = extractor [tail] (c_obj) () 
+            self._indL, self._indR = range(self._c.shape(0)), range(self._c.shape(1))
+            return
+
         self._indL, self._indR = d['IndicesL'], d['IndicesR']
         N1,N2 = len(self._indL), len(self._indR)
         a = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size'])  ,numpy.complex) #,order='F')
@@ -17,7 +24,7 @@ cdef class TailGf:
     def invert(self) :
         self._c = 1.0/self._c
     
-    def __fill_a( self,a, value) : 
+    def __fill_a (self, a, value) : 
         if hasattr(value,'shape') : 
             if a.shape[:2] != value.shape[:2] : 
                 raise RuntimeError, "shape mismatch"
@@ -28,6 +35,14 @@ cdef class TailGf:
         else : 
             a = value
 
+    property indicesL : 
+        def __get__(self) : 
+            print "indices of tail are : ", self._indL
+            return self._indL
+    
+    property indicesR : 
+        def __get__(self) : return self._indR
+
     property OrderMin : 
         """Min order of the expansion"""
         def __get__(self) : return self._c.order_min()
@@ -35,6 +50,12 @@ cdef class TailGf:
     property OrderMax : 
         """Max order of the expansion"""
         def __get__(self) : return self._c.order_max()
+
+    property N1 : 
+        def __get__(self): return self._c.data_view().shape(0)
+
+    property N2 : 
+        def __get__(self): return self._c.data_view().shape(1)
 
     property size : 
         """Length of the expansion"""
@@ -159,7 +180,7 @@ cdef class TailGf:
             res._c = as_dcomplex(arg) * self._c
         else : 
             a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
-            res._c =  a * self._c  if s else self._c *a
+            #res._c =  a * self._c  if s else self._c *a
         return res
 
     def __mul__(self,arg):

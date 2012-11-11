@@ -7,6 +7,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         int order_min()
         int order_max()
         size_t size() 
+        size_t shape(int) 
 
     cdef tail operator +( tail &, tail &) except + 
     cdef tail operator -( tail &, tail &) except + 

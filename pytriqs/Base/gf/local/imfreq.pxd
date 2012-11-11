@@ -34,6 +34,8 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
     cdef gf_imfreq operator *( matrix_view[dcomplex,COrder] &, gf_imfreq &) except + 
     cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex,COrder]&) except + 
 
+cdef extern from "triqs/gf/imfreq.hpp"  :
+
     cdef gf_imfreq inverse   (gf_imfreq &)
     cdef gf_imfreq transpose (gf_imfreq &)
     cdef gf_imfreq conjugate (gf_imfreq &)
@@ -42,7 +44,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
     cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
 
 cdef class _ImplGfLocal : 
-    pass
+    cdef object _myIndicesGFBlocL, _myIndicesGFBlocR, _Name, dtype, _IndicesR, _IndicesL
 
 cdef class GfImFreq(_ImplGfLocal):
     cdef gf_imfreq _c

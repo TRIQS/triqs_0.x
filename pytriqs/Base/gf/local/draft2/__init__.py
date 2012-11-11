@@ -26,13 +26,13 @@ It is imported with the command::
   >>> from pytriqs.Base.gf.local import *
 """
 
-from gf import TailGf, MeshImFreq, GfImFreq, GfImTime,  test_block, test2 , test3
+from gf import MeshImFreq, test_block, test2 , test3
 
 from inverse import inverse
-#from TailGF import TailGf
-#from gf_im_freq import GfImFreq
+from TailGF import TailGf
+from gf_im_freq import GfImFreq
 #from GFBloc_ReFreq import GFBloc_ReFreq
-#from gf_im_time import GfImTime
+from gf_im_time import GfImTime
 #from GFBloc_ReTime import GFBloc_ReTime
 #from GFBloc_ImLegendre import GFBloc_ImLegendre
 from GF import GF

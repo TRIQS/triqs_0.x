@@ -32,6 +32,7 @@ cdef inline make_MeshImTime ( mesh_imtime x) :
 
 cdef class GfImTime(_ImplGfLocal) :
     #cdef gf_imtime _c
+    #object _myIndicesGFBlocL, _myIndicesGFBlocR, Name, dtype
 
     def __init__(self, **d):
         """
@@ -69,6 +70,8 @@ cdef class GfImTime(_ImplGfLocal) :
         if c_obj :
             assert d == {}
             self._c = extractor [gf_imtime] (c_obj) () 
+            n0,n1 = self._c.data_view().shape(0),self._c.data_view().shape(1)
+            _ImplGfLocal.__init__(self, IndicesL = range(n0), IndicesR = range(n1), Name = "")
             return
 
         if 'Mesh' not in d : 
@@ -81,19 +84,17 @@ cdef class GfImTime(_ImplGfLocal) :
 
         self.dtype = numpy.float64
         indL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-        indR = list ( d.pop('IndicesR',()) or d.pop('Indices',()) )
-        assert self.N1 == len(indL) and self.N2 == len(indR)
+        indR = list ( d.pop('IndicesR',()) or indL )
 
         cdef MeshImTime mesh = d.pop('Mesh')
         data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indL),len(indR),len(mesh)), self.dtype )
         cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
 
-        self.Name = d.pop('Name','g')
-        
+        _ImplGfLocal.__init__(self, IndicesL = indL, IndicesR = indR, Name =  d.pop('Name','g'))
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
+        
         self._c =  gf_imtime ( mesh._c, array_view[double,THREE,COrder](data_raw), tail._c , nothing()) # add here the indices ...
-        self._myIndicesGFBlocL = _IndicesConverter(indL)
-        self._myIndicesGFBlocR = _IndicesConverter(indR)
+        assert self.N1 == len(indL) and self.N2 == len(indR)
         # end of construction ...
 
     # Access to elements of _c, only via C++
@@ -103,27 +104,31 @@ cdef class GfImTime(_ImplGfLocal) :
     
     property _tail : 
         def __get__(self): return make_TailGf (self._c.singularity_view()) 
+        def __set__(self,TailGf t): 
+                assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
+                cdef tail t2 = self._c.singularity_view()
+                t2 = t._c 
 
     property N1 : 
-        def __get__(self): self._c.data_view().dim(0)
+        def __get__(self): return self._c.data_view().shape(0)
 
     property N2 : 
-        def __get__(self): self._c.data_view().dim(1)
+        def __get__(self): return self._c.data_view().shape(1)
 
     property _data_raw : 
         """Access to the data array"""
         def __get__(self) : 
             return self._c.data_view().to_python()
         def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
+            a = self._c.data_view().to_python()
             a[:,:,:] = value
     
     property _data : 
         """Access to the data array"""
         def __get__(self) : 
-            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self._indL, self._indR, None)
+            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self.indicesL, self.indicesR, None)
         def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
+            a = self._c.data_view().to_python()
             a[:,:,:] = value
 
     # -------------- Fourier ----------------------------
@@ -182,7 +187,7 @@ cdef class GfImTime(_ImplGfLocal) :
         if n == 'GfImTime' :
             self._c = self._c * (<GfImTime?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            self._c = double(arg) * self._c
+            self._c = <double>(double(arg)) * self._c
         else : 
             raise RuntimeError, " argument type not recognized in imul for %s"%arg
         return self
@@ -194,10 +199,10 @@ cdef class GfImTime(_ImplGfLocal) :
         if n == 'GfImTime' :
             res._c =  self._c * (<GfImTime?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            res._c = double(arg) * self._c
+            res._c = <double>(double(arg)) * self._c
         else : 
             a= matrix_view[double,COrder](matrix[double,COrder](numpy.array(arg, self.dtype)))
-            res._c =  a * self._c  if s else self._c *a
+            #res._c =  a * self._c  if s else self._c *a
         return res
 
     def __mul__(self,arg):
@@ -210,14 +215,14 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def __idiv__(self,arg):
         cdef GfImTime me = self
-        me._c = me._c / double(arg)
+        me._c = me._c / <double>(double(arg))
         return self
 
     def __div_impl_(self, arg, s):
         if s : raise RuntimeError, "Can not divide by an GfImTime"
         cdef GfImTime res = self.copy()
         if type(arg).__name__  in ['float','int', 'complex'] : 
-            res._c = self._c / double(arg)
+            res._c = self._c / <double>(double(arg))
         else : 
             raise RuntimeError, " argument type not recognized for %s"%arg
         return res
@@ -226,11 +231,13 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def from_L_G_R (self, L,G,R):
         """ For all argument, replace the matrix by L *matrix * R"""
-        self._c = matrix[double,COrder](L) * self._c * matrix[double,COrder](R) 
+        pass
+        #self._c = matrix[double,COrder](L) * self._c * matrix[double,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""
-        self._c = inverse (self._c)
+        pass
+        #self._c = inverse (self._c)
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
 register_class (GfImTime)

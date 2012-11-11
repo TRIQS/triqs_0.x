@@ -49,9 +49,23 @@ class lazy_ctx :
         return tmp
 
 cdef class _ImplGfLocal :
+    #cdef object _myIndicesGFBlocL, _myIndicesGFBlocR, _Name, dtype
+
+    def __init__(self, **d) : 
+        self._IndicesL = list ( d.pop('IndicesL',()) )
+        self._IndicesR = list ( d.pop('IndicesR',()) ) 
+        self._Name = d.pop('Name','g')
+        self._myIndicesGFBlocL = _IndicesConverter(self._IndicesL)
+        self._myIndicesGFBlocR = _IndicesConverter(self._IndicesR)
+        print  " ind L ", self._IndicesL
 
     #-------------  Indices management ---------------------
 
+    property Name : 
+        """Name of the Green function (for plots, etc...) """
+        def __get__(self) : return self._Name
+        def __set__(self,val) : self._Name = str(val)
+    
     property indices : 
         """Indices ..."""
         def __get__(self) : 
@@ -62,6 +76,7 @@ cdef class _ImplGfLocal :
     property indicesL : 
         """Indices ..."""
         def __get__(self) : 
+            print  " ind L ", self._IndicesL            
             for ind in self._IndicesL: 
                 yield ind
     
@@ -122,10 +137,10 @@ cdef class _ImplGfLocal :
         return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
         
     def __reduce_to_dict__(self):
-        indL = repr(tuple(self.IndicesL))
-        indR = repr(tuple(self.IndicesR))
-        assert(eval(indL)==tuple(self.IndicesL))
-        assert(eval(indR)==tuple(self.IndicesR))
+        indL = repr(tuple(self._IndicesL))
+        indR = repr(tuple(self._IndicesR))
+        assert(eval(indL)==tuple(self._IndicesL))
+        assert(eval(indR)==tuple(self._IndicesR))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
                 'Data' : self._data,
@@ -149,7 +164,7 @@ cdef class _ImplGfLocal :
     
     def __repr__(self) : 
         return """%s %s : IndicesL = %s, IndicesR = %s"""%(self.__class__.__name__, self.Name,
-          [x for x in self.IndicesL], [x for x in self.IndicesR])
+          [x for x in self._IndicesL], [x for x in self._IndicesR])
 
     #--------------   PLOT   ---------------------------------------
 
@@ -236,7 +251,7 @@ cdef class _ImplGfLocal :
           * G <<= g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, self.__class__) : 
-            if self is not A : self.copyFrom(A) # otherwise it is useless AND does not work !!
+            if self is not A : self.copy_from(A) # otherwise it is useless AND does not work !!
         elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
             A2= Descriptors.convert_scalar_to_Const(A)
             def e_t (x) : 
@@ -244,7 +259,7 @@ cdef class _ImplGfLocal :
                 tmp = self.copy()
                 x(tmp)
                 return tmp
-            self.copyFrom ( lazy_expressions.eval_lazy_expr(e_t, A2) )
+            self.copy_from ( lazy_expressions.eval_lazy_expr(e_t, A2) )
         elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
             self <<= lazy_expressions.lazy_expr(A)
         elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
