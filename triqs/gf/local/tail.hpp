@@ -66,6 +66,7 @@ namespace triqs { namespace gf { namespace local {
 
    typedef tqa::mini_vector<size_t,2> shape_type;
    shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);} 
+   size_t shape(int i) const { return data.shape()[i];} 
 
    bool is_decreasing_at_infinity() const { return (order_min() >=1);}
    
