@@ -44,7 +44,6 @@
 #include "../python/array_view_to_python.hpp"
 #endif
 
-
 namespace triqs { namespace arrays { 
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
@@ -134,6 +133,8 @@ namespace triqs { namespace arrays {
 
     typedef typename domain_type::index_value_type shape_type;
     shape_type const & shape() const { return domain().lengths();}
+
+    size_t shape(size_t i) const { return domain().lengths()[i];}
 
     size_t len(size_t i) const { return this->shape()[i]; }
 
