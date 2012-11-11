@@ -41,7 +41,9 @@
 #include <type_traits>
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
+#include "../python/array_view_to_python.hpp"
 #endif
+
 
 namespace triqs { namespace arrays { 
 
@@ -103,7 +105,6 @@ namespace triqs { namespace arrays {
        <<"\nThe error was :\n "<<s.what();
      }
     }
-
 #endif
 
      void swap_me( indexmap_storage_pair & X) {
@@ -118,7 +119,11 @@ namespace triqs { namespace arrays {
     storage_type const & storage() const {return storage_;}
     storage_type & storage() {return storage_;}
 
-    /// data_start is the starting point of the data of the object
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+   PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
+#endif
+
+   /// data_start is the starting point of the data of the object
     /// this it NOT &storage()[0], which is the start of the underlying blokc
     /// they are not equal for a view in general
     value_type const * restrict data_start() const { return &storage_[indexmap_.start_shift()];}
