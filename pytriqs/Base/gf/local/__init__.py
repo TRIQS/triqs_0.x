@@ -29,7 +29,7 @@ It is imported with the command::
 from gf import MeshImFreq, test_block, test2 , test3
 
 from inverse import inverse
-from TailGF import TailGF
+from TailGF import TailGf
 from gf_im_freq import GfImFreq
 #from GFBloc_ReFreq import GFBloc_ReFreq
 from gf_im_time import GfImTime
@@ -39,11 +39,11 @@ from GF import GF
 from Descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
 
-__all__ = ['test_block', 'test2', 'test3', 'MeshImFreq','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGF','GfImFreq','GfImTime', 'GF', 'inverse']
+__all__ = ['test_block', 'test2', 'test3', 'MeshImFreq','GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime', 'GF', 'inverse']
 
 #__all__ = ['GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','GfImTime','GfImFreq','GFBloc_ReFreq','GFBloc_ReTime','GFBloc_ImLegendre','GF', 'inverse']
 
 
-#__all__ = ['TailGF','DomainMatsubaraFrequency','MeshImFreq','GF_Statistic']
+#__all__ = ['TailGf','DomainMatsubaraFrequency','MeshImFreq','GF_Statistic']
 
 

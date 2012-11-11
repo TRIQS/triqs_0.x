@@ -25,7 +25,7 @@ r""" """
 import numpy
 from math import *
 from gf import MeshImFreq #, MeshRealFrequency
-from TailGF import TailGF
+from TailGF import TailGf
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
@@ -97,7 +97,7 @@ class Const(Base):
             C = C*numpy.identity(G.N1) 
         if C.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of constant incorrect"
 
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
+        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[0][:,:] = C
         G._tail.zero()
         G._tail[0].array[:,:] = C
@@ -146,7 +146,7 @@ class A_Omega_Plus_B(Base):
         t.zero()
         t[-1].array[:,:] = A
         t[0].array[:,:] = B
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
+        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[-1][:,:] = A
         #t[0][:,:] = B
 
@@ -230,7 +230,7 @@ class SemiCircular (Base):
         # Let's create a new tail
         oldL = G._tail._indL
         oldR = G._tail._indR
-        G._tail = TailGF(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
+        G._tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
         for i in range(G.N1):
             G._tail[1].array[i,i] = 1.0
             G._tail[3].array[i,i] = D**2/4.0
@@ -276,7 +276,7 @@ class Wilson (Base):
         # Let's create a new tail
         oldL = G._tail._indL
         oldR = G._tail._indR
-        G._tail = TailGF(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
+        G._tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
         for i in range(G.N1):
             G._tail[1].array[i,i] = 1.0
             G._tail[3].array[i,i] = D**2/3.0

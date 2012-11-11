@@ -42,8 +42,8 @@ GFInitializer functions are used to initialize the GFBloc_xxx objects
 
 import numpy
 from math import *
-#from pytriqs_GF2 import GF_Statistic,TailGF
-from TailGF import TailGF 
+#from pytriqs_GF2 import GF_Statistic,TailGf
+from TailGF import TailGf 
 from pytriqs.Base.Utility.myUtils import sign
 from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 
@@ -84,7 +84,7 @@ class Const(Base):
             C = C*numpy.identity(G.N1) 
         if C.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of constant incorrect"
 
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
+        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[0][:,:] = C
         G._tail.zero()
         G._tail[0].array[:,:] = C
@@ -114,7 +114,7 @@ class A_Omega_Plus_B(Base):
         t.zero()
         t[-1].array[:,:] = A
         t[0].array[:,:] = B
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
+        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[-1][:,:] = A
         #t[0][:,:] = B
 
@@ -283,11 +283,11 @@ class FreeBath (Function):
 	    return res
 
         # compute the moments
-        tail = TailGF(0,4, []) ##### FAUX @@@@@@@@@@@@
+        tail = TailGf(0,4, []) ##### FAUX @@@@@@@@@@@@
         Mom = numpy.zeros((self.alpha_Max+2,self.Nnd,self.Nnd),numpy.complex_)
         Mom[0,:,:] = Id # 1/omega
         Mom[1,:,:] = - eps0
-	Mom[2,:,:] = - sum([ dot(tt,tt) for tt in t])
+        Mom[2,:,:] = - sum([ dot(tt,tt) for tt in t])
         aux = [ dot(e,tt) for tt,e in zip(t,eps)]
         Mom[3,:,:] = - sum([ dot(tt,a) for tt,a in zip(t,aux)])
         Mom[4,:,:] = - sum([ dot(tt,dot(a,a)) for tt,a in zip(t,aux)])

@@ -1,5 +1,5 @@
-#include <triqs/gf/matsubara_freq.hpp> 
-#include <triqs/gf/matsubara_time.hpp> 
+#include <triqs/gf/imfreq.hpp> 
+#include <triqs/gf/imtime.hpp> 
 #include <triqs/gf/block.hpp> 
 
 namespace tql= triqs::clef;
@@ -10,17 +10,17 @@ using triqs::gf::gf;
 using triqs::gf::gf_view;
 using triqs::gf::block;
 using triqs::gf::Fermion;
-using triqs::gf::matsubara_freq;
-using triqs::gf::matsubara_time;
+using triqs::gf::imfreq;
+using triqs::gf::imtime;
 
-void test_block ( gf_view<block<matsubara_freq>> const & G) { 
+void test_block ( gf_view<block<imfreq>> const & G) { 
 
  auto  g0v = G(0)();
  g0v(0) = 3.2;
  
 }
 
-void test_gf ( gf_view<matsubara_freq> const & G) { 
+void test_gf ( gf_view<imfreq> const & G) { 
 
  auto  g0v = G();
  g0v(0) = -3.2;
