@@ -260,6 +260,8 @@ namespace triqs { namespace gf {
     h5_write(gr,"data",g.data);
     h5_write(gr,"singularity",g.singularity);
     h5_write(gr,"mesh",g._mesh);
+    h5_write(gr,"symmetry",g._symmetry);
+    h5_write(gr,"indices",g._indices);
    }
 
    /// Read from HDF5
@@ -269,7 +271,9 @@ namespace triqs { namespace gf {
     h5_read(gr,"data",g.data);
     h5_read(gr,"singularity",g.singularity);
     h5_read(gr,"mesh",g._mesh);
-   }
+    h5_read(gr,"symmetry",g._symmetry);
+    h5_read(gr,"indices",g._indices);
+    }
 
    //  BOOST Serialization
    friend class boost::serialization::access;
@@ -278,6 +282,8 @@ namespace triqs { namespace gf {
      ar & boost::serialization::make_nvp("data",data);
      ar & boost::serialization::make_nvp("singularity",singularity);
      ar & boost::serialization::make_nvp("mesh",_mesh);
+     ar & boost::serialization::make_nvp("symmetry",_symmetry);
+     ar & boost::serialization::make_nvp("indices",_indices);
     }
 
    /// print
@@ -328,12 +334,6 @@ namespace triqs { namespace gf {
 #endif
   gf_view ():B(){}
 
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-  explicit gf_view(PyObject * obj, int): B( *(static_cast<gf_view *>(PyCObject_AsVoidPtr(obj))) ){}
-  // gf_view(PyObject * obj) : B( triqs::python::extract<gf_view>(obj) ) {} // add runtime safety here ...
-#endif
-
-  //friend class view_proxy<gf_view>; // only one that can build empty views....
   public :
 
   void rebind( gf_view const &X) { 

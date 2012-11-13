@@ -50,6 +50,50 @@ namespace triqs { namespace gf {
 
  struct freq_infty{}; // the point at infinity
 
+ inline  std::vector<std::string> split(const std::string &s, char delim){
+  std::vector<std::string> elems;
+  std::stringstream ss(s);
+  std::string item;
+  while(std::getline(ss, item, delim)) { elems.push_back(item); }
+  return elems;
+ }
+
+ //------------------------------------------------------
+
+ class indices_2_t { 
+  std::vector<std::vector<std::string>> data;
+  public : 
+  indices_2_t() {}
+  indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
+  
+  indices_2_t(int n1, int n2) { 
+   std::vector<std::string> v1,v2;
+   for (int i =0; i<n1; ++i)  { std::stringstream fs; fs<<i; v1.push_back(fs.str()); }
+   for (int i =0; i<n2; ++i)  { std::stringstream fs; fs<<i; v2.push_back(fs.str()); }
+   data.push_back(v1); data.push_back(v2);
+  }
+  std::string to_string () const { std::stringstream fs; return "INDICES"; }
+  /// Write into HDF5
+  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, indices_2_t const & g) {
+   tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   //h5_write(gr,"indices",g._indices);
+  }
+
+  /// Read from HDF5
+  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, indices_2_t & g){
+   tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   //h5_read(gr,"indices",g._indices);
+  }
+
+  //  BOOST Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+   void serialize(Archive & ar, const unsigned int version) {
+    ar & boost::serialization::make_nvp("data",data);
+   }
+
+ };
+
  //------------------------------------------------------
 
  struct nothing {

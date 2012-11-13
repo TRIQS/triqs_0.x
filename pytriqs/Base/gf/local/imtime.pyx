@@ -26,14 +26,13 @@ cdef class MeshImTime:
 
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :
-    return MeshImTime(C_Object = encapsulate (&x))
+    return MeshImFreq( x.domain().beta, 'F', x.size() )
+    #return MeshImTime(encapsulated_c_object = encapsulate (&x))
 
 # ----------- GF --------------------------
 
 cdef class GfImTime(_ImplGfLocal) :
-    #cdef gf_imtime _c
-    #object _myIndicesGFBlocL, _myIndicesGFBlocR, Name, dtype
-
+    cdef gf_imtime _c
     def __init__(self, **d):
         """
 
@@ -66,13 +65,17 @@ cdef class GfImTime(_ImplGfLocal) :
         The Green function take a **view** of the array Data, and a **reference** to the Tail.
 
         """
-        c_obj = d.pop('C_Object', None)
+        c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
-            assert d == {}
+            assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
             self._c = extractor [gf_imtime] (c_obj) () 
-            n0,n1 = self._c.data_view().shape(0),self._c.data_view().shape(1)
-            _ImplGfLocal.__init__(self, IndicesL = range(n0), IndicesR = range(n1), Name = "")
-            return
+            return 
+
+        bss = d.pop('boost_serialization_string', None)
+        if bss :
+            assert d == {}, "Internal error : boost_serialization_string must be the only argument"
+            boost_unserialize_into(<std_string>bss,self._c) 
+            return 
 
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
@@ -83,18 +86,20 @@ cdef class GfImTime(_ImplGfLocal) :
             d['Mesh'] = MeshImTime(Beta,'F',Nmax)
 
         self.dtype = numpy.float64
-        indL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-        indR = list ( d.pop('IndicesR',()) or indL )
-
+     
+        # Prepare the data for construction of C object 
+        _ImplGfLocal.__init__(self, d)
         cdef MeshImTime mesh = d.pop('Mesh')
-        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indL),len(indR),len(mesh)), self.dtype )
-        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
-
-        _ImplGfLocal.__init__(self, IndicesL = indL, IndicesR = indR, Name =  d.pop('Name','g'))
+        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(self._IndicesL),len(self._IndicesR),len(mesh)), self.dtype )
+        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=self._IndicesL, IndicesR=self._IndicesR)
+    
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
-        
-        self._c =  gf_imtime ( mesh._c, array_view[double,THREE,COrder](data_raw), tail._c , nothing()) # add here the indices ...
-        assert self.N1 == len(indL) and self.N2 == len(indR)
+ 
+        self._c =  gf_imtime ( mesh._c, array_view[double,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(self) ) # add here the indices ...
+ 
+        # object to keep that will never change
+        #self.mesh = make_MeshImTime (self._c.mesh())
+        #self.N1, self.N2 = self._c.data_view().shape(0), self._c.data_view().shape(1)
         # end of construction ...
 
     # Access to elements of _c, only via C++
@@ -102,7 +107,7 @@ cdef class GfImTime(_ImplGfLocal) :
         """Mesh"""
         def __get__(self): return make_MeshImTime (self._c.mesh())
     
-    property _tail : 
+    property tail : 
         def __get__(self): return make_TailGf (self._c.singularity_view()) 
         def __set__(self,TailGf t): 
                 assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
@@ -115,21 +120,18 @@ cdef class GfImTime(_ImplGfLocal) :
     property N2 : 
         def __get__(self): return self._c.data_view().shape(1)
 
-    property _data_raw : 
+    property data : 
         """Access to the data array"""
         def __get__(self) : 
             return self._c.data_view().to_python()
         def __set__ (self, value) :
-            a = self._c.data_view().to_python()
+            cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
     
-    property _data : 
-        """Access to the data array"""
-        def __get__(self) : 
-            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self.indicesL, self.indicesR, None)
-        def __set__ (self, value) :
-            a = self._c.data_view().to_python()
-            a[:,:,:] = value
+    #-------------- Reduction -------------------------------
+
+    def __reduce__(self):
+        return lambda s : self.__class__(boost_serialization_string = s), (boost_serialize(self._c),)
 
     # -------------- Fourier ----------------------------
 
@@ -181,13 +183,13 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def __imul__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with _data and _tail as in GF), they it is a matrix multiplication, slice by slice
+            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
         """
         n = type(arg).__name__
         if n == 'GfImTime' :
             self._c = self._c * (<GfImTime?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            self._c = <double>(double(arg)) * self._c
+            self._c = <double>(as_float(arg)) * self._c
         else : 
             raise RuntimeError, " argument type not recognized in imul for %s"%arg
         return self
@@ -199,7 +201,7 @@ cdef class GfImTime(_ImplGfLocal) :
         if n == 'GfImTime' :
             res._c =  self._c * (<GfImTime?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            res._c = <double>(double(arg)) * self._c
+            res._c = <double>(float(arg)) * self._c
         else : 
             a= matrix_view[double,COrder](matrix[double,COrder](numpy.array(arg, self.dtype)))
             #res._c =  a * self._c  if s else self._c *a
@@ -207,7 +209,7 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def __mul__(self,arg):
         # This is for time only ?? What about real freq, im freq ??
-        #if hasattr(y,"_data") :
+        #if hasattr(y,"data") :
         #    c = self.copy_with_new_stat(GF_Statistic.Boson if self._mesh.Statistic == y._mesh.Statistic else GF_Statistic.Fermion)
         #else:
         s = type(self).__name__ != 'GfImTime' 
@@ -215,14 +217,14 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def __idiv__(self,arg):
         cdef GfImTime me = self
-        me._c = me._c / <double>(double(arg))
+        me._c = me._c / <double>(float(arg))
         return self
 
     def __div_impl_(self, arg, s):
         if s : raise RuntimeError, "Can not divide by an GfImTime"
         cdef GfImTime res = self.copy()
         if type(arg).__name__  in ['float','int', 'complex'] : 
-            res._c = self._c / <double>(double(arg))
+            res._c = self._c / <double>(float(arg))
         else : 
             raise RuntimeError, " argument type not recognized for %s"%arg
         return res
@@ -231,13 +233,40 @@ cdef class GfImTime(_ImplGfLocal) :
 
     def from_L_G_R (self, L,G,R):
         """ For all argument, replace the matrix by L *matrix * R"""
-        pass
+        warnings.warn("deprecated function : use simply G <<=  L * G * R !", DeprecationWarning)
+        self <<= L * G * R
         #self._c = matrix[double,COrder](L) * self._c * matrix[double,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""
         pass
-        #self._c = inverse (self._c)
+        #self._c = inverse_c (self._c)
+
+#----------------  Convertions functions ---------------------------------------
+
+# Python -> C
+cdef gf_imtime  as_gf_imtime (g) except +: 
+    return (<GfImTime?>g)._c
+
+# C -> Python 
+cdef make_GfImTime ( gf_imtime x) except + :
+        return GfImTime(C_Object = encapsulate (&x))
+
+# Python -> C for blocks
+cdef gf_block_imtime  as_gf_block_imtime (G) except +:
+        cdef vector[gf_imtime] v_c
+        for item in G:
+            v_c.push_back(as_gf_imtime(item))
+        return make_gf_block_imtime (v_c)
+
+# C -> Python for block
+cdef make_BlockGfImTime (gf_block_imtime G) except + :
+    gl = []
+    name_list = G.mesh().domain().names()
+    cdef int i =0
+    for n in name_list:
+        gf.append( make_GfImTime(G[i] ) )
+    return GF( NameList = name_list, BlockList = gl)
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
 register_class (GfImTime)

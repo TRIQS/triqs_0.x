@@ -27,15 +27,12 @@ cdef class MeshImFreq:
 # C -> Python 
 cdef inline make_MeshImFreq ( mesh_imfreq x) :
     return MeshImFreq( x.domain().beta, 'F', x.size() )
-    #return MeshImFreq( x.domain().beta, x.domain().statistic, x.size() )
     #return MeshImFreq(C_Object = encapsulate (&x))
 
 # ----------- GF --------------------------
 
 cdef class GfImFreq(_ImplGfLocal) :
-    #cdef gf_imfreq _c
-    #object _myIndicesGFBlocL, _myIndicesGFBlocR, Name, dtype
-
+    cdef gf_imfreq _c
     def __init__(self, **d):
         """
         The constructor have two variants : you can either provide the mesh in
@@ -65,36 +62,42 @@ cdef class GfImFreq(_ImplGfLocal) :
         .. warning::
         The Green function take a **view** of the array Data, and a **reference** to the Tail.
         """
-        
-        c_obj = d.pop('C_Object', None)
+        c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
-            assert d == {}
+            assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
             self._c = extractor [gf_imfreq] (c_obj) () 
-            n0,n1 = self._c.data_view().shape(0),self._c.data_view().shape(1)
-            _ImplGfLocal.__init__(self, IndicesL = range(n0), IndicesR = range(n1), Name = "")
-            return
+            return 
 
-        if 'Mesh' not in d : 
+        bss = d.pop('boost_serialization_string', None)
+        if bss :
+            assert d == {}, "Internal error : boost_serialization_string must be the only argument"
+            boost_unserialize_into(<std_string>bss,self._c) 
+            return 
+        
+        _ImplGfLocal.__init__(self, d)
+
+        cdef MeshImFreq mesh = d.pop('Mesh',None)
+        if mesh is None : # 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d.pop('Beta'))
             Nmax = d.pop('NFreqMatsubara',1025)
             stat = d.pop('Statistic','F') 
             sh = 1 if stat== 'F' else 0 
-            d['Mesh'] = MeshImFreq(Beta,'F',Nmax)
+            #d['Mesh'] = MeshImFreq(Beta,'F',Nmax)
+            mesh = MeshImFreq(Beta,'F',Nmax)
 
         self.dtype = numpy.complex_
-        indL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-        indR = list ( d.pop('IndicesR',()) or indL )
-
-        cdef MeshImFreq mesh = d.pop('Mesh')
-        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indL),len(indR),len(mesh)), self.dtype )
-        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indL, IndicesR=indR)
-
-        _ImplGfLocal.__init__(self, IndicesL = indL, IndicesR = indR, Name =  d.pop('Name','g'))
+        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(self._IndicesL),len(self._IndicesR),len(mesh)), self.dtype )
+        
+        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=self._IndicesL, IndicesR=self._IndicesR)
+    
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
         
-        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing()) # add here the indices ...
-        assert self.N1 == len(indL) and self.N2 == len(indR)
+        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(self) ) 
+       
+        # object to keep that will never change
+        #self.mesh = make_MeshImFreq (self._c.mesh())
+        #self.N1, self.N2 = self._c.data_view().shape(0), self._c.data_view().shape(1)
         # end of construction ...
     
     # Access to elements of _c, only via C++
@@ -102,12 +105,12 @@ cdef class GfImFreq(_ImplGfLocal) :
         """Mesh"""
         def __get__(self): return make_MeshImFreq (self._c.mesh())
     
-    property _tail : 
+    property tail : 
         def __get__(self): return make_TailGf (self._c.singularity_view()) 
         def __set__(self,TailGf t): 
-                assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
-                cdef tail t2 = self._c.singularity_view()
-                t2 = t._c 
+            assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
+            cdef tail t2 = self._c.singularity_view()
+            t2 = t._c 
 
     property N1 : 
         def __get__(self): return self._c.data_view().shape(0)
@@ -115,7 +118,7 @@ cdef class GfImFreq(_ImplGfLocal) :
     property N2 : 
         def __get__(self): return self._c.data_view().shape(1)
 
-    property _data_raw : 
+    property data : 
         """Access to the data array"""
         def __get__(self) : 
             return self._c.data_view().to_python()
@@ -123,14 +126,28 @@ cdef class GfImFreq(_ImplGfLocal) :
             cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
     
-    property _data : 
-        """Access to the data array"""
-        def __get__(self) :
-            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self.indicesL, self.indicesR, None)
-        def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
-            a[:,:,:] = value
+    #-------------- Reduction -------------------------------
 
+    def __reduce__(self):
+        return py_deserialize, (self.__class__,boost_serialize(self._c),)
+
+
+    # -------------- HDF5 ----------------------------
+
+    def write_hdf5__ (self, char * fout, char * path) :
+        import h5py
+        f = h5py.File('myfile.hdf5')
+        g = f.create_group("SubGroup")
+        print type(f), type(g)
+        #h5_write (h5_group_or_file(f.id.id), path, self._c)
+        h5_write (h5_group_or_file(g.id.id), path, self._c)
+        f.close()
+        #h5_write (h5_group_or_file(fout, 0), path, self._c)
+        #h5_write (h5_group_or_file(fout, H5F_ACC_TRUNC), path, self._c)
+    
+    def __write_hdf5__ (self, gr , char * path) :
+        h5_write (h5_group_or_file(gr.id.id), path, self._c)
+    
     # -------------- Fourier ----------------------------
 
     def set_from_fourier_of(self,GfImTime gt) :
@@ -157,7 +174,7 @@ cdef class GfImFreq(_ImplGfLocal) :
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
         return self._plot_base( OptionsDict,  r'$\omega_n$', 
-                lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self._mesh] )
+                lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self.mesh] )
     
     #--------------------  Arithmetic operations  ---------------------------------
 
@@ -181,7 +198,7 @@ cdef class GfImFreq(_ImplGfLocal) :
 
     def __imul__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with _data and _tail as in GF), they it is a matrix multiplication, slice by slice
+            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
         """
         n = type(arg).__name__
         if n == 'GfImFreq' :
@@ -201,17 +218,16 @@ cdef class GfImFreq(_ImplGfLocal) :
         elif n in ['float','int', 'complex'] : 
             res._c = as_dcomplex(arg) * self._c
         else : 
-            a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
+            a= matrix_view[dcomplex,COrder](numpy.array(arg, self.dtype))
             #res._c =  a * self._c  if s else self._c *a
         return res
 
     def __mul__(self,arg):
         s = type(self).__name__ != 'GfImFreq' 
-        return self.__mul_impl__(self, arg, s) if not s else self.__mul_impl__(self, arg, s)
+        return self.__mul_impl__(self, arg, s) if not s else self.__mul_impl__(arg,  self, s)
 
     def __idiv__(self,arg):
-        cdef GfImFreq me = self
-        me._c = me._c / as_dcomplex(arg)
+        self._c = self._c / as_dcomplex(arg)
         return self
 
     def __div_impl_(self, arg, s):
@@ -231,19 +247,48 @@ cdef class GfImFreq(_ImplGfLocal) :
 
     def from_L_G_R (self, L,G,R):
         """ For all argument, replace the matrix by L *matrix * R"""
-        pass
+        warnings.warn("deprecated function : use simply G <<=  L * G * R !", DeprecationWarning)
+        self <<= L * G * R
         #self._c = matrix_view[dcomplex,COrder](L) * self._c * matrix_view[dcomplex,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""
         pass
-        #self._c = inverse (self._c)
+        #self._c = inverse_c (self._c)
 
     def replace_by_tail(self,start) : 
-        d = self._data_raw
-        t = self._tail
+        d = self.data
+        t = self.tail
         for n, om in enumerate(self.mesh) : 
             if n >= start : d[:,:,n] = t(om).array
+
+#----------------  Convertions functions ---------------------------------------
+
+# Python -> C
+cdef gf_imfreq  as_gf_imfreq (g) except +: 
+    return (<GfImFreq?>g)._c
+
+# C -> Python 
+cdef make_GfImFreq ( gf_imfreq x) except + :
+        return GfImFreq(C_Object = encapsulate (&x))
+
+# Python -> C for blocks
+cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:
+        cdef vector[gf_imfreq] v_c
+        for item in G:
+            v_c.push_back(as_gf_imfreq(item))
+        return make_gf_block_imfreq (v_c)
+
+# C -> Python for block
+cdef make_BlockGfImFreq (gf_block_imfreq G) except + :
+    gl = []
+    name_list = G.mesh().domain().names()
+    cdef int i =0
+    for n in name_list:
+        gf.append( make_GfImFreq(G[i] ) )
+    return GF( NameList = name_list, BlockList = gl)
+
+
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
 register_class (GfImFreq)

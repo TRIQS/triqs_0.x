@@ -17,8 +17,7 @@ cdef inline make_dcomplex (dcomplex z) :
 
 
 # Python -> C
-#cdef inline double as_double (a) : 
-#    x = double(a)
-#    return double (a) 
+cdef inline float as_float (a) : 
+    return float (a) 
 
 

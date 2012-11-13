@@ -18,7 +18,7 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         gf_imtime()
         gf_imtime(gf_imtime &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_imtime(mesh_imtime, array_view[double, THREE,COrder], tail, nothing) #except +
+        gf_imtime(mesh_imtime, array_view[double, THREE,COrder], tail, nothing, indices_2_t) #except +
         mesh_imtime mesh() 
         array_view[double, THREE,COrder] data_view()
         tail singularity_view() 
@@ -26,24 +26,26 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
     cdef gf_imtime operator +( gf_imtime &, gf_imtime &) except + 
     cdef gf_imtime operator -( gf_imtime &, gf_imtime &) except + 
     cdef gf_imtime operator *( gf_imtime &, gf_imtime &) except + 
-
+    
     cdef gf_imtime operator *( double, gf_imtime &) except + 
     cdef gf_imtime operator *( gf_imtime &, double) except + 
     cdef gf_imtime operator /( gf_imtime &, double) except + 
 
     cdef gf_imtime operator *( matrix_view[double,COrder] &, gf_imtime &) except + 
     cdef gf_imtime operator *( gf_imtime &, matrix_view[double,COrder]&) except + 
-    cdef gf_imtime operator *( matrix[double,COrder] &, gf_imtime &) except + 
-    cdef gf_imtime operator *( gf_imtime &, matrix[double,COrder]&) except + 
 
-cdef extern from "triqs/gf/imtime.hpp" : 
+cdef extern from "triqs/gf/imtime.hpp"  :
 
-    cdef gf_imtime inverse   (gf_imtime &)
-    cdef gf_imtime transpose (gf_imtime &)
-    cdef gf_imtime conjugate (gf_imtime &)
+    cdef gf_imtime inverse_c "inverse"   (gf_imtime &)
+    #cdef gf_imtime transpose_c (gf_imtime &)
+    #cdef gf_imtime conjugate_c (gf_imtime &)
     
     cdef gf_imtime make_gf_imtime "triqs::gf::imtime::make_gf" (mesh_imtime, array_view[double, THREE,COrder], tail) except +
     cdef gf_imtime clone_gf_imtime "triqs::make_clone" (gf_imtime &) 
+
+cdef extern from "triqs/utility/serialization.hpp"  :
+    cdef std_string boost_serialize "triqs::serialize" (gf_imtime &) 
+    cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_imtime &) 
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
@@ -52,16 +54,11 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     
     cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::imtime>::make_gf_view" (  vector[gf_imtime] &) 
 
-cdef class GfImTime(_ImplGfLocal):
-    cdef gf_imtime _c
-
 # Python -> C
-cdef inline gf_imtime  as_gf_imtime (GfImTime g) except +: 
-    return g._c
+cdef gf_imtime  as_gf_imtime (g) except +  
 
 # C -> Python 
-cdef inline make_GfImTime ( gf_imtime x) : 
-    return GfImTime(C_Object = encapsulate (&x))
+cdef make_GfImTime ( gf_imtime x) except +   
 
 ###############  Blocks of Im Time #########################
 
@@ -69,13 +66,12 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
 
     cdef cppclass gf_block_imtime "triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime> >" :
         gf_block_imtime()
-    
+        gf_imtime & operator [](int)
+        discrete_mesh & mesh()
+
     cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::imtime>::make_gf_view" (  vector[gf_imtime] &) 
 
-cdef inline gf_block_imtime  as_gf_block_imtime (G):
-    cdef vector[gf_imtime] v
-    for item in G:
-        v.push_back(as_gf_imtime(item))
-    return make_gf_block_imtime (v) 
+cdef gf_block_imtime  as_gf_block_imtime (G) except +
+cdef make_BlockGfImTime (gf_block_imtime G) except + 
 
 

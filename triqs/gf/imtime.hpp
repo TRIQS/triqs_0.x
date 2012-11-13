@@ -52,7 +52,7 @@ namespace triqs { namespace gf {
   typedef nothing symmetry_t;
  
   /// Indices
-  typedef std::vector<std::vector<std::string>> indices_t;
+  typedef indices_2_t indices_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =1;

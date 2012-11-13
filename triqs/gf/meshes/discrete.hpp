@@ -32,7 +32,7 @@ namespace triqs { namespace gf {
 
    discrete_mesh (domain_t && dom) : _dom(dom){}
    discrete_mesh () : _dom(){}
-
+ 
    domain_t const & domain() const { return _dom;}
    size_t size() const {return _dom.size();}
 

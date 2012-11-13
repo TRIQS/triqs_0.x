@@ -28,10 +28,19 @@ namespace triqs { namespace gf {
  /// The domain
  class discrete_domain {
   size_t Nmax;
+  std::vector<std::string> _names;// name of the points (e.g. for block)
   public:
   typedef long point_t;
   size_t size() const { return Nmax;};
-  discrete_domain (size_t Nmax_=1) : Nmax(Nmax_) { }
+  discrete_domain (size_t Nmax_=1) : Nmax(Nmax_) { 
+   for (int i =0; i<Nmax; ++i) { std::stringstream fs; fs<<i; _names.push_back(fs.str());}
+  }
+
+  discrete_domain (std::vector<std::string> && Names) : Nmax(Names.size()), _names(Names) { }
+  discrete_domain (std::vector<std::string> const & Names) : Nmax(Names.size()), _names(Names) { }
+
+  std::vector<std::string> const & names() const { return _names;}
+ 
   bool operator == (discrete_domain const & D) const { return (Nmax == D.Nmax);}
 
   /// Write into HDF5
@@ -47,12 +56,13 @@ namespace triqs { namespace gf {
    h5_read(gr,"Nmax",n);
    d = discrete_domain(n);
   }
- 
+
   //  BOOST Serialization
   friend class boost::serialization::access;
   template<class Archive>
    void serialize(Archive & ar, const unsigned int version) {
     ar & boost::serialization::make_nvp("Nmax",Nmax);
+    ar & boost::serialization::make_nvp("Names",_names);
    }
 
  };

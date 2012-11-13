@@ -46,13 +46,13 @@ namespace triqs { namespace gf {
   typedef typename target_t::view_type            target_view_t;
 
   /// The tail
-  typedef local::tail   singularity_t;
+  typedef local::tail singularity_t;
 
   /// Symmetry
   typedef nothing symmetry_t;
 
   /// Indices
-  typedef std::vector<std::vector<std::string>> indices_t;
+  typedef indices_2_t indices_t;
 
   /// Arity (number of argument in calling the function)
   static const int arity =1;

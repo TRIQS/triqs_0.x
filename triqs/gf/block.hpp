@@ -70,7 +70,7 @@ namespace triqs { namespace gf {
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { for (auto w: mesh) {data[w.index] = rhs(w); } }
 
   static std::string h5_name() { return "GFBlock";}
-
+ 
   // -------------------------------   Factories  --------------------------------------------------
 
   typedef gf<block> gf_t;

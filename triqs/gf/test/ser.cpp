@@ -1,6 +1,6 @@
 //#define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
-#include "../ser.hpp"
+#include <triqs/utility/serialization.hpp>
 #include <triqs/gf/imfreq.hpp> 
 #include <triqs/gf/imtime.hpp> 
 
@@ -31,4 +31,8 @@ int main() {
 
  std::cout  << triqs::deserialize<double>(s) << std::endl;
  std::cout  << triqs::deserialize<int>(s) << std::endl;
+
+std::vector<std::string> v; v.push_back("abc"); v.push_back("3");
+std::cout << triqs::serialize(v)<< std::endl;
+
 }

@@ -2,11 +2,12 @@
 #cython: embedsignature=True
 from cython.operator cimport dereference as deref, preincrement as inc #dereference and increment operators
 cimport cython  
-from pytriqs.Base.GF_Local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
 import numpy
 import string
 from math import pi
+from h5 cimport *
 
+include "h5.pxd"
 include "fourier.pxd"
 include "tail.pyx"
 include "common.pyx"

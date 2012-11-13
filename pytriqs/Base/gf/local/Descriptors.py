@@ -71,12 +71,12 @@ class Function (Base):
         
     def __call__(self,G) :
         if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
-        res = G._data.array[:,:,:]
+        res = G.data[:,:,:]
         try :
             for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
         except :
             raise RuntimeError, "The given function has a problem..."
-        if self.Tail : G._tail.copyFrom(self.Tail)
+        if self.Tail : G.tail.copyFrom(self.Tail)
         return G
 
 #########################################################################
@@ -98,8 +98,8 @@ class Const(Base):
 
         #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[0][:,:] = C
-        G._tail.zero()
-        G._tail[0].array[:,:] = C
+        G.tail.zero()
+        G.tail[0][:,:] = C
         
         Function(lambda om : C, None)(G)
         return G
@@ -113,9 +113,9 @@ class Omega_(Base):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
-        t = G._tail
+        t = G.tail
         t.zero()
-        t[-1].array[:,:] = numpy.identity(G.N1)
+        t[-1][:,:] = numpy.identity(G.N1)
         Function(lambda om : om*numpy.identity(G.N1), None)(G)
         return G
 
@@ -141,10 +141,10 @@ class A_Omega_Plus_B(Base):
         if A.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of A incorrect"
         if B.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of B incorrect"
 
-        t = G._tail
+        t = G.tail
         t.zero()
-        t[-1].array[:,:] = A
-        t[0].array[:,:] = B
+        t[-1][:,:] = A
+        t[0][:,:] = B
         #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
         #t[-1][:,:] = A
         #t[0][:,:] = B
@@ -165,11 +165,11 @@ class OneFermionInTime(Base):
         if G.mesh.TypeGF not in [GF_Type.Imaginary_Time] : 
             raise TypeError, "This initializer is only correct in frequency"
 
-        t = G._tail
+        t = G.tail
         t.zero()
-        t[1].array[:,:] = 1
-        t[2].array[:,:] = L
-        t[3].array[:,:] = L*L
+        t[1][:,:] = 1
+        t[2][:,:] = L
+        t[3][:,:] = L*L
         
         fact = -1/(1+exp(-L*G.Beta))
         Function(lambda t : fact* exp(-L*t) *numpy.identity(G.N1), None)(G)
@@ -227,12 +227,12 @@ class SemiCircular (Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        t = G._tail
-        G._tail = TailGf(IndicesL=t.indicesL, IndicesR=t.indicesR, size=t.size, OrderMin=1)
+        t = G.tail
+        G.tail = TailGf(IndicesL=t.indicesL, IndicesR=t.indicesR, size=t.size, OrderMin=1)
         for i in range(G.N1):
-            G._tail[1].array[i,i] = 1.0
-            G._tail[3].array[i,i] = D**2/4.0
-            G._tail[5].array[i,i] = D**4/8.0
+            G.tail[1][i,i] = 1.0
+            G.tail[3][i,i] = D**2/4.0
+            G.tail[5][i,i] = D**4/8.0
  
         Function(f,None)(G)
         return G
@@ -272,13 +272,13 @@ class Wilson (Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        oldL = G._tail._indL
-        oldR = G._tail._indR
-        G._tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
+        oldL = G.tail._indL
+        oldR = G.tail._indR
+        G.tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
         for i in range(G.N1):
-            G._tail[1].array[i,i] = 1.0
-            G._tail[3].array[i,i] = D**2/3.0
-            G._tail[5].array[i,i] = D**4/5.0
+            G.tail[1][i,i] = 1.0
+            G.tail[3][i,i] = D**2/3.0
+            G.tail[5][i,i] = D**4/5.0
 
         Function(f,None)(G)
         return G

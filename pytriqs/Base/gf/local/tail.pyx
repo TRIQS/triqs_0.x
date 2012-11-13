@@ -61,7 +61,7 @@ cdef class TailGf:
         """Length of the expansion"""
         def __get__(self) : return self._c.size()
 
-    property _data_raw : 
+    property data : 
         """Access to the data array"""
     
         def __get__(self) : 
@@ -71,41 +71,31 @@ cdef class TailGf:
             cdef object a = self._c.data_view().to_python()
             self.__fill_a(a,value)   
     
-    property _data : 
-        """Access to the data array"""
-    
-        def __get__(self) : 
-            return ArrayViewWithIndexConverter(self._c.data_view().to_python(), self._indL, self._indR, None)
-
-        def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
-            self.__fill_a(a,value)   
-
     def _make_slice(self, sl1, sl2):
-        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self._data_raw[sl1,sl2,:], OrderMin = self._omin)
-        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self._data_raw[sl1,sl2,:]), OrderMin = self._omin)
+        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self.data[sl1,sl2,:], OrderMin = self.OrderMin)
+        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.data[sl1,sl2,:]), OrderMin = self.OrderMin)
 
     def copy(self) : 
-        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self._data_raw.copy(order='F'), OrderMin = self._omin)
-        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self._data_raw.copy(order='C'), OrderMin = self._omin)
+        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.data.copy(order='F'), OrderMin = self.OrderMin)
+        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.data.copy(order='C'), OrderMin = self.OrderMin)
 
     # Should I do more compatibility checks?
     def copyFrom(self, T) : 
         self._omin = T._omin
-        self._data_raw = T._data_raw.copy(order='C')
+        self.data = T.data.copy(order='C')
 
     def __repr__ (self) :
-        return string.join([ "%s"%self[r].array + (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
+        return string.join([ "%s"%self[r]+ (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return ArrayViewWithIndexConverter(self._data_raw[:,:,i-self.OrderMin], self._indL, self._indR)
+        return self.data[:,:,i-self.OrderMin]
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        self._data_raw[:,:,i-self._omin] = val
+        self.data[:,:,i-self._omin] = val
 
     def has_coef(self, i):
         return (i >= self.OrderMin) and (i <= self.OrderMax)
@@ -115,28 +105,9 @@ cdef class TailGf:
         return self._c(n).to_python()   
 
     #-----------------------------------------------------
-    def __reduce__(self):
-        return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
+    #def __reduce__(self):
+    #    return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
   
-    def __reduce_to_dict__(self):
-        indL = repr(tuple(self._indL))
-        indR = repr(tuple(self._indR))
-        assert(eval(indL)==tuple(self._indL))
-        assert(eval(indR)==tuple(self._indR))
-        return {'IndicesL' : indL,
-                'IndicesR' : indR,
-                'array' : self._data_raw,
-                'OrderMin' : self.OrderMin,
-                'size' : self.size }
-
-    # a classmethod receives the names of the class instead of self.
-    @classmethod
-    def __factory_from_dict__(CLS,d):
-        # a little treatment for backward compatibility
-        for s in [ 'Indices' ,'IndicesR' ,'IndicesL' ] : 
-            if s in d and  type(d[s]) == type(''):  d[s] = eval(d[s])
-        return CLS(**d)
- 
     #########      arithmetic operations    #################
 
     def __iadd__(self, TailGf arg):
@@ -208,7 +179,7 @@ cdef class TailGf:
     #---- other operations ----
     def zero(self) : 
         """Sets the expansion to 0"""
-        self._data_raw[:,:,:] =0
+        self.data[:,:,:] =0
 
     def transpose (self) : 
         """Transpose the array : new view as in numpy"""

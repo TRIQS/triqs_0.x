@@ -18,7 +18,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         gf_imfreq()
         gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE,COrder], tail, nothing) #except +
+        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE,COrder], tail, nothing, indices_2_t) #except +
         mesh_imfreq mesh() 
         array_view[dcomplex, THREE,COrder] data_view()
         tail singularity_view() 
@@ -36,27 +36,24 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
 
 cdef extern from "triqs/gf/imfreq.hpp"  :
 
-    cdef gf_imfreq inverse   (gf_imfreq &)
-    cdef gf_imfreq transpose (gf_imfreq &)
-    cdef gf_imfreq conjugate (gf_imfreq &)
+    cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
+    #cdef void h5_read_into_view (h5_group_or_file, char *, gf_imfreq &)
+    cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
+    #cdef gf_imfreq transpose_c (gf_imfreq &)
+    #cdef gf_imfreq conjugate_c (gf_imfreq &)
     
     cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE,COrder], tail) except +
     cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
 
-cdef class _ImplGfLocal : 
-    cdef object _myIndicesGFBlocL, _myIndicesGFBlocR, _Name, dtype, _IndicesR, _IndicesL
-
-cdef class GfImFreq(_ImplGfLocal):
-    cdef gf_imfreq _c
+cdef extern from "triqs/utility/serialization.hpp"  :
+    cdef std_string boost_serialize "triqs::serialize" (gf_imfreq &) 
+    cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_imfreq &) 
 
 # Python -> C
-cdef inline gf_imfreq  as_gf_imfreq (GfImFreq g) except +: 
-    return g._c
+cdef gf_imfreq  as_gf_imfreq (g) except +  
 
 # C -> Python 
-cdef inline make_GfImFreq ( gf_imfreq x) : 
-    #return GfImFreq(mesh = make_MeshImFreq(x.mesh()), data = x.data_view().to_python(), tail = make_TailGf(x.singularity_view()))
-    return GfImFreq(C_Object = encapsulate (&x))
+cdef make_GfImFreq ( gf_imfreq x) except +   
 
 ###############  Blocks of Im Freq #########################
 
@@ -64,14 +61,11 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
 
     cdef cppclass gf_block_imfreq "triqs::gf::gf_view<triqs::gf::block<triqs::gf::imfreq> >" :
         gf_block_imfreq()
-    
+        gf_imfreq & operator [](int)
+        discrete_mesh & mesh()
+
     cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::block<triqs::gf::imfreq>::make_gf_view" (  vector[gf_imfreq] &) 
 
-cdef inline gf_block_imfreq  as_gf_block_imfreq (G) except +:
-    cdef vector[gf_imfreq] v_c
-    for item in G:
-        v_c.push_back((<GfImFreq>item)._c)
-        v_c.push_back(as_gf_imfreq(item))
-    return make_gf_block_imfreq (v_c) 
-
+cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
+cdef make_BlockGfImFreq (gf_block_imfreq G) except + 
 
