@@ -39,7 +39,6 @@
 #include <boost/serialization/vector.hpp>
 
 #include <type_traits>
-
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../python/numpy_extractor.hpp"
 #endif
