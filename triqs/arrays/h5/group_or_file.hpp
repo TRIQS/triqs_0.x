@@ -40,6 +40,18 @@ namespace triqs { namespace arrays { namespace h5 {
    *  \param f H5 file
    */
   group_or_file (H5::H5File f) { fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();}
+
+  group_or_file(std::string filename, int flag) { 
+   H5::H5File f(filename, H5F_ACC_TRUNC);
+   fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();
+  }
+
+  group_or_file(hid_t id_) {
+   H5::Group g; g.setId(id_); 
+   fg_ptr = boost::make_shared<H5::Group>(g);
+   id = id_;
+  } 
+
   hid_t getId() const { return id;}
   ///
   const H5::CommonFG & operator* () const  { return *fg_ptr;}
