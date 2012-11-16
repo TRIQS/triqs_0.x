@@ -285,7 +285,7 @@ cdef make_BlockGfImFreq (gf_block_imfreq G) except + :
     name_list = G.mesh().domain().names()
     cdef int i =0
     for n in name_list:
-        gf.append( make_GfImFreq(G[i] ) )
+        gl.append( make_GfImFreq(G[i] ) )
     return GF( NameList = name_list, BlockList = gl)
 
 

@@ -18,7 +18,7 @@ int main() {
  triqs::gf::freq_infty inf;
 
  triqs::gf::gf<triqs::gf::imfreq> G1; // empty
- TEST( G1( 0) ) ;
+  TEST( G1( 0) ) ;
 
  double beta =1;
  auto G =  imfreq::make_gf (beta, Fermion, make_shape(2,2));
@@ -48,6 +48,17 @@ int main() {
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
  std::cout  <<"-------------lazy assign ------------------"<<std::endl;
+
+ //std::cout  << 0.2 + triqs::gf::local::tail::omega( make_shape(2,2) ,5)  + 2.1<< std::endl;
+ //std::cout  << "88888888888888888888"<< std::endl; 
+
+ /*
+ tqa::matrix<double> r(2,2); r() =1;
+ r() =3;
+ std::cout << " r=  "<< r<< std::endl ;
+ r() +=7 ;
+ std::cout << " r=  "<< r<< std::endl ;
+*/
 
  Gv(om_) = (0.2 + om_ + 2.1);
  TEST(G(0));
@@ -103,7 +114,7 @@ int main() {
 
  TEST( ( G(inf) + G(inf) )  (0));
  TEST( ( G(inf) * G(inf) )  (0));
- TEST( (G + Gc)( inf) ) ;
+// TEST( (G + Gc)( inf) ) ;
 
  //TEST( (G + 2.3)(0));
  TEST( (t + 2.3)(0));

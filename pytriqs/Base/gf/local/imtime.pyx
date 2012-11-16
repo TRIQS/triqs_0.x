@@ -265,7 +265,7 @@ cdef make_BlockGfImTime (gf_block_imtime G) except + :
     name_list = G.mesh().domain().names()
     cdef int i =0
     for n in name_list:
-        gf.append( make_GfImTime(G[i] ) )
+        gl.append( make_GfImTime(G[i] ) )
     return GF( NameList = name_list, BlockList = gl)
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class

@@ -47,13 +47,6 @@ cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (gf_imtime &) 
     cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_imtime &) 
 
-cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
-
-    cdef cppclass gf_block_imtime "triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime> >" :
-        gf_block_imtime()
-    
-    cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::imtime>::make_gf_view" (  vector[gf_imtime] &) 
-
 # Python -> C
 cdef gf_imtime  as_gf_imtime (g) except +  
 
