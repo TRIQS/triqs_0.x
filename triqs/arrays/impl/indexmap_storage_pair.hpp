@@ -58,7 +58,7 @@ namespace triqs { namespace arrays {
   ViewTag, 
   ViewFactory,
   indexmaps::slicer,
-  indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag> > {    
+  indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag> > {
 
    public : 
     typedef typename StorageType::value_type value_type;
@@ -76,7 +76,7 @@ namespace triqs { namespace arrays {
     indexmap_storage_pair (const indexmap_type & IM, const storage_type & ST):
      indexmap_(IM),storage_(ST){
 #ifdef TRIQS_ARRAYS_CHECK_IM_STORAGE_COMPAT
-      if (ST.size() != IM.domain().number_of_elements()) 
+      if (ST.size() != IM.domain().number_of_elements())
        TRIQS_RUNTIME_ERROR<<"index_storage_pair construction : storage and indices are not compatible";
 #endif
      }
@@ -112,6 +112,17 @@ namespace triqs { namespace arrays {
 
     friend void swap( indexmap_storage_pair & A, indexmap_storage_pair & B) { A.swap_me(B);}
 
+    // at your own risk with floating value, but it is useful for int, string, etc....
+    // in particular for tests
+    friend bool operator==( indexmap_storage_pair const & A, indexmap_storage_pair const & B) {
+     if (A.shape() != B.shape()) return false;
+     auto ita = A.begin(); auto itb = B.begin();
+     for (;ita != A.end();++ita, ++itb) {if (!(*ita == *itb)) return false;}
+     return true;
+    }
+
+    friend bool operator!=( indexmap_storage_pair const & A, indexmap_storage_pair const & B) { return (!(A==B));}
+
    public:
 
     indexmap_type const & indexmap() const {return indexmap_;}
@@ -119,10 +130,10 @@ namespace triqs { namespace arrays {
     storage_type & storage() {return storage_;}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-   PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
+    PyObject * to_python() const { return numpy_interface::array_view_to_python(*this);}
 #endif
 
-   /// data_start is the starting point of the data of the object
+    /// data_start is the starting point of the data of the object
     /// this it NOT &storage()[0], which is the start of the underlying blokc
     /// they are not equal for a view in general
     value_type const * restrict data_start() const { return &storage_[indexmap_.start_shift()];}
