@@ -153,8 +153,9 @@ namespace triqs { namespace arrays { namespace h5 {
   // Set up write buffer for attribute
   const H5std_string strwritebuf (value);
   // Create attribute and write to it
-  Attribute myatt_in = dataset.createAttribute(name, strdatatype, attr_dataspace);
-  myatt_in.write(strdatatype, strwritebuf); 
+  Attribute myatt_in = dataset.createAttribute(name.c_str(), strdatatype, attr_dataspace);
+  //myatt_in.write(strdatatype, strwritebuf);
+  myatt_in.write(strdatatype, (void *)(value.c_str()));
  } 
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
