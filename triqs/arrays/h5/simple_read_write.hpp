@@ -246,18 +246,17 @@ namespace triqs {
    h5_write (h5::group_or_file fg, std::string const & name,  ArrayType const & A) { h5::write_array(fg,name, A);}
 
 
-
-  void h5_write (h5::group_or_file f, std::string const & name, vector_view<std::string> const & V) {
+  inline void h5_write (h5::group_or_file f, std::string const & name, vector_view<std::string> const & V) {
    h5::write_1darray_vector_of_string_impl(f,name,V);
   }
 
-  void h5_read (h5::group_or_file f, std::string const & name, arrays::vector<std::string> & V) {
+  inline void h5_read (h5::group_or_file f, std::string const & name, arrays::vector<std::string> & V) {
    h5::read_1darray_vector_of_string_impl(f,name,V);
   }
 
   // I can not use the generic code, just because the resize of the array take a shape,  not a size_t as std::vector and vector
   // Ok, speed is no issue here...
-  void h5_read (h5::group_or_file f, std::string const & name, arrays::array<std::string,1> & V) {
+  inline void h5_read (h5::group_or_file f, std::string const & name, arrays::array<std::string,1> & V) {
    arrays::vector<std::string> res; h5_read(f,name,res); V = res;
   }
 
@@ -266,11 +265,11 @@ namespace triqs {
 
 // for ADL, need to put this in std:: namespace ...
 namespace std {
- void h5_write (triqs::arrays::h5::group_or_file f, std::string const & name, std::vector<std::string> const & V) {
+ inline void h5_write (triqs::arrays::h5::group_or_file f, std::string const & name, std::vector<std::string> const & V) {
   triqs::arrays::h5::write_1darray_vector_of_string_impl(f,name,V);
  }
 
- void h5_read (triqs::arrays::h5::group_or_file f, std::string const & name, std::vector<std::string> & V) {
+ inline void h5_read (triqs::arrays::h5::group_or_file f, std::string const & name, std::vector<std::string> & V) {
   triqs::arrays::h5::read_1darray_vector_of_string_impl(f,name,V);
  }
 }
