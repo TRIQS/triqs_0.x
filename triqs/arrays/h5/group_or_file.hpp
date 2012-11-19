@@ -54,11 +54,11 @@ namespace triqs { namespace arrays { namespace h5 {
   ///
   void unlink_if_exists(std::string path) const { if (exists(path)) fg_ptr->unlink(path.c_str()); }
   /// Open a subgroup 
-  group_or_file open_group(std::string Name) const { return fg_ptr->openGroup(Name);} 
+  group_or_file open_group(std::string Name) const { return fg_ptr->openGroup(Name.c_str());} 
   /// Create a subgroup (unlink an existing one). 
   group_or_file create_group(std::string Name) const { 
    unlink_if_exists(Name); // CHOICE : WHAT DO WE DECIDE AS A POLICY ???
-   return fg_ptr->createGroup(Name);
+   return fg_ptr->createGroup(Name.c_str());
   } 
  };
 

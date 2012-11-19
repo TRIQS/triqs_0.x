@@ -56,7 +56,7 @@ class Measure_G_Legendre_all : public Measure_acc_sign<COMPLEX> {
  //data_part (Gl.data.shape())
   data(Gl.N1, Gl.N2, Gl.mesh.index_max+1),  
   data_part(Gl.N1, Gl.N2, Gl.mesh.index_max+1) ,  
-  outfile(filename("Gl_stack",a,".h5",""), H5F_ACC_TRUNC ) ,
+  outfile(filename("Gl_stack",a,".h5","").c_str(), H5F_ACC_TRUNC ) ,
   data_stack(outfile, "Gl",data.shape(), 1000)
  {
   assert( Gl.mesh.index_min ==0);
