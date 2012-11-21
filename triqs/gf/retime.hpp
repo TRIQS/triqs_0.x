@@ -37,6 +37,10 @@ namespace triqs { namespace gf {
   struct domain_t {
    typedef double point_t; 
    bool operator == (domain_t const & D) const { return true; }
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t const & d) {}
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t & d){ }
+   friend class boost::serialization::access;
+   template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
   };
 
   /// The Mesh
@@ -64,9 +68,11 @@ namespace triqs { namespace gf {
    template<typename D, typename T>
     target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
      size_t index; double w; bool in;
-     std::tie(index,w,in) = mesh.closest_point(t0);
-     // do something is in ==false !!
-     return data(arrays::range(), arrays::range(),mesh.index_to_linear(index)); 
+     std::tie(in, index, w) = windowing(mesh,t0);
+     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+     //return data(arrays::ellipsis(),mesh.index_to_linear(index)); 
+     target_t res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+     return res;
     } 
 
    template<typename D, typename T>
@@ -88,13 +94,15 @@ namespace triqs { namespace gf {
 
   typedef gf<retime> gf_t;
 
-  static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
-   retime::mesh_t m(retime::domain_t(),0, tmax,n_time_slices);
+  static gf_t make_gf(double tmin, double tmax, size_t n_time_slices, tqa::mini_vector<size_t,2> shape) { 
+   retime::mesh_t m(retime::domain_t(),tmin, tmax, n_time_slices);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t() ) ;
   }
 
  };
+
+
 
  // -------------------------------   Expression template --------------------------------------------------
 

@@ -24,10 +24,13 @@
 #include "./gf.hpp"
 #include "./local/tail.hpp"
 #include "./gf_proto.hpp"
+#include "./meshes/linear.hpp"
+
+// Shall we use the same type as for retime : same code, almost ??
 
 namespace triqs { namespace gf {
 
- struct real_freq {
+ struct refreq {
 
   /// A tag to recognize the function 
   struct tag {};
@@ -36,11 +39,15 @@ namespace triqs { namespace gf {
   struct domain_t {
    typedef double point_t; 
    bool operator == (domain_t const & D) const { return true; }
+   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t const & d) {}
+   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t & d){ }
+   friend class boost::serialization::access;
+   template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
   };
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
-   
+
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
   //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
@@ -62,7 +69,12 @@ namespace triqs { namespace gf {
   struct evaluator { 
    template<typename D, typename T>
     target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double w0)  const {
-     return data(arrays::range(), arrays::range(),mesh.index_to_linear(mesh.point_to_index (w0))); 
+     size_t index; double w; bool in;
+     std::tie(in, index, w) = windowing(mesh,w0);
+     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+     //return data(arrays::ellipsis(),mesh.index_to_linear(index)); 
+     target_t res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+     return res;
     } 
 
    template<typename D, typename T>
@@ -70,7 +82,7 @@ namespace triqs { namespace gf {
   };
 
   struct bracket_evaluator {};
-  
+
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
@@ -82,10 +94,10 @@ namespace triqs { namespace gf {
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  typedef gf<real_freq> gf_t;
+  typedef gf<refreq> gf_t;
 
-  static gf_t make_gf(double tmax, double n_freq, tqa::mini_vector<size_t,2> shape) { 
-   real_freq::mesh_t m(real_freq::domain_t(),0, tmax,n_freq);
+  static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) { 
+   refreq::mesh_t m(refreq::domain_t(),wmin, wmax,n_freq);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t() ) ;
   }
@@ -95,10 +107,10 @@ namespace triqs { namespace gf {
  // -------------------------------   Expression template --------------------------------------------------
 
  // A trait to identify objects that have the concept ImmutableGfFreq
- template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename real_freq::tag,G> {};  
+ template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename refreq::tag,G> {};  
 
  // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(real_freq,local::is_scalar_or_element,ImmutableGfFreq);
+ // TRIQS_GF_DEFINE_OPERATORS(refreq,local::is_scalar_or_element,ImmutableGfFreq);
 
 }}
 #endif

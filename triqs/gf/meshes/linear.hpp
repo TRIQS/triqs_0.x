@@ -30,7 +30,7 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
-   linear_mesh (domain_t && dom, double x_min, double x_max, size_t ns) : _dom(dom),L(ns), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns-1)) {}
+   linear_mesh (domain_t && dom, double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
    linear_mesh () : _dom(),L(0){}
 
    domain_t const & domain() const { return _dom;}
@@ -113,6 +113,20 @@ namespace triqs { namespace gf {
    size_t L; 
    double _step;
   };
+
+ /// Approximation of a point of the domain by a mesh point  
+ template<typename D>
+  std::tuple<bool, size_t, double>  windowing ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
+   double a = (x - mesh.x_min())/mesh.delta();
+   long i = floor(a);
+   bool in = (! ((i<0) || (i>=mesh.size()-1)));
+   double w = a-i;
+   //   std::cerr  << " window "<< i << " "<< in << "  "<< w<< std::endl ;
+   return std::make_tuple(in, (in ? size_t(i) : 0),w);
+ }
+
+
+
 }}
 #endif
 
