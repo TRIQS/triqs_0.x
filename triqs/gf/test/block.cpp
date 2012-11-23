@@ -24,8 +24,10 @@ int main() {
  auto G2 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
  auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
 
- std::vector<gf<imfreq> >  V = { G1,G2,G3};
- std::vector<gf_view<imfreq> >  Vv = { G1,G2,G3};
+ std::vector<gf<imfreq> >  V ;
+ V.push_back(G1); V.push_back(G2); V.push_back(G3); 
+ std::vector<gf_view<imfreq> >  Vv; // = { G1,G2,G3};
+ Vv.push_back(G1); Vv.push_back(G2); Vv.push_back(G3); 
 
  std::cout <<" Building gf_view of view"<< std::endl ;
  auto GF_v = triqs::gf::block<imfreq>::make_gf_view (Vv);
@@ -39,14 +41,14 @@ int main() {
 
  auto Gv = g0();
 
-  Gv(0) = 20;
+ Gv(0) = 20;
  TEST( Gv( 0) ) ;
  TEST( G1( 0) ) ;
  Gv(0) = 0;
-  
+
  g0v(0) = 3.2;
-  
-// Vv[0](0) = -2.1;
+
+ // Vv[0](0) = -2.1;
  TEST( Gv( 0) ) ;
  TEST( G1( 0) ) ;
 
