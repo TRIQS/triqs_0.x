@@ -82,7 +82,7 @@ namespace triqs { namespace python_tools {
     std::string key;
    public:
     cval (boost::python::object dic_, std::string key_): dic(),key(key_)  { dic = boost::python::extract<boost::python::dict>(dic_);}
-    boost::python::object as_object() const { return dic[key];}
+    operator boost::python::object() const { return dic[key]; }
 #define CAST_OPERATOR(T) operator T () const{ return (boost::python::extract<T>(dic[key])); }
      CAST_OPERATOR(short)
      CAST_OPERATOR(unsigned short)
