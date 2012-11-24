@@ -21,8 +21,9 @@
 #ifndef TRIQS_ARRAYS_H5_GROUP_OR_FILE_H
 #define TRIQS_ARRAYS_H5_GROUP_OR_FILE_H
 #include "./common.hpp"
-namespace triqs { namespace arrays { namespace h5 { 
+namespace triqs { namespace arrays { namespace h5 {
 
+ 
  /**
   *  \brief Opaque object to handle an H5 group or file
   */
@@ -30,27 +31,37 @@ namespace triqs { namespace arrays { namespace h5 {
   boost::shared_ptr<H5::CommonFG> fg_ptr;
   hid_t id;
   public:
-  /** 
-   * \brief Constructor 
-   *  \param g H5 group 
+  /**
+   * \brief Constructor
+   *  \param g H5 group
    */
-  group_or_file (H5::Group g)   { fg_ptr = boost::make_shared<H5::Group>(g); id = g.getId();} 
-  /** 
-   * \brief Constructor 
+  group_or_file (H5::Group g)   { fg_ptr = boost::make_shared<H5::Group>(g); id = g.getId();}
+  /**
+   * \brief Constructor
    *  \param f H5 file
    */
   group_or_file (H5::H5File f) { fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();}
 
-  group_or_file(std::string filename, int flag) { 
+  group_or_file() {}
+
+  group_or_file(std::string filename, int flag) {
    H5::H5File f(filename, H5F_ACC_TRUNC);
    fg_ptr = boost::make_shared<H5::H5File>(f); id = f.getId();
   }
 
-  group_or_file(hid_t id_) {
-   H5::Group g; g.setId(id_); 
-   fg_ptr = boost::make_shared<H5::Group>(g);
+  group_or_file(hid_t id_, bool is_group) {
+   if (is_group) {
+    H5::Group g;
+    g.setId(id_);
+    fg_ptr = boost::make_shared<H5::Group>(g);
+   }
+   else {
+    H5::H5File f;
+    f.setId(id_);
+    fg_ptr = boost::make_shared<H5::H5File>(f);
+   }
    id = id_;
-  } 
+  }
 
   hid_t getId() const { return id;}
   ///
@@ -61,22 +72,33 @@ namespace triqs { namespace arrays { namespace h5 {
   H5::CommonFG const * operator-> () const { return fg_ptr.get();}
   ///
   H5::CommonFG * operator-> ()             { return fg_ptr.get();}
-  ///	
-  bool exists (std::string path) const { return (H5Lexists(getId(), path.c_str(), H5P_DEFAULT)); } 
+  ///
+  bool exists (std::string path) const { return (H5Lexists(getId(), path.c_str(), H5P_DEFAULT)); }
   ///
   void unlink_if_exists(std::string path) const { if (exists(path)) fg_ptr->unlink(path.c_str()); }
-  /// Open a subgroup 
-  group_or_file open_group(std::string Name) const { return fg_ptr->openGroup(Name.c_str());} 
-  /// Create a subgroup (unlink an existing one). 
-  group_or_file create_group(std::string Name) const { 
+  /// Open a subgroup
+  group_or_file open_group(std::string Name) const { return fg_ptr->openGroup(Name.c_str());}
+  /// Create a subgroup (unlink an existing one).
+  group_or_file create_group(std::string Name) const {
    unlink_if_exists(Name); // CHOICE : WHAT DO WE DECIDE AS A POLICY ???
    return fg_ptr->createGroup(Name.c_str());
-  } 
+  }
  };
 
  /********************* exists *************************************************/
 
  inline bool exists (group_or_file f, std::string name) { return f.exists(name); }
+
+ /********************* extractor *************************************************/
+
+ template<typename T> 
+  struct h5_extractor { 
+   typename view_type_if_exists_else_type<T>::type operator() (group_or_file fg, std::string subgroup_name) const { 
+    typename non_view_type_if_exists_else_type<T>::type r;
+    h5_read(fg,subgroup_name,r);
+    return r;
+   }
+  };
 
 }}}
 #endif

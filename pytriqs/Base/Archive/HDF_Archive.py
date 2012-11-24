@@ -190,10 +190,9 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
            g.write_attr("TRIQS_HDF5_data_scheme", ds)
  
         if '__write_hdf5__' in dir(val) : # simplest protocol
-            val.__write_hdf5__(out,path2)
-            write_attributes()
-            #out.write("%s/@PythonClass"%path2,  val.__class__.__name__)
-            #out.write("%s/@PythonModule"%path2,  val.__module__)
+            val.__write_hdf5__(self._group,key)
+            SUB = HDF_Archive_group(self,key)
+            write_attributes(SUB)
         elif '__reduce_to_dict__' in dir(val) : # Is it a HDF_compliant object 
             self.create_group(key) # create a new group
             d = val.__reduce_to_dict__() if '__reduce_to_dict__' in dir(val) else dict( [(x,getattr(val,x)) for x in val.__HDF_reduction__])
@@ -258,6 +257,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
                   return SUB
               r_class_name  = sch.classname
               r_module_name = sch.modulename
+              r_readfun = sch.read_fun
             else:  # for backward compatibility
               r_class_name  = SUB.read_attr("PythonClass") 
               r_module_name = SUB.read_attr("PythonModule")
@@ -268,11 +268,10 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
                 exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
             except KeyError : 
                 raise RuntimeError, "I can not find the class %s to reconstruct the object !"%r_class_name
-            if "__read_hdf5__" in dir(r_class) : 
-                res = r_class()
-                res.__read_hdf5__(self)
-            elif "__factory_from_hdf5__" in dir(r_class) : 
-                res = r_class.__factory_from_hdf5__(self)
+            if r_readfun :
+                res = r_readfun(self._group,key) 
+            #elif "__factory_from_hdf5__" in dir(r_class) : 
+            #    res = r_class.__factory_from_hdf5__(self)
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )

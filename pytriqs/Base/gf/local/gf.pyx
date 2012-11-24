@@ -9,7 +9,6 @@ from GF import GF
 from math import pi
 from h5 cimport *
 
-include "h5.pxd"
 include "fourier.pxd"
 include "tail.pyx"
 include "common.pyx"

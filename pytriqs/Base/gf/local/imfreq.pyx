@@ -65,7 +65,9 @@ cdef class GfImFreq(_ImplGfLocal) :
         c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
             assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
-            self._c = extractor [gf_imfreq] (c_obj) () 
+            self._c = extractor [gf_imfreq] (c_obj) ()
+            self._IndicesL = self._c.indices()[0]
+            self._IndicesR = self._c.indices()[1]
             return 
 
         bss = d.pop('boost_serialization_string', None)
@@ -131,23 +133,11 @@ cdef class GfImFreq(_ImplGfLocal) :
     def __reduce__(self):
         return py_deserialize, (self.__class__,boost_serialize(self._c),)
 
-
     # -------------- HDF5 ----------------------------
 
-    def write_hdf5__ (self, char * fout, char * path) :
-        import h5py
-        f = h5py.File('myfile.hdf5')
-        g = f.create_group("SubGroup")
-        print type(f), type(g)
-        #h5_write (h5_group_or_file(f.id.id), path, self._c)
-        h5_write (h5_group_or_file(g.id.id), path, self._c)
-        f.close()
-        #h5_write (h5_group_or_file(fout, 0), path, self._c)
-        #h5_write (h5_group_or_file(fout, H5F_ACC_TRUNC), path, self._c)
-    
-    def __write_hdf5__ (self, gr , char * path) :
-        h5_write (h5_group_or_file(gr.id.id), path, self._c)
-    
+    def __write_hdf5__ (self, gr , char * key) :
+        h5_write (make_h5_group_or_file(gr), key, self._c)
+
     # -------------- Fourier ----------------------------
 
     def set_from_fourier_of(self,GfImTime gt) :
@@ -262,6 +252,11 @@ cdef class GfImFreq(_ImplGfLocal) :
         for n, om in enumerate(self.mesh) : 
             if n >= start : d[:,:,n] = t(om).array
 
+#----------------  Reading from h5 ---------------------------------------
+
+def h5_read_GfImFreq ( gr, std_string key) : 
+    return make_GfImFreq( h5_extractor[gf_imfreq]()(make_h5_group_or_file(gr),key))
+
 #----------------  Convertions functions ---------------------------------------
 
 # Python -> C
@@ -289,5 +284,5 @@ cdef make_BlockGfImFreq (gf_block_imfreq G) :
     return GF( NameList = name_list, BlockList = gl)
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (GfImFreq)
+register_class (GfImFreq, read_fun = h5_read_GfImFreq)
 

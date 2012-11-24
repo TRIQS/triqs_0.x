@@ -27,10 +27,10 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
         void increment() 
 
     cdef cppclass indices_2_t : 
+        indices_2_t( )
         indices_2_t( vector[vector[std_string]] &)
-
-#include "h5.pxd"
-
+        vector[std_string] & operator[](int)
+ 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
   
     cdef cppclass discrete_domain :

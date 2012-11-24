@@ -22,8 +22,8 @@
 
 
 class hdf5_scheme : 
-    def __init__(self, classname, modulename, doc) : 
-        self.classname, self.modulename, self.doc = classname, modulename,doc
+    def __init__(self, classname, modulename, doc, read_fun= None) : 
+        self.classname, self.modulename, self.doc, self.read_fun = classname, modulename,doc, read_fun
     def __str__(self) : 
         return """
         Name of the class : %s
@@ -32,7 +32,7 @@ class hdf5_scheme :
         
 _hdf5_schemes_dict= {}
 
-def register_class (cls, doc = None) :
+def register_class (cls, doc = None, read_fun = None) :
     """
      For each class, register it with::
 
@@ -42,7 +42,7 @@ def register_class (cls, doc = None) :
     """
     SchemeName = cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__ 
     doc = doc if doc else (cls._hdf5_data_scheme_doc_ if hasattr(cls,"_hdf5_data_scheme_doc_") else {})
-    _hdf5_schemes_dict [SchemeName] = hdf5_scheme (cls.__name__, cls.__module__,doc)
+    _hdf5_schemes_dict [SchemeName] = hdf5_scheme (cls.__name__, cls.__module__,doc, read_fun)
 
 def hdf_scheme_access (SchemeName) : 
     try : 

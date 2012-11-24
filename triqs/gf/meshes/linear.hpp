@@ -30,7 +30,8 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
-   linear_mesh (domain_t && dom, double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
+   linear_mesh (domain_t const & dom, double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
+   linear_mesh (domain_t && dom,      double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
    linear_mesh () : _dom(),L(0){}
 
    domain_t const & domain() const { return _dom;}
@@ -78,7 +79,6 @@ namespace triqs { namespace gf {
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
     tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
     h5_write(gr,"Domain",m.domain());
-    // COMPLEX NOT H5 READ/WRITE !! FORGOTTEN ...
     h5_write(gr,"min",m.xmin);
     h5_write(gr,"max",m.xmax);
     h5_write(gr,"size",m.size());
@@ -88,12 +88,14 @@ namespace triqs { namespace gf {
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh & m){
     tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
     typename linear_mesh::domain_t dom;
-    typename linear_mesh::domain_pt_t xmin,xmax;
+    double xmin,xmax;
     size_t Nmax; 
-    h5_read(gr,"Domain",m._dom);
+    h5_read(gr,"Domain",dom);
     h5_read(gr,"min",xmin);
     h5_read(gr,"max",xmax);
     h5_read(gr,"size",Nmax);
+
+    // CORRECT THIS FOR SIZE ?
     m = linear_mesh(std::move(dom), xmin,xmax,Nmax);
    }
 

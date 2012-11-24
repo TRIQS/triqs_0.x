@@ -22,6 +22,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         mesh_imfreq mesh() 
         array_view[dcomplex, THREE,COrder] data_view()
         tail singularity_view() 
+        indices_2_t indices()
 
     cdef gf_imfreq operator +( gf_imfreq &, gf_imfreq &) except + 
     cdef gf_imfreq operator -( gf_imfreq &, gf_imfreq &) except + 

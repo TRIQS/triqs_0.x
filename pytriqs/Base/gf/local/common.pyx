@@ -40,7 +40,7 @@ cdef indices_2_t make_c_indices(obj) :
     return indices_2_t(res)
 
 cdef class _ImplGfLocal :
-    cdef object _myIndicesGFBlocL, _myIndicesGFBlocR, _Name, dtype, _IndicesR, _IndicesL,__indices_converter
+    cdef object _Name, dtype, _IndicesR, _IndicesL
     def __init__(self, d) : 
         
         # exclusive : size = (n1,n2) or IndicesL/R
@@ -58,8 +58,6 @@ cdef class _ImplGfLocal :
         # If the indices are not string, make them string anyway
         self._IndicesL = [ str(x) for x in self._IndicesL ]     
         self._IndicesR = [ str(x) for x in self._IndicesR ]     
-
-        self.__indices_converter = [ IndicesConverter(self._IndicesL), IndicesConverter(self._IndicesR)]
 
     #-------------  Indices management ---------------------
 
@@ -95,7 +93,8 @@ cdef class _ImplGfLocal :
         sl1, sl2 = key
         if type(sl1) == StringType and type(sl2) == StringType :
             # Convert the indices to integer
-            sl1, sl2 =  [ self.__indices_converter[i].convertToNumpyIndex(k) for i,k in enumerate(key) ]
+            indices_converter = [ IndicesConverter(self._IndicesL), IndicesConverter(self._IndicesR)]
+            sl1, sl2 =  [ indices_converter[i].convertToNumpyIndex(k) for i,k in enumerate(key) ]
         return self.__class__(IndicesL = self._IndicesL[sl1],
                               IndicesR = self._IndicesR[sl2],
                               Name = self.Name,

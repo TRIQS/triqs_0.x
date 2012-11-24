@@ -72,17 +72,19 @@ namespace triqs { namespace gf {
    for (int i =0; i<n2; ++i)  { std::stringstream fs; fs<<i; v2.push_back(fs.str()); }
    data.push_back(v1); data.push_back(v2);
   }
-  std::string to_string () const { std::stringstream fs; return "INDICES"; }
+ 
+  std::vector<std::string> const & operator[](int i) const { return data[i];} 
+
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, indices_2_t const & g) {
-   tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
-   //h5_write(gr,"indices",g._indices);
+  friend void h5_write (tqa::h5::group_or_file fg, std::string key, indices_2_t const & g) {
+   h5_write(fg,key,g.data[0]);
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, indices_2_t & g){
-   tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
-   //h5_read(gr,"indices",g._indices);
+  friend void h5_read  (tqa::h5::group_or_file fg, std::string key, indices_2_t & g){
+   std::vector<std::string> V;
+   h5_read(fg,key,V);
+   g.data.push_back(V); g.data.push_back(V);
   }
 
   //  BOOST Serialization
