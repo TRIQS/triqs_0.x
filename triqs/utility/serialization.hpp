@@ -21,6 +21,7 @@
 #ifndef TRIQS_SERIAL_H
 #define TRIQS_SERIAL_H
 #include <triqs/utility/first_include.hpp>
+#include <triqs/utility/view_tools.hpp>
 //#include <vector>
 //#include <string>
 #include <boost/iostreams/stream.hpp>
