@@ -54,7 +54,7 @@ void test(std::string filename, T init) {
  //h5::array_stack< T> SC( file, "C", mini_vector<size_t,0>() , bufsize); // also valid ...
  //h5::array_stack< array<T,1 > > SB2( file, "B", bufsize); // does not compile
  
- for (int u = 0; u<N; ++u)  {
+ for (size_t u = 0; u<N; ++u)  {
   A() = double(u+1)* init; 
   B() = double(u+1)* init; 
   C = double(u+1)* init; 

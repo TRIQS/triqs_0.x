@@ -109,7 +109,7 @@ namespace triqs { namespace arrays {
     static bool invoke ( KeyType const & key, Ltype const & L, std::stringstream & fs ) {
      using boost::tuples::get;
      //bool cond = ( (get<v>(key) >= 0) && ( get<v>(key) < L[v]));
-     bool cond = (  ( get<v>(key) < L[v]));
+     bool cond = (  ( size_t(get<v>(key)) < L[v]));
      if (!cond) fs << "key ["<<v<<"] = "<< get<v>(key) <<" is not within [0,"<<L[v]<<"[\n";
      return key_check_impl<KeyType,Ltype,v-1>::invoke(key,L,fs) && cond;
     }

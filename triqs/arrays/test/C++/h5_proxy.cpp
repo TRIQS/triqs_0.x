@@ -42,7 +42,7 @@ void test(std::string filename, T init) {
  array<T,2> B_stack_keep(N,d), B_stack_compare(N,d);
 
 
- for (int u = 0; u<N; ++u)  {
+ for (size_t u = 0; u<N; ++u)  {
   A() = double(u+1)* init; 
   B() = double(u+1)* init; 
   A(0,0) *=2;
@@ -78,7 +78,7 @@ void test(std::string filename, T init) {
  std::cerr << "A_stack_compare = "<< A_stack_compare << std::endl; 
 
  array<T,2> A3(1,1);
- for (int u = 0; u<N; ++u)  {
+ for (size_t u = 0; u<N; ++u)  {
   A() = double(u+1)* init; 
   B() = double(u+1)* init; 
   A(0,0) *=2;
