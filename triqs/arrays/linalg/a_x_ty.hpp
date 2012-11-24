@@ -50,7 +50,7 @@ namespace triqs { namespace arrays {
    typedef indexmaps::cuboid_domain<2> domain_type;
    typedef typename const_view_type_if_exists_else_type<VectorType1>::type X_type; 
    typedef typename const_view_type_if_exists_else_type<VectorType2>::type Y_type;
-   const X_type x; const Y_type y; const ScalarType a;
+   const ScalarType a; const X_type x; const Y_type y; 
 
    public:
    a_x_ty_lazy( ScalarType a_, VectorType1 const & x_, VectorType2 const & y_):a(a_),x(x_),y(y_){}

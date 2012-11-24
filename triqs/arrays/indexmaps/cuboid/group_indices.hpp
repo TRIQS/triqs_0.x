@@ -73,7 +73,7 @@ namespace triqs { namespace arrays {
 
   struct _rt_data {
    mini_vector<size_t, type::rank> l; mini_vector<std::ptrdiff_t, type::rank> s;
-   A const & a; size_t i; 
+   size_t i; A const & a; 
    _rt_data(A const & a_): i(0),a(a_) { for (size_t u=0; u<type::rank; ++u) {l[u]=1; s[u]=0;} }
   };
 
