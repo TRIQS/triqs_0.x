@@ -33,7 +33,7 @@ namespace triqs { namespace gf {
   typedef long point_t;
   size_t size() const { return Nmax;};
   discrete_domain (size_t Nmax_=1) : Nmax(Nmax_) { 
-   for (int i =0; i<Nmax; ++i) { std::stringstream fs; fs<<i; _names.push_back(fs.str());}
+   for (size_t i =0; i<Nmax; ++i) { std::stringstream fs; fs<<i; _names.push_back(fs.str());}
   }
 
   discrete_domain (std::vector<std::string> && Names) : Nmax(Names.size()), _names(Names) { }

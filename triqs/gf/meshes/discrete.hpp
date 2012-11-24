@@ -70,7 +70,6 @@ namespace triqs { namespace gf {
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, discrete_mesh & m){
     tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
     typename discrete_mesh::domain_t dom;
-    size_t Nmax; 
     h5_read(gr,"Domain",m._dom);
     m = discrete_mesh(std::move(dom));
    }

@@ -109,8 +109,8 @@ namespace triqs { namespace gf {
 
    private:
    domain_t _dom;
-   double xmin, xmax;
    size_t L; 
+   double xmin, xmax;
    double _step;
   };
 
@@ -119,7 +119,7 @@ namespace triqs { namespace gf {
   std::tuple<bool, size_t, double>  windowing ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
    double a = (x - mesh.x_min())/mesh.delta();
    long i = floor(a);
-   bool in = (! ((i<0) || (i>=mesh.size()-1)));
+   bool in = (! ((i<0) || (i>=long(mesh.size())-1)));
    double w = a-i;
    //   std::cerr  << " window "<< i << " "<< in << "  "<< w<< std::endl ;
    return std::make_tuple(in, (in ? size_t(i) : 0),w);
