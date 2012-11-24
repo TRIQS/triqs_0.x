@@ -67,16 +67,16 @@ MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TR
 if(BOOST_SOURCE_DIR)
  add_subdirectory(foreignlibs/boost)
  MESSAGE(STATUS  "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
- include_directories(${BOOST_INCLUDE_DIR})
+ include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 else(BOOST_SOURCE_DIR)
  FIND_PACKAGE(Boost 1.46.0 REQUIRED )
  include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
  set(BOOST_LIBRARY ${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
 endif(BOOST_SOURCE_DIR)
 
-# find cblas.  
+# find cblas.
 find_package(CBLAS)
-include_directories(${CBLAS_INCLUDE_DIR})             
+include_directories(SYSTEM ${CBLAS_INCLUDE_DIR})
 
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
@@ -137,7 +137,8 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # General include header
 # remove this dep to C++
-include_directories(${TRIQS_SOURCE_DIR} ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
+include_directories(${TRIQS_SOURCE_DIR})
+include_directories(SYSTEM ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
 FILE(COPY ${TRIQS_SOURCE_DIR}/pytriqs DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ FILES_MATCHING PATTERN *.py PATTERN *.svn EXCLUDE )

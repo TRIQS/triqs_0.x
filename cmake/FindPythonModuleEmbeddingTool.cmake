@@ -1,7 +1,7 @@
 
 # Compile and link with python 
 #link_libraries(${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} )
-include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
+include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 
 function (python_build_module NickName ModuleName ModuleDest  )
 MESSAGE(STATUS "Preparing python module  ${NickName} ")
