@@ -3,7 +3,3 @@
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-# Sphinx sources
-#FILE(GLOB_RECURSE SOURCES *.rst)
-#set_property(GLOBAL APPEND PROPERTY SPHINX_SOURCES ${SOURCES})
-

@@ -28,6 +28,9 @@ project (AllPrograms C CXX Fortran)
 # Make sure the rpath is set fine after installation
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# Include TRIQS cmake macros
+find_package(TriqsMacros)
+
 # Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
@@ -169,6 +172,12 @@ add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES TRIQS_LINK_LIBS)
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+#------------------------
+# Applications
+#------------------------
+
+add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
 
 #------------------------
 # pytriqs modules

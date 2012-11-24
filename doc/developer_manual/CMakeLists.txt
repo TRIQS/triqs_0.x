@@ -34,9 +34,7 @@ SET(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 SET(DOC_EXT "_cpp")
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
-add_subdirectory(arrays)
-add_subdirectory(mctools)
-add_subdirectory(det_manip)
+add_all_subdirectories_with_cmakelist()
 
 # Build the doxygen 
 SET(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
