@@ -208,6 +208,30 @@ namespace triqs { namespace arrays {
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
 
+ // += for scalar RHS // write a specific one if it is not a view : plain loop
+ // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
+ template <typename V, typename RHS> struct __looper_add {
+  RHS rhs;
+  __looper_add(const RHS & rhs_): rhs(rhs_) {}
+  template <typename KeyType> void operator()(V & p, KeyType const & key) const { p += (kronecker(key) ? rhs : RHS() ); }
+ };
+
+ template<typename RHS, typename V, typename Opt>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
+
+ template<typename RHS, typename V, typename Opt>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
+
+ template<typename RHS, typename V, typename Opt>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { lhs += (-rhs); }
+
+ template<typename RHS, typename V, typename Opt>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
+
 
 }}//namespace triqs::arrays
 
