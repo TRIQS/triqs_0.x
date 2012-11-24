@@ -201,7 +201,7 @@ void test_conformity( GF_Bloc_ReTime const & Gt, GF_Bloc_ReFreq const & Gw) {
    const int N(Gw.mesh.len());
   const int Nt(Gt.mesh.len());
   const double Deltat((Gt.TimeMax - Gt.TimeMin));
-  const double fact(Deltat/N);
+  //const double fact(Deltat/N);
   if (N!=Nt) 
    TRIQS_RUNTIME_ERROR<<" the grid of the two functions are not adapted : different number of point: time "<<Nt<<" frequency "<<N;
 
@@ -222,8 +222,8 @@ void fourier_direct(GF_Bloc_ReTime const & Gt, GF_Bloc_ReFreq & Gw)
   assert (Gt.mesh.index_min==0);
   
   const int N(Gw.mesh.len());
-  const int Nt(Gt.mesh.len());
-  const double omega0(2*pi/(Gt.TimeMax - Gt.TimeMin));
+  //const int Nt(Gt.mesh.len());
+  //const double omega0(2*pi/(Gt.TimeMax - Gt.TimeMin));
   const double tmin( Gt.TimeMin);
   const double Deltat((Gt.TimeMax - Gt.TimeMin));
   const double fact(Deltat/N);
@@ -277,11 +277,11 @@ void fourier_inverse (GF_Bloc_ReFreq const & Gw, GF_Bloc_ReTime & Gt ) {
  assert (Gw.mesh.index_min==0);
 
  const int N(Gw.mesh.index_max - Gw.mesh.index_min+1);
- const int Nt(Gt.mesh.index_max - Gt.mesh.index_min+1);
+// const int Nt(Gt.mesh.index_max - Gt.mesh.index_min+1);
  const double tmin( Gt.TimeMin);
  const double Deltat((Gt.TimeMax - Gt.TimeMin));
  const double fact(Deltat/N);
- const double pi = acos(-1);
+ //const double pi = acos(-1);
  test_conformity(Gt,Gw);
 
  Gt.zero();
