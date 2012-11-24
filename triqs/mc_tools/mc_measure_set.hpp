@@ -63,15 +63,15 @@ namespace triqs { namespace mc_tools {
    template<typename MeasureType> mcmeasure ( MeasureType * p) : 
     impl_(p),
     accumulate_(BLL::bind(&MeasureType::accumulate,p,BLL::_1)),
-    collect_results( BLL::bind(&MeasureType::collect_results, p,BLL::_1)),
-    count_(0)
+    count_(0),
+    collect_results( BLL::bind(&MeasureType::collect_results, p,BLL::_1))
    { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
 
    template<typename MeasureType> mcmeasure ( boost::shared_ptr<MeasureType> sptr) :
     impl_(sptr),
     accumulate_(BLL::bind(&MeasureType::accumulate,sptr.get(),BLL::_1)),
-    collect_results(BLL::bind(&MeasureType::collect_results,sptr.get(),BLL::_1)),
-    count_(0)
+    count_(0),
+    collect_results(BLL::bind(&MeasureType::collect_results,sptr.get(),BLL::_1))
    { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
