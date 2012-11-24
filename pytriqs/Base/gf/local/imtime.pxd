@@ -51,7 +51,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_imtime  as_gf_imtime (g) except +  
 
 # C -> Python 
-cdef make_GfImTime ( gf_imtime x) except +   
+cdef make_GfImTime ( gf_imtime x) 
 
 ###############  Blocks of Im Time #########################
 
@@ -65,6 +65,6 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::imtime>::make_gf_view" (  vector[gf_imtime] &) 
 
 cdef gf_block_imtime  as_gf_block_imtime (G) except +
-cdef make_BlockGfImTime (gf_block_imtime G) except + 
+cdef make_BlockGfImTime (gf_block_imtime G) 
 
 

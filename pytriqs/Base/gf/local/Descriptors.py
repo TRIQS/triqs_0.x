@@ -297,7 +297,7 @@ class Fourier (Base):
     def __str__(self) : return "Fourier(%s)"%self.G.Name
 
     def __call__(self,G2) :
-        G2.setFromFourierOf(self.G)
+        G2.set_from_fourier_of(self.G)
         return G2
 
 class InverseFourier (Base):
@@ -311,7 +311,7 @@ class InverseFourier (Base):
     def __str__(self) : return "InverseFourier(%s)"%self.G.Name
 
     def __call__(self,G2) :
-        G2.setFromInverseFourierOf(self.G)
+        G2.set_from_inverse_fourier_of(self.G)
         return G2
 
 class LegendreToMatsubara (Base):

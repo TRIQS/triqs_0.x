@@ -249,8 +249,8 @@ cdef gf_imtime  as_gf_imtime (g) except +:
     return (<GfImTime?>g)._c
 
 # C -> Python 
-cdef make_GfImTime ( gf_imtime x) except + :
-        return GfImTime(C_Object = encapsulate (&x))
+cdef make_GfImTime ( gf_imtime x) :
+        return GfImTime(encapsulated_c_object = encapsulate (&x))
 
 # Python -> C for blocks
 cdef gf_block_imtime  as_gf_block_imtime (G) except +:
@@ -260,7 +260,7 @@ cdef gf_block_imtime  as_gf_block_imtime (G) except +:
         return make_gf_block_imtime (v_c)
 
 # C -> Python for block
-cdef make_BlockGfImTime (gf_block_imtime G) except + :
+cdef make_BlockGfImTime (gf_block_imtime G) :
     gl = []
     name_list = G.mesh().domain().names()
     cdef int i =0

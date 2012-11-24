@@ -26,7 +26,7 @@ import operator
 from pytriqs.Base.Utility.myUtils import call_factory_from_dict
 import GF_Initializers
 
-from _GFBloc_concept_impl import _Plot_Wrapper_Partial_Reduce
+from impl_plot  import _Plot_Wrapper_Partial_Reduce
 
 class GF(object):
     """

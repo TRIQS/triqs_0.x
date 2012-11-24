@@ -27,7 +27,7 @@ cdef class MeshImFreq:
 # C -> Python 
 cdef inline make_MeshImFreq ( mesh_imfreq x) :
     return MeshImFreq( x.domain().beta, 'F', x.size() )
-    #return MeshImFreq(C_Object = encapsulate (&x))
+    #return MeshImFreq(encapsulated_c_object = encapsulate (&x))
 
 # ----------- GF --------------------------
 
@@ -73,7 +73,7 @@ cdef class GfImFreq(_ImplGfLocal) :
             assert d == {}, "Internal error : boost_serialization_string must be the only argument"
             boost_unserialize_into(<std_string>bss,self._c) 
             return 
-        
+
         _ImplGfLocal.__init__(self, d)
 
         cdef MeshImFreq mesh = d.pop('Mesh',None)
@@ -90,7 +90,7 @@ cdef class GfImFreq(_ImplGfLocal) :
         data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(self._IndicesL),len(self._IndicesR),len(mesh)), self.dtype )
         
         cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=self._IndicesL, IndicesR=self._IndicesR)
-    
+
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
         
         self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(self) ) 
@@ -268,9 +268,9 @@ cdef class GfImFreq(_ImplGfLocal) :
 cdef gf_imfreq  as_gf_imfreq (g) except +: 
     return (<GfImFreq?>g)._c
 
-# C -> Python 
-cdef make_GfImFreq ( gf_imfreq x) except + :
-        return GfImFreq(C_Object = encapsulate (&x))
+# C -> Python. Do NOT add except +
+cdef make_GfImFreq ( gf_imfreq  x)  :
+        return GfImFreq(encapsulated_c_object = encapsulate (&x))
 
 # Python -> C for blocks
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:
@@ -280,15 +280,13 @@ cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:
         return make_gf_block_imfreq (v_c)
 
 # C -> Python for block
-cdef make_BlockGfImFreq (gf_block_imfreq G) except + :
+cdef make_BlockGfImFreq (gf_block_imfreq G) :
     gl = []
     name_list = G.mesh().domain().names()
     cdef int i =0
     for n in name_list:
         gl.append( make_GfImFreq(G[i] ) )
     return GF( NameList = name_list, BlockList = gl)
-
-
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
 register_class (GfImFreq)

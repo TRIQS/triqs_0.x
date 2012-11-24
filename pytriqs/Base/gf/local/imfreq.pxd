@@ -53,7 +53,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_imfreq  as_gf_imfreq (g) except +  
 
 # C -> Python 
-cdef make_GfImFreq ( gf_imfreq x) except +   
+cdef make_GfImFreq ( gf_imfreq x) 
 
 ###############  Blocks of Im Freq #########################
 
@@ -67,5 +67,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::block<triqs::gf::imfreq>::make_gf_view" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
-cdef make_BlockGfImFreq (gf_block_imfreq G) except + 
+cdef make_BlockGfImFreq (gf_block_imfreq G) 
 

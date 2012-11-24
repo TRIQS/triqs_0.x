@@ -80,8 +80,8 @@ namespace triqs { namespace gf { namespace local {
    friend class tail_impl<!IsView>;
   public:
 
-   void operator = (tail_impl          const & x) { omin = x.omin; data = x.data;}
-   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; data = x.data;}
+   void operator = (tail_impl          const & x) { omin = x.omin; tqa::resize_or_check_if_view(data,x.data.shape()); data = x.data;}
+   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; tqa::resize_or_check_if_view(data,x.data.shape()); data = x.data;}
 
    mv_type operator() (int n)       { 
     if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ; 
