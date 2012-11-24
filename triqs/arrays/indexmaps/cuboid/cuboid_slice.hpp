@@ -28,7 +28,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
   template <bool BC> inline void _check_BC ( int N, int ind, size_t B) { }
 
   template <> inline void _check_BC<true> (int N, int ind, size_t B) { 
-   bool cond = (ind >= 0) && (ind < B);
+   bool cond = (ind >= 0) && (ind < int(B));
    if (!cond) TRIQS_ARRAYS_KEY_ERROR << " index "<<N<<" is out of domain: \n    " << ind <<" is not within [0,"<< B <<"[\n";
   }
 

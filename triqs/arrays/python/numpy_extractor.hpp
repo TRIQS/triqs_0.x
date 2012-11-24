@@ -122,7 +122,7 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
     }
     assert (PyArray_Check(numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));
 
-    PyArrayObject *arr_obj = (PyArrayObject *)numpy_obj;
+    arr_obj = (PyArrayObject *)numpy_obj;
     try {
      if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
      if (arr_obj->descr->type_num != elementsType) 

@@ -89,7 +89,7 @@ namespace triqs { namespace arrays {
      boost::numeric::bindings::blas::ger(-rhs.a, Cx(), Cy(),target);
     }
 
-   friend std::ostream & operator<<(std::ostream & out, a_x_ty_lazy const & x){ return out<<"a_x_ty("<<x.a<<","<<x.x<<","<<x.y<<")";}
+   friend std::ostream & operator<<(std::ostream & out, a_x_ty_lazy const & a){ return out<<"a_x_ty("<<a.a<<","<<a.x<<","<<a.y<<")";}
   };
 }} // namespace triqs_arrays 
 #endif
