@@ -810,7 +810,7 @@ protected:
       sli = it->data->L2R_slice;
       t_l = it->tau;
       fini = (it ==OpList->begin());
-      --it;
+      if (!fini) --it;
     }
     while  (!fini); 
   }
@@ -828,7 +828,7 @@ protected:
       sli_start = it->data->tmp2_slice;
       t_start = it->tau;
       fini = (it ==OpList->begin()) ||  (sli_start->is_nul());
-      --it;
+      if (!fini) --it;
     }
     while  (!fini); 
     return std::make_pair(!sli_start->is_nul(),it);
