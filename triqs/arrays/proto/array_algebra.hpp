@@ -20,139 +20,97 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_ARRAY_ALGEBRA_H
 #define TRIQS_ARRAYS_EXPRESSION_ARRAY_ALGEBRA_H
-#include <triqs/utility/proto/tools.hpp>
-#include "../array.hpp"
+#include "./tools.hpp"
 namespace triqs { namespace arrays {
 
- namespace tup = triqs::utility::proto; namespace mpl = boost::mpl; namespace proto = boost::proto;
+ // The main expression class ....
+ template<typename Tag, typename L, typename R> 
+  struct array_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+   typedef typename keeper_type<L>::type L_t;
+   typedef typename keeper_type<R>::type R_t;
+   L_t l; R_t r; 
+   array_expr(L l_, R r_) : l(l_), r(r_) {}
+   static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in array operations");
+   typedef typename std::result_of<operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
 
- template<typename Expr> struct array_expr;
+   typedef typename std::remove_reference<typename std::result_of<combine_domain(L_t,R_t)>::type>::type domain_type;
+   domain_type domain() const  { return combine_domain()(l,r); } 
 
- namespace detail_expr_array { 
+   template<typename KeyType> value_type operator[](KeyType&& key) const 
+   { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
 
-  using boost::enable_if; using boost::enable_if_c; using proto::_left; using proto::_right; 
-  using proto::_value; namespace p_tag= proto::tag; using boost::remove_reference;
-
-  struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<tup::is_in_ZRC<proto::_value>()> > {}; 
-  struct BasicArrayTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableCuboidArray<proto::_value>()> > {}; 
-
-  struct ArrayGrammar : 
-   proto::or_<
-   ScalarGrammar // scalar in injected in the algebra 
-   , BasicArrayTypeGrammar
-   , proto::plus      <ArrayGrammar,ArrayGrammar>
-   , proto::minus     <ArrayGrammar,ArrayGrammar>
-   , proto::multiplies<ArrayGrammar,ArrayGrammar>
-   , proto::divides   <ArrayGrammar,ArrayGrammar>
-   , proto::negate    <ArrayGrammar >
-   > {};
-
- struct eval_scalar { // a transform that evaluates a scalar as an array with the scalar at all position
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename S, typename KeyType> struct result<This(S,KeyType)> { typedef typename remove_reference<S>::type type;};
-   template<typename S, typename KeyType> 
-    typename result<eval_scalar(S,KeyType)>::type operator ()(S const & s, KeyType const & key) const {return s;}
+   friend std::ostream &operator <<(std::ostream &sout, array_expr const &expr){return sout << "("<<expr.l << operation<Tag>::name << expr.r<<")" ; }
   };
 
-  struct eval_mv { // a transform that evaluates an array on a Key 
-   BOOST_PROTO_CALLABLE();
-
-   template<typename Sig> struct result;
-   template<typename This, typename M, typename KeyType> struct result<This(M,KeyType)> { typedef typename remove_reference<M>::type::value_type type;};
-   template<typename M, typename KeyType> 
-    typename result<eval_mv(M,KeyType)>::type operator ()(M const & m, KeyType const & key) const { return m[key]; }
+ // a special case : the unary operator !
+ template<typename L> 
+  struct array_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
+   typedef typename keeper_type<L>::type L_t;
+   L_t l; array_unary_m_expr(L l_) : l(l_) {}
+   typedef typename L_t::value_type value_type;
+   typedef typename L_t::domain_type domain_type;
+   domain_type domain() const  { return l.domain(); } 
+   template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
+   friend std::ostream &operator <<(std::ostream &sout, array_unary_m_expr const &expr){return sout << '-'<<expr.l; }
   };
 
-  struct eval_t;
-  struct eval_t_cases { template <typename TAG> struct case_: proto::not_<proto::_>{}; };
-  template<> struct eval_t_cases::case_<proto::tag::terminal> :  
-   proto::or_<
-   proto::when<ScalarGrammar, eval_scalar(proto::_value,proto::_state)>
-   ,proto::when<BasicArrayTypeGrammar, eval_mv (proto::_value, proto::_state) >
-   > {};
-  template<> struct eval_t_cases::case_<proto::tag::plus>  : proto::when< proto::plus <eval_t,eval_t>,  proto::_default<eval_t> > {};
-  template<> struct eval_t_cases::case_<proto::tag::minus> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
-  template<> struct eval_t_cases::case_<proto::tag::multiplies> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
-  template<> struct eval_t_cases::case_<proto::tag::divides> : proto::when< proto::minus <eval_t,eval_t>, proto::_default<eval_t> > {};
-  template<> struct eval_t_cases::case_<proto::tag::negate> : proto::when< proto::negate<eval_t>, tup::negate_t(eval_t(_left))> {};
-  struct eval_t : proto::switch_<eval_t_cases> {};
+ // Now we can define all the C++ operators ...
+ template<typename A1>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value, array_unary_m_expr<A1>>::type
+  operator - (A1 const & a1) { return {a1};} 
 
-  // -----------  computation of the domain -------------------
+#define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2) \
+ template<typename A1, typename A2>\
+ typename std::enable_if<TRAIT1<A1>::value && TRAIT2 <A2>::value, array_expr<tags::TAG, A1,A2>>::type\
+ operator OP (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
-  struct no_domain {static const int rank = 0; typedef mini_vector<size_t,0> index_value_type;};
+DEFINE_OPERATOR(plus,       +, ImmutableCuboidArray,ImmutableCuboidArray);
+DEFINE_OPERATOR(minus,      -, ImmutableCuboidArray,ImmutableCuboidArray);
+DEFINE_OPERATOR(multiplies, *, ImmutableCuboidArray,ImmutableCuboidArray);
+DEFINE_OPERATOR(multiplies, *, is_in_ZRC,ImmutableCuboidArray);
+DEFINE_OPERATOR(multiplies, *, ImmutableCuboidArray,is_in_ZRC);
+DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,ImmutableCuboidArray);
+DEFINE_OPERATOR(divides,    /, is_in_ZRC,ImmutableCuboidArray);
+DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,is_in_ZRC);
 
-  struct get_domain {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename X> struct result<This(X)> { typedef typename remove_reference<X>::type::domain_type type;};
-   template<typename X> typename X::domain_type operator ()(X const & x) const { return x.domain();}
-  };
+#undef DEFINE_OPERATOR
 
-  struct combine_domain {
-   BOOST_PROTO_CALLABLE();
-   template<typename Sig> struct result;
-   template<typename This, typename D> struct result<This(D,D)>          {typedef D type;};
-   template<typename This, typename D> struct result<This(D,no_domain)>  {typedef D type;};
-   template<typename This, typename D> struct result<This(no_domain,D)>  {typedef D type;};
-   template<typename D> D operator ()(no_domain const & d1, D const & d2) const { return d2;}
-   template<typename D> D operator ()(D const & d1, no_domain const & d2) const { return d1;}
-   template<typename D> D operator ()(D const & d1, D const & d2) const { 
-    if (d1.lengths() != d2.lengths()) TRIQS_RUNTIME_ERROR << "Domain size mismatch : "<< d1.lengths()<<" vs" <<d2.lengths();
-    return d1;
-   } 
-  };
+/* 
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::plus, A1,A2>>::type
+  operator + (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
-  struct dom_t : 
-   proto::or_<
-   proto::when< ScalarGrammar, no_domain() >
-   ,proto::when< BasicArrayTypeGrammar, get_domain(proto::_value) >
-   ,proto::when< proto::binary_expr <proto::_,dom_t,dom_t>,  combine_domain (dom_t(proto::_left), dom_t( proto::_right)) >
-   ,proto::when< proto::unary_expr<proto::_,dom_t >, dom_t(proto::_left) >
-   > {};
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::minus, A1,A2>>::type
+  operator - (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
- /* ---------------------------------------------------------------------------------------------------
-   * Define the main expression template ArrayExpr, the domain and Grammar (implemented below)
-   * NB : it modifies the PROTO Domain to make *COPIES* of all objects.
-   * We escape the copy of array by specializing the template below (end of file)
-   * ---> to be rediscussed.
-   * cf http://www.boost.org/doc/libs/1_49_0/doc/html/proto/users_guide.html#boost_proto.users_guide.front_end.customizing_expressions_in_your_domain.per_domain_as_child
-   --------------------------------------------------------------------------------------------------- */
-  struct ArrayDomain : proto::domain<proto::generator<array_expr>, ArrayGrammar> {
-   template< typename T > struct as_child : proto_base_domain::as_expr< T > {};
-  };
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::multiplies, A1,A2>>::type
+  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
-  //For arrays special treatment : the regular classes are replaced by the corresponding const view
-  template< typename T, int N ,typename Opt> struct ArrayDomain::as_child< array<T,N,Opt> > : 
-   ArrayDomain::proto_base_domain::template as_expr< const array_view<T,N,Opt> >{};
+ template<typename A1, typename A2>
+  typename std::enable_if<is_in_ZRC<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::multiplies, A1,A2>>::type
+  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
-  template< typename T, int N, typename Opt> struct ArrayDomain::as_child< const array<T,N,Opt> > : 
-   ArrayDomain::proto_base_domain::template as_expr< const array_view<T,N,Opt> >{};
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && is_in_ZRC <A2>::value, array_expr<tags::multiplies, A1, A2> >::type
+  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};}
 
- } // namespace detail_expr_array
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::divides, A1,A2>>::type
+  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
- //   Expression for arrays
- template<typename Expr> struct array_expr : 
-  TRIQS_MODEL_CONCEPT(ImmutableCuboidArray),       proto::extends<Expr, array_expr<Expr>, detail_expr_array::ArrayDomain> { 
-  array_expr( Expr const & expr = Expr() ) : proto::extends<Expr, array_expr<Expr>, detail_expr_array::ArrayDomain> ( expr ) {} 
+ template<typename A1, typename A2>
+  typename std::enable_if<is_in_ZRC<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::divides, A1,A2>>::type
+  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
 
-  typedef size_t index_type;
-  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_array::dom_t(array_expr) >::type>::type domain_type;
-  static const int rank = domain_type::rank; 
-  typedef typename domain_type::index_value_type key_type; 
-  typedef typename boost::remove_reference<typename boost::result_of<detail_expr_array::eval_t(array_expr,key_type) >::type>::type value_type;
+ template<typename A1, typename A2>
+  typename std::enable_if<ImmutableCuboidArray<A1>::value && is_in_ZRC <A2>::value, array_expr<tags::divides, A1, A2> >::type
+  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
+*/
 
-  domain_type domain() const { return detail_expr_array::dom_t()(*this); }
-  mini_vector<size_t,2> shape() const { return this->domain().lengths();} 
-  value_type operator[] (key_type const &key) const { return detail_expr_array::eval_t()(*this, key); }
-
-  friend std::ostream &operator <<(std::ostream &sout, array_expr<Expr> const &expr){return proto::eval(expr,tup::algebra_print_ctx (sout));}
- };
-
- template<typename Expr> struct ImmutableCuboidArray<array_expr<Expr> > : 
-  mpl::not_<boost::proto::matches<Expr,detail_expr_array::ScalarGrammar> >{}; // every expression but a single scalar
-
- BOOST_PROTO_DEFINE_OPERATORS(ImmutableCuboidArray, detail_expr_array::ArrayDomain);
+ template<typename Tag, typename L , typename R> 
+  struct ImmutableCuboidArray<array_expr<Tag,L,R> > : mpl::true_{};
 
  template<typename Expr > array_view <typename Expr::value_type, Expr::domain_type::rank>
   make_array( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}
