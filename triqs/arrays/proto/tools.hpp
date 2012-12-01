@@ -27,7 +27,7 @@ namespace triqs { namespace arrays {
 
 // The basic operations put in a template.... 
  template<typename Tag> struct operation;
-
+ 
  template<> struct operation<tags::plus> { 
   template<typename L, typename R> auto operator()(L const & l, R const & r) const -> decltype(l+r) { return l+r;} 
   static const char name = '+';
@@ -59,7 +59,7 @@ namespace triqs { namespace arrays {
  };
 
  // get the rank of something ....
- template<typename T> struct get_rank { static constexpr int value =  T::domain_type::rank;};
+ template<typename T> struct get_rank { static constexpr int value = T::domain_type::rank;};
  template<typename S> struct get_rank<array_scalar_wrap<S>> { static constexpr int value =0;};
  
  //
@@ -75,8 +75,6 @@ namespace triqs { namespace arrays {
   template<typename S, typename R> auto operator() (array_scalar_wrap<S> const & w, R const & r) const -> decltype(r.domain()) { return r.domain();}
   template<typename S, typename L> auto operator() (L const & l, array_scalar_wrap<S> const & w) const -> decltype(l.domain()) { return l.domain();}
  };
-
  
 }}//namespace triqs::arrays
-
 #endif

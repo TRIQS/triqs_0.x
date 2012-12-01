@@ -3,13 +3,13 @@
 
 std::vector and math
 ---------------------------------
- 
+
 Code is  :
 
-.. literalinclude:: examples_code/vector_and_math.cpp
+.. literalinclude:: src/vector_and_math.cpp
 
 and  prints :
-  
-.. literalinclude:: examples_code/vector_and_math.output
+
+.. literalinclude:: src/vector_and_math2.output
 
 

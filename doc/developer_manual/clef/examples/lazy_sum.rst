@@ -11,10 +11,10 @@ Problem : we want
 
 This is done by the little code: 
 
-.. literalinclude:: examples_code/sum_functional.cpp
+.. literalinclude:: src/sum_functional.cpp
 
 which will print :
   
-.. literalinclude:: examples_code/sum_functional.output
+.. literalinclude:: src/sum_functional2.output
 
 

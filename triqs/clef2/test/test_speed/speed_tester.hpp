@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,36 +20,34 @@
  *
  ******************************************************************************/
 
-#include "./python_stuff.hpp"
-#include "./src/array.hpp"
-#include "./src/proto/array_algebra.hpp"
-#include <iostream>
-#include <type_traits>
+#ifndef SPEEDTESTER_H
+#define SPEEDTESTER_H
 
-using namespace triqs::arrays;
+#include "boost/date_time/posix_time/posix_time.hpp" 
+#include "triqs/utility/typeid_name.hpp"
 
-int main() { 
+/**
+ * To measure the speed of a function.
+ */
+template<typename Obj>
+void speed_tester(size_t n_iter) { 
 
- array<int, 1> A(3), B(3),C; 
- array<double,1> D;
+ Obj x;
+ using namespace boost::posix_time;
+ using namespace boost::gregorian;
 
- B() = 2; A() = 3;
- 
+ boost::posix_time::ptime start_time = boost::posix_time::second_clock::local_time();
 
- C = A+B; std::cout  << A + B<< " = "<< C << std::endl; 
- C = A*B; std::cout  << A * B<< " = "<< C << std::endl; 
- C = 2*B; std::cout  << 2 * B<< " = "<< C << std::endl; 
- C = B*2; std::cout  << 2 * B<< " = "<< C << std::endl; 
- D = 2.3*B; std::cout  << 2.3 * B<< " = "<< D << std::endl; 
- D = A + B/1.2; std::cout  << A +  B/1.2<< " = "<< D << std::endl; 
+ for (size_t u=0; u<n_iter; ++u) x();
 
+ boost::posix_time::ptime stop_time = boost::posix_time::second_clock::local_time();
 
- auto x  = A + B + 2*A;
+ time_duration td = stop_time - start_time;
 
-  C =  A+2*A+3*A - 2*A+A -A+A+A*3+A+A+A+A+A+A+A+A+A+A+A+A+A; 
- std::cout  << C << std::endl ; 
- array<double,2> D2 (2,2);
-// auto y = A+D/2 + (D2 + 2*D2);// should not and does not compile
-}
+ std::cerr << triqs::utility::typeid_name(x)<<" : "<<to_simple_string(td) << std::endl;
+
+};
+
+#endif
 
 

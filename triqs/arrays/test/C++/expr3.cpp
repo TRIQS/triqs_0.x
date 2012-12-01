@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
   // std::cout<<V1 + V2 <<std::endl;
 
   // type computation 
-  triqs::utility::proto::print_structure(std::cout, A+ F);
+  //triqs::utility::proto::print_structure(std::cout, A+ F);
   std::cout<<" A + F = "<< array<double,1>(A+F)<<std::endl;
 
  }

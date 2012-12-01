@@ -1,4 +1,4 @@
-Lazy expressions library
+Clef expressions library
 *************************************
 
 .. highlight:: c
@@ -7,11 +7,16 @@ Lazy expressions library
 
     This library is still a prototype, of alpha quality.  
 
+Motivation
+=======================
+
+The little CLEF library (Compile time Lazy Expression and Function)
+is a simple lambda library for C++11, to store and code formal expressions
+using placeholders. 
 
 .. toctree::
    :maxdepth: 2
 
-   introduction
    expressions_form
    expressions_eval
    function

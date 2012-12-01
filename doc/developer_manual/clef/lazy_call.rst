@@ -3,123 +3,224 @@
 
 .. _callable_object:
 
-Overloading functions and callable objects for lazy expression arguments 
+Overloading functions and callable objects for clef expression arguments 
 =============================================================================
 
-Given a callable object or a function, it is possible to overload it for lazy expression arguments, returning a lazy expression.
+Given a callable object or a function, it is possible to overload it for clef expression arguments, returning a clef expression.
 In all  cases:
 
-   *Overloads that are activated iif at least one argument is a lazy expression*.
+   *Overloads that are activated iif at least one argument is a clef expression*.
 
 Functions
 ------------
 
-The `TRIQS_CLEF_MAKE_FNT_LAZY` macro defines the overload for lazy expressions arguments of a function. Synopsis is ::
+std math functions
+^^^^^^^^^^^^^^^^^^^^^^^^
 
- namespace triqs { namespace lazy { 
- TRIQS_CLEF_MAKE_FNT_LAZY (function_arity, function_to_make_lazy);
- }}
+The overload is defined by clef automatically for usual functions : 
 
-For example:: 
+.. compileblock::
 
- #include <triqs/clef/core.hpp>
- double foo(double x) { return x/2;}
- int foo(int x) { return x/2;}
+    #include <triqs/clef.hpp>
+    #include <iostream>
+    int main() { 
+      triqs::clef::placeholder<3> x_;
+      std::cout << 2.0 + std::cos(2.0) << std::endl;  
+      std::cout << eval( x_ + cos(x_), x_ = 2) << std::endl; // NB : note the absence of std::
+    }
+  
+Overloading a function for clef expressions arguments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `TRIQS_CLEF_MAKE_FNT_LAZY` macro defines the overload for clef expressions arguments of a function. Synopsis is ::
 
  namespace triqs { namespace clef { 
-  TRIQS_CLEF_MAKE_FNT_LAZY (1, foo) ;
+ TRIQS_CLEF_MAKE_FNT_LAZY (function_to_make_lazy);
  }}
 
+For example:
+
+.. compileblock::
+
+    #include <triqs/clef.hpp>
+    #include <iostream>
+ 
+    double foo(double x) { return x/2;}
+    int foo(int x) { return x*2;}
+
+    namespace triqs { namespace clef { TRIQS_CLEF_MAKE_FNT_LAZY (foo) ; }}
+
+    int main() { 
+      triqs::clef::placeholder<3> x_;
+      std::cout << foo(2.0) << std::endl;  
+      std::cout << eval( x_ + foo(x_), x_ = 3) << std::endl;  
+      std::cout << eval( x_ + foo(x_), x_ = 3.5) << std::endl;  
+    }
+  
 Note that : 
  
  * This overload **must** be defined in the triqs::clef namespace, since it is found by ADL.
  * The function `foo` can have many overloads.
  * The function foo can be a template, BUT then the template must be disabled for lazy expressions, as in ::
 
-    #include <triqs/clef/core.hpp>
+.. compileblock::
+
+    #include <triqs/clef.hpp>
+    #include <iostream>
        
     template<typename T> 
-    typename boost::disable_if<triqs::clef::is_lazy<T>,T>::type 
+    typename std::enable_if<!triqs::clef::is_any_lazy<T>::value,T>::type 
     foo (T const & x) { return x+1;}
       
-    namespace triqs { namespace clef { 
-     TRIQS_CLEF_MAKE_FNT_LAZY (1, foo) ;
-    }}
+    namespace triqs { namespace clef { TRIQS_CLEF_MAKE_FNT_LAZY (foo) ; }}
 
-
+    int main() { 
+      triqs::clef::placeholder<3> x_;
+      std::cout << foo(2.0) << std::endl;  
+      std::cout << eval( x_ + foo(x_), x_ = 3) << std::endl;  
+      std::cout << eval( x_ + foo(x_), x_ = 3.5) << std::endl;  
+    }
 
 Callable objects
 --------------------
 
 Similarly to functions, classes can define an `operator()` for lazy expressions arguments.
-This is done with one of the two macros :
+It is an ordinary operator() that must : 
 
-* TRIQS_CLEF_ADD_LAZY_CALL_REF(Arity, Class)
-* TRIQS_CLEF_ADD_LAZY_CALL_WITH_COPY(Arity, Class)
+* Be enabled only when one argument is a clef expression
 
-In both cases, calling the object will return a lazy expression. This operator() is 
-enabled iif at least one argument is a lazy expression.
+* Return a clef expression.
 
-The two macro differ in the copy behaviour :
+The function make_expr_call helps.
 
-* TRIQS_CLEF_ADD_LAZY_CALL_REF : 
-   
-  The object is captured by reference.
+Object stored by copy (default)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* TRIQS_CLEF_ADD_LAZY_CALL_WITH_COPY
+The default behaviour is to store the object by copy in the expression tree...
 
-  The object is captured by value, i.e. a copy is made (or a view is made is some cases, Cf...).
+.. compileblock::
 
+    #include <triqs/clef.hpp>
 
-Example ::
+    struct Obj { 
+    double v;                      // put something in it
+    Obj(double v_): v(v_){}        // constructor
 
-  struct MyObject { 
+    // The "normal", non lazy call operator ....
+    double operator() (double x) const { return 10*x;}
 
-  // the non-lazy call operator
-  double operator()(double x) const { return 10*x;}
+    // Call operator for const object
+    // make_expr_call creates a clef expression with a "call" node at the top
+    // calling this object on the arguments.
+    // Obj is stored by making a copy in the expression tree.
+    // NB : the make_expr_call trait enabled only if one of the arguments is lazy
+    // hence if none of the Args are clef expression, the template is disabled by SFINAE.
+    template< typename... Args>
+    typename triqs::clef::result_of::make_expr_call<Obj,Args...>::type
+    operator()( Args&&... args ) const { return make_expr_call(* this,args...);}
 
-  // Add call for lazy expression
-  TRIQS_CLEF_ADD_LAZY_CALL_REF(1,MyObject);
-
-  };
-
-This object is then used as ::
-
-  placeholder <2> x_;
-  MyObject ob;
-  auto ex =  2* ob(x_) + 3*x_; // ex is a lazy expression
-  std::cout << ex<< std::endl; // prints the expression tree
-  ex(4) ; // evaluates
-
-* NB : when the non-lazy call operator is already a template
-
-  The operator() created by the macro is enabled iif at least *one* argument is a lazy expression.
-  If the other operator() are also template, they must be *disabled* in this case,
-  using the `boost::disable_if` and the `triqs::clef::is_lazy` metafunctions. 
-  Example::
-
-    struct MyObject { 
-     
-    // This template is disabled is one argument is a lazy expression.
-    template <typename Fnt>
-    typename boost::disable_if< triqs::clef::one_is_lazy <Fnt>, double >::type 
-    operator() (Fnt const & f ) const;
-     
-    // Add call for lazy expression
-    TRIQS_CLEF_ADD_LAZY_CALL_REF(1,MyObject);
+    // Just to print itself nicely in the expressions
+    friend std::ostream & operator<<(std::ostream & out, Obj const & x) { return out<<"Obj";}
     };
 
-  Or with two variables::
+    int main() { 
+    Obj f(7);
+    triqs::clef::placeholder<3> x_;
+    triqs::clef::placeholder<4> y_;
+    std::cout << "Clef expression     : "<<  f(y_) + 2*x_ << std::endl ; 
+    std::cout << "Complete evaluation : "<< eval(f(x_) + 2*x_, x_=1) << std::endl ; 
+    std::cout << "Partial evaluation  : "<< eval(f(y_) + 2*x_, y_=1) << std::endl ; 
+    std::cout << "Complete evalution  : "<< eval(f(y_) + 2*x_, x_=3, y_=1) << std::endl ; 
+    }
+ 
+Object stored by reference 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    struct MyObject { 
+Sometimes, one want to escape the copy of the object in the tree.
+In that case, just use a std::reference_wrapper in place of the object.
+You have then to guarantee that the object will live longer that the expression 
+that you form.
 
-    // This template is disabled is one argument is a lazy expression.
-    template <typename F1, typename F2>
-    typename boost::disable_if< triqs::clef::one_is_lazy <F1,F2>, double >::type 
-    operator() (F1 const & f1, F2 const & f2) const;
-       
-    // Add call for lazy expression
-    TRIQS_CLEF_ADD_LAZY_CALL_REF(2,MyObject);
+.. compileblock::
+
+   #include <triqs/clef.hpp>
+
+   struct Obj { 
+   double v;                       // put something in it
+   Obj(double v_): v(v_){}        // constructor
+   Obj(Obj const &) = delete;    // a non copyable object 
+
+   // The "normal", non lazy call operator ....
+   double operator() (double x) const { return 10*x;}
+
+   // Same as above, but now we stored a ref to the object and not a copy of the object.
+   // Reference are encapsulated in std::reference_wrapper (Cf C++ documentation).
+   template< typename... Args>
+   typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<const Obj>,Args...>::type
+   operator()( Args&&... args ) const { return make_expr_call (std::ref(* this),args...);}
+
+   // The non const version (which then stores a non-const reference ....)
+   template< typename... Args>
+   typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<Obj>,Args...>::type
+   operator()( Args&&... args ) { return  make_expr_call (std::ref(* this),args...);}
+
+   // Just to print itself nicely in the expressions
+   friend std::ostream & operator<<(std::ostream & out, Obj const & x) { return out<<"Obj";}
+   };
+
+   int main() { 
+   Obj f(7);
+   triqs::clef::placeholder<3> x_;
+   triqs::clef::placeholder<4> y_;
+   std::cout << "Clef expression     : "<<  f(y_) + 2*x_ << std::endl ; 
+   std::cout << "Complete evaluation : "<< eval(f(x_) + 2*x_, x_=1) << std::endl ; 
+   std::cout << "Partial evaluation  : "<< eval(f(y_) + 2*x_, y_=1) << std::endl ; 
+   std::cout << "Complete evalution  : "<< eval(f(y_) + 2*x_, x_=3, y_=1) << std::endl ; 
+   }
+
+.. note : one can of course replace the reference_wrapper by a view of the object, e.g....
+
+
+NB: When non lazy operator() is already a template ?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Then it must be disabled for clef expression argument, using the trait ::
+
+   clef::is_any_lazy<T...> :: value // true iif one of the T is a clef expression
+
+Example, derived from the previous one : 
+
+.. compileblock::
+
+    #include <triqs/clef.hpp>
+    #include <iostream>
+
+    struct Obj { 
+    double v;                       // put something in it
+    Obj(double v_): v(v_){}        // constructor
+
+    // The "normal", non lazy call operator is now a template 
+    template <typename T>
+    typename std::enable_if<!triqs::clef::is_any_lazy<T>::value, T>::type   // correct 
+    // T operator() (T const & x) const { return 10*x;}  would be ambiguous !
+    operator() (T const & x) const { return 10*x;}
+
+    // lazy expression
+    template< typename... Args>
+    typename triqs::clef::result_of::make_expr_call<Obj,Args...>::type
+    operator()( Args&&... args ) const { return make_expr_call(* this,args...);}
+
+    // Just to print itself nicely in the expressions
+    friend std::ostream & operator<<(std::ostream & out, Obj const & x) { return out<<"Obj";}
     };
+
+    int main() { 
+    Obj f(7); 
+    triqs::clef::placeholder<3> x_;
+    triqs::clef::placeholder<4> y_;
+    std::cout << "Clef expression     : "<<  f(y_) + 2*x_ << std::endl ; 
+    std::cout << "Partial evaluation  : "<< eval(f(y_) + 2*x_, y_=1) << std::endl ; 
+    std::cout << "Complete evalution  : "<< eval(f(y_) + 2*x_, x_=3, y_=1) << std::endl ; 
+    }
 
 

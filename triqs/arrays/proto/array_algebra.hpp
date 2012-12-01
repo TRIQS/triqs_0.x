@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 namespace triqs { namespace arrays {
 
- // The main expression class ....
  template<typename Tag, typename L, typename R> 
   struct array_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
    typedef typename keeper_type<L>::type L_t;
@@ -32,18 +31,13 @@ namespace triqs { namespace arrays {
    array_expr(L l_, R r_) : l(l_), r(r_) {}
    static_assert( get_rank<R_t>::value==0 || get_rank<L_t>::value==0 || get_rank<L_t>::value == get_rank<R_t>::value, "rank mismatch in array operations");
    typedef typename std::result_of<operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_type;
-
    typedef typename std::remove_reference<typename std::result_of<combine_domain(L_t,R_t)>::type>::type domain_type;
    domain_type domain() const  { return combine_domain()(l,r); } 
-
-   template<typename KeyType> value_type operator[](KeyType&& key) const 
-   { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
-
+   template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
    friend std::ostream &operator <<(std::ostream &sout, array_expr const &expr){return sout << "("<<expr.l << operation<Tag>::name << expr.r<<")" ; }
   };
 
- // a special case : the unary operator !
- template<typename L> 
+  template<typename L>  // a special case : the unary operator !
   struct array_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
    typedef typename keeper_type<L>::type L_t;
    L_t l; array_unary_m_expr(L l_) : l(l_) {}
@@ -53,12 +47,8 @@ namespace triqs { namespace arrays {
    template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
    friend std::ostream &operator <<(std::ostream &sout, array_unary_m_expr const &expr){return sout << '-'<<expr.l; }
   };
-
+ 
  // Now we can define all the C++ operators ...
- template<typename A1>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value, array_unary_m_expr<A1>>::type
-  operator - (A1 const & a1) { return {a1};} 
-
 #define DEFINE_OPERATOR(TAG, OP, TRAIT1, TRAIT2) \
  template<typename A1, typename A2>\
  typename std::enable_if<TRAIT1<A1>::value && TRAIT2 <A2>::value, array_expr<tags::TAG, A1,A2>>::type\
@@ -72,49 +62,14 @@ DEFINE_OPERATOR(multiplies, *, ImmutableCuboidArray,is_in_ZRC);
 DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,ImmutableCuboidArray);
 DEFINE_OPERATOR(divides,    /, is_in_ZRC,ImmutableCuboidArray);
 DEFINE_OPERATOR(divides,    /, ImmutableCuboidArray,is_in_ZRC);
-
 #undef DEFINE_OPERATOR
 
-/* 
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::plus, A1,A2>>::type
-  operator + (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::minus, A1,A2>>::type
-  operator - (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::multiplies, A1,A2>>::type
-  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<is_in_ZRC<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::multiplies, A1,A2>>::type
-  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && is_in_ZRC <A2>::value, array_expr<tags::multiplies, A1, A2> >::type
-  operator * (A1 const & a1, A2 const & a2) { return {a1,a2};}
-
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::divides, A1,A2>>::type
-  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<is_in_ZRC<A1>::value && ImmutableCuboidArray <A2>::value, array_expr<tags::divides, A1,A2>>::type
-  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-
- template<typename A1, typename A2>
-  typename std::enable_if<ImmutableCuboidArray<A1>::value && is_in_ZRC <A2>::value, array_expr<tags::divides, A1, A2> >::type
-  operator / (A1 const & a1, A2 const & a2) { return {a1,a2};} 
-*/
-
- template<typename Tag, typename L , typename R> 
-  struct ImmutableCuboidArray<array_expr<Tag,L,R> > : mpl::true_{};
+ // the unary is special
+ template<typename A1> typename std::enable_if<ImmutableCuboidArray<A1>::value, array_unary_m_expr<A1>>::type
+  operator - (A1 const & a1) { return {a1};} 
 
  template<typename Expr > array_view <typename Expr::value_type, Expr::domain_type::rank>
   make_array( Expr const & e) { return array<typename Expr::value_type, Expr::domain_type::rank>(e);}
 
 }}//namespace triqs::arrays
-
 #endif
