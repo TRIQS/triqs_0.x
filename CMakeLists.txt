@@ -21,7 +21,6 @@ cmake_policy(SET CMP0011 OLD)
 cmake_policy(SET CMP0005 NEW)
 cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003 
 
-include (CMakeDetermineSystem)
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project (AllPrograms C CXX Fortran) 
 
