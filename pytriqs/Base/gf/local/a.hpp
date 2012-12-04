@@ -16,14 +16,14 @@ using triqs::gf::imtime;
 void test_block ( gf_view<block<imfreq>> const & G) { 
 
  auto  g0v = G(0)();
- g0v(0) = 3.2;
+ g0v.on_grid(0) = 3.2;
  
 }
 
 void test_gf ( gf_view<imfreq> const & G) { 
 
  auto  g0v = G();
- g0v(0) = -3.2;
+ g0v.on_grid(0) = -3.2;
  
 }
 

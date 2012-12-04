@@ -45,6 +45,8 @@ namespace triqs { namespace gf {
    public : 
 
    /// Each component of the mesh : mesh.component(one), mesh.component(zero)
+   m_tuple_t const & components() const { return m_tuple;}
+   
    template<int N> typename std::tuple_element<N,m_tuple_t>::type const & component(cint<N>) const { return std::get<N>(m_tuple);}
    template<int N> typename std::tuple_element<N,m_tuple_t>::type & component(cint<N>)             { return std::get<N>(m_tuple);}
 

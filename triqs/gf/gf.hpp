@@ -186,13 +186,15 @@ namespace triqs { namespace gf {
    /// Calls are (perfectly) forwarded to the Descriptor::operator(), except mesh_point_t and when 
    /// there is at least one lazy argument ...
    template<typename Arg0, typename... Args >    // match any argument list, picking out the first type : () is not permitted
+    typename std::add_const<
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
     boost::mpl::or_< // starting condition [OR] 
     boost::is_base_of< typename std::remove_reference<Arg0>::type, mesh_point_t>,  // Arg0 is (a & or a &&) to a mesh_point_t 
     clef::one_is_lazy<Arg0, Args...>                          // One of Args is a lazy expression
      >,                                                       // end of OR 
     std::result_of<typename Descriptor::evaluator(mesh_t, data_t, singularity_t, Arg0, Args...)> // what is the result type of call
-     >::type     // end of lazy_disable_if 
+     >::type     // end of lazy_disable_if
+    >::type // end of add_Const 
      operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(_mesh, data, singularity, std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
    /// A direct access to the grid point 

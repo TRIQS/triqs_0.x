@@ -28,14 +28,14 @@ int main() {
 
  auto Gv = G();
  TEST( G( 0) ) ;
- Gv(0) = 20;
+ Gv.on_grid(0) = 20;
  TEST( Gv( 0) ) ;
  TEST( G( 0) ) ;
- Gv(0) = 0;
+ Gv.on_grid(0) = 0;
 
  auto Gv2 = slice_target(G,range(0,1),range(0,1));
  TEST( Gv2( 0) ) ;
- Gv2(0) = 10;
+ Gv2.on_grid(0) = 10;
  TEST( Gv2( 0) ) ;
  TEST( G( 0) ) ;
 
