@@ -127,7 +127,9 @@ cdef class GfImFreq(_ImplGfLocal) :
         def __set__ (self, value) :
             cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
-    
+   
+    def __typename(self) : return "GfImFreq"
+
     #-------------- Reduction -------------------------------
 
     def __reduce__(self):
@@ -165,81 +167,7 @@ cdef class GfImFreq(_ImplGfLocal) :
         """
         return self._plot_base( OptionsDict,  r'$\omega_n$', 
                 lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self.mesh] )
-    
-    #--------------------  Arithmetic operations  ---------------------------------
-
-    def __iadd__(self, GfImFreq arg):
-        self._c = self._c + arg._c
-        return self
-
-    def __add__(self, GfImFreq y):
-        c = self.copy()
-        c += y
-        return c
-
-    def __isub__(self, GfImFreq arg):
-        self._c = self._c - arg._c
-        return self
-
-    def __sub__(self,GfImFreq y):
-        c = self.copy()
-        c -= y
-        return c
-
-    def __imul__(self,arg):
-        """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
-        """
-        n = type(arg).__name__
-        if n == 'GfImFreq' :
-            self._c = self._c * (<GfImFreq?>arg)._c
-        elif n in ['float','int', 'complex'] : 
-            self._c = as_dcomplex(arg) * self._c
-        else : 
-            raise RuntimeError, " argument type not recognized in imul for %s"%arg
-        return self
-
-    def __mul_impl__(self, arg, s) : 
-        cdef GfImFreq res = self.copy()
-        n = type(arg).__name__
-        cdef matrix_view [dcomplex,COrder] a 
-        if n == 'GfImFreq' :
-            res._c =  self._c * (<GfImFreq?>arg)._c
-        elif n in ['float','int', 'complex'] : 
-            res._c = as_dcomplex(arg) * self._c
-        else : 
-            a= matrix_view[dcomplex,COrder](numpy.array(arg, self.dtype))
-            #res._c =  a * self._c  if s else self._c *a
-        return res
-
-    def __mul__(self,arg):
-        s = type(self).__name__ != 'GfImFreq' 
-        return self.__mul_impl__(self, arg, s) if not s else self.__mul_impl__(arg,  self, s)
-
-    def __idiv__(self,arg):
-        self._c = self._c / as_dcomplex(arg)
-        return self
-
-    def __div_impl_(self, arg, s):
-        if s : raise RuntimeError, "Can not divide by an GfImFreq"
-        cdef GfImFreq res = self.copy()
-        if type(arg).__name__  in ['float','int', 'complex'] : 
-            res._c = self._c / as_dcomplex(arg)
-        else : 
-            raise RuntimeError, " argument type not recognized for %s"%arg
-        return res
-
-    def __div__(self,arg):
-        s = type(self).__name__ != 'GfImFreq' 
-        return self.__div_impl__(self, arg, s) if not s else self.__div_impl__(self, arg, s)
-
     #--------------   OTHER OPERATIONS -----------------------------------------------------
-
-    def from_L_G_R (self, L,G,R):
-        """ For all argument, replace the matrix by L *matrix * R"""
-        warnings.warn("deprecated function : use simply G <<=  L * G * R !", DeprecationWarning)
-        self <<= L * G * R
-        #self._c = matrix_view[dcomplex,COrder](L) * self._c * matrix_view[dcomplex,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""

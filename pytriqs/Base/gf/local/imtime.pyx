@@ -69,6 +69,8 @@ cdef class GfImTime(_ImplGfLocal) :
         if c_obj :
             assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
             self._c = extractor [gf_imtime] (c_obj) () 
+            self._IndicesL = self._c.indices()[0]
+            self._IndicesR = self._c.indices()[1]
             return 
 
         bss = d.pop('boost_serialization_string', None)
@@ -127,6 +129,8 @@ cdef class GfImTime(_ImplGfLocal) :
         def __set__ (self, value) :
             cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
+
+    def __typename(self) : return "GfImTime"
     
     #-------------- Reduction -------------------------------
 
@@ -161,81 +165,7 @@ cdef class GfImTime(_ImplGfLocal) :
         has_complex_value = False
         return self._plot_base( OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
  
-    #--------------------  Arithmetic operations  ---------------------------------
-
-    def __iadd__(self, GfImTime arg):
-        self._c = self._c + arg._c
-        return self
-
-    def __add__(self, GfImTime y):
-        c = self.copy()
-        c += y
-        return c
-
-    def __isub__(self, GfImTime arg):
-        self._c = self._c - arg._c
-        return self
-
-    def __sub__(self,GfImTime y):
-        c = self.copy()
-        c -= y
-        return c
-
-    def __imul__(self,arg):
-        """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
-        """
-        n = type(arg).__name__
-        if n == 'GfImTime' :
-            self._c = self._c * (<GfImTime?>arg)._c
-        elif n in ['float','int', 'complex'] : 
-            self._c = <double>(as_float(arg)) * self._c
-        else : 
-            raise RuntimeError, " argument type not recognized in imul for %s"%arg
-        return self
-
-    def __mul_impl__(self, arg, s) : 
-        cdef GfImTime res = self.copy()
-        n = type(arg).__name__
-        cdef matrix_view [double,COrder] a 
-        if n == 'GfImTime' :
-            res._c =  self._c * (<GfImTime?>arg)._c
-        elif n in ['float','int', 'complex'] : 
-            res._c = <double>(float(arg)) * self._c
-        else : 
-            a= matrix_view[double,COrder](matrix[double,COrder](numpy.array(arg, self.dtype)))
-            #res._c =  a * self._c  if s else self._c *a
-        return res
-
-    def __mul__(self,arg):
-        # This is for time only ?? What about real freq, im freq ??
-        #if hasattr(y,"data") :
-        #    c = self.copy_with_new_stat(GF_Statistic.Boson if self._mesh.Statistic == y._mesh.Statistic else GF_Statistic.Fermion)
-        #else:
-        s = type(self).__name__ != 'GfImTime' 
-        return self.__mul_impl__(self, arg, s) if not s else self.__mul_impl__(self, arg, s)
-
-    def __idiv__(self,arg):
-        cdef GfImTime me = self
-        me._c = me._c / <double>(float(arg))
-        return self
-
-    def __div_impl_(self, arg, s):
-        if s : raise RuntimeError, "Can not divide by an GfImTime"
-        cdef GfImTime res = self.copy()
-        if type(arg).__name__  in ['float','int', 'complex'] : 
-            res._c = self._c / <double>(float(arg))
-        else : 
-            raise RuntimeError, " argument type not recognized for %s"%arg
-        return res
-
     #--------------   OTHER OPERATIONS -----------------------------------------------------
-
-    def from_L_G_R (self, L,G,R):
-        """ For all argument, replace the matrix by L *matrix * R"""
-        warnings.warn("deprecated function : use simply G <<=  L * G * R !", DeprecationWarning)
-        self <<= L * G * R
-        #self._c = matrix[double,COrder](L) * self._c * matrix[double,COrder](R) 
 
     def invert(self) : 
         """Invert the matrix for all arguments"""

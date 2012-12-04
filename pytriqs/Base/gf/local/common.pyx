@@ -95,6 +95,8 @@ cdef class _ImplGfLocal :
             # Convert the indices to integer
             indices_converter = [ IndicesConverter(self._IndicesL), IndicesConverter(self._IndicesR)]
             sl1, sl2 =  [ indices_converter[i].convertToNumpyIndex(k) for i,k in enumerate(key) ]
+        if type (sl1) != slice : sl1 = slice (sl1, sl1+1)
+        if type (sl2) != slice : sl2 = slice (sl2, sl2+1)
         return self.__class__(IndicesL = self._IndicesL[sl1],
                               IndicesR = self._IndicesR[sl2],
                               Name = self.Name,
@@ -196,6 +198,101 @@ cdef class _ImplGfLocal :
         else :
             raise RuntimeError, " GF Block : <<= operator : RHS not understood"
         return self
+
+    #--------------------  Arithmetic operations  ---------------------------------
+
+    def __iadd__(self,arg):
+        assert type(arg).__name__ == self.__typename(), "Can not add a %s to a %s"%(type(self).__name__ , type(arg).__name__ )
+        self.data[:,:,:] += arg.data
+        self.tail += arg.tail
+        return self
+
+    def __isub__(self,arg):
+        assert type(arg).__name__ == self.__typename(), "Can not substract a %s from a %s"%(type(arg).__name__, type(self).__name__) 
+        self.data[:,:,:] -= arg.data
+        self.tail -= arg.tail
+        return self
+
+    def __add__(self,y):
+        c = self.copy()
+        c += y
+        return c
+
+    def __sub__(self,y):
+        c = self.copy()
+        c -= y
+        return c
+
+    def __imul__(self,arg):
+        """ If arg is a scalar, simple scalar multiplication
+            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
+        """
+        n = type(arg).__name__
+        if n == self.__typename():
+            d,d2 = self.data, arg.data
+            assert d.shape == d2.shape ," Green function block multiplication with arrays of different size !"
+            for om in range (d.shape[-1]) : 
+                d[:,:,om ] = numpy.dot(d[:,:,om], d2[:,:,om])
+            self.tail = arg.tail * self.tail
+        elif n in ['float','int', 'complex'] : 
+            self.data *= arg 
+            self.tail *= arg  
+        else : 
+            raise RuntimeError, " argument type not recognized in imul for %s"%arg
+        return self
+
+    def __mul__(self,arg):
+        cdef int i
+        if type(self).__name__ == type(arg).__name__ :
+            res = self.copy()
+            res *= arg
+        else : 
+            a,b = (self, arg) if type(self).__name__ in  ['float','int', 'complex','ndarray', 'matrix'] else (arg,self)
+            res = b.copy()
+            if type(a).__name__ in  ['float','int', 'complex'] : res *=a
+            else : 
+                A = res.data
+                assert A.shape[0:2] == a.shape, " Matrix size incorrect in multiplication "
+                for i in range( A.shape[-1]) :
+                    A[:,:,i] = numpy.dot(a,A[:,:,i])
+        return res
+
+    def __idiv__(self,arg):
+        """ If arg is a scalar, simple scalar multiplication
+        """
+        n = type(arg).__name__
+        if n in ['float','int', 'complex'] : 
+            self.data /= arg 
+            self.tail /= arg  
+        else : 
+            raise RuntimeError, " argument type not recognized in imul for %s"%arg
+        return self
+
+    def __div__(self,arg):
+        assert type(arg).__name__ in  ['float','int', 'complex'], "Error in /"
+        res = self.copy()
+        res /= arg
+        return res
+                
+    #def __mul__(self,y):
+    #    if hasattr(y,"_data") :
+    #        c = self.copy_with_new_stat(GF_Statistic.Boson if
+    #        self._mesh.Statistic == y._mesh.Statistic else
+    #        GF_Statistic.Fermion#)
+    #    else:
+    #        c = self.copy()
+    #    try: 
+    #        c *= y
+    #    except NotImplementedError: return NotImplemented
+    #    return c
+
+
+    def from_L_G_R (self, L,G,R):
+        """ For all argument, replace the matrix by L *matrix * R"""
+        d,dg = self.data,G.data
+        for om in range (d.shape[-1]) :
+            d[:,:,om ] = numpy.dot(numpy.dot(L,dg[:,:,om]), R)
+        self.tail.data = numpy.dot(numpy.dot(L,G.tail), R)
 
     #---------------------------------------------------
 

@@ -37,7 +37,7 @@ cdef class TailGf:
 
     property indicesL : 
         def __get__(self) : 
-            print "indices of tail are : ", self._indL
+            #print "indices of tail are : ", self._indL
             return self._indL
     
     property indicesR : 
@@ -156,7 +156,7 @@ cdef class TailGf:
 
     def __mul__(self,arg):
         s = type(self).__name__ != 'TailGf' 
-        return self.__mul_impl__(self, arg, s) if not s else self.__mul_impl__(self, arg, s)
+        return self.__mul_impl__(arg, s) if not s else arg.__mul_impl__(self, s)
 
     def __idiv__(self,arg):
         cdef TailGf me = self
@@ -164,7 +164,7 @@ cdef class TailGf:
         return self
 
     def __div_impl_(self, arg, s):
-        if s : raise RuntimeError, "Can not divide by an TailGf"
+        if s : raise RuntimeError, "Can not divide by a TailGf"
         cdef TailGf res = self.copy()
         if type(arg).__name__  in ['float','int', 'complex'] : 
             res._c = self._c / as_dcomplex(arg)
@@ -173,8 +173,9 @@ cdef class TailGf:
         return res
 
     def __div__(self,arg):
+        assert type(self).__name__ == 'GfImFreq' 
         s = type(self).__name__ != 'GfImFreq' 
-        return self.__div_impl__(self, arg, s) if not s else self.__div_impl__(self, arg, s)
+        return self.__div_impl_(arg, s) if not s else arg.__div_impl_(self, s)
 
     #---- other operations ----
     def zero(self) : 

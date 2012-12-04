@@ -22,6 +22,7 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         mesh_imtime mesh() 
         array_view[double, THREE,COrder] data_view()
         tail singularity_view() 
+        indices_2_t indices()
 
     cdef gf_imtime operator +( gf_imtime &, gf_imtime &) except + 
     cdef gf_imtime operator -( gf_imtime &, gf_imtime &) except + 
@@ -36,6 +37,7 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
 
 cdef extern from "triqs/gf/imtime.hpp"  :
 
+    cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
     cdef gf_imtime inverse_c "inverse"   (gf_imtime &)
     #cdef gf_imtime transpose_c (gf_imtime &)
     #cdef gf_imtime conjugate_c (gf_imtime &)
