@@ -42,6 +42,12 @@ cdef class _ImplGfLocal :
     def __init__(self, d) : 
         self._Name = d.pop('Name','g')
 
+    property N1 : 
+        def __get__(self): return self.data.shape[0]
+
+    property N2 : 
+        def __get__(self): return self.data.shape[1]
+
     property indicesL : 
         """Indices ..."""
         def __get__(self) :
@@ -218,20 +224,47 @@ cdef class _ImplGfLocal :
 
     def __mul__(self,arg):
         cdef int i
-        if type(self).__name__ == type(arg).__name__ :
-            res = self.copy()
-            res *= arg
-        else : 
-            a,b = (self, arg) if type(self).__name__ in  ['float','int', 'complex','ndarray', 'matrix'] else (arg,self)
-            res = b.copy()
-            if type(a).__name__ in  ['float','int', 'complex'] : res *=a
-            else : 
-                A = res.data
-                assert A.shape[0:2] == a.shape, " Matrix size incorrect in multiplication "
-                for i in range( A.shape[-1]) :
-                    A[:,:,i] = numpy.dot(a,A[:,:,i])
+        a,b = (self, arg) if type(self).__name__ in  ['float','int', 'complex'] else (arg,self)
+        res = b.copy()
+        res *=a
         return res
 
+    def imatmul_L(self,L):
+        cdef int i
+        dot = numpy.dot
+        assert type(L).__name__ in  ['ndarray', 'matrix'] 
+        A = self.data
+        for i in range( A.shape[-1]) :
+            A[:,:,i] = dot(L,A[:,:,i])
+        return self
+
+    def imatmul_R(self,R):
+        cdef int i
+        dot = numpy.dot
+        assert type(R).__name__ in  ['ndarray', 'matrix'] 
+        A = self.data
+        for i in range( A.shape[-1]) :
+            A[:,:,i] = dot(A[:,:,i],R)
+        return self
+
+    def imatmul_LR(self,L,R): 
+        cdef int i
+        dot = numpy.dot
+        assert type(R).__name__ in  ['ndarray', 'matrix'] 
+        assert type(L).__name__ in  ['ndarray', 'matrix'] 
+        A = self.data
+        for i in range( A.shape[-1]) :
+            A[:,:,i] = dot(L, dot(A[:,:,i],R))
+        return self
+
+    # RENAME THIS !
+    def from_L_G_R (self, L,G,R):
+        """ For all argument, replace the matrix by L *matrix * R"""
+        d,dg = self.data,G.data
+        for om in range (d.shape[-1]) :
+            d[:,:,om ] = numpy.dot(numpy.dot(L,dg[:,:,om]), R)
+        self.tail.data = numpy.dot(numpy.dot(L,G.tail), R)
+    
     def __idiv__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
         """
@@ -248,7 +281,8 @@ cdef class _ImplGfLocal :
         res = self.copy()
         res /= arg
         return res
-                
+        
+    # VERY BAD : what if I make a product in omega ? Legendre ?
     #def __mul__(self,y):
     #    if hasattr(y,"_data") :
     #        c = self.copy_with_new_stat(GF_Statistic.Boson if
@@ -260,14 +294,6 @@ cdef class _ImplGfLocal :
     #        c *= y
     #    except NotImplementedError: return NotImplemented
     #    return c
-
-
-    def from_L_G_R (self, L,G,R):
-        """ For all argument, replace the matrix by L *matrix * R"""
-        d,dg = self.data,G.data
-        for om in range (d.shape[-1]) :
-            d[:,:,om ] = numpy.dot(numpy.dot(L,dg[:,:,om]), R)
-        self.tail.data = numpy.dot(numpy.dot(L,G.tail), R)
 
     #---------------------------------------------------
 
@@ -293,7 +319,7 @@ cdef class _ImplGfLocal :
                 Indices = list(self.indices),
                 Mesh  = self.mesh,
                 Data = self.data.conjugate(), 
-                Tail = self.tail.conjugate(), #self.mesh.TypeGF==GF_Type.Imaginary_Frequency),
+                Tail = self.tail.conjugate(), 
                 Name = self.Name+'*', 
                 Note = self.Note)
     

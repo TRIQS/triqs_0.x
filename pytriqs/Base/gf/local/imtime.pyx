@@ -40,7 +40,7 @@ cdef class GfImTime(_ImplGfLocal) :
          Matsubara frequencies yourself, or give the parameters to build it.
          All parameters must be given with keyword arguments.
 
-         GfImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name,Note)
+         GfImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name)
                * ``Indices``:  a list of indices names of the block
                * ``Beta``:  Inverse Temperature 
                * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
@@ -48,18 +48,15 @@ cdef class GfImTime(_ImplGfLocal) :
                * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
                * ``Tail``:  the tail 
                * ``Name``:  a name of the GF
-               * ``Note``:  any string you like...
-
          If you already have the mesh, you can use a simpler version :
 
-         GfImTime (Indices, Mesh, Data, Tail, Name,Note)
+         GfImTime (Indices, Mesh, Data, Tail, Name)
             
                * ``Indices``:  a list of indices names of the block
                * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
                * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
                * ``Tail``:  the tail 
                * ``Name``:  a name of the GF
-               * ``Note``:  any string you like...
 
         .. warning::
         The Green function take a **view** of the array Data, and a **reference** to the Tail.
@@ -105,15 +102,9 @@ cdef class GfImTime(_ImplGfLocal) :
     property tail : 
         def __get__(self): return make_TailGf (self._c.singularity_view()) 
         def __set__(self,TailGf t): 
-                assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
-                cdef tail t2 = self._c.singularity_view()
-                t2 = t._c 
-
-    property N1 : 
-        def __get__(self): return self._c.data_view().shape(0)
-
-    property N2 : 
-        def __get__(self): return self._c.data_view().shape(1)
+            assert (self.N1, self.N2, self._c.singularity_view().size()) == (t.N1, t.N2, t.size)
+            cdef tail t2 = self._c.singularity_view()
+            t2 = t._c 
 
     property data : 
         """Access to the data array"""
@@ -141,7 +132,12 @@ cdef class GfImTime(_ImplGfLocal) :
     #-------------- Reduction -------------------------------
 
     def __reduce__(self):
-        return lambda s : self.__class__(boost_serialization_string = s), (boost_serialize(self._c),)
+        return py_deserialize, (self.__class__,boost_serialize(self._c),)
+
+    # -------------- HDF5 ----------------------------
+
+    def __write_hdf5__ (self, gr , char * key) :
+        h5_write (make_h5_group_or_file(gr), key, self._c)
 
     # -------------- Fourier ----------------------------
 
@@ -166,6 +162,11 @@ cdef class GfImTime(_ImplGfLocal) :
         """Invert the matrix for all arguments"""
         pass
         #self._c = inverse_c (self._c)
+
+#----------------  Reading from h5 ---------------------------------------
+
+def h5_read_GfImTime ( gr, std_string key) : 
+    return make_GfImTime( h5_extractor[gf_imtime]()(make_h5_group_or_file(gr),key))
 
 #----------------  Convertions functions ---------------------------------------
 
@@ -194,5 +195,5 @@ cdef make_BlockGfImTime (gf_block_imtime G) :
     return GF( NameList = name_list, BlockList = gl)
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (GfImTime)
+register_class (GfImTime, read_fun = h5_read_GfImTime)
 

@@ -37,10 +37,8 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
 
 cdef extern from "triqs/gf/imtime.hpp"  :
 
-    cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
+    cdef void h5_write (h5_group_or_file, char *, gf_imtime &)
     cdef gf_imtime inverse_c "inverse"   (gf_imtime &)
-    #cdef gf_imtime transpose_c (gf_imtime &)
-    #cdef gf_imtime conjugate_c (gf_imtime &)
     
     cdef gf_imtime make_gf_imtime "triqs::gf::imtime::make_gf" (mesh_imtime, array_view[double, THREE,COrder], tail) except +
     cdef gf_imtime clone_gf_imtime "triqs::make_clone" (gf_imtime &) 

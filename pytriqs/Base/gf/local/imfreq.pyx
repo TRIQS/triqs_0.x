@@ -106,12 +106,6 @@ cdef class GfImFreq(_ImplGfLocal) :
             cdef tail t2 = self._c.singularity_view()
             t2 = t._c 
 
-    property N1 : 
-        def __get__(self): return self._c.data_view().shape(0)
-
-    property N2 : 
-        def __get__(self): return self._c.data_view().shape(1)
-
     property data : 
         """Access to the data array"""
         def __get__(self) : 
@@ -154,12 +148,6 @@ cdef class GfImFreq(_ImplGfLocal) :
     #--------------   PLOT   ---------------------------------------
    
     def _plot_(self, OptionsDict):
-        """ Plot protocol. OptionsDict can contain : 
-             * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
-             * :param x_window: (xmin,xmax) or None [default]
-             * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
-        """
-    def _plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
         """ Plot protocol. OptionsDict can contain : 
              * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]

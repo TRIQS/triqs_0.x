@@ -38,10 +38,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
 cdef extern from "triqs/gf/imfreq.hpp"  :
 
     cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
-    #cdef void h5_read_into_view (h5_group_or_file, char *, gf_imfreq &)
     cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
-    #cdef gf_imfreq transpose_c (gf_imfreq &)
-    #cdef gf_imfreq conjugate_c (gf_imfreq &)
     
     cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE,COrder], tail) except +
     cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 

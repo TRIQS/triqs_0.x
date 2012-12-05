@@ -47,7 +47,6 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
         long size()
         bint operator ==( discrete_mesh &)
 
-
 include "tail.pxd"
 include "imfreq.pxd"
 include "imtime.pxd"
