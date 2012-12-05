@@ -40,23 +40,23 @@ cdef class GfImFreq(_ImplGfLocal) :
 
         GfImFreq(Indices, Beta, Statistic, NFreqMatsubara,  Data, Tail, Name)
 
-               * ``Indices``:  a list of indices names of the block
-               * ``Beta``:  Inverse Temperature 
-               * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-               * ``NFreqMatsubara``:  Number of Matsubara frequencies
-               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
-               * ``Tail``:  the tail 
-               * ``Name``:  a name of the GF
+              * ``Indices``:  a list of indices names of the block
+              * ``Beta``:  Inverse Temperature 
+              * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
+              * ``NFreqMatsubara``:  Number of Matsubara frequencies
+              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
+              * ``Tail``:  the tail 
+              * ``Name``:  a name of the GF
 
         If you already have the mesh, you can use a simpler version :
 
         GfImFreq(Indices, Mesh, Data, Tail, Name)
             
-               * ``Indices``:  a list of indices names of the block
-               * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Frequency 
-               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
-               * ``Tail``:  the tail 
-               * ``Name``:  a name of the GF
+              * ``Indices``:  a list of indices names of the block
+              * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Frequency 
+              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
+              * ``Tail``:  the tail 
+              * ``Name``:  a name of the GF
 
         .. warning::
         The Green function take a **view** of the array Data, and a **reference** to the Tail.

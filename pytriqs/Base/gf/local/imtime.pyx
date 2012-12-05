@@ -35,27 +35,27 @@ cdef class GfImTime(_ImplGfLocal) :
     def __init__(self, **d):
         """
 
-         The constructor have two variants : you can either provide the mesh in
-         Matsubara frequencies yourself, or give the parameters to build it.
-         All parameters must be given with keyword arguments.
+        The constructor have two variants : you can either provide the mesh in
+        Matsubara frequencies yourself, or give the parameters to build it.
+        All parameters must be given with keyword arguments.
 
-         GfImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name)
-               * ``Indices``:  a list of indices names of the block
-               * ``Beta``:  Inverse Temperature 
-               * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-               * ``NTimeSlices``  : Number of time slices in the mesh
-               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
-               * ``Tail``:  the tail 
-               * ``Name``:  a name of the GF
-         If you already have the mesh, you can use a simpler version :
+        GfImTime(Indices, Beta, Statistic, NTimeSlices,  Data, Tail, Name)
+              * ``Indices``:  a list of indices names of the block
+              * ``Beta``:  Inverse Temperature 
+              * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
+              * ``NTimeSlices``  : Number of time slices in the mesh
+              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
+              * ``Tail``:  the tail 
+              * ``Name``:  a name of the GF
+        If you already have the mesh, you can use a simpler version :
 
-         GfImTime (Indices, Mesh, Data, Tail, Name)
-            
-               * ``Indices``:  a list of indices names of the block
-               * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
-               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
-               * ``Tail``:  the tail 
-               * ``Name``:  a name of the GF
+        GfImTime (Indices, Mesh, Data, Tail, Name)
+           
+              * ``Indices``:  a list of indices names of the block
+              * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
+              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
+              * ``Tail``:  the tail 
+              * ``Name``:  a name of the GF
 
         .. warning::
         The Green function take a **view** of the array Data, and a **reference** to the Tail.
