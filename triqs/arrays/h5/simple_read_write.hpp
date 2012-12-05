@@ -175,7 +175,7 @@ namespace triqs {
       DataSet ds;
       StrType strdatatype(PredType::C_S1, s);
       const size_t n = V.size();
-      std::vector<char> buf(n*s, 0x00);
+      std::vector<char> buf(n*(s+1), 0x00);
       size_t i=0; for (auto & x : V) {strcpy( &buf[i*s], x.c_str()); ++i;}
 
       mini_vector<hsize_t,1> L; L[0]=V.size();
