@@ -74,6 +74,9 @@ namespace triqs { namespace gf {
   }
  
   std::vector<std::string> const & operator[](int i) const { return data[i];} 
+  std::vector<std::vector<std::string>> const & operator()() const { return data;} 
+
+  bool same() const { return data[0]==data[1];} 
 
   /// Write into HDF5
   friend void h5_write (tqa::h5::group_or_file fg, std::string key, indices_2_t const & g) {

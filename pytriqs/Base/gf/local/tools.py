@@ -63,4 +63,21 @@ class IndicesConverter :
             raise IndexError, "Index %s out of range %s"%(a,self.Indices)
         return s1 if noslice else slice(s1,s1+1,1)
 
+def get_indices_in_dict( d) : 
+    # exclusive : size = (n1,n2) or IndicesL/R
+    IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
+    IndicesR = list ( d.pop('IndicesR',()) or IndicesL  )
+
+    # Now check the indices
+    ty = set([type(x) for x in IndicesL]+[type(x) for x in IndicesR])
+    assert len(ty)==1, " All indices must have the same type"
+
+    # If the indices are not string, make them string anyway
+    IndicesL = [ str(x) for x in IndicesL ]     
+    IndicesR = [ str(x) for x in IndicesR ]     
+    return IndicesL, IndicesR
+
+def py_deserialize( cls, s) : 
+    return cls(boost_serialization_string = s)
+
 

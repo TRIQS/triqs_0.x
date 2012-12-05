@@ -66,8 +66,6 @@ cdef class GfImFreq(_ImplGfLocal) :
         if c_obj :
             assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
             self._c = extractor [gf_imfreq] (c_obj) ()
-            self._IndicesL = self._c.indices()[0]
-            self._IndicesR = self._c.indices()[1]
             return 
 
         bss = d.pop('boost_serialization_string', None)
@@ -79,27 +77,21 @@ cdef class GfImFreq(_ImplGfLocal) :
         _ImplGfLocal.__init__(self, d)
 
         cdef MeshImFreq mesh = d.pop('Mesh',None)
-        if mesh is None : # 'Mesh' not in d : 
+        if mesh is None : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d.pop('Beta'))
             Nmax = d.pop('NFreqMatsubara',1025)
             stat = d.pop('Statistic','F') 
             sh = 1 if stat== 'F' else 0 
-            #d['Mesh'] = MeshImFreq(Beta,'F',Nmax)
             mesh = MeshImFreq(Beta,'F',Nmax)
 
         self.dtype = numpy.complex_
-        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(self._IndicesL),len(self._IndicesR),len(mesh)), self.dtype )
-        
-        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=self._IndicesL, IndicesR=self._IndicesR)
-
+        indicesL, indicesR = get_indices_in_dict(d)
+        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indicesL),len(indicesR),len(mesh)), self.dtype )
+        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indicesL, IndicesR=indicesR)
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
         
-        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(self) ) 
-       
-        # object to keep that will never change
-        #self.mesh = make_MeshImFreq (self._c.mesh())
-        #self.N1, self.N2 = self._c.data_view().shape(0), self._c.data_view().shape(1)
+        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(indicesL,indicesR) ) 
         # end of construction ...
     
     # Access to elements of _c, only via C++
@@ -128,7 +120,20 @@ cdef class GfImFreq(_ImplGfLocal) :
             cdef object a = self._c.data_view().to_python()
             a[:,:,:] = value
    
+    def __indices(self) : return self._c.indices()()
+   
     def __typename(self) : return "GfImFreq"
+
+    #-------------   COPY ----------------------------------------
+
+    def copy (self) : 
+        r = make_GfImFreq( clone_gf_imfreq(self._c))
+        r.Name = self.Name
+        return r
+        
+    def copy_from(self, GfImFreq G) :
+        # Check that dimensions are ok ...
+        self._c = G._c
 
     #-------------- Reduction -------------------------------
 
@@ -146,17 +151,6 @@ cdef class GfImFreq(_ImplGfLocal) :
         """Fills self with the Fourier transform of gt"""
         self._c = lazy_fourier( gt._c )
 
-    #-------------   COPY ----------------------------------------
-
-    def copy (self) : 
-        r = make_GfImFreq( clone_gf_imfreq(self._c))
-        r.Name = self.Name
-        return r
-        
-    def copy_from(self, GfImFreq G) :
-        # Check that dimensions are ok ...
-        self._c = G._c
-
     #--------------   PLOT   ---------------------------------------
    
     def _plot_(self, OptionsDict):
@@ -165,7 +159,13 @@ cdef class GfImFreq(_ImplGfLocal) :
              * :param x_window: (xmin,xmax) or None [default]
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        return self._plot_base( OptionsDict,  r'$\omega_n$', 
+    def _plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
+        """ Plot protocol. OptionsDict can contain : 
+             * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
+             * :param x_window: (xmin,xmax) or None [default]
+             * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
+        """
+        return impl_plot.plot_base( self, OptionsDict,  r'$\omega_n$', 
                 lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self.mesh] )
     #--------------   OTHER OPERATIONS -----------------------------------------------------
 

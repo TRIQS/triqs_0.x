@@ -69,8 +69,6 @@ cdef class GfImTime(_ImplGfLocal) :
         if c_obj :
             assert d == {}, "Internal error : encapsulated_c_object must be the only argument"
             self._c = extractor [gf_imtime] (c_obj) () 
-            self._IndicesL = self._c.indices()[0]
-            self._IndicesR = self._c.indices()[1]
             return 
 
         bss = d.pop('boost_serialization_string', None)
@@ -79,29 +77,24 @@ cdef class GfImTime(_ImplGfLocal) :
             boost_unserialize_into(<std_string>bss,self._c) 
             return 
 
-        if 'Mesh' not in d : 
+        _ImplGfLocal.__init__(self, d)
+
+        cdef MeshImTime mesh = d.pop('Mesh',None)
+        if mesh is None : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d.pop('Beta'))
             Nmax = d.pop('NTimeSlices',10000)
             stat = d.pop('Statistic','F') 
             sh = 1 if stat== 'F' else 0 
-            d['Mesh'] = MeshImTime(Beta,'F',Nmax)
+            mesh = MeshImTime(Beta,'F',Nmax)
 
         self.dtype = numpy.float64
-     
-        # Prepare the data for construction of C object 
-        _ImplGfLocal.__init__(self, d)
-        cdef MeshImTime mesh = d.pop('Mesh')
-        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(self._IndicesL),len(self._IndicesR),len(mesh)), self.dtype )
-        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=self._IndicesL, IndicesR=self._IndicesR)
-    
+        indicesL, indicesR = get_indices_in_dict(d)
+        data_raw = d.pop('Data') if 'Data' in d else numpy.zeros((len(indicesL),len(indicesR),len(mesh)), self.dtype )
+        cdef TailGf tail= d.pop('Tail') if 'Tail' in d else TailGf(OrderMin=-1, size=10, IndicesL=indicesL, IndicesR=indicesR)
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
  
-        self._c =  gf_imtime ( mesh._c, array_view[double,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(self) ) # add here the indices ...
- 
-        # object to keep that will never change
-        #self.mesh = make_MeshImTime (self._c.mesh())
-        #self.N1, self.N2 = self._c.data_view().shape(0), self._c.data_view().shape(1)
+        self._c =  gf_imtime ( mesh._c, array_view[double,THREE,COrder](data_raw), tail._c , nothing(), make_c_indices(indicesL,indicesR) ) 
         # end of construction ...
 
     # Access to elements of _c, only via C++
@@ -131,17 +124,8 @@ cdef class GfImTime(_ImplGfLocal) :
             a[:,:,:] = value
 
     def __typename(self) : return "GfImTime"
-    
-    #-------------- Reduction -------------------------------
 
-    def __reduce__(self):
-        return lambda s : self.__class__(boost_serialization_string = s), (boost_serialize(self._c),)
-
-    # -------------- Fourier ----------------------------
-
-    def set_from_inverse_fourier_of(self,GfImFreq gw) :
-        """Fills self with the Inverse Fourier transform of gw"""        
-        self._c = lazy_inverse_fourier( gw._c)
+    def __indices(self) : return self._c.indices()()
 
     #-------------   COPY ----------------------------------------
 
@@ -154,6 +138,17 @@ cdef class GfImTime(_ImplGfLocal) :
         # Check that dimensions are ok ...
         self._c = G._c
 
+    #-------------- Reduction -------------------------------
+
+    def __reduce__(self):
+        return lambda s : self.__class__(boost_serialization_string = s), (boost_serialize(self._c),)
+
+    # -------------- Fourier ----------------------------
+
+    def set_from_inverse_fourier_of(self,GfImFreq gw) :
+        """Fills self with the Inverse Fourier transform of gw"""        
+        self._c = lazy_inverse_fourier( gw._c)
+
     #--------------   PLOT   ---------------------------------------
    
     def _plot_(self, OptionsDict):
@@ -163,7 +158,7 @@ cdef class GfImTime(_ImplGfLocal) :
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
         has_complex_value = False
-        return self._plot_base( OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
+        return impl_plot.plot_base( self, OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
  
     #--------------   OTHER OPERATIONS -----------------------------------------------------
 

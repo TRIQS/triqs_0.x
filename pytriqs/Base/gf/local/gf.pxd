@@ -30,7 +30,9 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
         indices_2_t( )
         indices_2_t( vector[vector[std_string]] &)
         vector[std_string] & operator[](int)
- 
+        vector[vector[std_string]] & operator()()
+        bint same() 
+
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
   
     cdef cppclass discrete_domain :

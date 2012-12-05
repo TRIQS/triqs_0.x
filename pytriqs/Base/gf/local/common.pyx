@@ -25,66 +25,50 @@ from pytriqs.Base.Plot.protocol import clip_array
 import GF_Initializers
 import lazy_expressions,Descriptors
 from types import IntType,SliceType,StringType
-from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter
-
-def py_deserialize( cls, s) : 
-    return cls(boost_serialization_string = s)
+from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
+import impl_plot
 
 # Function that transcribe the indices to C++
-cdef indices_2_t make_c_indices(obj) : 
+cdef indices_2_t make_c_indices(indicesL, indicesR) : 
     cdef vector[vector[std_string]] res
     cdef vector[std_string] vl,vr
-    for i in obj.indicesL : vl.push_back(i)
-    for i in obj.indicesR : vr.push_back(i)
+    for i in indicesL : vl.push_back(i)
+    for i in indicesR : vr.push_back(i)
     res.push_back(vl); res.push_back(vr)
     return indices_2_t(res)
 
 cdef class _ImplGfLocal :
-    cdef object _Name, dtype, _IndicesR, _IndicesL
+    cdef object _Name, dtype
     def __init__(self, d) : 
-        
-        # exclusive : size = (n1,n2) or IndicesL/R
-        self._IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-        self._IndicesR = list ( d.pop('IndicesR',()) or self._IndicesL  )
         self._Name = d.pop('Name','g')
 
-        # Now check the indices
-        ty = set([type(x) for x in self._IndicesL]+[type(x) for x in self._IndicesR])
-        assert len(ty)==1, " All indices must have the same type"
+    property indicesL : 
+        """Indices ..."""
+        def __get__(self) :
+            v = self.__indices()[0]
+            for ind in v:
+                yield ind
+    
+    property indicesR : 
+        """Indices ..."""
+        def __get__(self) : 
+            v = self.__indices()[1]
+            for ind in v:
+                yield ind
 
-        #if ty.pop() != StringType : 
-        #    assert self._IndicesL == range (len(self._IndicesL)), " Indices are string, or a range of integer"
-
-        # If the indices are not string, make them string anyway
-        self._IndicesL = [ str(x) for x in self._IndicesL ]     
-        self._IndicesR = [ str(x) for x in self._IndicesR ]     
-
-    #-------------  Indices management ---------------------
+    property indices : 
+        """Indices ..."""
+        def __get__(self) : 
+            inds =  self.__indices()
+            if inds[0] != inds[1]: raise RuntimeError, "Indices R and L are not the same. I can not give you the Indices"
+            for i in inds[0]:
+                yield i
 
     property Name : 
         """Name of the Green function (for plots, etc...) """
         def __get__(self) : return self._Name
         def __set__(self,val) : self._Name = str(val)
     
-    property indices : 
-        """Indices ..."""
-        def __get__(self) : 
-            if self._IndicesL != self._IndicesR : raise RuntimeError, "Indices R and L are not the same. I can not give you the Indices"
-            for ind in self._IndicesL: 
-                yield ind
-
-    property indicesL : 
-        """Indices ..."""
-        def __get__(self) : 
-            for ind in self._IndicesL: 
-                yield ind
-    
-    property indicesR : 
-        """Indices ..."""
-        def __get__(self) : 
-            for ind in self._IndicesR: 
-                yield ind
-
     #---------------------   [  ] operator        ------------------------------------------
     
     def __getitem__(self,key):
@@ -93,12 +77,12 @@ cdef class _ImplGfLocal :
         sl1, sl2 = key
         if type(sl1) == StringType and type(sl2) == StringType :
             # Convert the indices to integer
-            indices_converter = [ IndicesConverter(self._IndicesL), IndicesConverter(self._IndicesR)]
+            indices_converter = [ IndicesConverter(self.indicesL), IndicesConverter(self.indicesR)]
             sl1, sl2 =  [ indices_converter[i].convertToNumpyIndex(k) for i,k in enumerate(key) ]
         if type (sl1) != slice : sl1 = slice (sl1, sl1+1)
         if type (sl2) != slice : sl2 = slice (sl2, sl2+1)
-        return self.__class__(IndicesL = self._IndicesL[sl1],
-                              IndicesR = self._IndicesR[sl2],
+        return self.__class__(IndicesL = self.indicesL[sl1],
+                              IndicesR = self.indicesR[sl2],
                               Name = self.Name,
                               Mesh = self.mesh,
                               Data = self.data[sl1,sl2,:],
@@ -111,8 +95,8 @@ cdef class _ImplGfLocal :
     #------------- Iteration ------------------------------------
 
     def __iter__(self) :
-        for i in self._IndicesL : 
-            for j in self._IndicesR :
+        for i in self.indicesL : 
+            for j in self.indicesR :
                 b =self[i,j]
                 b.Name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
                 yield i,j,b
@@ -124,7 +108,7 @@ cdef class _ImplGfLocal :
     
     def __repr__(self) : 
         return """%s %s : IndicesL = %s, IndicesR = %s"""%(self.__class__.__name__, self.Name,
-          [x for x in self._IndicesL], [x for x in self._IndicesR])
+          [x for x in self.indicesL], [x for x in self.indicesR])
 
     #--------------   PLOT   ---------------------------------------
 
@@ -136,15 +120,6 @@ cdef class _ImplGfLocal :
         """Use self.imag in a plot to plot only the imag part"""
         def __get__ (self): return PlotWrapperPartialReduce(self,RI='I')
   
-    def _plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
-        """ Plot protocol. OptionsDict can contain : 
-             * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
-             * :param x_window: (xmin,xmax) or None [default]
-             * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
-        """
-        import impl_plot
-        impl_plot.plot_base(self,OptionsDict,  xlabel, ylabel, use_ris, X)
-
     #------------------
     
     def x_data_view (self, x_window = None, flatten_y = False) : 
@@ -301,7 +276,7 @@ cdef class _ImplGfLocal :
        
        ### WARNING : this depends on the C++ layering ....
         return self.__class__( 
-                Indices = list(self.Indices),
+                Indices = list(self.indices),
                 Mesh  = self.mesh,
                 Data = self.data.transpose( (1,0,2) ), 
                 Tail = self.tail.transpose(),
@@ -315,7 +290,7 @@ cdef class _ImplGfLocal :
         make a copy only if the Green function is complex valued"""
         
         return self.__class__( 
-                Indices = list(self.Indices),
+                Indices = list(self.indices),
                 Mesh  = self.mesh,
                 Data = self.data.conjugate(), 
                 Tail = self.tail.conjugate(), #self.mesh.TypeGF==GF_Type.Imaginary_Frequency),
