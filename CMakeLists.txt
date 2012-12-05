@@ -190,7 +190,7 @@ endif (PythonSupport)
 # build pytriqs main or make the script
 #------------------------
 
-add_subdirectory(pytriqs_main bin)
+add_subdirectory(shells bin)
 
 #------------------------
 # Documentation
