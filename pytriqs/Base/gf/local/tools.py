@@ -1,3 +1,5 @@
+from types import SliceType
+
 class PlotWrapperPartialReduce : 
     """ Internal Use"""
     def __init__(self, obj,  **opt) : 

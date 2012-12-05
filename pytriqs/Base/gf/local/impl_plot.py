@@ -1,4 +1,5 @@
 from pytriqs.Base.Plot.protocol import clip_array
+import numpy
 
 class _Plot_Wrapper_Partial_Reduce : 
     """ Internal Use"""
@@ -22,6 +23,7 @@ def plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
     if NamePrefix : name_save, self.Name = self.Name, Name or NamePrefix
 
     rx = OptionsDict.pop('x_window',None ) # consume it
+    X =  numpy.array(X).real 
     sl = clip_array (X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
     def mdic( prefix, f) : 
@@ -30,7 +32,7 @@ def plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
                 'ylabel' : ylabel (self.Name),
                 'xdata' : X[sl],
                 'label' : Name if Name else prefix + B.Name ,
-                'ydata' : f( B._data.array[0,0,sl] ) } for (i,j,B) in self ] 
+                'ydata' : f( B.data[0,0,sl] ) } for (i,j,B) in self ] 
 
     if use_ris : 
         ris = OptionsDict.pop('RI','RI') 
@@ -46,7 +48,7 @@ def plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
              raise ValueError, "RIS flags meaningless %s"%ris
     else: 
         res = mdic( '', lambda x : x)
-        
+    
     if NamePrefix: self.Name = name_save
     return res 
 
@@ -63,7 +65,7 @@ def x_data_view (self, X, x_window = None, flatten_y = False) :
                If flatten_y is True and dim is (1,1,*), returns a 1d numpy
     """
     X = [x.imag for x in self._mesh] if self._mesh.TypeGF == GF_Type.Imaginary_Frequency  else [x for x in self._mesh]
-    X, data = numpy.array(X), self._data.array
+    X, data = numpy.array(X), self.data
     if x_window :
       sl = clip_array (X, *x_window) if x_window else slice(len(X)) # the slice due to clip option x_window
       X, data = X[sl],  data[:,:,sl]

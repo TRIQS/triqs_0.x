@@ -87,7 +87,7 @@ namespace triqs { namespace gf {
   typedef gf_view<imtime> gf_view_t;
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t N_time_slices = 1025) {
-   return mesh_t( domain_t(beta,S), 0, beta, N_time_slices);
+   return mesh_t( domain_t(beta,S), 0, beta, N_time_slices-1);
   }
 
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) { 

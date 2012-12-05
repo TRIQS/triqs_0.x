@@ -27,7 +27,6 @@ cdef class MeshImFreq:
 # C -> Python 
 cdef inline make_MeshImFreq ( mesh_imfreq x) :
     return MeshImFreq( x.domain().beta, 'F', x.size() )
-    #return MeshImFreq(encapsulated_c_object = encapsulate (&x))
 
 # ----------- GF --------------------------
 

@@ -87,8 +87,8 @@ cdef class _ImplGfLocal :
             sl1, sl2 =  [ indices_converter[i].convertToNumpyIndex(k) for i,k in enumerate(key) ]
         if type (sl1) != slice : sl1 = slice (sl1, sl1+1)
         if type (sl2) != slice : sl2 = slice (sl2, sl2+1)
-        return self.__class__(IndicesL = self.indicesL[sl1],
-                              IndicesR = self.indicesR[sl2],
+        return self.__class__(IndicesL = list(self.indicesL)[sl1],
+                              IndicesR = list(self.indicesR)[sl2],
                               Name = self.Name,
                               Mesh = self.mesh,
                               Data = self.data[sl1,sl2,:],

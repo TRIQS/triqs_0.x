@@ -26,8 +26,7 @@ cdef class MeshImTime:
 
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :
-    return MeshImFreq( x.domain().beta, 'F', x.size() )
-    #return MeshImTime(encapsulated_c_object = encapsulate (&x))
+    return MeshImTime( x.domain().beta, 'F', x.size() )
 
 # ----------- GF --------------------------
 
