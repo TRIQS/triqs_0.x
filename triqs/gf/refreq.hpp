@@ -99,7 +99,7 @@ namespace triqs { namespace gf {
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) { 
    refreq::mesh_t m(refreq::domain_t(),wmin, wmax,n_freq);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t() ) ;
+   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
   }
 
  };

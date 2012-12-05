@@ -62,17 +62,19 @@ namespace triqs { namespace gf {
 
  class indices_2_t { 
   std::vector<std::vector<std::string>> data;
-  public : 
-  indices_2_t() {}
-  indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
-  
-  indices_2_t(int n1, int n2) { 
+  void construct_deleg (int n1, int n2) { 
    std::vector<std::string> v1,v2;
    for (int i =0; i<n1; ++i)  { std::stringstream fs; fs<<i; v1.push_back(fs.str()); }
    for (int i =0; i<n2; ++i)  { std::stringstream fs; fs<<i; v2.push_back(fs.str()); }
    data.push_back(v1); data.push_back(v2);
   }
- 
+  public : 
+  indices_2_t() {}
+  indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
+  
+  indices_2_t(int n1, int n2) { construct_deleg(n1,n2);}
+  template<typename T> indices_2_t(arrays::mini_vector<T,2> & shape) { construct_deleg(shape[0], shape[1]);}
+  
   std::vector<std::string> const & operator[](int i) const { return data[i];} 
   std::vector<std::vector<std::string>> const & operator()() const { return data;} 
 
