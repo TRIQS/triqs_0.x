@@ -61,9 +61,8 @@ namespace triqs { namespace gf {
   template<typename V2, bool _is_view = IsView>
    ENABLE_IFC(_is_view) rebind (V2 const & v) { data.clear(); for (auto & x : v ) data.push_back(x); }
 
-  // NB size must be the same. Add some safety
-  vector_storage & operator = ( vector_storage             const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this;  }
-  vector_storage & operator = ( vector_storage<T, !IsView> const & V) { size_t i=0; for (auto & x : V.data ) data[i++] = x; return *this; }
+  vector_storage & operator = ( vector_storage             const & V) { data = V.data; return *this;}
+  vector_storage & operator = ( vector_storage<T, !IsView> const & V) { data.clear(); for (auto & x : V.data ) data.push_back(x); return *this;  }
 
   template< bool _is_view = IsView>
    ENABLE_IFC(_is_view) operator = (typename T::value_type const & y) { for (auto & x : data ) x=y; }
@@ -314,7 +313,7 @@ namespace triqs { namespace gf {
     typename B::indices_t const & ind = typename B::indices_t () ) : 
    B(m,dat,si,s, ind) {}
 
-  void operator = (gf const & rhs) { 
+  void operator = (gf const & rhs) {
    this->_mesh = rhs.mesh(); this->data = rhs.data; this->singularity = rhs.singularity;
    this->_symmetry = rhs._symmetry; this->_indices = rhs._indices;
   }
