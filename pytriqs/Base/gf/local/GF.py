@@ -209,9 +209,10 @@ class GF(object):
     #--------------  Pretty print -------------------------
 
     def __repr__(self) :
-        s =  "Green Function %s composed of %d blocks at inverse temperature Beta = %s: \n"%(self.Name,self.NBlocks,self.Beta)
+        s =  "Green Function %s composed of %d blocks : \n"%(self.Name,self.NBlocks)
+        #s =  "Green Function %s composed of %d blocks at inverse temperature Beta = %s: \n"%(self.Name,self.NBlocks,self.Beta)
         for i,g in self:
-            s += " %s \n"%g  #"  Bloc %s  : Indices %s \n"%(i,self[i].Indices)
+            s += " %s \n"%repr(g)  #"  Bloc %s  : Indices %s \n"%(i,self[i].Indices)
         if self.Note : s += "NB : %s\n"%self.Note
         return s
 

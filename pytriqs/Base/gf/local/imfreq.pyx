@@ -156,11 +156,6 @@ cdef class GfImFreq(_ImplGfLocal) :
                 lambda name : r'%s$(i\omega_n)$'%name, True, [x.imag for x in self.mesh] )
     #--------------   OTHER OPERATIONS -----------------------------------------------------
 
-    def invert(self) : 
-        """Invert the matrix for all arguments"""
-        pass
-        #self._c = inverse_c (self._c)
-
     def replace_by_tail(self,start) : 
         d = self.data
         t = self.tail

@@ -177,7 +177,7 @@ cdef class _ImplGfLocal :
         elif isinstance(A, GF_Initializers.Base) : # backwards compatibility, deprecated
             A(self)
         else :
-            raise RuntimeError, " GF Block : <<= operator : RHS not understood"
+            raise RuntimeError, " <<= operator : RHS  not understood"
         return self
 
     #--------------------  Arithmetic operations  ---------------------------------
@@ -297,6 +297,12 @@ cdef class _ImplGfLocal :
 
     #---------------------------------------------------
 
+    def invert(self) : 
+        """Invert the matrix for all arguments"""
+        pass
+        #self._c = inverse_c (self._c)
+
+    #---------------------------------------------------    
     def transpose(self):
         """Transposes the GF Bloc: return a new transposed view"""
        
