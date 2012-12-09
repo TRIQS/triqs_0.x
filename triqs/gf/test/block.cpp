@@ -20,6 +20,7 @@ using triqs::gf::imtime;
 int main() {
 
  double beta =1;
+ 
  auto G1 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
  auto G2 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
  auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
@@ -36,8 +37,8 @@ int main() {
  auto GF =  triqs::gf::block<imfreq>::make_gf_view (V); //{G1,G2,G3});
  //auto GF = triqs::gf::block<imfreq>::make_gf_view ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
- auto  g0 = GF(0);
- auto  g0v = GF_v(0)();
+ auto g0 = GF(0);
+ auto g0v = GF_v(0)();
 
  auto Gv = g0();
 
@@ -52,5 +53,8 @@ int main() {
  TEST( Gv( 0) ) ;
  TEST( G1( 0) ) ;
 
+ // bug fixed for this
+ gf< block< imfreq> > G9;
+ G9 = block<imfreq>::make_gf (2, beta, Fermion, make_shape(2,2));
 
 }
