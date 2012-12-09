@@ -11,19 +11,18 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 FILE(GLOB_RECURSE ALLSOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 FOREACH(CPP ${ALLSOURCES})
  if    (NOT CPP MATCHES "/test/|/examples/|/OLD/|no-built/") 
-  #MESSAGE(STATUS "I will compile ${CPP} ")
+  #MESSAGE(STATUS " lib triqs : I will compile ${CPP} ")
   set_property (GLOBAL APPEND PROPERTY TRIQS_LIB_CPP_SOURCES_LIST "${CMAKE_CURRENT_SOURCE_DIR}/${CPP}")
  endif  (NOT CPP MATCHES "/test/|/examples/|/OLD/|no-built/")
 ENDFOREACH(CPP ${ALLSOURCES})
 get_property(ALLSOURCES GLOBAL PROPERTY TRIQS_LIB_CPP_SOURCES_LIST)
 
-option(Use_Pade "Compile Pade tools?" ON)
-if (Use_Pade)
- #set (ALLSOURCES ${ALLSOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/gf_local/pade.cpp)
- add_definitions(-DUSE_PADE)
- find_package(GMP)
- SET (TRIQS_LINK_LIBS ${TRIQS_LINK_LIBS} ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
-endif (Use_Pade)
+# REMOVE THIS FROM THE CODE ...
+add_definitions(-DUSE_PADE)
+
+# MOVE THIS UP 
+find_package(GMP)
+SET (TRIQS_LINK_LIBS ${TRIQS_LINK_LIBS} ${GMP_LIBRARIES} ${GMPXX_LIBRARIES})
 
 option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
 
@@ -36,24 +35,18 @@ target_link_libraries (triqs ${TRIQS_LINK_LIBS} )
 # Install library
 install(TARGETS triqs DESTINATION lib)
 
-# Do we install the dev version?
-option(Install_dev "Install the headers and libraries of TRIQS?" ON)
-mark_as_advanced(Install_dev)
-if (Install_dev)
+# TRIQS cmake file
+configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
 
- # TRIQS cmake file
- configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake)
- install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
+# all .hpp files...
+FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
 
- # all .hpp files...
- FILE(GLOB_RECURSE ALLHEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
+# Install headers in good include dir
+FOREACH(HEADER ${ALLHEADERS})
+ get_filename_component(P ${HEADER} PATH)
+ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}" DESTINATION "include/triqs/${P}")
+ #MESSAGE(STATUS "I will install ${HEADER} of ${P}")
+ENDFOREACH(HEADER ${ALLHEADERS})
 
- # Install headers in good include dir
- FOREACH(HEADER ${ALLHEADERS})
-  get_filename_component(P ${HEADER} PATH)
-  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}" DESTINATION "include/triqs/${P}")
-  #MESSAGE(STATUS "I will install ${HEADER} of ${P}")
- ENDFOREACH(HEADER ${ALLHEADERS})
-
-endif (Install_dev)
 

@@ -23,9 +23,6 @@ SET(SOURCES_CPP
  ${CPP_DIR}/wrap.cpp
  )
 
-SET(CODENAME lattice)
-include(${CMAKE_SOURCE_DIR}/cmake/PrintEditCode.cmake)
-
 python_build_module(LatticeTools _pytriqs_LatticeTools Base/Lattice ${SOURCES_CPP})
 
 
