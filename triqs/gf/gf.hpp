@@ -182,6 +182,9 @@ namespace triqs { namespace gf {
 
   public:
 
+   // First, a simple () returns a view, like for an array...
+   view_type operator()() const { return *this;}
+   
    /// Calls are (perfectly) forwarded to the Descriptor::operator(), except mesh_point_t and when 
    /// there is at least one lazy argument ...
    template<typename Arg0, typename... Args >    // match any argument list, picking out the first type : () is not permitted
@@ -196,20 +199,6 @@ namespace triqs { namespace gf {
     >::type // end of add_Const 
      operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(_mesh, data, singularity, std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
-   /// A direct access to the grid point 
-   target_view_t operator() (mesh_point_t const & x)       { return data(tqa::ellipsis(),x.m->index_to_linear(x.index));}
-
-   /// A direct access to the grid point (const version)
-   target_view_t operator() (mesh_point_t const & x) const { return data(tqa::ellipsis(),x.m->index_to_linear(x.index));}
-
-   /// A direct access to the grid point 
-   template<typename... Args> 
-    target_view_t on_grid (Args&&... args)       { return (*this)( _mesh[mesh_index_t(std::forward<Args>(args)...)]);}
-
-   /// A direct access to the grid point (const version)
-   template<typename... Args> 
-    target_view_t on_grid (Args&&... args) const { return (*this)( _mesh[mesh_index_t(std::forward<Args>(args)...)]);}
-
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg0, typename ...Args>
     typename boost::lazy_enable_if<    // enable the template if
@@ -221,8 +210,28 @@ namespace triqs { namespace gf {
       return clef::lazy_call<view_type>(*this)(arg0,args...);
      }
 
-   // Finally a simple () returns a view, like for an array...
-   view_type operator()() const { return *this;}
+   /// A direct access to the grid point 
+   target_view_t operator() (mesh_point_t const & x)       { return data(tqa::ellipsis(),x.m->index_to_linear(x.index));}
+
+   /// A direct access to the grid point (const version)
+   target_view_t operator() (mesh_point_t const & x) const { return data(tqa::ellipsis(),x.m->index_to_linear(x.index));}
+
+   /// A direct access to the grid point 
+   template<typename... Args> 
+    target_view_t on_mesh (Args&&... args)       { return data(tqa::ellipsis(),_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+
+   /// A direct access to the grid point (const version)
+   template<typename... Args> 
+    const target_view_t on_mesh (Args&&... args) const { return data(tqa::ellipsis(),_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+
+  private:
+   struct _on_mesh_wrapper {
+    gf_impl const & f; _on_mesh_wrapper (gf_impl const & _f) : f(_f) {}
+    template <typename... Args> target_view_t operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);} 
+   };
+   _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
+
+  public:
 
    // Interaction with the CLEF library : auto assignment of the gf (gf(om_) = expression fills the functions by evaluation of expression)
    TRIQS_CLEF_HAS_AUTO_ASSIGN(); 
@@ -274,7 +283,7 @@ namespace triqs { namespace gf {
     h5_read(gr,"mesh",g._mesh);
     h5_read(gr,"symmetry",g._symmetry);
     h5_read(gr,"indices",g._indices);
-    }
+   }
 
    //  BOOST Serialization
    friend class boost::serialization::access;
@@ -321,7 +330,7 @@ namespace triqs { namespace gf {
   template<typename RHS> void operator = (RHS const & rhs) { 
    this->_mesh = rhs.mesh(); this->data = rhs.data_view(); this->singularity = rhs.singularity_view();
    // There is a pb hrer : gf_proto has no symmetry .....
-//   this->_symmetry = rhs.symmetry(); this->_indices = rhs._indices();
+   //   this->_symmetry = rhs.symmetry(); this->_indices = rhs._indices();
   }
  };
 
@@ -347,8 +356,8 @@ namespace triqs { namespace gf {
 
   template<typename D, typename T> 
    gf_view (typename B::mesh_t const & m, 
-    D const & dat,T const & t,typename B::symmetry_t const & s, 
-    typename B::indices_t const & ind = typename B::indices_t () ) : B(m,dat,t,s,ind) {}
+     D const & dat,T const & t,typename B::symmetry_t const & s, 
+     typename B::indices_t const & ind = typename B::indices_t () ) : B(m,dat,t,s,ind) {}
 
   void operator = (gf_view const & rhs)  { if (this->is_empty()) { rebind(rhs); return;} triqs_gf_view_assign_delegation(*this,rhs);}
 
