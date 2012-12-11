@@ -17,9 +17,6 @@ int main() {
 
  triqs::gf::freq_infty inf;
 
- triqs::gf::gf<triqs::gf::imfreq> G1; // empty
-  TEST( G1( 0) ) ;
-
  double beta =1;
  auto G =  imfreq::make_gf (beta, Fermion, make_shape(2,2));
  auto Gc = imfreq::make_gf (beta, Fermion, make_shape(2,2));
