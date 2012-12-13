@@ -50,7 +50,7 @@ class GF(object):
                      
           """
         # first extract the optional Name argument
-        self.Name = kwargs.pop('Name','G')
+        self.name = kwargs.pop('Name','G')
         self._name_bloc = kwargs.pop('RenameBlock',True)
         self.Note = kwargs.pop('Note','')
 
@@ -85,7 +85,7 @@ class GF(object):
         # Add the name to the G
         self.Note = ''
         if self._name_bloc:
-            for i,g in self : g.Name = "%s_%s"%(self.Name,i) if self.Name else '%s'%(i,)
+            for i,g in self : g.name = "%s_%s"%(self.name,i) if self.name else '%s'%(i,)
         del self._name_bloc
 
     #------------ Copy and construction -----------------------------------------------
@@ -195,7 +195,7 @@ class GF(object):
         return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
 
     def __reduce_to_dict__(self):
-        val = {'__Name' : self.Name, "__Note": self.Note, "__BlockIndicesList" : repr(self.__Indices) }
+        val = {'__Name' : self.name, "__Note": self.Note, "__BlockIndicesList" : repr(self.__Indices) }
         val.update(  dict(self ) )
         return val 
 
@@ -209,15 +209,15 @@ class GF(object):
     #--------------  Pretty print -------------------------
 
     def __repr__(self) :
-        s =  "Green Function %s composed of %d blocks : \n"%(self.Name,self.NBlocks)
-        #s =  "Green Function %s composed of %d blocks at inverse temperature Beta = %s: \n"%(self.Name,self.NBlocks,self.Beta)
+        s =  "Green Function %s composed of %d blocks : \n"%(self.name,self.NBlocks)
+        #s =  "Green Function %s composed of %d blocks at inverse temperature Beta = %s: \n"%(self.name,self.NBlocks,self.Beta)
         for i,g in self:
             s += " %s \n"%repr(g)  #"  Bloc %s  : Indices %s \n"%(i,self[i].Indices)
         if self.Note : s += "NB : %s\n"%self.Note
         return s
 
     def __str__ (self) : 
-           return self.Name if self.Name else repr(self)
+           return self.name if self.name else repr(self)
  
     #--------------  Bracket operator []  -------------------------
     

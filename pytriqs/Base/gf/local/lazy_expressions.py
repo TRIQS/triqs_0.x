@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-__all__ = ['lazy_expr','lazy_expr_terminal','eval_lazy_expr', 'lazy','lazy_function', 'transform']
+__all__ = ['lazy_expr','lazy_expr_terminal','eval_lazy_expr', 'lazy','lazy_function', 'transform', 'eval_expr_or_pass']
 
 class __aux(object) : 
 
