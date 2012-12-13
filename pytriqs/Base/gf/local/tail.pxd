@@ -1,3 +1,5 @@
+from dcomplex cimport * 
+from arrays cimport *   
 cdef extern from "triqs/gf/local/tail.hpp" : 
     cdef cppclass tail "triqs::gf::local::tail_view"  :
         tail()
@@ -27,4 +29,5 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator *( matrix_view[dcomplex,COrder] &, tail &) except + 
     cdef tail operator *( tail &, matrix_view[dcomplex,COrder]&) except + 
 
+    cdef void h5_write (h5_group_or_file, char *, tail &)
 

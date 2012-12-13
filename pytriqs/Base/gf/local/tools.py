@@ -67,8 +67,11 @@ class IndicesConverter :
 
 def get_indices_in_dict( d) : 
     # exclusive : size = (n1,n2) or IndicesL/R
-    IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-    IndicesR = list ( d.pop('IndicesR',()) or IndicesL  )
+    if 'IndicesPack' in d : 
+        IndicesL, IndicesR = d.pop('IndicesPack')
+    else :
+        IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
+        IndicesR = list ( d.pop('IndicesR',()) or IndicesL  )
 
     # Now check the indices
     ty = set([type(x) for x in IndicesL]+[type(x) for x in IndicesR])
@@ -76,7 +79,9 @@ def get_indices_in_dict( d) :
 
     # If the indices are not string, make them string anyway
     IndicesL = [ str(x) for x in IndicesL ]     
-    IndicesR = [ str(x) for x in IndicesR ]     
+    IndicesR = [ str(x) for x in IndicesR ]  
+
+    print "get_indi", d, IndicesL, IndicesR 
     return IndicesL, IndicesR
 
 def py_deserialize( cls, s) : 

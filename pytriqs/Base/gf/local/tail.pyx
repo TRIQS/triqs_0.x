@@ -1,53 +1,52 @@
 cdef class TailGf:
-    """ 
-        Doc to be written 
-    """
-    
     cdef tail _c
-    cdef object _indL, _indR 
     def __init__(self, **d):
         """
-        """
-        c_obj = d.pop('C_Object', None)
-        if c_obj :
-            assert d == {}
-            self._c = extractor [tail] (c_obj) () 
-            self._indL, self._indR = range(self._c.shape(0)), range(self._c.shape(1))
-            return
+        TailGf ( data, order_min)
+        TailGf ( N1, N2, size, order_min) 
 
-        self._indL, self._indR = d['IndicesL'], d['IndicesR']
-        N1,N2 = len(self._indL), len(self._indR)
-        a = d['array'] if 'array' in d else numpy.zeros((N1,N2,d['size'])  ,numpy.complex) #,order='F')
-        omin = d['OrderMin']
+              * ``Indices``:  a list of indices names of the block
+              * ``Beta``:  Inverse Temperature 
+              * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
+              * ``NFreqMatsubara``:  Number of Matsubara frequencies
+              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
+              * ``Tail``:  the tail 
+              * ``Name``:  a name of the GF
+
+        """
+        a = d.pop('data',None)
+        if a==None : 
+            (N1, N2), s = d.pop('shape'), d.pop('size')
+            a = numpy.zeros((N1,N2,s) ,numpy.complex) 
+        omin = d.pop('order_min')
+        assert len(d) ==0, "Unknown parameters in TailGf constructions %s"%d.keys() 
         self._c =  tail( array_view[dcomplex,THREE,COrder](a), omin)
     
-    def invert(self) :
-        self._c = 1.0/self._c
-    
-    def __fill_a (self, a, value) : 
-        if hasattr(value,'shape') : 
-            if a.shape[:2] != value.shape[:2] : 
-                raise RuntimeError, "shape mismatch"
-            m = min(value.shape[2],a.shape[2]) 
-            if a.shape[2] > value.shape[2] : 
-                a[:,:,m:] =0
-            a[:,:, 0:m] = value[:,:, 0:m]
-        else : 
-            a = value
-
-    property indicesL : 
+    property data : 
+        """Access to the data array"""
         def __get__(self) : 
-            #print "indices of tail are : ", self._indL
-            return self._indL
-    
-    property indicesR : 
-        def __get__(self) : return self._indR
+            return self._c.data_view().to_python()
 
-    property OrderMin : 
+        def __set__ (self, value) :
+            cdef object a = self._c.data_view().to_python()
+            if hasattr(value,'shape') : 
+                if a.shape[:2] != value.shape[:2] : 
+                    raise RuntimeError, "shape mismatch"
+                m = min(value.shape[2],a.shape[2]) 
+                if a.shape[2] > value.shape[2] : 
+                    a[:,:,m:] =0
+                a[:,:, 0:m] = value[:,:, 0:m]
+            else : 
+                a[...] = value
+
+    property shape : 
+        def __get__(self) : return self.data.shape[:2] 
+
+    property order_min : 
         """Min order of the expansion"""
         def __get__(self) : return self._c.order_min()
 
-    property OrderMax : 
+    property order_max : 
         """Max order of the expansion"""
         def __get__(self) : return self._c.order_max()
 
@@ -60,54 +59,43 @@ cdef class TailGf:
     property size : 
         """Length of the expansion"""
         def __get__(self) : return self._c.size()
-
-    property data : 
-        """Access to the data array"""
     
-        def __get__(self) : 
-            return self._c.data_view().to_python()
-
-        def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
-            self.__fill_a(a,value)   
-    
-    def _make_slice(self, sl1, sl2):
-        return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = self.data[sl1,sl2,:], OrderMin = self.OrderMin)
-        #return self.__class__(IndicesL = self._indL[sl1], IndicesR = self._indR[sl2], array = numpy.asfortranarray(self.data[sl1,sl2,:]), OrderMin = self.OrderMin)
-
     def copy(self) : 
-        #return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.data.copy(order='F'), OrderMin = self.OrderMin)
-        return self.__class__(IndicesL = self._indL, IndicesR = self._indR, array = self.data.copy(order='C'), OrderMin = self.OrderMin)
+        return self.__class__(data = self.data.copy(), order_min = self.order_min)
 
     # Should I do more compatibility checks?
-    def copyFrom(self, T) : 
-        self._omin = T._omin
-        self.data = T.data.copy(order='C')
+    def copy_from(self, TailGf T) :
+        self._c = T._c
+
+    def _make_slice(self, sl1, sl2):
+        return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min)
 
     def __repr__ (self) :
-        return string.join([ "%s"%self[r]+ (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.OrderMin, self.OrderMax+1) ] , " + ")
+        return string.join([ "%s"%self[r]+ (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return self.data[:,:,i-self.OrderMin]
+        return self.data[:,:,i-self.order_min]
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        self.data[:,:,i-self._omin] = val
+        self.data[:,:,i-self.order_min] = val
 
     def has_coef(self, i):
-        return (i >= self.OrderMin) and (i <= self.OrderMax)
+        return (i >= self.order_min) and (i <= self.order_max)
 
     def __call__(self, n) :
         if not self.has_coef(n) : raise IndexError, "Index %s is out of range"%n
         return self._c(n).to_python()   
 
-    #-----------------------------------------------------
-    #def __reduce__(self):
-    #    return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
+    def __reduce__(self):
+        return (lambda cls, d : cls(**d)) , (self.__class__,self.__reduce_to_dict__())
   
+    def invert(self) :
+        self._c = 1.0/self._c
+    
     #########      arithmetic operations    #################
 
     def __iadd__(self, TailGf arg):
@@ -176,7 +164,7 @@ cdef class TailGf:
         assert type(self).__name__ == 'GfImFreq' 
         s = type(self).__name__ != 'GfImFreq' 
         return self.__div_impl_(arg, s) if not s else arg.__div_impl_(self, s)
-
+    
     #---- other operations ----
     def zero(self) : 
         """Sets the expansion to 0"""
@@ -191,20 +179,24 @@ cdef class TailGf:
         assert(0)
         # Hum, a pb here : shall we return a new object (view) or do it one site
         # ? (BAD !!).
+        
+    def __write_hdf5__ (self, gr , char * key) :
+        h5_write (make_h5_group_or_file(gr), key, self._c)
+
+#----------------  Reading from h5 ---------------------------------------
+
+def h5_read_TailGf( gr, std_string key) : 
+    return make_TailGf( h5_extractor[tail]()(make_h5_group_or_file(gr),key))
+
+from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
+register_class (TailGf, read_fun = h5_read_TailGf)
 
 #-----------------------------------------------------
 # C -> Python 
 #-----------------------------------------------------
 
 cdef inline make_TailGf ( tail x) : 
-    return TailGf(C_Object = encapsulate (&x))
-
-#-----------------------------------------------------
-#  Register the class for HDF_Archive
-#-----------------------------------------------------
-
-from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (TailGf)
+    return TailGf( data = x.data_view().to_python(), order_min = x.order_min() ) #C_Object = encapsulate (&x))
 
 
 

@@ -28,90 +28,16 @@ from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
 import impl_plot
 
-# Function that transcribe the indices to C++
-cdef indices_2_t make_c_indices(indicesL, indicesR) : 
-    cdef vector[vector[std_string]] res
-    cdef vector[std_string] vl,vr
-    for i in indicesL : vl.push_back(i)
-    for i in indicesR : vr.push_back(i)
-    res.push_back(vl); res.push_back(vr)
-    return indices_2_t(res)
+#def build_cls_with_dict_arg (cls, args) : return cls(**args)
 
-cdef class _ImplGfLocal :
-    
-    cdef object _name, dtype, _mesh, _data, _singularity, _symmetry, _indices
-    cdef readonly  _derived
-
-    def __init__(self, mesh, data, singularity, symmetry, indices, name, derived ) : 
-        self._mesh, self._data, self._singularity, self._symmetry, self._indices= mesh, data, singularity, symmetry, indices
-        self._name = name
-        self._derived = derived
-
-    property mesh : 
-        """Mesh"""
-        def __get__(self): return self._mesh
-    
-    property tail : 
-        def __get__(self): return self._singularity
-        def __set__(self,TailGf t): 
-            assert (self.N1, self.N2, self._singularity.size) == (t.N1, t.N2, t.size)
-            self._singularity.copyFrom (t)
-
-    property data : 
-        """Access to the data array"""
-        def __get__(self) : return self._data
-        def __set__ (self, value) : self._data[:,:,:] = value
-   
-    property N1 : 
-        def __get__(self): return self.data.shape[0]
-
-    property N2 : 
-        def __get__(self): return self.data.shape[1]
-
-    property indicesL : 
-        """Indices ..."""
-        def __get__(self) :
-            v = self._indices[0]
-            for ind in v:
-                yield ind
-    
-    property indicesR : 
-        """Indices ..."""
-        def __get__(self) : 
-            v = self._indices[1]
-            for ind in v:
-                yield ind
-
-    property indices : 
-        """Indices ..."""
-        def __get__(self) : 
-            inds =  self._indices
-            if inds[0] != inds[1]: raise RuntimeError, "Indices R and L are not the same. I can not give you the Indices"
-            for i in inds[0]:
-                yield i
-
-    property Name : 
-        """Name of the Green function (for plots, etc...) """
-        def __get__(self) : return self._name
-        def __set__(self,val) : self._name = str(val)
-
-    #-------------- Reduction -------------------------------
-    # Incorrect .... ** missing
-    def __reduce__(self):
-        return self._derived, { 'Mesh' : self._mesh, 'Data' : self._data, 
-                'Tail' : self._singularity, 'Symmetry' : self._symmetry,
-                'Indices' : self._indices, 'Name' : self._name } 
-
-    #-------------   COPY ----------------------------------------
+class GfGeneric :
 
     def copy (self) : 
-        cls, args = self.__reduce__()
-        print cls, args
-        return cls(**args)
+        return self._derived( Indices = self.indices, Mesh = self.mesh , Data = self.data.copy(), Tail = self.tail.copy(), Name= self.name)
         
     def copy_from(self, X) :
         assert self._derived is X._derived
-        assert self._mesh == X.mesh
+        assert self.mesh == X.mesh
         self.data = X.data
         self.tail = X.tail
         #assert list(self._indices)== list( X._indices)
@@ -161,13 +87,15 @@ cdef class _ImplGfLocal :
 
     #--------------   PLOT   ---------------------------------------
 
-    property real : 
+    @property 
+    def real (self): 
         """Use self.real in a plot to plot only the real part"""
-        def __get__ (self): return PlotWrapperPartialReduce(self,RI='R')
+        return PlotWrapperPartialReduce(self,RI='R')
 
-    property imag : 
+    @property
+    def imag (self): 
         """Use self.imag in a plot to plot only the imag part"""
-        def __get__ (self): return PlotWrapperPartialReduce(self,RI='I')
+        return PlotWrapperPartialReduce(self,RI='I')
   
     #------------------
     
@@ -194,8 +122,7 @@ cdef class _ImplGfLocal :
     def __lazy_expr_eval_context__(self) : 
         return lazy_ctx(self)
 
-    def __richcmp__(self, other, op) :
-        # Shall I implement == ?
+    def __eq__(self, other) :
         raise RuntimeError, " Operator not defined "
     
     def __ilshift__(self, A): 
@@ -226,15 +153,19 @@ cdef class _ImplGfLocal :
     #--------------------  Arithmetic operations  ---------------------------------
 
     def __iadd__(self,arg):
-        assert type(arg).__name__ == self._typename, "Can not add a %s to a %s"%(type(self).__name__ , type(arg).__name__ )
-        self.data[:,:,:] += arg.data
-        self.tail += arg.tail
-        return self
-
-    def __isub__(self,arg):
-        assert type(arg).__name__ == self._typename, "Can not substract a %s from a %s"%(type(arg).__name__, type(self).__name__) 
-        self.data[:,:,:] -= arg.data
-        self.tail -= arg.tail
+        d,t = self.data, self.tail
+        if type(self) == type(arg) :
+            d[:,:,:] += arg.data
+            t += arg.tail
+        elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
+            for om in range (d.shape[-1]) : d[:,:,om ] += arg
+            t[0][:,:] += arg
+        elif Descriptors.is_scalar(arg): # just a scalar
+            arg = arg*numpy.identity(self.N1)
+            for om in range (d.shape[-1]) : d[:,:,om ] += arg
+            t[0][:,:] += arg
+        else:
+            raise RuntimeError, " argument type not recognized in += for %s"%arg
         return self
 
     def __add__(self,y):
@@ -242,38 +173,61 @@ cdef class _ImplGfLocal :
         c += y
         return c
 
+    def __radd__(self,y): return self.__add__(y)
+
+    def __isub__(self,arg):
+        d,t = self.data, self.tail
+        if type(self) == type(arg) :
+            d[:,:,:] -= arg.data
+            t -= arg.tail
+        elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
+            for om in range (d.shape[-1]) : d[:,:,om ] -= arg
+            t[0][:,:] -= arg
+        elif Descriptors.is_scalar(arg): # just a scalar
+            arg = arg*numpy.identity(self.N1)
+            for om in range (d.shape[-1]) : d[:,:,om ] -= arg
+            t[0][:,:] -= arg
+        else:
+            raise RuntimeError, " argument type not recognized in -= for %s"%arg
+        return self
+
     def __sub__(self,y):
         c = self.copy()
         c -= y
+        return c
+
+    def __rsub__(self,y):
+        c = (-1)*self.copy()
+        c += y
         return c
 
     def __imul__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
             If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
         """
-        n = type(arg).__name__
-        if n == self._typename:
+        if type(self) == type(arg) :
             d,d2 = self.data, arg.data
             assert d.shape == d2.shape ," Green function block multiplication with arrays of different size !"
             for om in range (d.shape[-1]) : 
                 d[:,:,om ] = numpy.dot(d[:,:,om], d2[:,:,om])
             self.tail = arg.tail * self.tail
-        elif n in ['float','int', 'complex'] : 
+        elif type(arg).__name__ in ['float','int', 'complex'] : 
             self.data *= arg 
             self.tail *= arg  
         else : 
-            raise RuntimeError, " argument type not recognized in imul for %s"%arg
+            raise RuntimeError, " argument type not recognized in *= for %s"%arg
         return self
 
     def __mul__(self,arg):
-        cdef int i
-        a,b = (self, arg) if type(self).__name__ in  ['float','int', 'complex'] else (arg,self)
-        res = b.copy()
-        res *=a
+        res = self.copy()
+        res *= arg
         return res
 
+    def __rmul__(self,x): 
+        assert type(x).__name__ in ['float','int', 'complex'], "lhs must be a scalar but I found %s"%x
+        return self.__mul__(x)  
+
     def imatmul_L(self,L):
-        cdef int i
         dot = numpy.dot
         assert type(L).__name__ in  ['ndarray', 'matrix'] 
         A = self.data
@@ -282,7 +236,6 @@ cdef class _ImplGfLocal :
         return self
 
     def imatmul_R(self,R):
-        cdef int i
         dot = numpy.dot
         assert type(R).__name__ in  ['ndarray', 'matrix'] 
         A = self.data
@@ -291,7 +244,6 @@ cdef class _ImplGfLocal :
         return self
 
     def imatmul_LR(self,L,R): 
-        cdef int i
         dot = numpy.dot
         assert type(R).__name__ in  ['ndarray', 'matrix'] 
         assert type(L).__name__ in  ['ndarray', 'matrix'] 
@@ -342,14 +294,15 @@ cdef class _ImplGfLocal :
 
     def invert(self) : 
         """Invert the matrix for all arguments"""
-        pass
-        #self._c = inverse_c (self._c)
+        d = self.data
+        for om in range (d.shape[-1]) : 
+            d[:,:,om ] = numpy.linalg.inv(d[:,:,om])
+        self.tail.invert()
 
     #---------------------------------------------------    
     def transpose(self):
         """Transposes the GF Bloc: return a new transposed view"""
-       
-       ### WARNING : this depends on the C++ layering ....
+        ### WARNING : this depends on the C++ layering ....
         return self.__class__( 
                 Indices = list(self.indices),
                 Mesh  = self.mesh,
