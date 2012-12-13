@@ -121,12 +121,12 @@ mark_as_advanced(PYTHON_SITE_PKG)
  #
  # Looking for ipython ... (optional)
  # not very useful... in static case, we should not allow ipython anyway I guess...
- #EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "try :\n import IPython\n print 1\nexcept:\n print 0" OUTPUT_VARIABLE IPYTHON_AVAIL RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
- #if (IPYTHON_AVAIL) 
- # MESSAGE(STATUS "IPython found")
- #else (IPYTHON_AVAIL)
- # MESSAGE(STATUS "IPython NOT FOUND ")
- #endif (IPYTHON_AVAIL)
+ EXECUTE_PROCESS(COMMAND ${PYTHON_INTERPRETER} -c "try :\n import IPython\n print 1\nexcept:\n print 0" OUTPUT_VARIABLE TRIQS_IPYTHON_DETECTED RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
+ if (TRIQS_IPYTHON_DETECTED) 
+  MESSAGE(STATUS "IPython found")
+ else (TRIQS_IPYTHON_DETECTED)
+  MESSAGE(STATUS "IPython NOT FOUND ")
+ endif (TRIQS_IPYTHON_DETECTED)
 
  #
  # linking flags needed when embedding (building a shared lib)
