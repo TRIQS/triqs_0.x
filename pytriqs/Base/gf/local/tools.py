@@ -75,13 +75,13 @@ def get_indices_in_dict( d) :
 
     # Now check the indices
     ty = set([type(x) for x in IndicesL]+[type(x) for x in IndicesR])
-    assert len(ty)==1, " All indices must have the same type"
+    assert len(ty) !=0, "No indices found !"
+    assert len(ty)==1, " All indices must have the same type %s"%ty
 
     # If the indices are not string, make them string anyway
     IndicesL = [ str(x) for x in IndicesL ]     
     IndicesR = [ str(x) for x in IndicesR ]  
 
-    print "get_indi", d, IndicesL, IndicesR 
     return IndicesL, IndicesR
 
 def py_deserialize( cls, s) : 

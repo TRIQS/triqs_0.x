@@ -25,6 +25,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator *( tail &, dcomplex) except + 
     cdef tail operator /( dcomplex, tail &) except + 
     cdef tail operator /( tail &, dcomplex) except + 
+    cdef tail inverse_c "inverse" ( tail &) except +
 
     cdef tail operator *( matrix_view[dcomplex,COrder] &, tail &) except + 
     cdef tail operator *( tail &, matrix_view[dcomplex,COrder]&) except + 

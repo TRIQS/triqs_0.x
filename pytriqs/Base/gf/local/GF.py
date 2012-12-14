@@ -71,8 +71,11 @@ class GF(object):
         assert len(BlockNameList) == len(GFlist), "Number of indices and of Green Function Blocks differ"
 
         # All blocks are compatible for binary operation
-        if not reduce (operator.and_,[ GFlist[0]._is_compatible_for_ops(x) for x in GFlist[1:] ] , True) :
-            raise RuntimeError, "The blocks are not compatible for binary operations : not the same type, same temperature, etc..."
+        # --> correction : All blocks have the same type
+        #if not reduce (operator.and_,[ GFlist[0]._is_compatible_for_ops(x) for x in GFlist[1:] ] , True) :
+        #    raise RuntimeError, "The blocks are not compatible for binary operations : not the same type, same temperature, etc..."
+        if len(set([ type(g) for g in GFlist])) != 1 :
+            raise RuntimeError, "GF : All block must have the same type %s"%GFlist
 
         # init
         self.__Indices,self.__GFlist = BlockNameList,GFlist

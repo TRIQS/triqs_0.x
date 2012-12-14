@@ -44,24 +44,13 @@ int main() {
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
 
- std::cout  <<"-------------lazy assign ------------------"<<std::endl;
-
- //std::cout  << 0.2 + triqs::gf::local::tail::omega( make_shape(2,2) ,5)  + 2.1<< std::endl;
- //std::cout  << "88888888888888888888"<< std::endl; 
-
- /*
- tqa::matrix<double> r(2,2); r() =1;
- r() =3;
- std::cout << " r=  "<< r<< std::endl ;
- r() +=7 ;
- std::cout << " r=  "<< r<< std::endl ;
-*/
+ std::cout  <<"-------------lazy assign 1 ------------------"<<std::endl;
 
  Gv(om_) = (0.2 + om_ + 2.1);
  TEST(G(0));
  TEST(G(inf));
 
- std::cout  <<"-------------lazy assign ------------------"<<std::endl;
+ std::cout  <<"-------------lazy assign 2 ------------------"<<std::endl;
 
  G(om_) = 1/(om_ + 2.3);
 
@@ -69,7 +58,7 @@ int main() {
  TEST(G(inf));
  TEST(inverse(G(inf)));
 
- std::cout  <<"-------------------------------------"<<std::endl;
+ std::cout  <<"-----------------   3 --------------------"<<std::endl;
 
  TEST( Gv(om_) ) ;
  TEST( tql::eval(Gv(om_), om_=0) ) ;
@@ -79,7 +68,7 @@ int main() {
  //local::gf<meshes::tail> t2 = t + 2.4;
 
  TEST(t.order_min()); 
- TEST( t( 0) ) ;
+ TEST( t( 2) ) ;
 
  TEST( Gv2(inf)( 0) ) ;
 
@@ -107,17 +96,12 @@ int main() {
  }
 #endif
  TEST( G( 0) ) ;
- TEST(G(inf)(0));
+ TEST(G(inf)(2));
 
- TEST( ( G(inf) + G(inf) )  (0));
- TEST( ( G(inf) * G(inf) )  (0));
-// TEST( (G + Gc)( inf) ) ;
+ TEST( ( G(inf) + G(inf) )  (2));
+ TEST( ( G(inf) * G(inf) )  (4));
 
- //TEST( (G + 2.3)(0));
- TEST( (t + 2.3)(0));
-
- TEST( t(-1));
- //TEST( (2 * inverse(t))(0));
+ TEST( t(1));
 
  tqa::array<double,9> A(1,2,3,4,5,6,7,8,9);
  A()=0;

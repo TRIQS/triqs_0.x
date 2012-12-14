@@ -67,8 +67,8 @@ namespace triqs { namespace gf {
   template< bool _is_view = IsView>
    ENABLE_IFC(_is_view) operator = (typename T::value_type const & y) { for (auto & x : data ) x=y; }
 
-  T_view_t operator()(tqa::ellipsis, size_t i) const { return data[i];} // ellipsis just here to make later code simpler below...
-  T_view_t operator[](size_t i) const { return data[i];} 
+  T_view_t operator()(tqa::ellipsis, size_t i) const {  assert(i<data.size()); return data[i];} // ellipsis just here to make later code simpler below...
+  T_view_t operator[](size_t i) const { assert(i<data.size()); return data[i];} 
 
   typedef typename std::vector<T_t>::const_iterator const_iterator;
   const_iterator begin() const { return data.begin();}

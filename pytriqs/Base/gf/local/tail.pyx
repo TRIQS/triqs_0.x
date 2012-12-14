@@ -14,6 +14,11 @@ cdef class TailGf:
               * ``Name``:  a name of the GF
 
         """
+        c_obj = d.pop('encapsulated_c_object', None)
+        if c_obj :
+            assert d == {}
+            self._c = extractor [tail] (c_obj) ()
+            return
         a = d.pop('data',None)
         if a==None : 
             (N1, N2), s = d.pop('shape'), d.pop('size')
@@ -71,7 +76,7 @@ cdef class TailGf:
         return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min)
 
     def __repr__ (self) :
-        return string.join([ "%s"%self[r]+ (" /" if r<0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
+        return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
 
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
@@ -94,8 +99,9 @@ cdef class TailGf:
         return (lambda cls, d : cls(**d)) , (self.__class__,self.__reduce_to_dict__())
   
     def invert(self) :
-        self._c = 1.0/self._c
-    
+        self._c = inverse_c (self._c)
+        #self._c = 1.0/self._c
+
     #########      arithmetic operations    #################
 
     def __iadd__(self, TailGf arg):
@@ -195,8 +201,10 @@ register_class (TailGf, read_fun = h5_read_TailGf)
 # C -> Python 
 #-----------------------------------------------------
 
+#cdef inline make_TailGf ( tail x) : 
+#    return TailGf( data = x.data_view().to_python(), order_min = x.order_min() ) #encapsulated_c_object = encapsulate (&x))
 cdef inline make_TailGf ( tail x) : 
-    return TailGf( data = x.data_view().to_python(), order_min = x.order_min() ) #C_Object = encapsulate (&x))
+    return TailGf(encapsulated_c_object = encapsulate (&x))
 
 
 
