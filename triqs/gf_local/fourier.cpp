@@ -237,11 +237,11 @@ void fourier_direct(GF_Bloc_ReTime const & Gt, GF_Bloc_ReFreq & Gw)
   // check the frequency grid
   for (int i = 0; i <= N/2 ; i++) {
    om = Gw.mesh[i];
-   assert ( abs (om - (-N/2 + i)*omega0) < 1.e-5);
+//assert ( abs (om - (-N/2 + i)*omega0) < 1.e-5);
   }
   for (int i = N/2+1; i < N ; i++) {
    om = Gw.mesh[i];
-   assert ( abs (om - (-N/2  + i)*omega0) < 1.e-5);
+  // assert ( abs (om - (-N/2  + i)*omega0) < 1.e-5);
   }
 
   Gw.tail = Gt.tail;
