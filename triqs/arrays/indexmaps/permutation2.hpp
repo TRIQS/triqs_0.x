@@ -83,7 +83,7 @@ namespace triqs { namespace arrays { namespace permutations {
  template<ull F> struct P { 
   static constexpr ull value = F;
   friend std::ostream & operator <<( std::ostream & out, P const &  s) { 
-   //out << "Permutation of size " << permutations::size(s.value) << " : "<< std::hex;
+   out << "Permutation of size " << permutations::size(s.value) << " : "<< std::hex;
    out << std::hex;
    s.print(out, std::integral_constant<ull,0>()); 
    return out << std::dec;

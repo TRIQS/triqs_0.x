@@ -19,23 +19,45 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-#include "./src/array.hpp"
 #include <iostream>
+#include <triqs/arrays/impl/common.hpp>
+#include <triqs/arrays/indexmaps/range.hpp>
 #include <triqs/arrays/indexmaps/permutation2.hpp>
 #include <triqs/arrays/indexmaps/cuboid/index_order.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs::arrays::permutations;
 
+template<ull R, ull p, typename... Args > void test() { 
+
+ typedef indexmaps::index_order::sliced_memory_order<p,Args...> S1;
+ constexpr auto s1 = S1::value; 
+ //std::cout  << " sliced "<< std::hex<< S1::value << "  " <<std::endl ; 
+ std::cout << P<p>() << std::endl;
+ std::cout << P<s1>() << std::endl;
+ //std::cout  << "mashk "<< std::hex<<S1::mask_t::value<< std::endl;
+ if ( R != s1) {std::cout  << "error "<< std::hex<< R<< "  "<< s1<<std::endl ; exit(1);}//TRIQS_RUNTIME_ERROR<<" failed";
+ std::cout  << "----------------------"<< std::endl ; 
+}
 int main(int argc, char **argv) {
 
   init_python_stuff(argc,argv);
 
- constexpr auto p=  permutation2(0,2,1);
- constexpr auto p2= permutation2(2,1,0,3);
- constexpr auto pc= permutation2(1,2,3,0);
+  std::cout  << " F order " << std::endl ; 
+  test< permutation2(0,1)     ,permutation2(0,1,2,3), int, range,int, range>();
+  test< permutation2(0,1,2)   ,permutation2(0,1,2,3), range, range,int, range>();
+  test< permutation2(0,1,2,3) ,permutation2(0,1,2,3), range, range, range, range>();
+  test< 0                     ,permutation2(0,1,2,3), int, int, int, int> (); 
+  
+  std::cout  << " c order " << std::endl ; 
+  test< permutation2(1,0)     ,permutation2(3,2,1,0), int, range,int, range>();
+  test< permutation2(2,1,0)   ,permutation2(3,2,1,0), int, range, range, range>();
+  test< permutation2(2,1,0)   ,permutation2(3,2,1,0), range,int, range, range>();
+  test< permutation2(2,1,0)   ,permutation2(3,2,1,0), range, range,int, range>();
+  test< permutation2(2,1,0)   ,permutation2(3,2,1,0), range, range, range, int>();
+  test< permutation2(3,2,1,0) ,permutation2(3,2,1,0), range, range, range, range>();
+  test< 0                     ,permutation2(3,2,1,0), int, int, int, int> (); 
+ 
+  test< permutation2(0), permutation2(0,1), int, range>();
 
- constexpr auto S1 = indexmaps::index_order::sliced_memory_order<int,int,range,int>(p2);
-
- std::cout  << " sliced "<< S1 << std::endl ; 
 }
