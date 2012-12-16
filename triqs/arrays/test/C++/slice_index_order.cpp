@@ -60,4 +60,42 @@ int main(int argc, char **argv) {
  
   test< permutation2(0), permutation2(0,1), int, range>();
 
+   std::cout  << " custom order " << std::endl ; 
+  test< permutation2(1,0)     ,permutation2(0,3,1,2), int, range,int, range>();
+  test< permutation2(2,0,1)   ,permutation2(0,3,1,2), int, range, range, range>();
+  test< permutation2(0,2,1)   ,permutation2(0,3,1,2), range,int, range, range>();
+  test< permutation2(0,2,1)   ,permutation2(0,3,1,2), range, range,int, range>();
+  test< permutation2(0,1,2)   ,permutation2(0,3,1,2), range, range, range, int>();
+  test< permutation2(0,3,1,2) ,permutation2(0,3,1,2), range, range, range, range>();
+  test< 0                     ,permutation2(0,3,1,2), int, int, int, int> (); 
+ 
+  std::cout  << " ----------- custom order ------------- " << std::endl ; 
+  
+  std::cout  << " ---- 0 int "<< std::endl ;
+  test< permutation2(2,0,3,1) ,permutation2(2,0,3,1), range, range, range, range>();
+  
+  std::cout  << " ---- 1 int "<< std::endl ;
+  test< permutation2(1,2,0)   ,permutation2(2,0,3,1), int, range, range, range>();
+  test< permutation2(1,0,2)   ,permutation2(2,0,3,1), range,int, range, range>();
+  test< permutation2(0,2,1)   ,permutation2(2,0,3,1), range, range,int, range>();
+  test< permutation2(2,0,1)   ,permutation2(2,0,3,1), range, range, range, int>();
+
+  std::cout  << " ---- 2 int "<< std::endl ;
+  test< permutation2(0,1)   ,permutation2(2,0,3,1), int, int, range, range>();
+  test< permutation2(1,0)   ,permutation2(2,0,3,1), int, range,int, range>();
+  test< permutation2(1,0)   ,permutation2(2,0,3,1), int, range,range, int>();
+  test< permutation2(0,1)   ,permutation2(2,0,3,1), range,int, int, range>();
+  test< permutation2(1,0)   ,permutation2(2,0,3,1), range,int, range, int>();
+  test< permutation2(0,1)   ,permutation2(2,0,3,1), range, range,int, int>();
+
+  std::cout  << " ---- 3 int "<< std::endl ;
+  test< permutation2(0)   ,permutation2(2,0,3,1), range, int, int, int>();
+  test< permutation2(0)   ,permutation2(2,0,3,1), int,range, int, int>();
+  test< permutation2(0)   ,permutation2(2,0,3,1), int, int,range, int>();
+  test< permutation2(0)   ,permutation2(2,0,3,1), int, int, int, range>();
+
+  std::cout  << " ---- 4 int "<< std::endl ;
+  test< 0                     ,permutation2(2,0,3,1), int, int, int, int> (); 
+  std::cout  << " OK "<< std::endl ;
+ 
 }

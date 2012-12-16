@@ -27,7 +27,6 @@ namespace triqs { namespace arrays {
 
 // The basic operations put in a template.... 
  template<typename Tag> struct operation;
- 
  template<> struct operation<tags::plus> { 
   template<typename L, typename R> auto operator()(L const & l, R const & r) const -> decltype(l+r) { return l+r;} 
   static const char name = '+';
