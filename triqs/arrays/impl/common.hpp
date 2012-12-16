@@ -82,6 +82,8 @@ namespace boost { namespace serialization { class access;}}
 
 namespace triqs { 
 
+ typedef unsigned long long ull_t;
+ 
  /// Makes a view
  template<typename A> typename A::view_type make_view(A const & x) { return typename A::view_type(x);}
 
@@ -89,6 +91,8 @@ namespace triqs {
  template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
 
  namespace arrays {
+
+
   /// Is the data contiguous
   template<typename A> typename boost::disable_if<is_amv_value_or_view_class<A>,bool>::type has_contiguous_data(A const &) {return false;}
   template<typename A> typename boost::enable_if<is_amv_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}

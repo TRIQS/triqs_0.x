@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -21,98 +20,38 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
 #define TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
-
-#include "../permutation.hpp"
-#include <boost/utility/enable_if.hpp>
-#include <boost/mpl/vector.hpp>
-#include "../../impl/tuple_tools.hpp"
-
-namespace triqs { namespace arrays { 
-
- namespace Tag { struct index_order_static{};}
- namespace indexmaps { namespace IndexOrder { 
+#include "../permutation2.hpp"
+namespace triqs { namespace arrays { namespace indexmaps { namespace index_order {
 
   /*
+   * The storage order is given by a permutation stored in a ull_t (unsigned long long) as in permutations::..
+   *
+   * If P is this permutation :  
+   *   P[0] : the fastest index, 
+   *   P[RANK-1] : the slowest index
+   *   Example : 
+   *   012 : Fortran, the first index is the fastest
+   *   210:  C the last index is the fastest
+   *   120 : storage (i,j,k) is : index j is fastest, then k, then i 
+   * 
    * index_to_memory_rank  : i ---> r : to the index (0,1, ... etc), associates the rank in memory
    *                         e.g. r=0 : fastest index, r = RANK-1 : the slowest
    * memory_rank_to_index  : the inverse mapping : r---> i : 
-   *                         0-> index of the fastest index, etc..
+   *                         0-> the fastest index, etc..
+   *
+   * All these computations can be done *at compile time* (constexpr)
    */
+  
+  constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
+  constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
+  constexpr int rank(ull_t p) { return permutations::size(p);}
+  constexpr ull_t optimal_traversal(ull_t p) { return permutations::inverse(p);}
 
-  /// Storage using C conventions
-  template <int RANK> 
-   struct C: Tag::index_order_static {
-    static const unsigned int rank = RANK;
-    template<int r> struct index_to_memory_rank { static const int value =  (RANK - 1) - r;};
-    template<int r> struct memory_rank_to_index { static const int value =  (RANK - 1) - r;};
-    typedef Permutations::reverse_identity<rank> perm; 
-    static bool is_Fortran() { return (rank <=1);}
-    static bool is_C() { return true;}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
-    static const char C_or_F = 'C';
-   };
+  constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
+  constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
 
-  /// Storage using Fortran conventions
-  template <int RANK> 
-   struct Fortran: Tag::index_order_static  {
-    static const unsigned int rank = RANK;
-    template<int r> struct index_to_memory_rank { static const int value =  r;};
-    template<int r> struct memory_rank_to_index { static const int value =  r;};
-    typedef Permutations::identity<rank> perm; 
-    static bool is_Fortran()  { return true;}
-    static bool is_C()  { return (rank<=1);}
-    template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
-    static const char C_or_F = 'F';
-   };
-
-  /** 
-   * Storage using custom order conventions
-   * - P must be a Permutation. 
-   *   if P[0] : the fastest index, 
-   *   if P[RANK-1] : the slowest index
-   *   Example : 
-   *   custom<Permutation<0,1,2> >  : same as index_order_Fortran, the first index is the fastest
-   *   custom<Permutation<2,1,0> >  : same as index_order_C, the last index is the fastest
-   *   custom<Permutation<1,2,0> >  : storage (i,j,k) is : index j is fastest, then k, then i 
-   *     
-   */
-  template <typename P> 
-   struct custom: Tag::index_order_static  {
-    typedef P perm_inv; 
-    typedef Permutations::inverse<P> perm;
-    static const unsigned int rank = Permutations::length<P>::value;
-    template<int r> struct index_to_memory_rank { static const int value =  Permutations::eval<perm, r >::value; };
-    template<int r> struct memory_rank_to_index { static const int value =  Permutations::eval<perm_inv, r >::value; };
-    static bool is_Fortran() { return Permutations::is_equal<P,typename Fortran<rank>::perm >::value; }
-    static bool is_C() { return Permutations::is_equal<P,typename C<rank>::perm >::value; }
-    template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
-    static const char C_or_F = 'N';
-   };
-
-  //-----------------------------------------------------------
-
-  template<typename ORDER> struct OptimalTraversal {};
-
-  template<int RANK> struct OptimalTraversal<C<RANK> > { typedef Permutations::reverse_identity<RANK> type; };
-  template<int RANK> struct OptimalTraversal<Fortran<RANK> > { typedef Permutations::identity<RANK> type; };
-  template<typename P> struct OptimalTraversal<custom<P> > { typedef P type; };
-
-  //-----------------------------------------------------------
-
-  template<typename MemoryOrderTYPE,typename ArgsTuple> struct SlicedIndexOrder;
-
-  template<int RANK, typename ArgsTuple>
-   struct SlicedIndexOrder<C<RANK>, ArgsTuple> {
-    static const int NN=RANK - TupleTools::CountHowManyInt<ArgsTuple>::value;
-    typedef C<NN> type;
-   };
-
-  template<int RANK,typename ArgsTuple>
-   struct SlicedIndexOrder<Fortran<RANK>, ArgsTuple> {
-    static const int NN=RANK - TupleTools::CountHowManyInt<ArgsTuple>::value;
-    // Changg Fortran<1> into C<1>. Fortran<1> is never returned
-    typedef typename boost::mpl::if_c< NN==1, C<1>, Fortran<NN> >::type type;
-   };
+  constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
+  constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
 
   /*
    * Given a general IndexOrder given by a permutation P, we want to compute the 
@@ -133,46 +72,46 @@ namespace triqs { namespace arrays {
    *     p(r) = [] 
    *     
    */
-  namespace details {
 
-   template <int N, int P, typename ArgsTuple, int c> struct mask {
-    static const bool is_range = boost::is_base_of<typename boost::tuples::element<N,ArgsTuple>::type, range >::type::value ;
-    static const int head = boost::mpl::if_c<is_range, boost::mpl::int_<P>, boost::mpl::int_<-1> >::type::value;
-    typedef Permutations::push_front<head, typename mask<N+1,P + is_range,ArgsTuple,c-1>::type > type;  
-   };
-   template <int N, int P, typename ArgsTuple> struct mask<N,P,ArgsTuple,0> { typedef  Permutations::empty type; };
+  /* template <ull_t MemoryOrder, int P, int c, typename... SliceArgs> struct mask;
+     template <ull_t MemoryOrder, int P, int c>                        struct mask<MemoryOrder,P,c> { static constexpr ull_t value = 0;};
+     template <ull_t MemoryOrder, int P, int c, typename A0, typename... SliceArgs> struct mask<MemoryOrder,c,A0,SliceArgs...> { 
+     static constexpr bool is_range = std::is_base_of<range, A0>::value; 
+     static constexpr ull_t value = ((is_range ? P+1 : 0) << (4*c)) + mask<MemoryOrder,P + is_range, c+1,SliceArgs...>::value;
+     };
 
-   template<int N, typename ArgsTuple, typename perm_inv, typename Mask, int c > struct slo_impl {
-    static const int pn = Permutations::eval<perm_inv,N>::value;
-    static const int r2 = Permutations::eval<Mask,pn>::value;
-    typedef typename slo_impl<N+1, ArgsTuple,perm_inv,Mask,c-1>::type previous;
-    typedef typename boost::mpl::if_c<(r2 != -1), Permutations::push_front<r2,previous>, previous>::type type;
-   };
-   template<int N, typename A, typename pinv, typename M > struct slo_impl<N,A,pinv,M,0> { typedef Permutations::empty type; };
 
-  }//details
+     template <typename... SliceArgs> struct mask;
+     template <>                        struct mask<P,c> { static constexpr ull_t invoke(ull_t mo, int P, int c) { return 0ull;}};
+     template <typename A0, typename... SliceArgs> struct mask<c,A0,SliceArgs...> { 
+     static constexpr bool is_range = std::is_base_of<range, A0>::value; 
+     static constexpr ull_t invoke(ull_t m, int P, int c) { return ((is_range ? P+1 : 0) << (4*c)) + mask<SliceArgs...>::invoke(mo,P + is_range, c+1);}
+     };
+     */
 
-  template<typename P,typename ArgsTuple>
-   struct SlicedIndexOrder<custom<P>, ArgsTuple> { 
-    typedef typename details::mask<0,0,ArgsTuple,custom<P>::rank >::type M;
-    typedef typename  details::slo_impl<0,ArgsTuple,typename custom<P>::perm_inv, M, custom<P>::rank >::type P2;
-    typedef custom<P2> type;
-   };
+  template <typename... SliceArgs> struct _impl;
+  template <>                        struct _impl<> { 
+   static constexpr int n_range_ellipsis=0;
+   static constexpr ull_t mask(ull_t mo, int P,    int c) { return 0ull;}
+   static constexpr ull_t smo (ull_t mo, ull_t ma, int c) { return 0ull;}
+  };
+  template <typename A0, typename... SliceArgs> struct _impl<A0,SliceArgs...> { 
+   static constexpr bool is_range = std::is_base_of<range, A0>::value; // range and ellipsis (derived from range)
+   static constexpr int n_range_ellipsis= _impl<SliceArgs...>::n_range_ellipsis + is_range;
+   static constexpr ull_t mask(ull_t mo, int P, int c)    { return ((is_range ? P+1ull : 0ull) << (4*(c+1))) + _impl<SliceArgs...>::mask(mo,P + ull_t(is_range), c+1);}
+   static constexpr ull_t r2  (ull_t mo, ull_t ma, int c) { return permutations::apply( ma, permutations::apply(permutations::inverse(mo),c)); } 
+   static constexpr ull_t aux (ull_t r,  int c)           { return (r==0ull ? ( (r-1ull) << (4*c)) : 0ull);}
+   static constexpr ull_t smo (ull_t mo, ull_t ma, int c) { return aux( r2(mo,ma,c), c )  + _impl<SliceArgs...>::smo(mo,ma,c+1); }
+  };
 
-  template<typename A1, typename A2> struct same_order {
-  static const bool value = (A1::rank==A1::rank) && Permutations::is_equal<typename A1::perm,typename A2::perm>::value;
-  typedef mpl::bool_<value> type;
- };
+  template<typename ... Args> 
+   constexpr ull_t sliced_memory_order(ull_t mo) { return _impl<Args...>::smo(mo, _impl<Args...>::mask(mo,0,0),0);}
 
- }}
- //-----------------------------------------------------------
- // checks if two static order are identical
- template<typename T1, typename T2>
-  typename boost::enable_if<boost::mpl::and_< boost::is_base_of<triqs::arrays::Tag::index_order_static,T1>, 
-	   boost::is_base_of<triqs::arrays::Tag::index_order_static,T2> >, bool >::type 
-	    operator ==( T1 const & x1, T2 const & x2)  { 
-	     return ( (x1.rank==x2.rank) && Permutations::is_equal<typename T1::perm,typename T2::perm>::value) ;
-	    }
+  template<typename ... Args> 
+   constexpr ull_t sliced_memory_order2(ull_t mo) { return 
+    (is_c (mo) ? c_order(_impl<Args...>::n_range_ellipsis) : 
+     ( is_fortran(mo) ? fortran_order(_impl<Args...>::n_range_ellipsis) : 
+       _impl<Args...>::smo(mo, _impl<Args...>::mask(mo,0,0),0) ));}
 
-}}//namespace triqs::arrays 
+}}}}//namespace triqs::arrays 
 #endif
