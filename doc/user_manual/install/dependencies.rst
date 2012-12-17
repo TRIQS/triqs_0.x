@@ -23,8 +23,8 @@ python*               >= 2.6.5
 scipy*                                  python mathematical library
 numpy*                                  python scientific library
 h5py*                                   python interface to hdf5 library
-sphinx*               >= 1.0.1          python documentation tools
-pyparsing*                              Tool for sphinx
+sphinx*               >= 1.0.1          python documentation tools (to compile documentation)
+pyparsing*                              Tool for sphinx (to compile documentation)
 matplotlib*           >= 0.99           python 2D plotting library
 cython                >=0.17            [DEVELOPERS ONLY]
 ==================    ================  ================================================================================

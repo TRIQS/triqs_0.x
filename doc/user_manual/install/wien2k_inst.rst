@@ -9,7 +9,7 @@ If you choose to install the Wien2TRIQS interface to the Wien2K package for doin
 realistic systems, you need take the last steps manually since Wien2k installation is not standard on all machines.
 During TRIQS installation several files will be will be put into ::
   
-   path_to_TRIQS_install_directory/share/pytriqs/Wien2k_SRC_files/SRC_templates
+   path_to_TRIQS_install_directory/share/triqs/Wien2k_SRC_files/SRC_templates
  
 Those files are:: 
  * :file:`case.cf_f_mm2`  and :file:`case.cf_p_cubic` containing matrices for the complex->cubic transformation of the local angular basis
@@ -24,4 +24,4 @@ In addition, :file:`path_to_Wien2k/SRC_templates` also contains :program:`run_tr
 
 You will also need to insert manually a correct call of  :file:`pytriqs` into these scripts using an appropriate for your system MPI wrapper (mpirun, mpprun...), if needed. Search for *pytriqs* within the scripts to locate the appropriate place for inserting the :file:`pytriqs` call.
 
-
+Finally, you will have to change the calls to :program:`python_with_DMFT` to :program:`pytriqs` in the Wien2k :file:`path_to_Wien2k/run*` files.
