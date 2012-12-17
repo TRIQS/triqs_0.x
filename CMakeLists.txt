@@ -138,15 +138,6 @@ include_directories(${TRIQS_SOURCE_DIR} ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_
 
 # Create a temporary copy of the python modules so that we can run before installation with the test
 FILE(COPY ${TRIQS_SOURCE_DIR}/pytriqs DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ FILES_MATCHING PATTERN *.py PATTERN *.svn EXCLUDE )
-if(BOOST_SOURCE_DIR)
- FILE(COPY ${TRIQS_SOURCE_DIR}/foreignlibs/boost DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ FILES_MATCHING PATTERN *.py PATTERN *.svn EXCLUDE )
-else(BOOST_SOURCE_DIR)
- if(NOT BOOST_MODULE_DIR)
-  EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
- endif(NOT BOOST_MODULE_DIR)
- execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost)
- install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
-endif(BOOST_SOURCE_DIR)
 
 #------------------------
 # link libs for shared libs or for pytriqs 
@@ -176,6 +167,17 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 if (PythonSupport)
  add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
 endif (PythonSupport)
+
+#------------------------
+# copy boost into pytriqs/boost
+#------------------------
+if(NOT BOOST_SOURCE_DIR)
+ if(NOT BOOST_MODULE_DIR)
+  EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
+ endif(NOT BOOST_MODULE_DIR)
+ execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost)
+ install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
+endif(NOT BOOST_SOURCE_DIR)
 
 #------------------------
 # build pytriqs main or make the script
