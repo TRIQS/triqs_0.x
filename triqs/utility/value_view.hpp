@@ -31,7 +31,7 @@ namespace triqs {
 
  template<typename T> class value_view<T,true> {
   std::shared_ptr<T> p;
-  friend value_view<T,false>;
+  friend class value_view<T,false>;
 #ifdef TRIQS_ALLOW_EMPTY_VIEW
   public:
 #endif
@@ -66,7 +66,7 @@ namespace triqs {
 
  template<typename T> class value_view<T,false> {
   std::shared_ptr<T> p;
-  friend value_view<T,true>;
+  friend class value_view<T,true>;
   public:
   typedef void has_view_type_tag; // Idiom : ValueView 
   typedef value_view<T,true>  view_type;
