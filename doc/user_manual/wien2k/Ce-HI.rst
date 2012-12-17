@@ -61,7 +61,7 @@ This program produces the following files:
 
  * :file:`Ce-gamma.ctqmcout` and :file:`Ce-gamma.symqmc` containing projector operators and symmetry operations for orthonormalized Wannier orbitals, respectively.
  * :file:`Ce-gamma.parproj` and :file:`Ce-gamma.sympar` containing projector operators and symmetry operations for uncorrelated states, respectively. These files are needed for projected density-of-states or spectral-function calculations.
- * :file:`Ce-gamma.outbwin` needed for the charge desity recalculation in the case of fully self-consistent LDA+DMFT run (see below).
+ * :file:`Ce-gamma.oubwin` needed for the charge desity recalculation in the case of fully self-consistent LDA+DMFT run (see below).
 
 Now we have all necessary input from :program:`Wien2k` for running DMFT calculations. 
 
