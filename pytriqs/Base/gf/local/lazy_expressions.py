@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,8 +18,9 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+import Descriptors
 
-__all__ = ['lazy_expr','lazy_expr_terminal','eval_lazy_expr', 'lazy','lazy_function', 'transform', 'eval_expr_or_pass']
+__all__ = ['lazy_expr','lazy_expr_terminal','eval_expr_with_context', 'lazy','lazy_function', 'transform', 'eval_expr']
 
 class __aux(object) : 
 
@@ -39,7 +39,7 @@ class __aux(object) :
     def __imul__(self,y): return self.set_from(self*y)
     def __idiv__(self,y): return self.set_from(self/y)
 
-    def __call__(self, *args) : return lazy_expr("F", lazy(self), *map( lazy, args))
+    def __call__(self, *args) : return lazy_expr("F", make_lazy(self), *map( make_lazy, args))
 
 class lazy_expr_terminal (__aux) :
     pass 
@@ -89,21 +89,21 @@ class lazy_expr (__aux) :
 
 #-----------------------------------------------------
  
-def eval_lazy_expr( eval_term, expr ) : 
+def eval_expr_with_context( eval_term, expr ) : 
 
     if expr.tag == "T" : return eval_term(expr.childs[0]) #eval the terminals
 
     if expr.tag == "F" :
         f= expr.childs[0].get_terminal()[1]
-        return f ( *map(lambda e :eval_lazy_expr(eval_term,e) , expr.childs[1:]) ) 
+        return f ( *map(lambda e :eval_expr_with_context(eval_term,e) , expr.childs[1:]) ) 
       
     # Binary operations : 
     ops = { "+" : lambda x,y  : x + y, "-" : lambda x,y  : x - y, "*" : lambda x,y  : x * y, "/" : lambda x,y  : x / y }
-    return ops[expr.tag] ( *map(lambda e :eval_lazy_expr(eval_term,e) , expr.childs) ) 
+    return ops[expr.tag] ( *map(lambda e :eval_expr_with_context(eval_term,e) , expr.childs) ) 
 
 #-----------------------------------------------------
 
-def lazy( x) : return lazy_expr(x)
+def make_lazy( x) : return lazy_expr(x)
 
 #-----------------------------------------------------
 
@@ -134,10 +134,11 @@ def all_terminals (expr) :
             for t in all_terminals(ch) : 
                 yield t
 
-def eval_expr_or_pass (expr) :
+def eval_expr (expr) :
+#def eval_expr_or_pass (expr) :
     """ 
     If expr is not a lazy_expr : returns expr unchanged.
-    Otherwise, tries to eval it by looking for some element in the tree that can create the evaluation context and his not purely abstract
+    Otherwise, tries to eval it by looking for some element in the tree that can create the evaluation context and is not purely abstract
     """
     if not isinstance ( expr, lazy_expr) : return expr # do nothing 
     # first take all terminals
@@ -146,7 +147,7 @@ def eval_expr_or_pass (expr) :
     all_equal = reduce (lambda x,y : x and y , [ C[0] == x for x in C ])
     if not all_equal : raise ValueError, "Evaluation impossible : various terminals lead to incompatible evaluation contexts : their type are not compatible for binary ops"
     C = C[0]
-    return eval_lazy_expr(C, expr) 
+    return eval_expr_with_context(C, expr) 
 
 #--------------- TEST --------------------------------------
 
@@ -164,7 +165,7 @@ if __name__ == "__main__":
         d =  { "g1" : 10, "g2" : 100}
         return d[x.name] if isinstance(x,T) else x
 
-    assert eval_lazy_expr(e_t, a) ==58
+    assert eval_expr_with_context(e_t, a) ==58
 
     def find_sca(tag, childs) : 
         if tag =="+" :
@@ -179,8 +180,8 @@ if __name__ == "__main__":
     def f (x) : return -x
 
     fa = lazy_function("f",f) (a)
-    print fa, eval_lazy_expr(e_t, fa) 
+    print fa, eval_expr_with_context(e_t, fa) 
    
-    assert eval_lazy_expr(e_t, fa) == f( eval_lazy_expr(e_t, a) )
+    assert eval_expr_with_context(e_t, fa) == f( eval_expr_with_context(e_t, a) )
     
 

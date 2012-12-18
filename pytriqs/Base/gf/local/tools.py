@@ -1,4 +1,5 @@
 from types import SliceType
+import Descriptors
 
 class PlotWrapperPartialReduce : 
     """ Internal Use"""

@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -27,6 +26,10 @@ from math import *
 from gf import MeshImFreq,TailGf #, MeshRealFrequency
 from pytriqs.Base.Utility.myUtils import sign
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
+
+def is_lazy(y) :
+    #return type(y) in [ Omega_, lazy_expr]
+    return  isinstance(y,(Omega_, lazy_expr,lazy_expr_terminal))
 
 def is_scalar (x) : 
     return type(x) in [ type(1), type(1.0), type(1j), numpy.ndarray, numpy.int, numpy.int_, numpy.int8, numpy.int16, numpy.int32, numpy.float, numpy.float_, numpy.float32, numpy.float64, numpy.complex, numpy.complex_, numpy.complex64, numpy.complex128 ]

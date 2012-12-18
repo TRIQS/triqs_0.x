@@ -32,7 +32,7 @@ class GfGeneric :
 
     def copy (self) : 
         return self._derived( Indices = self.indices, Mesh = self.mesh , Data = self.data.copy(), Tail = self.tail.copy(), Name= self.name)
-        
+
     def copy_from(self, X) :
         assert self._derived is X._derived
         assert self.mesh == X.mesh
@@ -43,7 +43,7 @@ class GfGeneric :
         self._name = X.Name
 
     #---------------------   [  ] operator        ------------------------------------------
-    
+
     def __getitem__(self,key):
         """Key is a tuple of index (n1,n2) as defined at construction"""
         if len(key) !=2 : raise KeyError, "[ ] must be given two arguments"
@@ -68,12 +68,12 @@ class GfGeneric :
     #------------- Iteration ------------------------------------
 
     def __iter__(self) :
-        for i in self.indicesL : 
+        for i in self.indicesL :
             for j in self.indicesR :
                 b =self[i,j]
                 b.name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
                 yield i,j,b
- 
+
     #---------------- Repr, str ---------------------------------
 
     def __str__ (self) : 
@@ -137,7 +137,7 @@ class GfGeneric :
                 tmp = self.copy()
                 x(tmp)
                 return tmp
-            self.copy_from ( lazy_expressions.eval_lazy_expr(e_t, A2) )
+            self.copy_from ( lazy_expressions.eval_expr_with_context(e_t, A2) )
         elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
             self <<= lazy_expressions.lazy_expr(A)
         elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
@@ -167,6 +167,7 @@ class GfGeneric :
         return self
 
     def __add__(self,y):
+        if Descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) + y
         c = self.copy()
         c += y
         return c
@@ -190,6 +191,7 @@ class GfGeneric :
         return self
 
     def __sub__(self,y):
+        if Descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) - y
         c = self.copy()
         c -= y
         return c
@@ -217,6 +219,7 @@ class GfGeneric :
         return self
 
     def __mul__(self,arg):
+        if Descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) * arg
         res = self.copy()
         res *= arg
         return res
@@ -261,6 +264,7 @@ class GfGeneric :
     def __idiv__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
         """
+        if Descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) / arg
         n = type(arg).__name__
         if n in ['float','int', 'complex'] : 
             self.data /= arg 
