@@ -71,8 +71,3 @@ class GfImFreq ( GfImFreq_cython, GfGeneric ) :
         for n, om in enumerate(self.mesh) : 
             if n >= start : d[:,:,n] = t(om).array
 
-    #--------------   Reduce must be done in final class   ---------------------------------------
-    def __reduce__(self):
-        return lambda cls, d : cls(**d), (self.__class__, self.__reduce_to_dict__())
-
-

@@ -28,8 +28,6 @@ from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
 import impl_plot
 
-#def build_cls_with_dict_arg (cls, args) : return cls(**args)
-
 class GfGeneric :
 
     def copy (self) : 

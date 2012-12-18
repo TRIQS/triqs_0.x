@@ -32,3 +32,6 @@ cdef extern from "triqs/gf/local/tail.hpp" :
 
     cdef void h5_write (h5_group_or_file, char *, tail &)
 
+cdef extern from "triqs/utility/serialization.hpp"  :
+    cdef std_string boost_serialize "triqs::serialize" (tail &)
+    cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, tail &)

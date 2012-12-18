@@ -1,3 +1,5 @@
+from tools import py_deserialize
+
 cdef class TailGf:
     cdef tail _c
     def __init__(self, **d):
@@ -19,6 +21,13 @@ cdef class TailGf:
             assert d == {}
             self._c = extractor [tail] (c_obj) ()
             return
+
+        bss = d.pop('boost_serialization_string', None)
+        if bss :
+            assert d == {}, "Internal error : boost_serialization_string must be the only argument"
+            boost_unserialize_into(<std_string>bss,self._c) 
+            return 
+
         a = d.pop('data',None)
         if a==None : 
             (N1, N2), s = d.pop('shape'), d.pop('size')
@@ -27,6 +36,13 @@ cdef class TailGf:
         assert len(d) ==0, "Unknown parameters in TailGf constructions %s"%d.keys() 
         self._c =  tail( array_view[dcomplex,THREE,COrder](a), omin)
     
+    #-------------- Reduction -------------------------------
+
+    def __reduce__(self):
+        return py_deserialize, (self.__class__,boost_serialize(self._c),)
+
+    #-------------- Properties  -------------------------------
+
     property data : 
         """Access to the data array"""
         def __get__(self) : 

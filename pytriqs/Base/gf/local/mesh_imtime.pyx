@@ -23,6 +23,9 @@ cdef class MeshImTime:
         if op ==2 : # ==
             return self._c == other._c
 
+    def __reduce__(self):
+        return self.__class__, (self.beta, self.statistic, len(self))
+
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :
     return MeshImTime( x.domain().beta, 'F', x.size() )

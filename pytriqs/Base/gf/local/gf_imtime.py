@@ -64,9 +64,3 @@ class GfImTime ( GfImTime_cython, GfGeneric ) :
         has_complex_value = False
         return impl_plot.plot_base( self, OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
 
-    #--------------   Reduce must be done in final class   ---------------------------------------
-
-    def __reduce__(self):
-        return lambda cls, d : cls(**d), (self.__class__, self.__reduce_to_dict__())
-
-

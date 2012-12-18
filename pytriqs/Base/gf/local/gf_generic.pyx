@@ -18,6 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
+import copy_reg
 
 # Function that transcribe the indices to C++
 cdef indices_2_t make_c_indices(indicesL, indicesR) : 
@@ -28,6 +29,11 @@ cdef indices_2_t make_c_indices(indicesL, indicesR) :
     res.push_back(vl); res.push_back(vr)
     return indices_2_t(res)
 
+def builder_cls_with_dict_arg(cls, args) : return cls(**args)
+
+def reductor (x):
+    return (builder_cls_with_dict_arg, (x._derived, x.__reduce_to_dict__()) )
+
 cdef class GfGeneric_cython :
     
     cdef object _name, dtype, _mesh, _data, _singularity, _symmetry, _indices
@@ -37,6 +43,7 @@ cdef class GfGeneric_cython :
         self._mesh, self._data, self._singularity, self._symmetry, self._indices= mesh, data, singularity, symmetry, indices
         self._name = name
         self._derived = derived
+        copy_reg.pickle(self._derived, reductor, builder_cls_with_dict_arg )
 
     def __reduce_to_dict__(self):
         return { 'Mesh' : self._mesh, 'Data' : self._data, 
