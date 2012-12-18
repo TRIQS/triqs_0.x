@@ -2,6 +2,7 @@ from gf import GfImFreq_cython, MeshImFreq, TailGf
 from gf_generic import GfGeneric
 import numpy
 from tools import get_indices_in_dict
+import impl_plot
 
 class GfImFreq ( GfImFreq_cython, GfGeneric ) :
     def __init__(self, **d): 

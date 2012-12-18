@@ -71,7 +71,7 @@ class GfGeneric :
         for i in self.indicesL : 
             for j in self.indicesR :
                 b =self[i,j]
-                b.Name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
+                b.name = "%s_%s_%s"%(self.Name if hasattr(self,'Name') else '',i,j)
                 yield i,j,b
  
     #---------------- Repr, str ---------------------------------

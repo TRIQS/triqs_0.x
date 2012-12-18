@@ -2,6 +2,7 @@ from gf import GfImTime_cython, MeshImTime, TailGf
 from gf_generic import GfGeneric
 import numpy
 from tools import get_indices_in_dict
+import impl_plot
 
 class GfImTime ( GfImTime_cython, GfGeneric ) :
     def __init__(self, **d):
