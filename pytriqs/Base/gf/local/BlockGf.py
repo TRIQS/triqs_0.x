@@ -20,13 +20,12 @@
 #
 ################################################################################
 
-__all__ = ['GF']
 from itertools import izip
 import operator
 from pytriqs.Base.Utility.myUtils import call_factory_from_dict
 from impl_plot import _Plot_Wrapper_Partial_Reduce
 
-class GF(object):
+class BlockGf(object):
     """
     Generic Green Function by Block. 
     """
@@ -35,13 +34,13 @@ class GF(object):
         """
    * There are several possible constructors, which accept only keyword arguments.
             
-            * GF ( NameList = list of names, BlockList = list of blocks, Copy=False, Name='')
+            * BlockGf ( NameList = list of names, BlockList = list of blocks, Copy=False, Name='')
                    
                    * ``NameList`` : list of the name of the blocks : e.g. ["up","down"].
                    * ``BlockList`` : list of blocks of Green functions.
                    * ``Copy`` : If True, it makes a copy of the blocks and build the Green function from these copies.
             
-            * GF ( Name_Block_Generator, Copy = False, Name='')
+            * BlockGf ( Name_Block_Generator, Copy = False, Name='')
                    
                    * ``Name_Block_Generator`` : a generator of (index, block)
                    * ``Copy`` : If True, it makes a copy of the blocks and build the Green function from these copies.
@@ -73,7 +72,7 @@ class GF(object):
         #if not reduce (operator.and_,[ GFlist[0]._is_compatible_for_ops(x) for x in GFlist[1:] ] , True) :
         #    raise RuntimeError, "The blocks are not compatible for binary operations : not the same type, same temperature, etc..."
         if len(set([ type(g) for g in GFlist])) != 1 :
-            raise RuntimeError, "GF : All block must have the same type %s"%GFlist
+            raise RuntimeError, "BlockGf : All block must have the same type %s"%GFlist
 
         # init
         self.__Indices,self.__GFlist = BlockNameList,GFlist
@@ -107,7 +106,7 @@ class GF(object):
  
     def copyFrom(self, G2):
         """Copy the green function from G2: G2 MUST have the same structure !!""" 
-        assert isinstance(G2, GF)
+        assert isinstance(G2, BlockGf)
         for (i,g),(i2,g2) in itertools.izip(self,G2) : 
            if  (g.N1,g.N2) != (g2.N1,g2.N2) : 
                raise RuntimeError, "Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2) 
@@ -154,7 +153,7 @@ class GF(object):
     
     @property 
     def AllIndices(self):
-       """  An Iterator on GF Indices and indices of the blocs of the form : block_index,n1,n2, where n1,n2 are indices of the block"""
+       """  An Iterator on BlockGf Indices and indices of the blocs of the form : block_index,n1,n2, where n1,n2 are indices of the block"""
        for sig,g in self : 
           val = g.Indices
           for x in val :
@@ -290,7 +289,7 @@ class GF(object):
         return c
 
     def __imul__(self,arg):
-        if isinstance(arg, GF): 
+        if isinstance(arg, BlockGf): 
             for (i,g),(i2,g2) in izip(self,arg) : g *= g2
         elif operator.isSequenceType(arg) :
             assert len(arg) == len(self.__GFlist) , "list of incorrect length"
@@ -372,17 +371,17 @@ class GF(object):
        return self.__class__( Name_Block_Generator = [ (n, g.Delta()) for n,g in self], Copy=False)
 
     def transpose(self):
-       """Transpose of the GF"""
+       """Transpose of the BlockGf"""
        self.__check_attr("transpose")
        return self.__class__( Name_Block_Generator = [ (n, g.transpose()) for n,g in self], Copy=False)
 
     def conjugate(self):
-       """Conjugate of the GF"""
+       """Conjugate of the BlockGf"""
        self.__check_attr("conjugate")
        return self.__class__( Name_Block_Generator = [ (n, g.conjugate()) for n,g in self], Copy=False)
 
 #---------------------------------------------------------
 
 from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
-register_class (GF)
+register_class (BlockGf)
 

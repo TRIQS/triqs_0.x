@@ -23,7 +23,6 @@ __all__ = ['plt','oplot','subplots','figsize_default','use_amsmath']
 
 import numpy, matplotlib as mpl, matplotlib.pylab as plt
 from protocol import plot_protocol_apply
-from pytriqs.Base.GF_Local.lazy_expressions import eval_expr_or_pass
 from matplotlib import rc
 
 try:

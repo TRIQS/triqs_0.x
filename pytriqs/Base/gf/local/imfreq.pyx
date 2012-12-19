@@ -50,6 +50,6 @@ cdef make_BlockGfImFreq (gf_block_imfreq G) :
     name_list = G.mesh().domain().names()
     for i,n in enumerate(name_list):
         gl.append( make_GfImFreq(G[i] ) )
-    return GF( NameList = name_list, BlockList = gl)
+    return BlockGf( NameList = name_list, BlockList = gl)
 
 

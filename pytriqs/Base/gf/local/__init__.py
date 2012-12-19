@@ -31,8 +31,8 @@ from gf import TailGf, MeshImFreq, MeshImTime
 from inverse import inverse
 from gf_imfreq import GfImFreq
 from gf_imtime import GfImTime
-from GF import GF
+from BlockGf import BlockGf
 from Descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
-__all__ = ['MeshImFreq','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime', 'GF', 'inverse']
+__all__ = ['MeshImFreq','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime', 'BlockGf', 'inverse']
 
