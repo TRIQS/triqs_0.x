@@ -24,9 +24,7 @@ __all__ = ['GF']
 from itertools import izip
 import operator
 from pytriqs.Base.Utility.myUtils import call_factory_from_dict
-import GF_Initializers
-
-from impl_plot  import _Plot_Wrapper_Partial_Reduce
+from impl_plot import _Plot_Wrapper_Partial_Reduce
 
 class GF(object):
     """
@@ -248,8 +246,8 @@ class GF(object):
           * G <<= any_GF_Initializers will init all the GFBloc with the initializer
           * G <<= g2 where g2 is a GFB will copy g2 into self
           """
-        if isinstance(A, self.__class__): 
-           for (i,g) in self : g.copyFrom(A[i])
+        if isinstance(A, self.__class__):
+           for (i,g) in self : g.copy_from(A[i])
         else: 
            for i,g in self:  g <<= A
         return self

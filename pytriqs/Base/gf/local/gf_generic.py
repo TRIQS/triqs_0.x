@@ -22,7 +22,6 @@ import numpy
 import lazy_expressions, Descriptors
 import pytriqs.Base.Utility.myUtils 
 from pytriqs.Base.Plot.protocol import clip_array
-import GF_Initializers
 import lazy_expressions,Descriptors
 from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
@@ -142,8 +141,6 @@ class GfGeneric :
             self <<= lazy_expressions.lazy_expr(A)
         elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
             self <<= lazy_expressions.lazy_expr(A)
-        elif isinstance(A, GF_Initializers.Base) : # backwards compatibility, deprecated
-            A(self)
         else :
             raise RuntimeError, " <<= operator : RHS  not understood"
         return self
