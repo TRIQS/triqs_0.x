@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_LOCAL_TAIL_H
 #define TRIQS_GF_LOCAL_TAIL_H
+#include <triqs/utility/value_view.hpp>
 #include "../tools.hpp"
 
 namespace triqs { namespace gf { namespace local {
@@ -51,14 +52,16 @@ namespace triqs { namespace gf { namespace local {
    typedef arrays::array_view <dcomplex,3,storage_order>                         data_view_type;
    typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
 
+   typedef value_view<int, IsView>  ordermin_type;
+
    typedef arrays::matrix_view<dcomplex,       storage_order>  mv_type;
    typedef arrays::matrix_view<const dcomplex, storage_order>  const_mv_type;
 
    data_view_type data_view()             { return data;} 
    const data_view_type data_view() const { return data;}
 
-   int order_min() const {return omin;}
-   int order_max() const {return omin + size() -1;}
+   int order_min() const {return omin();}
+   int order_max() const {return omin() + size() -1;}
    size_t size()   const {return data.shape()[2];} 
 
    typedef tqa::mini_vector<size_t,2> shape_type;
@@ -68,12 +71,12 @@ namespace triqs { namespace gf { namespace local {
    bool is_decreasing_at_infinity() const { return (order_min() >=1);}
 
   protected:
-   int omin;
+   ordermin_type omin;
    data_type data;
 
-   tail_impl(): omin(0),data() {} // all arrays of zero size (empty)
-   tail_impl (size_t N1, size_t N2, int order_min, size_t size_) : omin(order_min), data(tqa::make_shape(N1,N2,size_)){data()=0;}
-   tail_impl( data_type const &d, int order_min ): omin(order_min), data(d){}
+   tail_impl(): omin(),data() {} // all arrays of zero size (empty)
+   tail_impl (size_t N1, size_t N2, ordermin_type order_min, size_t size_) : omin(order_min), data(tqa::make_shape(N1,N2,size_)){data()=0;}
+   tail_impl( data_type const &d, ordermin_type order_min ): omin(order_min), data(d){}
    tail_impl(tail_impl          const & x): omin(x.omin), data(x.data){}
    tail_impl(tail_impl<!IsView> const & x): omin(x.omin), data(x.data){}
 
@@ -81,7 +84,7 @@ namespace triqs { namespace gf { namespace local {
   public:
 
    void operator = (tail_impl          const & x) { omin = x.omin; tqa::resize_or_check_if_view(data,x.data.shape()); data = x.data;}
-   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; tqa::resize_or_check_if_view(data,x.data.shape()); data = x.data;}
+   void operator = (tail_impl<!IsView> const & x) { omin = x.omin; tqa::resize_or_check_if_view(data,x.data.shape()); data = x.data; }
 
    mv_type operator() (int n)       { 
     if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ; 
@@ -132,14 +135,6 @@ namespace triqs { namespace gf { namespace local {
     return out; 
    } 
 
-   /*  friend tail operator * (dcomplex a, tail_view const& r);
-       friend tail operator * (tail_view const & r, dcomplex a);
-       friend tail operator * (tail_view const & l, tail_view const& r);
-       friend tail operator / (tail_view const & l, tail_view const& r);
-       friend tail operator / (tail_view const & r, dcomplex a);
-       friend tail operator + (tail_view const & l, tail_view const& r);
-       friend tail operator - (tail_view const & l, tail_view const& r);
-       */
  };
 
  // -----------------------------
@@ -152,16 +147,16 @@ namespace triqs { namespace gf { namespace local {
 #endif
   public :
   template<bool V> tail_view(tail_impl<V> const & t): B(t){}
-  tail_view(B::data_type const &d, int order_min): B(d,order_min){}
-  void rebind( tail_view const &X) { omin = X.omin; data.rebind(X.data);}
+  tail_view(B::data_type const &d, int order_min): B(d,value_view<int,false>(order_min)){}
+  void rebind( tail_view const &X) { omin.rebind(X.omin); data.rebind(X.data);}
+  inline void rebind( tail const &X);// { omin.rebind(X.omin); data.rebind(X.data);}
 
   using B::operator=; // import operator = from impl. class or the default = is synthetized 
-  tail_view & operator=(const tail_view & rhs) { 
-   if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; 
-  }
+  tail_view & operator=(const tail_view & rhs) { if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; }
+  inline tail_view & operator=(const tail & rhs);//{ if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; }
   tail_view & operator=(std::complex<double> const & x) { this->data = x; return *this;} 
   using B::operator(); // import all previously defined operator() for overloading
-  TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
+//  TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
 
   void print_me() const { std::cout  << *this << std::endl ; }
@@ -171,18 +166,18 @@ namespace triqs { namespace gf { namespace local {
  ///The regular class 
  class tail : public tail_impl <false> { 
   typedef tail_impl <false>  B;
+  friend class tail_view;
   public : 
   tail():B() {} 
   typedef tqa::mini_vector<size_t,2> shape_type;
-  tail(size_t N1, size_t N2,  int order_min=-1, size_t size_ =5):B(N1,N2,order_min,size_) {} 
-  tail(shape_type const & sh,  int order_min=-1, size_t size_=5 ):B(sh[0],sh[1],order_min,size_) {} 
+  tail(size_t N1, size_t N2,  int order_min=-1, size_t size_ =5):B(N1,N2,value_view<int,false>(order_min),size_) {} 
+  tail(shape_type const & sh,  int order_min=-1, size_t size_=5 ):B(sh[0],sh[1],value_view<int,false>(order_min),size_) {} 
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){} 
-  //template<typename GfType> tail(GfType const & x): B() { *this = x;} // to maintain value semantics
 
   using B::operator=;
   using B::operator();
-  TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
+  //TRIQS_CLEF_ADD_LAZY_CALL_WITH_VIEW(1,tail_view); // add lazy call, using the view in the expression tree.
 
   /// The simplest tail corresponding to  : omega
   static tail_view omega(size_t N1, size_t N2, size_t size_) { tail t(N1,N2,-1, size_); t(t.order_min())=1; return t; }
@@ -191,6 +186,9 @@ namespace triqs { namespace gf { namespace local {
   static tail_view omega(tail::shape_type const & sh, size_t size_) { return omega(sh[0],sh[1],size_);}
 
  };
+
+ inline void tail_view::rebind( tail const &X) { omin.rebind(X.omin); data.rebind(X.data);}
+ inline tail_view & tail_view::operator=(const tail & rhs) { if (this->data.is_empty()) rebind(rhs); else B::operator=(rhs); return *this; }
 
  /// Slice in orbital space
  template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) { 
@@ -206,7 +204,6 @@ namespace triqs { namespace gf { namespace local {
   const int omin = t_inv.order_min(); //const int omax = t_inv.order_max();
   t_inv(omin) = inverse(t(t.order_min()));
   for (int n=1; n< int(t_inv.size());n++) {
-  //for (size_t n=1; n< t_inv.size();n++) {
    // 0<= n-p < t.size() ---> p <= n, ok  and p > n- t.size() 
    const int pmin = std::max(0, n - int(t.size())+1 );
    // workaround on the bug on calling lapack with views ....

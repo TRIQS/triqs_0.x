@@ -42,12 +42,12 @@ int main() {
 
  auto Gv = g0();
 
- Gv.on_grid(0) = 20;
+ Gv.on_mesh(0) = 20;
  TEST( Gv( 0) ) ;
  TEST( G1( 0) ) ;
- Gv.on_grid(0) = 0;
+ Gv.on_mesh(0) = 0;
 
- g0v.on_grid(0) = 3.2;
+ g0v.on_mesh(0) = 3.2;
 
  // Vv[0](0) = -2.1;
  TEST( Gv( 0) ) ;

@@ -94,8 +94,8 @@ namespace triqs { namespace gf {
 
   typedef gf<retime> gf_t;
 
-  static gf_t make_gf(double tmin, double tmax, size_t n_time_slices, tqa::mini_vector<size_t,2> shape) { 
-   retime::mesh_t m(retime::domain_t(),tmin, tmax, n_time_slices);
+  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) { 
+   retime::mesh_t m(retime::domain_t(),tmin, tmax, n_time_points);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
   }

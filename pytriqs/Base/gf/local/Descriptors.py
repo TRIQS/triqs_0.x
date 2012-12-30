@@ -1,4 +1,3 @@
-
 ################################################################################
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -27,6 +26,10 @@ from math import *
 from gf import MeshImFreq,TailGf #, MeshRealFrequency
 from pytriqs.Base.Utility.myUtils import sign
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
+
+def is_lazy(y) :
+    #return type(y) in [ Omega_, lazy_expr]
+    return  isinstance(y,(Omega_, lazy_expr,lazy_expr_terminal))
 
 def is_scalar (x) : 
     return type(x) in [ type(1), type(1.0), type(1j), numpy.ndarray, numpy.int, numpy.int_, numpy.int8, numpy.int16, numpy.int32, numpy.float, numpy.float_, numpy.float32, numpy.float64, numpy.complex, numpy.complex_, numpy.complex64, numpy.complex128 ]
@@ -75,7 +78,7 @@ class Function (Base):
             for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
         except :
             raise RuntimeError, "The given function has a problem..."
-        if self.Tail : G.tail.copyFrom(self.Tail)
+        if self.Tail : G.tail.copy_from(self.Tail)
         return G
 
 #########################################################################
@@ -94,9 +97,8 @@ class Const(Base):
             C = C*numpy.identity(G.N1) 
         if C.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of constant incorrect"
 
-        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
-        #t[0][:,:] = C
-        G.tail.zero()
+        t = G.tail
+        G.tail = TailGf(shape = t.shape, size = t.size, order_min=0)
         G.tail[0][:,:] = C
         
         Function(lambda om : C, None)(G)
@@ -111,9 +113,9 @@ class Omega_(Base):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
             raise TypeError, "This initializer is only correct in frequency"
 
-        t = G.tail
-        t.zero()
-        t[-1][:,:] = numpy.identity(G.N1)
+        t,Id  = G.tail, numpy.identity(G.N1)
+        G.tail = TailGf(shape = t.shape, size = t.size, order_min=-1)
+        G.tail[-1][:,:] = Id
         Function(lambda om : om*numpy.identity(G.N1), None)(G)
         return G
 
@@ -137,14 +139,11 @@ class A_Omega_Plus_B(Base):
         if A.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of A incorrect"
         if B.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of B incorrect"
 
-        t = G.tail
-        t.zero()
-        t[-1][:,:] = A
-        t[0][:,:] = B
-        #t= TailGf(-1,3,list(G.Indices),list(G.Indices))
-        #t[-1][:,:] = A
-        #t[0][:,:] = B
-
+        t,Id  = G.tail, numpy.identity(G.N1)
+        G.tail = TailGf(shape = t.shape, size = t.size, order_min=-1)
+        G.tail[-1][:,:] = A
+        G.tail[0][:,:] = B
+        
         Function(lambda om : A*om + B, None)(G)
 
         if self.Invert : G.invert()
@@ -161,14 +160,14 @@ class OneFermionInTime(Base):
         if G.mesh.TypeGF not in [GF_Type.Imaginary_Time] : 
             raise TypeError, "This initializer is only correct in frequency"
 
-        t = G.tail
-        t.zero()
+        t,Id  = G.tail, numpy.identity(G.N1)
+        G.tail = TailGf(shape = t.shape, size = t.size, order_min=1)
         t[1][:,:] = 1
         t[2][:,:] = L
         t[3][:,:] = L*L
         
         fact = -1/(1+exp(-L*G.Beta))
-        Function(lambda t : fact* exp(-L*t) *numpy.identity(G.N1), None)(G)
+        Function(lambda t : fact* exp(-L*t) *Id, None)(G)
         return G
 
 
@@ -224,7 +223,7 @@ class SemiCircular (Base):
 
         # Let's create a new tail
         t = G.tail
-        G.tail = TailGf(IndicesL=t.indicesL, IndicesR=t.indicesR, size=t.size, OrderMin=1)
+        G.tail = TailGf(shape = t.shape, size = t.size, order_min=1)
         for i in range(G.N1):
             G.tail[1][i,i] = 1.0
             G.tail[3][i,i] = D**2/4.0
@@ -268,9 +267,7 @@ class Wilson (Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         # Let's create a new tail
-        oldL = G.tail._indL
-        oldR = G.tail._indR
-        G.tail = TailGf(IndicesL=oldL, IndicesR=oldR, size=5, OrderMin=1)
+        G.tail = TailGf(shape = G.tail.shape, size=5, order_min=1)
         for i in range(G.N1):
             G.tail[1][i,i] = 1.0
             G.tail[3][i,i] = D**2/3.0

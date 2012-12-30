@@ -80,9 +80,9 @@ namespace triqs { namespace gf {
   static gf_t make_gf(std::vector<gf<Target>> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
   
   template<typename... Args> 
-  static gf_t make_gf(int N, Args&& ...args)  { 
-   std::vector<gf<Target>> V; 
-   V.push_back( Target::make_gf (args...));
+  static gf_t make_gf(size_t N, Args&& ...args)  { 
+   std::vector<gf<Target>> V;
+   for (size_t i=0; i<N; ++i)  V.push_back( Target::make_gf (args...));
    return make_gf(V);
   }
 

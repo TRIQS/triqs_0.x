@@ -67,7 +67,7 @@ namespace triqs {
   //boost::archive::text_iarchive ia(s);
   boost::archive::binary_iarchive ia(s);
   ia >> obj;
-  x= obj();
+  x= typename view_type_if_exists_else_type<T>::type (obj);
  }
 }
 #endif

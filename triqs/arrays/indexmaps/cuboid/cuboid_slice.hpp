@@ -26,9 +26,14 @@ namespace triqs { namespace arrays { namespace indexmaps {
  namespace cuboid_details { 
 
   template <bool BC> inline void _check_BC ( int N, int ind, size_t B) { }
+  template <bool BC> inline void _check_BC2 ( int N, int ind, size_t B) { }
 
   template <> inline void _check_BC<true> (int N, int ind, size_t B) { 
    bool cond = (ind >= 0) && (ind < int(B));
+   if (!cond) TRIQS_ARRAYS_KEY_ERROR << " index "<<N<<" is out of domain: \n    " << ind <<" is not within [0,"<< B <<"[\n";
+  }
+  template <> inline void _check_BC2<true> (int N, int ind, size_t B) { 
+   bool cond = (ind >= -1) && (ind < int(B));
    if (!cond) TRIQS_ARRAYS_KEY_ERROR << " index "<<N<<" is out of domain: \n    " << ind <<" is not within [0,"<< B <<"[\n";
   }
 
@@ -61,8 +66,9 @@ namespace triqs { namespace arrays { namespace indexmaps {
 
    static void one_step(Li_type li, Si_type si, Lo_type lo, So_type so, std::ptrdiff_t& offset, range R){
     _check_BC <BoundCheck> (N, R.first(),li[N]);
-    _check_BC <BoundCheck> (N, (R.last()==-1 ? li[N] : R.last()) -1 ,li[N]);
+    //_check_BC2 <BoundCheck> (N, (R.last()==-1 ? li[N] : R.last()) -1 ,li[N]);
     lo[P]  = ((R.last()==-1 ? li[N] : R.last()) - R.first() + R.step()-1 )/R.step(); // python behaviour
+    _check_BC2 <BoundCheck> (N, R.first() + (lo[P]!=0 ? (lo[P]-1) : 0)*R.step() ,li[N]);
     so[P]  = si[N]  * R.step();
     offset += R.first() * si[N]  ;
    }

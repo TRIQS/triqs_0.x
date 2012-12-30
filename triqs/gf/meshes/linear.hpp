@@ -30,9 +30,9 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
-   linear_mesh (domain_t const & dom, double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
-   linear_mesh (domain_t && dom,      double x_min, double x_max, size_t ns) : _dom(dom),L(ns+1), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(ns)) {}
-   linear_mesh () : _dom(),L(0){}
+   linear_mesh (domain_t const & dom, double x_min, double x_max, size_t n_pts) : _dom(dom),L(n_pts), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(L-1)) {}
+   linear_mesh (domain_t && dom,      double x_min, double x_max, size_t n_pts) : _dom(dom),L(n_pts), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(L-1)) {}
+   linear_mesh () : _dom(),L(0),_step(0){}
 
    domain_t const & domain() const { return _dom;}
    size_t size() const {return L;}
@@ -48,13 +48,7 @@ namespace triqs { namespace gf {
    public : 
 
    size_t  index_to_linear(index_t ind) const {return ind;}   
-
-   std::tuple<index_t,double,bool> closest_point (double t) const {
-    size_t i = floor((t-xmin)/_step + 0.5); 
-    double delta = (t-xmin) - _step * i;
-    return std::make_tuple(i,delta, ((i>=0) && (i< L)));
-   }
-
+ 
    /// The wrapper for the mesh point
    struct mesh_point_t : arith_ops_by_cast<mesh_point_t, domain_pt_t  > {
     linear_mesh const * m;  
@@ -73,7 +67,7 @@ namespace triqs { namespace gf {
    iterator end()   const { return iterator (this, true);}
 
    /// Mesh comparison
-   bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (L ==M.L) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
+   bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
 
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
@@ -89,14 +83,12 @@ namespace triqs { namespace gf {
     tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
     typename linear_mesh::domain_t dom;
     double xmin,xmax;
-    size_t Nmax; 
+    size_t L; 
     h5_read(gr,"Domain",dom);
     h5_read(gr,"min",xmin);
     h5_read(gr,"max",xmax);
-    h5_read(gr,"size",Nmax);
-
-    // CORRECT THIS FOR SIZE ?
-    m = linear_mesh(std::move(dom), xmin,xmax,Nmax);
+    h5_read(gr,"size",L);
+    m = linear_mesh(std::move(dom), xmin,xmax,L);
    }
 
    //  BOOST Serialization
@@ -126,8 +118,6 @@ namespace triqs { namespace gf {
    //   std::cerr  << " window "<< i << " "<< in << "  "<< w<< std::endl ;
    return std::make_tuple(in, (in ? size_t(i) : 0),w);
  }
-
-
 
 }}
 #endif

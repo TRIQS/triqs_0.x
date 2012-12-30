@@ -84,7 +84,8 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
    public:
 
    void operator=(const mem_block & X) {
-    assert( py_obj==NULL); assert(size_==X.size_);assert(p); assert(X.p);
+    //assert( py_obj==NULL); 
+    assert(size_==X.size_);assert(p); assert(X.p);
     this->memcopy (p, X.p, size_);
    }
 

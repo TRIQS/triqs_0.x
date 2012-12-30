@@ -1,3 +1,5 @@
+from dcomplex cimport * 
+from arrays cimport *   
 cdef extern from "triqs/gf/local/tail.hpp" : 
     cdef cppclass tail "triqs::gf::local::tail_view"  :
         tail()
@@ -23,8 +25,13 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator *( tail &, dcomplex) except + 
     cdef tail operator /( dcomplex, tail &) except + 
     cdef tail operator /( tail &, dcomplex) except + 
+    cdef tail inverse_c "inverse" ( tail &) except +
 
     cdef tail operator *( matrix_view[dcomplex,COrder] &, tail &) except + 
     cdef tail operator *( tail &, matrix_view[dcomplex,COrder]&) except + 
 
+    cdef void h5_write (h5_group_or_file, char *, tail &)
 
+cdef extern from "triqs/utility/serialization.hpp"  :
+    cdef std_string boost_serialize "triqs::serialize" (tail &)
+    cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, tail &)

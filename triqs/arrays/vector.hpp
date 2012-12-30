@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
    typedef typename IMPL_TYPE::storage_type storage_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, false > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
+   template<typename S, bool BoundCheck> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, BoundCheck > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP>

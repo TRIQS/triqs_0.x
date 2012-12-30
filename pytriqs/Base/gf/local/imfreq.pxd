@@ -24,24 +24,24 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         tail singularity_view() 
         indices_2_t indices()
 
-    cdef gf_imfreq operator +( gf_imfreq &, gf_imfreq &) except + 
-    cdef gf_imfreq operator -( gf_imfreq &, gf_imfreq &) except + 
-    cdef gf_imfreq operator *( gf_imfreq &, gf_imfreq &) except + 
+    #cdef gf_imfreq operator +( gf_imfreq &, gf_imfreq &) except + 
+    #cdef gf_imfreq operator -( gf_imfreq &, gf_imfreq &) except + 
+    #cdef gf_imfreq operator *( gf_imfreq &, gf_imfreq &) except + 
     
-    cdef gf_imfreq operator *( dcomplex, gf_imfreq &) except + 
-    cdef gf_imfreq operator *( gf_imfreq &, dcomplex) except + 
-    cdef gf_imfreq operator /( gf_imfreq &, dcomplex) except + 
+    #cdef gf_imfreq operator *( dcomplex, gf_imfreq &) except + 
+    #cdef gf_imfreq operator *( gf_imfreq &, dcomplex) except + 
+    #cdef gf_imfreq operator /( gf_imfreq &, dcomplex) except + 
 
-    cdef gf_imfreq operator *( matrix_view[dcomplex,COrder] &, gf_imfreq &) except + 
-    cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex,COrder]&) except + 
+    #cdef gf_imfreq operator *( matrix_view[dcomplex,COrder] &, gf_imfreq &) except + 
+    #cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex,COrder]&) except + 
 
 cdef extern from "triqs/gf/imfreq.hpp"  :
 
     cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
-    cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
+    #cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
     
-    cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE,COrder], tail) except +
-    cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
+    #cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE,COrder], tail) except +
+    #cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
 
 cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (gf_imfreq &) 

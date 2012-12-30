@@ -5,13 +5,15 @@ cimport cython
 import numpy
 import string
 import warnings
-from GF import GF
+from BlockGf import BlockGf
 from math import pi
 from h5 cimport *
 
 include "fourier.pxd"
 include "tail.pyx"
-include "common.pyx"
+include "gf_generic.pyx"
+include "mesh_imfreq.pyx"
+include "mesh_imtime.pyx"
 include "imfreq.pyx"
 include "imtime.pyx"
 

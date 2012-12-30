@@ -65,7 +65,7 @@ namespace triqs { namespace gf {
    size_t index_to_linear(index_t const & ind) const { size_t R=0; index_to_linear_impl(R,ind, cint<dim-1>()); return R; }
    private: // implementation
    template<int N> void index_to_linear_impl( size_t & R, index_t const & ind, cint<N> n) const { 
-    R += component(n).index_to_linear(std::get<N>(ind)) + R * component(n).size();
+    R = component(n).index_to_linear(std::get<N>(ind)) + R * component(n).size();
     index_to_linear_impl(R,ind,cint<N-1>());
    }
    void index_to_linear_impl( size_t & R, index_t const & ind, cint<-1>) const {} 

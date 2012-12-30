@@ -61,7 +61,8 @@ namespace triqs { namespace mc_tools {
      AllMoves(RandomGenerator),
      AllMeasures(),
      report(&std::cout, Verbosity),
-     after_cycle_duty(AfterCycleDuty) {}
+     after_cycle_duty(AfterCycleDuty),
+     sign_av(0) {}
 
    /** 
      * Constructor from a dictionnary
@@ -77,8 +78,8 @@ namespace triqs { namespace mc_tools {
     Length_MC_Cycle(P["Length_Cycle"]),
     NWarmIterations(P["N_Warmup_Cycles"]),
     NCycles(P["N_Cycles"]),
-    after_cycle_duty(AfterCycleDuty)
-  {}
+    after_cycle_duty(AfterCycleDuty),
+    sign_av(0) {}
 
    /** 
     * Register move M with its probability of being proposed.
@@ -143,6 +144,12 @@ namespace triqs { namespace mc_tools {
      BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add measures with the folloing syntax: add_measure(new mymeasure(...), name) or provide a shared_ptr to a measure as the first argument");
     }
 
+   // get the average sign (to be called after collect_results)
+   MCSignType average_sign() { return sign_av; }
+
+   // get the current percents done
+   uint64_t percent() { return done_percent; }
+
    // An access to the random number generator
    random_generator RandomGenerator;
 
@@ -180,7 +187,7 @@ namespace triqs { namespace mc_tools {
        AllMeasures.accumulate(sign);
      }
      // recompute fraction done
-     uint64_t dp = uint64_t(floor( ( NC*100.0) / NCycles_tot));  
+     uint64_t dp = uint64_t(floor( ( NC*100.0) / (NCycles_tot-1)));
      if (dp>done_percent)  { done_percent=dp; report << done_percent; report<<"%; "; report <<std::flush; }
      finished = ( (NC >= NCycles_tot -1) || converged () );
      stop_it = (stop_callback() || finished);
@@ -197,11 +204,13 @@ namespace triqs { namespace mc_tools {
      boost::mpi::reduce(c, nmeasures, nmeasures_tot, std::plus<uint64_t>(), 0);
      boost::mpi::reduce(c, sum_sign, sum_sign_tot, std::plus<MCSignType>(), 0);
 
+     sign_av = sum_sign_tot / double(nmeasures_tot);
+
      report(2) << "Acceptance rate for all moves:" << std::endl << std::endl;
      report(2) << AllMoves.get_statistics(c) << std::endl;
      report(2) << "Simulation lasted: " << double(Timer) << " seconds" << std::endl;
      report(2) << "Total measures: " << nmeasures_tot << " measures" << std::endl;
-     report(2) << "Average sign: " << sum_sign_tot / double(nmeasures_tot) << std::endl << std::endl << std::flush;
+     report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
      AllMeasures.collect_results(c);
 
    }
@@ -219,7 +228,7 @@ namespace triqs { namespace mc_tools {
 
   private: 
    boost::function<bool()> after_cycle_duty;
-   MCSignType sign;
+   MCSignType sign, sign_av;
    uint64_t NC,done_percent;// NC = number of the cycle
  };
 

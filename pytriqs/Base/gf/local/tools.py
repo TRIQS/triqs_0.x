@@ -1,4 +1,5 @@
 from types import SliceType
+import Descriptors
 
 class PlotWrapperPartialReduce : 
     """ Internal Use"""
@@ -67,16 +68,21 @@ class IndicesConverter :
 
 def get_indices_in_dict( d) : 
     # exclusive : size = (n1,n2) or IndicesL/R
-    IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
-    IndicesR = list ( d.pop('IndicesR',()) or IndicesL  )
+    if 'IndicesPack' in d : 
+        IndicesL, IndicesR = d.pop('IndicesPack')
+    else :
+        IndicesL = list ( d.pop('IndicesL',()) or d.pop('Indices',()) )
+        IndicesR = list ( d.pop('IndicesR',()) or IndicesL  )
 
     # Now check the indices
     ty = set([type(x) for x in IndicesL]+[type(x) for x in IndicesR])
-    assert len(ty)==1, " All indices must have the same type"
+    assert len(ty) !=0, "No indices found !"
+    assert len(ty)==1, " All indices must have the same type %s"%ty
 
     # If the indices are not string, make them string anyway
     IndicesL = [ str(x) for x in IndicesL ]     
-    IndicesR = [ str(x) for x in IndicesR ]     
+    IndicesR = [ str(x) for x in IndicesR ]  
+
     return IndicesL, IndicesR
 
 def py_deserialize( cls, s) : 
