@@ -21,21 +21,21 @@
 ################################################################################
 
 from types import *
-from pytriqs.base.GF_Local import *
-from pytriqs.solvers import Solver_base
+from pytriqs.base.gf_local import *
+from pytriqs.solvers import SolverBase
 from pytriqs.solvers.operators import *
-from pytriqs.base.Utility.myUtils import *
-import pytriqs.base.Utility.Parameters as Parameters
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.utility.myUtils import *
+import pytriqs.base.utility.Parameters as Parameters
+import pytriqs.base.utility.MPI as MPI
 
 try :
-    import pytriqs_Solver_HybridizationExpansion as C_Module
+    import ctqmc_hyb as C_Module
 except : 
     raise ImportError, "Oops ! Did you compile the Hybridization solver ? I can't find it !"
 
 __add__ = []
 
-class Solver(Solver_base):
+class Solver(SolverBase):
     """
     Hybridization QMC solver.
     """
@@ -94,7 +94,7 @@ class Solver(Solver_base):
         self.update_params(param)
 
         Parameters.check_no_parameters_not_in_union_of_dicts(param, self.Required, self.Optional)
-        Solver_base.__init__(self,GFstruct,param)
+        SolverBase.__init__(self,GFstruct,param)
         self.Beta = float(Beta)
         self.Verbosity = 2 if MPI.rank ==0 else 0
 
@@ -345,7 +345,7 @@ class Solver(Solver_base):
 
             known_coeff = numpy.zeros([sig.N1,sig.N2,1],numpy.float_)
             msh = [x.imag for x in sig.mesh]
-            fit_start = msh[self.Fitting_Frequency_Start]
+            fit_start = msh[self.fitting_Frequency_Start]
             fit_stop  = msh[self.N_Frequencies_Accumulated-1]
             
             sig.fitTail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)

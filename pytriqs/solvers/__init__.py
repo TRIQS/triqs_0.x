@@ -23,7 +23,7 @@
 __add__ =[] 
 
 from types import *
-from pytriqs.base.Utility.myUtils import *
+from pytriqs.base.utility.myUtils import *
 
 class SolverBase(object, Pretty_Print):
     """

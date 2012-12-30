@@ -1,4 +1,4 @@
-from pytriqs.base.Lattice.TightBinding import *
+from pytriqs.base.lattice.TightBinding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 
@@ -24,7 +24,7 @@ TB = tight_binding ( BL, hop)
 d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
 
 # Plot the dos it with matplotlib
-from pytriqs.base.Plot.MatplotlibInterface import oplot
+from pytriqs.base.plot.MatplotlibInterface import oplot
 from matplotlib import pylab as plt
 oplot(d,'-o')
 plt.xlim ( -5,5 )

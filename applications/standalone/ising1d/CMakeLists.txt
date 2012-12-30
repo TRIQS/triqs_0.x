@@ -4,7 +4,7 @@ project(myproj CXX)
 
 set(CMAKE_BUILD_TYPE Release)
 
-set(TRIQS_PATH $ENV{TRIQS_PATH} CACHE STRING "Base path of the TRIQS installation")
+set(TRIQS_PATH $ENV{TRIQS_PATH} CACHE STRING "base path of the TRIQS installation")
 include(${TRIQS_PATH}/share/triqs/cmake/TRIQSConfig.cmake)
 
 add_executable(ising1d ising1d.cpp)

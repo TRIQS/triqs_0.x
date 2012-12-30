@@ -4,7 +4,7 @@ g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "g")
 g <<= inverse( Omega + 0.5 )
 
 # open 2 panels top (t) and bottom (b) 
-from pytriqs.base.Plot.MatplotlibInterface import subplots
+from pytriqs.base.plot.MatplotlibInterface import subplots
 f, (t,b) = subplots( 2,1)
 
 #plot ...

@@ -23,21 +23,21 @@
 from types import *
 #from pytriqs.base import DataTestTools
 from pytriqs.solvers import SolverBase
-from pytriqs.base.GF_Local.GFBloc_ImFreq import *
-from pytriqs.base.GF_Local.GFBloc_ReFreq import *
-from pytriqs.base.GF_Local.GF import GF
-from pytriqs.base.GF_Local import GF_Initializers
+from pytriqs.base.gf_local.GFBloc_ImFreq import *
+from pytriqs.base.gf_local.GFBloc_ReFreq import *
+from pytriqs.base.gf_local.GF import GF
+from pytriqs.base.gf_local import GF_Initializers
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
 import copy
-from pytriqs.base.GF_Local import inverse
-import pytriqs.base.Utility.Parameters as Parameters
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.gf_local import inverse
+import pytriqs.base.utility.Parameters as Parameters
+import pytriqs.base.utility.MPI as MPI
 import numpy
 from itertools import izip
 
 __add__ =[]
 
-class SolverBase(SolverBase):
+class SolverBaseHub(SolverBase):
     """
        Python interface to the fortran Hubbard-I Solver.
     """

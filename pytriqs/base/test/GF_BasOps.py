@@ -20,11 +20,11 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
-from pytriqs.base.GF_Local import *
-#import pytriqs.base.GF_Local.GF_Initializers as GF_Initializers
+from pytriqs.base.archive import *
+from pytriqs.base.gf_local import *
+#import pytriqs.base.gf_local.GF_Initializers as GF_Initializers
 import numpy, copy
-from pytriqs.base.Utility.myUtils import Conjugate
+from pytriqs.base.utility.myUtils import Conjugate
 
 h=HDF_Archive('GF_BasOps.output.h5','w')
 

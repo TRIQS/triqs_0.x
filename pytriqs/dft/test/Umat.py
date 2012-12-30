@@ -20,9 +20,9 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
+from pytriqs.base.archive import *
 import numpy
-from pytriqs.dft.umatrix import Umatrix
+from pytriqs.dft.U_matrix import Umatrix
 
 U = Umatrix(U_interact = 2.0, J_Hund = 0.5, l=2)
 

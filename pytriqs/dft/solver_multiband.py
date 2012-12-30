@@ -23,8 +23,8 @@
 
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
-from pytriqs.base.Utility.myUtils import Sum
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.utility.myUtils import Sum
+import pytriqs.base.utility.MPI as MPI
 from types import *
 import numpy
 
@@ -284,7 +284,7 @@ class Solver_MultiBand (Solver):
 	
             known_coeff = numpy.zeros([1,1,2],numpy.float_)
             msh = [x.imag for x in self.G[self.map[spinblocs[0]][0]].mesh ]
-            fit_start = msh[self.Fitting_Frequency_Start]
+            fit_start = msh[self.fitting_Frequency_Start]
             fit_stop = msh[self.N_Frequencies_Accumulated]	
             
             # Fit the tail of G just to get the density
@@ -313,7 +313,7 @@ class Solver_MultiBand (Solver):
 
                 known_coeff = numpy.zeros([sig.N1,sig.N2,1],numpy.float_)
                 msh = [x.imag for x in sig.mesh]
-                fit_start = msh[self.Fitting_Frequency_Start]
+                fit_start = msh[self.fitting_Frequency_Start]
                 fit_stop  = msh[self.N_Frequencies_Accumulated]
             
                 sig.fitTail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)

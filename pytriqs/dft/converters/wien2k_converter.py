@@ -22,8 +22,8 @@
 
 from types import *
 import numpy
-from pytriqs.base.Archive.HDF_Archive import *
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.archive.HDF_Archive import *
+import pytriqs.base.utility.MPI as MPI
 import string
 
 

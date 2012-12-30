@@ -24,9 +24,9 @@
 import copy,numpy
 import string
 from types import *
-from pytriqs.base.GF_Local.GF import GF
-from pytriqs.base.Archive.HDF_Archive import *
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.gf_local.GF import GF
+from pytriqs.base.archive.HDF_Archive import *
+import pytriqs.base.utility.MPI as MPI
 
 
 class Symmetry:

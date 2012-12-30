@@ -10,7 +10,7 @@ SET(PYTHON_SOURCES
  ${CMAKE_CURRENT_SOURCE_DIR}/sumk_lda_tools.py 
  ${CMAKE_CURRENT_SOURCE_DIR}/symmetry.py 
  ${CMAKE_CURRENT_SOURCE_DIR}/symmetry_so.py 
- ${CMAKE_CURRENT_SOURCE_DIR}/umatrix.py 
+ ${CMAKE_CURRENT_SOURCE_DIR}/U_matrix.py 
  )
 
 SET( D ${CMAKE_CURRENT_SOURCE_DIR}/dmftproj/SRC_templates/)

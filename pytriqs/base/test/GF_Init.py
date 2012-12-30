@@ -20,11 +20,11 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
-from pytriqs.base.GF_Local.GFBloc_ReFreq import *
-from pytriqs.base.GF_Local.GFBloc_ImFreq import *
-from pytriqs.base.GF_Local.GF import GF
-import pytriqs.base.GF_Local.GF_Initializers as GF_Initializers
+from pytriqs.base.archive import *
+from pytriqs.base.gf_local.GFBloc_ReFreq import *
+from pytriqs.base.gf_local.GFBloc_ImFreq import *
+from pytriqs.base.gf_local.GF import GF
+import pytriqs.base.gf_local.GF_Initializers as GF_Initializers
 import numpy
 
 

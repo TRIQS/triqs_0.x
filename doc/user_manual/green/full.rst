@@ -189,7 +189,7 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.base.Utility import MPI
+     from pytriqs.base.utility import MPI
      MPI.send (G, destination)
 
 .. warning::

@@ -1,5 +1,5 @@
-from pytriqs.base.Lattice.TightBinding import *
-from pytriqs.base.DOS.Hilbert_Transform import *
+from pytriqs.base.lattice.TightBinding import *
+from pytriqs.base.dos.Hilbert_Transform import *
 from pytriqs.base.GF_Local import GFBloc_ImFreq
 
 # Define a DOS (here on a square lattice)

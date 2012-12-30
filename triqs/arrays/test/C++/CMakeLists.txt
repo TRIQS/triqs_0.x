@@ -31,7 +31,7 @@ ENDFOREACH( TestName1  ${TestList} )
 
 else (NOT python_support)
 
-# We use the headers of triqs and Base in submodules + Blitz + FFTW
+# We use the headers of triqs and base in submodules + Blitz + FFTW
 # ${CMAKE_CURRENT_BINARY_DIR} is for the main_includewrap.cpp main_appendinittab.cpp files
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

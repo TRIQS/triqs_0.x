@@ -21,13 +21,13 @@
 ################################################################################
 
 from types import *
-from pytriqs.solvers.hubbard_I.solver_base import SolverBase
-from pytriqs.base.GF_Local.GFBloc_ImFreq import *
-from pytriqs.base.GF_Local.GF import GF
-from pytriqs.Wien2k.Umatrix import Umatrix
+from pytriqs.solvers.hubbard_I.solver_base import SolverBaseHub
+from pytriqs.base.gf_local.GFBloc_ImFreq import *
+from pytriqs.base.gf_local.GF import GF
+from pytriqs.dft.U_matrix import Umatrix
 import copy,numpy
 
-class Solver(SolverBase):
+class Solver(SolverBaseHub):
     """
        Hubbard I Solver
     """
@@ -53,7 +53,7 @@ class Solver(SolverBase):
         assert (Umat.N==Umat.Nmat),"Transformation that mixes spins is not implemented in hubbard_I Solver!!"
         # now we have the reduced matrices U and Up
 
-        SolverBase.__init__(self, Beta=Beta, GFstruct=GFstruct, Nlm=Nlm, Nmsb = Nmsb, UseSpinOrbit = UseSpinOrbit, Verbosity=Verbosity)
+        SolverBaseHub.__init__(self, Beta=Beta, GFstruct=GFstruct, Nlm=Nlm, Nmsb = Nmsb, UseSpinOrbit = UseSpinOrbit, Verbosity=Verbosity)
         
         self.ur = Umat.Ufull
         self.umn  = Umat.Up             # reduced matrix, opposite spins

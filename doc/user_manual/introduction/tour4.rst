@@ -15,7 +15,7 @@ the previous single-impurity example to the case of a bath with semi-circular de
 Here is a complete program doing this plain vanilla DMFT  on a half-filled one-band Bethe lattice:
 
 
-.. literalinclude:: ../solvers/dmft/SingleSiteBethe.py
+.. literalinclude:: ../solvers/dmft/single_site_bethe.py
 
 
 A general introduction to DMFT calculations with TRIQS can be found :ref:`here <dmftloop>`

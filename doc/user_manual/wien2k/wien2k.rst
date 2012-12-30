@@ -1,6 +1,6 @@
 .. index:: Wien2k
 
-.. module:: pytriqs.Wien2k
+.. module:: pytriqs.dft
 
 .. _wien2k:
 

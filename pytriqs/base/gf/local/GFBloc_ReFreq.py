@@ -111,7 +111,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.Archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.HDF_Archive_Schemes import register_class
 register_class (GFBloc_ReFreq)
  
  

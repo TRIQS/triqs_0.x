@@ -4,11 +4,11 @@ SET(PYTHON_SOURCES
 )
 
 # Install python sources
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Base/gf)
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/gf)
 
 # Build python module
 #SET(SOURCES_WRAP gf_wrap.cpp)
-#python_build_module(GF2 _pytriqs_GF2 Base/gf/local ${SOURCES_WRAP})
+#python_build_module(GF2 _pytriqs_GF2 base/gf/local ${SOURCES_WRAP})
 
 #if (NOT TRIQS_BUILD_STATIC)
 # target_link_libraries(_pytriqs_GF2 triqs ${TRIQS_LINK_LIBS})
@@ -16,7 +16,7 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Base/gf)
 
 # Build cython module 
 
-cython_module( GF3 gf Base/gf/local )
+cython_module( GF3 gf base/gf/local )
 
 
 

@@ -19,7 +19,7 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
 def h5_read_GfImTime ( gr, std_string key) : 
     return make_GfImTime( h5_extractor[gf_imtime]()(make_h5_group_or_file(gr),key))
 
-from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.HDF_Archive_Schemes import register_class
 register_class (GfImTime, read_fun = h5_read_GfImTime)
 
 #----------------  Convertions functions ---------------------------------------

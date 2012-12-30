@@ -22,8 +22,8 @@
 
 from math import *
 import numpy
-from pytriqs.base.GF_Local import GF_Initializers
-from pytriqs.base.Utility.myUtils import Sum
+from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.utility.myUtils import Sum
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
 
@@ -54,10 +54,10 @@ class Solver_2x2_Para_Hubbard (Solver) :
 
       def symm(s):
          s= '-%s'%s
-         Cdag('+1'+s,1).Symmetry()['Z4'] = 1
-         Cdag('-1'+s,1).Symmetry()['Z4'] = -1
-         Cdag('+i'+s,1).Symmetry()['Z4'] = 1j
-         Cdag('-i'+s,1).Symmetry()['Z4'] = -1j
+         Cdag('+1'+s,1).symmetry()['Z4'] = 1
+         Cdag('-1'+s,1).symmetry()['Z4'] = -1
+         Cdag('+i'+s,1).symmetry()['Z4'] = 1j
+         Cdag('-i'+s,1).symmetry()['Z4'] = -1j
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
@@ -118,14 +118,14 @@ class Solver_2x2_Para_Hubbard_Momentum (Solver) :
 
       def symm(s):
          s= '-%s'%s
-         Cdag('00'+s,1).Symmetry()['kx'] =  1
-         Cdag('10'+s,1).Symmetry()['kx'] = -1
-         Cdag('01'+s,1).Symmetry()['kx'] =  1
-         Cdag('11'+s,1).Symmetry()['kx'] = -1
-         Cdag('00'+s,1).Symmetry()['ky'] =  1
-         Cdag('10'+s,1).Symmetry()['ky'] =  1
-         Cdag('01'+s,1).Symmetry()['ky'] = -1
-         Cdag('11'+s,1).Symmetry()['ky'] = -1
+         Cdag('00'+s,1).symmetry()['kx'] =  1
+         Cdag('10'+s,1).symmetry()['kx'] = -1
+         Cdag('01'+s,1).symmetry()['kx'] =  1
+         Cdag('11'+s,1).symmetry()['kx'] = -1
+         Cdag('00'+s,1).symmetry()['ky'] =  1
+         Cdag('10'+s,1).symmetry()['ky'] =  1
+         Cdag('01'+s,1).symmetry()['ky'] = -1
+         Cdag('11'+s,1).symmetry()['ky'] = -1
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
@@ -257,10 +257,10 @@ class Solver_Dimer (Solver) :
       C_do_1 = (C('Do+',1) + C('Do-',1))/sqrt(2)
       C_do_2 = (C('Do+',1) - C('Do-',1))/sqrt(2)
 
-      Cdag('Up+',1).Symmetry()['parity'] = 1
-      Cdag('Up-',1).Symmetry()['parity'] = -1
-      Cdag('Do+',1).Symmetry()['parity'] = 1
-      Cdag('Do-',1).Symmetry()['parity'] = -1
+      Cdag('Up+',1).symmetry()['parity'] = 1
+      Cdag('Up-',1).symmetry()['parity'] = -1
+      Cdag('Do+',1).symmetry()['parity'] = 1
+      Cdag('Do-',1).symmetry()['parity'] = -1
 
       N_up_1 = C_up_1.dagger()*C_up_1
       N_up_2 = C_up_2.dagger()*C_up_2
@@ -284,7 +284,7 @@ class Solver_Dimer (Solver) :
       self.N_Cycles  = 100000
       self.Length_Cycle = 100
       self.N_Frequencies_Accumulated = 120
-      self.Fitting_Frequency_Start = 100
+      self.fitting_Frequency_Start = 100
       self.Use_Segment_Picture = False
 
 #########################################
@@ -301,10 +301,10 @@ class Solver_Anderson (Solver) :
       C_do_1 = (C('Do+',1) + C('Do-',1))/sqrt(2)
       C_do_2 = (C('Do+',1) - C('Do-',1))/sqrt(2)
 
-      Cdag('Up+',1).Symmetry()['parity'] = 1
-      Cdag('Up-',1).Symmetry()['parity'] = -1
-      Cdag('Do+',1).Symmetry()['parity'] = 1
-      Cdag('Do-',1).Symmetry()['parity'] = -1
+      Cdag('Up+',1).symmetry()['parity'] = 1
+      Cdag('Up-',1).symmetry()['parity'] = -1
+      Cdag('Do+',1).symmetry()['parity'] = 1
+      Cdag('Do-',1).symmetry()['parity'] = -1
 
       N_up_1 = C_up_1.dagger()*C_up_1
       N_up_2 = C_up_2.dagger()*C_up_2
@@ -328,7 +328,7 @@ class Solver_Anderson (Solver) :
 
       self.N_Cycles  = 100000
       self.N_Frequencies_Accumulated = 4*int(0.075*Beta/(2*3.1415))
-      self.Fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
+      self.fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
       self.Length_Cycle = 100
       self.Nmax_Matrix = 200
       self.Use_Segment_Picture = False
@@ -360,10 +360,10 @@ class Solver_Anderson_4sites (Solver) :
 
       def symm(s):
          s= '-%s'%s
-         Cdag('+1'+s,1).Symmetry()['Z4'] = 1
-         Cdag('-1'+s,1).Symmetry()['Z4'] = -1
-         Cdag('+i'+s,1).Symmetry()['Z4'] = 1j
-         Cdag('-i'+s,1).Symmetry()['Z4'] = -1j
+         Cdag('+1'+s,1).symmetry()['Z4'] = 1
+         Cdag('-1'+s,1).symmetry()['Z4'] = -1
+         Cdag('+i'+s,1).symmetry()['Z4'] = 1j
+         Cdag('-i'+s,1).symmetry()['Z4'] = -1j
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
@@ -384,7 +384,7 @@ class Solver_Anderson_4sites (Solver) :
 
       self.N_Cycles  = 100000
       self.N_Frequencies_Accumulated = 4*int(0.075*Beta/(2*3.1415))
-      self.Fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
+      self.fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
       self.Length_Cycle = 100
       self.Nmax_Matrix = 200
       self.Use_Segment_Picture = False
@@ -434,14 +434,14 @@ class Solver_Anderson_4sites_Momentum (Solver) :
 
       def symm(s):
          s= '-%s'%s
-         Cdag('00'+s,1).Symmetry()['kx'] =  1
-         Cdag('10'+s,1).Symmetry()['kx'] = -1
-         Cdag('01'+s,1).Symmetry()['kx'] =  1
-         Cdag('11'+s,1).Symmetry()['kx'] = -1
-         Cdag('00'+s,1).Symmetry()['ky'] =  1
-         Cdag('10'+s,1).Symmetry()['ky'] =  1
-         Cdag('01'+s,1).Symmetry()['ky'] = -1
-         Cdag('11'+s,1).Symmetry()['ky'] = -1
+         Cdag('00'+s,1).symmetry()['kx'] =  1
+         Cdag('10'+s,1).symmetry()['kx'] = -1
+         Cdag('01'+s,1).symmetry()['kx'] =  1
+         Cdag('11'+s,1).symmetry()['kx'] = -1
+         Cdag('00'+s,1).symmetry()['ky'] =  1
+         Cdag('10'+s,1).symmetry()['ky'] =  1
+         Cdag('01'+s,1).symmetry()['ky'] = -1
+         Cdag('11'+s,1).symmetry()['ky'] = -1
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
@@ -462,7 +462,7 @@ class Solver_Anderson_4sites_Momentum (Solver) :
 
       self.N_Cycles  = 100000
       self.N_Frequencies_Accumulated = 4*int(0.075*Beta/(2*3.1415))
-      self.Fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
+      self.fitting_Frequency_Start = 3*int(0.075*Beta/(2*3.1415))
       self.Length_Cycle = 100
       self.Nmax_Matrix = 200
       self.Use_Segment_Picture = False

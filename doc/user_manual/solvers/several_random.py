@@ -20,8 +20,8 @@ S = Solver(Beta = Beta,                             # inverse temperature
                (0.05, lambda (a,alpha,dag) : ( {'up':'down','down':'up'}[a],alpha,dag ) ) ], 
            )
 
-from pytriqs.base.Archive import HDF_Archive
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.archive import HDF_Archive
+import pytriqs.base.utility.MPI as MPI
 
 for random_name in ['mt11213b','lagged_fibonacci607']:
 

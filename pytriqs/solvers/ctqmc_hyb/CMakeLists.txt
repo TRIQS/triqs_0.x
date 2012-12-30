@@ -8,5 +8,6 @@ option( Build_CTHyb "Should I build CTHyb ?" ON)
 if (Build_CTHyb)
  install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/solvers/ctqmc_hyb)
  add_subdirectory(test)
+ execute_process(COMMAND ln -fs ${CMAKE_BINARY_DIR}/applications/impurity_solvers/ctqmc_hyb/ctqmc_hyb.so ${CMAKE_CURRENT_BINARY_DIR})
 endif (Build_CTHyb)
 

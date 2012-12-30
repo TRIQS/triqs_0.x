@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
+from pytriqs.base.archive import *
 from pytriqs.solvers.hubbard_I.solver import Solver
 import numpy
 
@@ -32,7 +32,7 @@ S.set_atomic_levels(eal=eal)
 
 S.Solve()
 
-ar=HDF_Archive('hubbard_I.output.h5')
+ar=HDF_Archive('HubbardI.output.h5')
 ar['G'] = S.G
 ar['Sigma'] = S.Sigma
 del ar

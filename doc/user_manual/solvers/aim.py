@@ -32,8 +32,8 @@ for spin, g0 in S.G0 :
 S.Solve()
 
 # Save the results in an hdf5 file (only on the master node)
-from pytriqs.base.Archive import HDF_Archive
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.archive import HDF_Archive
+import pytriqs.base.utility.MPI as MPI
 
 if MPI.IS_MASTER_NODE():
   Results = HDF_Archive("solution.h5",'w')

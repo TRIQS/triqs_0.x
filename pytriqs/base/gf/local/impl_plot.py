@@ -1,4 +1,4 @@
-from pytriqs.base.Plot.protocol import clip_array
+from pytriqs.base.plot.protocol import clip_array
 import numpy
 
 class _Plot_Wrapper_Partial_Reduce : 

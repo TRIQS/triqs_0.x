@@ -22,7 +22,7 @@
 
 from itertools import izip
 import operator
-from pytriqs.base.Utility.myUtils import call_factory_from_dict
+from pytriqs.base.utility.myUtils import call_factory_from_dict
 from impl_plot import _Plot_Wrapper_Partial_Reduce
 
 class BlockGf(object):
@@ -382,6 +382,6 @@ class BlockGf(object):
 
 #---------------------------------------------------------
 
-from pytriqs.base.Archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.HDF_Archive_Schemes import register_class
 register_class (BlockGf)
 

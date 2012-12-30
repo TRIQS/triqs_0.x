@@ -75,7 +75,7 @@ Hubbard-I calculations in TRIQS
 
 In order to run LDA+DMFT calculations within Hubbard-I we need the corresponding python script, :ref:`Ce-gamma-script`. 
 It is generally similar to the script for the case of DMFT calculations with the CT-QMC solver (see :ref:`advanced`), 
-however there are also some differences. First, instead of *pytriqs.Wien2k.Solver_MultiBand* we import Hubbard-I solver ::
+however there are also some differences. First, instead of *pytriqs.dft.solver_multiband* we import Hubbard-I solver ::
 
    from pytriqs.solvers.hubbard_I.solver import Solver
 
@@ -181,7 +181,7 @@ Then after the solver initialization and setting up atomic levels we compute ato
 
 put it into SK class and then calculated the actual DOS::
 
-   SK.DOSpartial(broadening=broadening)
+   SK.dospartial(broadening=broadening)
 
 We may first increase the number of **k**-points in BZ to 10000 by executing :program:`Wien2k` program :program:`kgen` ::
   

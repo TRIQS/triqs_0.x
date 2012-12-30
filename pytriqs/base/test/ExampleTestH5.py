@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
+from pytriqs.base.archive import *
 from numpy import *
 
 print "bonjour"

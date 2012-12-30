@@ -7,11 +7,11 @@ Normally, one wants to adjust some more parameters in order to make the calculat
 will see a more advanced example, which is also suited for parallel execution. 
 First, we load the necessary modules::
 
-  from pytriqs.Wien2k.SumK_LDA import *
-  from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
-  from pytriqs.Wien2k.Solver_MultiBand import *
+  from pytriqs.dft.sumk_lda import *
+  from pytriqs.dft.converters.wien2k_converter import *
+  from pytriqs.dft.solver_multiband import *
   from pytriqs.base.GF_Local import *
-  from pytriqs.base.Archive.HDF_Archive import *
+  from pytriqs.base.archive.HDF_Archive import *
 
 Then we define some parameters::
 

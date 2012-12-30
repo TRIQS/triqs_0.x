@@ -39,6 +39,6 @@ g_pade = GFBloc_ReFreq(Indices = [0], Beta = beta, MeshArray = numpy.arange(-6,6
 g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 # Comparison plot
-from pytriqs.base.Plot.MatplotlibInterface import oplot
+from pytriqs.base.plot.MatplotlibInterface import oplot
 oplot(gr[0,0], '-o', RI = 'S', Name = "Original DOS")
 oplot(g_pade[0,0], '-x', RI = 'S', Name = "Pade-reconstructed DOS")

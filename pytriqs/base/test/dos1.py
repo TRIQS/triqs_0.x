@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.Lattice.TightBinding import *
+from pytriqs.base.lattice.TightBinding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 
@@ -45,7 +45,7 @@ TB = tight_binding ( BL, hop)
 # Compute the density of states
 d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
 
-from pytriqs.base.Archive import HDF_Archive
+from pytriqs.base.archive import HDF_Archive
 R = HDF_Archive('dos1.output.h5','w')
 R['SquareLatt'] = d
 

@@ -3,7 +3,7 @@ SET(PYTHON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
   )
 
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/Base/gf)
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/gf)
 
 add_subdirectory(local)
 

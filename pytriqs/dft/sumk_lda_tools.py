@@ -22,15 +22,15 @@
 
 from types import *
 import numpy
-import pytriqs.base.Utility.Dichotomy as Dichotomy
-from pytriqs.base.GF_Local.GF import GF
-from pytriqs.base.GF_Local.GFBloc_ImFreq import GFBloc_ImFreq
-from pytriqs.base.GF_Local.GFBloc_ReFreq import GFBloc_ReFreq
-from pytriqs.base.GF_Local.GFBloc_ImTime import GFBloc_ImTime
-from pytriqs.base.GF_Local import GF_Initializers
+import pytriqs.base.utility.Dichotomy as Dichotomy
+from pytriqs.base.gf_local.GF import GF
+from pytriqs.base.gf_local.GFBloc_ImFreq import GFBloc_ImFreq
+from pytriqs.base.gf_local.GFBloc_ReFreq import GFBloc_ReFreq
+from pytriqs.base.gf_local.GFBloc_ImTime import GFBloc_ImTime
+from pytriqs.base.gf_local import GF_Initializers
 from pytriqs.solvers.operators import *
-from pytriqs.base.Utility.myUtils import Sum
-import pytriqs.base.Utility.MPI as MPI
+from pytriqs.base.utility.myUtils import Sum
+import pytriqs.base.utility.MPI as MPI
 from datetime import datetime
 
 from pytriqs.dft.symmetry import *

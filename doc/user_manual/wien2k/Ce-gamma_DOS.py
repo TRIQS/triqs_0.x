@@ -1,5 +1,5 @@
-from pytriqs.Wien2k.SumK_LDA_tools import *
-from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
+from pytriqs.dft.sumk_lda_tools import *
+from pytriqs.dft.converters.wien2k_converter import *
 from pytriqs.solvers.hubbard_I.solver import Solver
 
 # Creates the data directory, cd into it:
@@ -67,4 +67,4 @@ S.set_atomic_levels( eal = eal )
 S.GF_realomega(ommin=ommin, ommax = ommax, N_om=N_om)
 S.Sigma.save('S.Sigma')
 SK.put_Sigma(Sigmaimp = [S.Sigma])
-SK.DOSpartial(broadening=broadening)
+SK.dospartial(broadening=broadening)

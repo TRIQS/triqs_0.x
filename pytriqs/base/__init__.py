@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-__all__ = ['GF_Local','Lattice','DOS','SumK','Plot','DMFT','Archive']
+__all__ = ['gf_local','Lattice','DOS','SumK','Plot','DMFT','Archive']
 
 import sys
 if 'additional_builtin_modules' in dir(sys) :

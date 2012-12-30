@@ -1,5 +1,5 @@
-from pytriqs.Wien2k.SumK_LDA import *
-from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
+from pytriqs.dft.sumk_lda import *
+from pytriqs.dft.converters.wien2k_converter import *
 from pytriqs.solvers.hubbard_I.solver import Solver
 
 LDAFilename = 'Ce-gamma'

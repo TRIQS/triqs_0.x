@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.Archive import *
+from pytriqs.base.archive import *
 from pytriqs.dft.converters import Wien2kConverter
 
 #Prepare the input files:

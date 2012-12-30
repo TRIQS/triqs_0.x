@@ -22,7 +22,7 @@ were written by the band structure package :program:`Wien2k/dmftproj`.
 For this purpose we
 use the python module :class:`SumK_LDA_Wien2k_input`. It is initialised as::
 
-  from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
+  from pytriqs.dft.converters.wien2k_converter import *
   Converter = SumK_LDA_Wien2k_input(Filename = material_of_interest)
 
 The only necessary parameter to this construction is the parameter `Filename`.

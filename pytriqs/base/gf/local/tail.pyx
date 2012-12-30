@@ -210,7 +210,7 @@ cdef class TailGf:
 def h5_read_TailGf( gr, std_string key) : 
     return make_TailGf( h5_extractor[tail]()(make_h5_group_or_file(gr),key))
 
-from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.HDF_Archive_Schemes import register_class
 register_class (TailGf, read_fun = h5_read_TailGf)
 
 #-----------------------------------------------------

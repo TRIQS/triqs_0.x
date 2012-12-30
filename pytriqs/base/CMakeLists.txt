@@ -8,22 +8,22 @@ SET(PYTHON_SOURCES
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base)
 
-add_subdirectory(Archive)
-add_subdirectory(DMFT)
-add_subdirectory(DOS)
+add_subdirectory(archive)
+add_subdirectory(dmft)
+add_subdirectory(dos)
 
 option(BUILD_NEW_GF " Build the new GF (require the github version of cython ...)" OFF)
 if (BUILD_NEW_GF) 
  add_subdirectory(gf)
 endif(BUILD_NEW_GF)
 
-add_subdirectory(GF_Local)
-add_subdirectory(Plot)
-add_subdirectory(Fit)
-add_subdirectory(Utility)
+add_subdirectory(gf_local)
+add_subdirectory(plot)
+add_subdirectory(fit)
+add_subdirectory(utility)
 
-add_subdirectory(Lattice)
-add_subdirectory(SumK)
+add_subdirectory(lattice)
+add_subdirectory(sumk)
 
 add_subdirectory(test)
 

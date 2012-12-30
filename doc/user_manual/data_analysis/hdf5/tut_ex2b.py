@@ -1,4 +1,4 @@
-from pytriqs.base.Archive import HDF_Archive
+from pytriqs.base.archive import HDF_Archive
 from pytriqs.base.GF_Local import GFBloc_ImFreq
 
 R = HDF_Archive('myfile.h5', 'r')  # Opens the file myfile.h5 in readonly mode 

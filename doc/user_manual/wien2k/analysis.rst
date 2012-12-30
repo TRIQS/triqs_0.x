@@ -14,7 +14,7 @@ This section explains how to use some tools of the package in order to analyse t
 The analysing tools can be found in an extension of the :class:`SumK_LDA` class, they are
 loaded by::
 
-  from pytriqs.Wien2k.SumK_LDA_tools import *
+  from pytriqs.dft.sumk_lda_tools import *
 
 This import the module ``SumK_LDA_tools``. There are two practical tools, for which you don't
 need a self energy on the real axis:
@@ -83,7 +83,7 @@ counting correction was already read in the initialisation process.
 
 With this self energy, we can do now::
 
-  SK.DOSpartial()
+  SK.dospartial()
 
 This produces the momentum-integrated spectral functions (density of states, DOS), also orbitally resolved. 
 The output is printed into the files

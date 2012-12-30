@@ -22,7 +22,7 @@
 
 import string
 from copy import deepcopy
-from pytriqs.base.Utility.myUtils import Conjugate
+from pytriqs.base.utility.myUtils import Conjugate
 """
  State : represented by a dict : n-> lambda_n
  n = binary decomposition is the occupation number as usual
@@ -283,7 +283,7 @@ class Operator:
             raise "Internal error : len of C is not right"
         return  self.L[0][2][0]
 
-    def Symmetry(self) :
+    def symmetry(self) :
         """
         If the operator is alpha C , return the symmetry of C
         """
