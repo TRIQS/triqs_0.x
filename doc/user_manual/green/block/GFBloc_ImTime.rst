@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ImTime
+  module: gf_imtime
 
 .. _GFBloc_ImTime:
 
@@ -18,7 +18,7 @@ in the Matsubara formalism :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.GF_Local.GFBloc_ImTime
+.. autoclass:: pytriqs.base.gf_local.GFBloc_ImTime
   :members: setFromInverseFourierOf, setFromLegendre, transpose, conjugate
 
 

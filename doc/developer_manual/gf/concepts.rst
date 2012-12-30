@@ -213,7 +213,7 @@ FunctionOnMesh concept
 * **NB** : the result type of the () operator is deduced. Not needed in the concept.
 
 
-Descriptors
+descriptors
 ======================================
 
 A descriptor is a structure that contains  everything specific to the Green function

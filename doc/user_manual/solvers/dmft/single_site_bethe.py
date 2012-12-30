@@ -1,4 +1,4 @@
-from pytriqs.base.GF_Local import *
+from pytriqs.base.gf_local import *
 from pytriqs.base.archive import *
 import pytriqs.base.utility.MPI as MPI
 

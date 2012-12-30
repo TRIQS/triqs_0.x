@@ -24,7 +24,7 @@ from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
 from pytriqs.base.gf_local import GFBloc_ImFreq, GFBloc_ReFreq
-from pytriqs.base.gf_local.Descriptors import Function
+from pytriqs.base.gf_local.descriptors import Function
 
 beta = 100  # Inverse temperature
 L = 101     # Number of Matsubara frequencies used in the Pade approximation

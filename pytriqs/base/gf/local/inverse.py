@@ -20,10 +20,10 @@
 #
 ################################################################################
 
-import lazy_expressions, Descriptors
+import lazy_expressions, descriptors
 
 def inverse(x):
-    if Descriptors.is_lazy(x):
+    if descriptors.is_lazy(x):
     #if isinstance(x,(lazy_expressions.lazy_expr,lazy_expressions.lazy_expr_terminal)) : 
         return lazy_expressions.lazy_function("inverse", inverse) (x)
     assert hasattr(x,'invert') and hasattr(x,'copy')

@@ -47,7 +47,7 @@ onelevel_fit = lambda X,Y :general_fit (X,Y,
 if __name__ == "__main__" : 
 
     from pytriqs.base.gf_local import *
-    from pytriqs.base.gf_local.Descriptors import Omega
+    from pytriqs.base.gf_local.descriptors import Omega
     g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "g")
     g <<= inverse( Omega + 0.5 )
 
@@ -55,7 +55,7 @@ if __name__ == "__main__" :
     fit = linear_fit    ( X,Y )
     fit2 = onelevel_fit ( X,Y )
     
-    from pytriqs.base.plot.MatplotlibInterface import plot
+    from pytriqs.base.plot.mpl_interface import plot
     
     plot (g, '-o', x_window = (0,10) ) 
     plot (fit , '-x', x_window = (0,0.5) )

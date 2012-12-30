@@ -19,10 +19,10 @@
 #
 ################################################################################
 import numpy
-import lazy_expressions, Descriptors
+import lazy_expressions, descriptors
 import pytriqs.base.utility.myUtils
 from pytriqs.base.plot.protocol import clip_array
-import lazy_expressions,Descriptors
+import lazy_expressions,descriptors
 from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
 import impl_plot
@@ -199,22 +199,22 @@ cdef class _ImplGfLocal :
     
     def __ilshift__(self, A): 
         """ A can be two things :
-          * G <<= any_GF_Initializers will init the GFBloc with the initializer
+          * G <<= any_gf_init will init the GFBloc with the initializer
           * G <<= g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, self.__class__) : 
             if self is not A : self.copy_from(A) # otherwise it is useless AND does not work !!
         elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
-            A2= Descriptors.convert_scalar_to_Const(A)
+            A2= descriptors.convert_scalar_to_Const(A)
             def e_t (x) : 
-                if not isinstance(x, Descriptors.Base) : return x
+                if not isinstance(x, descriptors.Base) : return x
                 tmp = self.copy()
                 x(tmp)
                 return tmp
             self.copy_from ( lazy_expressions.eval_lazy_expr(e_t, A2) )
         elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
             self <<= lazy_expressions.lazy_expr(A)
-        elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
+        elif descriptors.is_scalar(A) : #in the case it is a scalar .... 
             self <<= lazy_expressions.lazy_expr(A)
         else :
             raise RuntimeError, " <<= operator : RHS  not understood"

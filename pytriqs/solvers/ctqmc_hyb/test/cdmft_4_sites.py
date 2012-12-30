@@ -21,11 +21,11 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.base.gf_local import GF_Initializers,GF,GFBloc_ImFreq,inverse
+from pytriqs.base.gf_local import gf_init,GF,GFBloc_ImFreq,inverse
 from pytriqs.base.lattice.SuperLattice import TBSuperLattice as SuperLattice
 from pytriqs.base.lattice.TightBinding import TBLattice as Lattice
-from pytriqs.base.sumk.sumk_Discrete_From_Lattice import *
-from pytriqs.base.dmft.Loop_Generic import *
+from pytriqs.base.sumk import *
+from pytriqs.base.dmft import DMFT_Loop_Generic
 import pytriqs.base.utility.MPI as MPI
 
 #
@@ -73,7 +73,7 @@ G= GF( Name_Block_Generator = [ (s,GFBloc_ImFreq(Indices = SK.GFBlocIndices, Mes
 Sigma = G.copy()
 
 # Init Sigma
-for n,B in S.Sigma : B <<= GF_Initializers.Const(2.0)
+for n,B in S.Sigma : B <<= gf_init.Const(2.0)
 
 # Now I write my DMFT loop...
 class myloop (DMFT_Loop_Generic) : 

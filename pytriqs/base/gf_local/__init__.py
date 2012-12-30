@@ -28,14 +28,14 @@ It is imported with the command::
 """
 
 from inverse import inverse
-from GFBloc_ImFreq import GFBloc_ImFreq
-from GFBloc_ReFreq import GFBloc_ReFreq
-from GFBloc_ImTime import GFBloc_ImTime
-from GFBloc_ReTime import GFBloc_ReTime
-from GFBloc_ImLegendre import GFBloc_ImLegendre
-from GF import GF
-from Descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
+from gf_imfreq import GFBloc_ImFreq
+from gf_refreq import GFBloc_ReFreq
+from gf_imtime import GFBloc_ImTime
+from gf_retime import GFBloc_ReTime
+from gf_legendre import GFBloc_ImLegendre
+from block_gf import GF
+from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
 
-__all__ = ['GF_Initializers','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','GFBloc_ImTime','GFBloc_ImFreq','GFBloc_ReFreq','GFBloc_ReTime','GFBloc_ImLegendre','GF', 'inverse']
+__all__ = ['gf_init','Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','GFBloc_ImTime','GFBloc_ImFreq','GFBloc_ReFreq','GFBloc_ReTime','GFBloc_ImLegendre','GF', 'inverse']
 

@@ -21,8 +21,8 @@
 ################################################################################
 
 import numpy
-from ArrayViewWithIndexConverter import ArrayViewWithIndexConverter,_IndicesConverter
-import lazy_expressions, Descriptors
+from array_view import ArrayViewWithIndexConverter,_IndicesConverter
+import lazy_expressions, descriptors
 from pytriqs.base.utility.myUtils import *
 from pytriqs.base.plot.protocol import clip_array
 
@@ -34,7 +34,7 @@ class _Plot_Wrapper_Partial_Reduce :
         Options.update(self.opt)
         return self.obj._plot_(Options)
 
-class _GFBloc_concept_impl:
+class gf_concept:
 
     #-------------  Indices management ---------------------
 

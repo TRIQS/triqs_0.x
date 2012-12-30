@@ -26,7 +26,7 @@ import numpy
 from math import *
 from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
 from pytriqs.base.utility.myUtils import sign
-from pytriqs.base.gf_local.ArrayViewWithIndexConverter import ArrayViewWithIndexConverter
+from pytriqs.base.gf_local.array_view import ArrayViewWithIndexConverter
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
 
 def is_scalar (x) : 

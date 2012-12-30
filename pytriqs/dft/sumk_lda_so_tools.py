@@ -24,11 +24,11 @@
 from types import *
 import numpy
 import pytriqs.base.utility.Dichotomy as Dichotomy
-from pytriqs.base.gf_local.GF import GF
-from pytriqs.base.gf_local.GFBloc_ImFreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.GFBloc_ReFreq import GFBloc_ReFreq
-from pytriqs.base.gf_local.GFBloc_ImTime import GFBloc_ImTime
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
+from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
+from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
+from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.utility.myUtils import Sum
 import pytriqs.base.utility.MPI as MPI
@@ -171,7 +171,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
             
                 
-            Gupf <<= GF_Initializers.A_Omega_Plus_B(A=1,B=1j*broadening)
+            Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]
@@ -303,7 +303,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                      for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
  
 
-                 S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=1j*broadening)
+                 S <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
                  M = copy.deepcopy(mupat)
                  for ibl in range(self.NspinblocsGF[self.SO]): 
                      ind = ntoi[bln[ibl]]
@@ -520,7 +520,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                         Akw = numpy.zeros([self.Nk,1],numpy.float_)
                     
 
-                S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=1j*broadening)
+                S <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
                 S -= S.NBlocks * [ self.Hopping[ik] - mupat ]  
 
                 tmp = S.copy()    # init temporary storage
@@ -764,7 +764,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                     Dmu += numpy.dot(self.Proj_Mat[ik][icrsh].conjugate().transpose(),numpy.dot(Deltamu,self.Proj_Mat[ik][icrsh]))
             
                 
-            S <<= GF_Initializers.A_Omega_Plus_B(A=A,B=1j*broadening)
+            S <<= gf_init.A_Omega_Plus_B(A=A,B=1j*broadening)
             S -= S.NBlocks * [ self.Hopping[ik] - mupat + Dmu ]  
 
 
@@ -1035,7 +1035,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
 
-            S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            S <<= gf_init.A_Omega_Plus_B(A=1,B=0)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]
@@ -1127,7 +1127,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
 
-            S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            S <<= gf_init.A_Omega_Plus_B(A=1,B=0)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]

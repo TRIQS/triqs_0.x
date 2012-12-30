@@ -24,12 +24,12 @@ from types import *
 from pytriqs.dft.symmetry import *
 import numpy
 import pytriqs.base.utility.Dichotomy as Dichotomy
-from pytriqs.base.gf_local.GF import GF
-from pytriqs.base.gf_local.GFBloc_ImFreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.GFBloc_ReFreq import GFBloc_ReFreq
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
+from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
+from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.archive.HDF_Archive import *
+from pytriqs.base.archive import *
 import pytriqs.base.utility.MPI as MPI
 
 from math import cos,sin
@@ -292,7 +292,7 @@ class SumK_LDA:
         idmat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]  
         #for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
 
-        self.Gupf <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+        self.Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=0)
         M = copy.deepcopy(idmat)
         for ibl in range(self.NspinblocsGF[self.SO]): 
             ind = ntoi[bln[ibl]]

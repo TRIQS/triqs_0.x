@@ -767,7 +767,7 @@ f.close()
 
 
 Converter = Wien2kConverter(Filename='data')
-Converter.HDFfile = 'Wien2kconvert.output.h5'
+Converter.HDFfile = 'wien2k_convert.output.h5'
 Converter.convert_DMFT_input()
 
 

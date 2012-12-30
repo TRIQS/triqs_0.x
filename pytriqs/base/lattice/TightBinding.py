@@ -23,7 +23,7 @@
 __all__ = [ 'bravais_lattice','tight_binding','dos','dos_patch','energies_on_bz_grid','energies_on_bz_path','hopping_stack']
 
 from pytriqs_LatticeTools import bravais_lattice, tight_binding,dos_patch as dos_patch_c, dos as dos_c, energies_on_bz_grid,energies_on_bz_path,hopping_stack
-from pytriqs.base.dos.dos import DOS
+from pytriqs.base.dos import DOS
 
 def dos( TB, nkpts, neps, Name) : 
     """

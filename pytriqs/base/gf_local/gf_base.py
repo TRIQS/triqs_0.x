@@ -24,12 +24,12 @@ from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
 from pytriqs.base.utility.myUtils import *
 import numpy
 from types import *
-from ArrayViewWithIndexConverter import ArrayViewWithIndexConverter,_IndicesConverter
-import GF_Initializers
-import lazy_expressions,Descriptors
+from array_view import ArrayViewWithIndexConverter,_IndicesConverter
+import gf_init
+import lazy_expressions,descriptors
 from pytriqs.base.plot.protocol import clip_array
 
-class _GFBloc_base_data_tail  :
+class gf_base  :
     
     def _init_base__(self,d) :
         if 'Indices' in d: 
@@ -132,7 +132,7 @@ class _GFBloc_base_data_tail  :
             def __eq__ (self, y) :
                 return isinstance(y, self.__class__) and self.G._is_compatible_for_ops(y.G)
             def __call__ (self, x) : 
-                if not isinstance(x, Descriptors.base) : return x
+                if not isinstance(x, descriptors.base) : return x
                 tmp = self.G.copy()
                 x(tmp)
                 return tmp
@@ -141,15 +141,15 @@ class _GFBloc_base_data_tail  :
 
     def __ilshift__(self, A): 
         """ A can be two things :
-          * G <<= any_GF_Initializers will init the GFBloc with the initializer
+          * G <<= any_gf_init will init the GFBloc with the initializer
           * G <<= g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, self.__class__) : 
             if self is not A : self.copyFrom(A) # otherwise it is useless AND does not work !!
         elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
-            A2= Descriptors.convert_scalar_to_Const(A)
+            A2= descriptors.convert_scalar_to_Const(A)
             def e_t (x) : 
-                if not isinstance(x, Descriptors.base) : return x
+                if not isinstance(x, descriptors.base) : return x
                 tmp = self.copy()
                 x(tmp)
                 return tmp
@@ -157,9 +157,9 @@ class _GFBloc_base_data_tail  :
             self.copyFrom ( lazy_expressions.eval_lazy_expr(e_t, A2) )
         elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
             self <<= lazy_expressions.lazy_expr(A)
-        elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
+        elif descriptors.is_scalar(A) : #in the case it is a scalar .... 
             self <<= lazy_expressions.lazy_expr(A)
-        elif isinstance(A, GF_Initializers.base) : # backwards compatibility, deprecated
+        elif isinstance(A, gf_init.base) : # backwards compatibility, deprecated
             A(self)
         else :
             raise RuntimeError, " GF Block : <<= operator : RHS not understood"
@@ -199,7 +199,7 @@ class _GFBloc_base_data_tail  :
             arg = numpy.array(arg)
             for om in range (d.shape[-1]) : d[:,:,om ] += arg
             t[0].array[:,:] += arg
-        elif Descriptors.is_scalar(arg): # just a scalar
+        elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
             for om in range (d.shape[-1]) : d[:,:,om ] += arg
             t[0].array[:,:] += arg
@@ -227,7 +227,7 @@ class _GFBloc_base_data_tail  :
             arg = numpy.array(arg)
             for om in range (d.shape[-1]) : d[:,:,om ] -= arg
             t[0].array[:,:] -= arg
-        elif Descriptors.is_scalar(arg): # just a scalar
+        elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
             for om in range (d.shape[-1]) : d[:,:,om ] -= arg
             t[0].array[:,:] -= arg
@@ -258,7 +258,7 @@ class _GFBloc_base_data_tail  :
             for om in range (d.shape[-1]) : 
                 d[:,:,om ] = numpy.dot(d[:,:,om], d2[:,:,om])
             t *= arg._tail
-        elif Descriptors.is_scalar(arg): # a scalar
+        elif descriptors.is_scalar(arg): # a scalar
             d[:,:,:] *= arg
             # to be simplified when the *= scalar for tail will be added !
             for n in range(t.OrderMin,t.OrderMax+1):
@@ -288,7 +288,7 @@ class _GFBloc_base_data_tail  :
             for om in range (d.shape[-1]) : 
                 d[:,:,om ] = numpy.dot(d[:,:,om], numpy.linalg.inv(d2[:,:,om]))
             t /= arg._tail
-        elif Descriptors.is_scalar(arg): # a scalar
+        elif descriptors.is_scalar(arg): # a scalar
             d[:,:,:] /= arg
             for n in range(t.OrderMax):
                 t[n].array[:,:] /= arg
@@ -374,13 +374,13 @@ class _GFBloc_base_data_tail  :
             raise RuntimeError, "Can not compute Delta for this GF"
         G0 = self if self._tail.OrderMin <=-1 else inverse(self)
         tmp = G0.copy()
-        tmp <<= GF_Initializers.A_Omega_Plus_B(G0._tail[-1], G0._tail[0])
+        tmp <<= gf_init.A_Omega_Plus_B(G0._tail[-1], G0._tail[0])
         tmp -= G0
         return tmp
 
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (TailGF)
 register_class (MeshGF)
 

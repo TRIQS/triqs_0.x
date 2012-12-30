@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ImFreq
+  module: gf_imfreq
 
 .. _GFBloc_ImFreq:
 
@@ -19,7 +19,7 @@ where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <G
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.GF_Local.GFBloc_ImFreq
+.. autoclass:: pytriqs.base.gf_local.GFBloc_ImFreq
   :members: density, setFromFourierOf, setFromLegendre
  
 

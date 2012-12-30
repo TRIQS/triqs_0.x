@@ -110,7 +110,7 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GFBloc_ImLegendre)
 
 

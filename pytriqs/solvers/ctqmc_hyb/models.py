@@ -22,7 +22,7 @@
 
 from math import *
 import numpy
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local import gf_init
 from pytriqs.base.utility.myUtils import Sum
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver

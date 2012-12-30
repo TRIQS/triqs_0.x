@@ -22,8 +22,8 @@
 
 from pytriqs.base.archive import HDF_Archive
 from pytriqs.base.gf_local import *
-from pytriqs.base.dmft.Loop_Generic import *
-from pytriqs.base.gf_local.Descriptors import iOmega_n,SemiCircular
+from pytriqs.base.dmft import DMFT_Loop_Generic
+from pytriqs.base.gf_local.descriptors import iOmega_n,SemiCircular
 
 #
 #  Example of DMFT single site solution with CTQMC
@@ -60,7 +60,7 @@ S = Solver(Beta = Beta,                                                      # i
 #                   (0.01,  lambda (a,alpha,dag) : ({'up' : 'down', 'down' : 'up'}[a], alpha, dag)) ]
 
 # init the Green function
-#S.G <<= GF_Initializers.SemiCircular(Half_Bandwidth)
+#S.G <<= gf_init.SemiCircular(Half_Bandwidth)
 S.G <<= SemiCircular(Half_Bandwidth)
 
 # Derive a DMFT loop
@@ -72,7 +72,7 @@ class myloop (DMFT_Loop_Generic) :
             
             # Compute G0
             for sig,g0 in S.G0 :
-                  #g0 <<= GF_Initializers.A_Omega_Plus_B(1,Chemical_Potential)
+                  #g0 <<= gf_init.A_Omega_Plus_B(1,Chemical_Potential)
                   #g0 <<=  iOmega_n + Chemical_Potential 
                   #g0 -= (Half_Bandwidth/2.0)**2  * S.G[sig]
                   #g0.invert()

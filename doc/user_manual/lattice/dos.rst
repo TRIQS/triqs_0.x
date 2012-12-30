@@ -11,14 +11,14 @@ Density of state and related tools
 The Density of state : DOS 
 ---------------------------------
 
-.. autoclass:: pytriqs.base.dos.dos.dos
+.. autoclass:: pytriqs.base.dos.DOS
    :members:
    :undoc-members:
   
 Reading a DOS from a text file
 ---------------------------------
 
-.. autofunction:: pytriqs.base.dos.dos.dos_from_file
+.. autofunction:: pytriqs.base.dos.DOS_from_file
 
 Computing a DOS from a tight_binding
 ----------------------------------------------
@@ -28,7 +28,7 @@ Computing a DOS from a tight_binding
 The DOS computed from a function
 -----------------------------------------------
 
-.. autoclass:: pytriqs.base.dos.dos.dos_from_function
+.. autoclass:: pytriqs.base.dos.DOS_from_function
    :members:
    :undoc-members:
  

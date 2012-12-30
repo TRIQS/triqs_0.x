@@ -20,4 +20,7 @@
 #
 ################################################################################
 
-__all__ = ['DOS','Hilbert_Transform']
+from dos import DOS, DOS_from_function, DOS_from_file
+from hilbert_transform import Hilbert_Transform
+
+__all__ = ['DOS','DOS_from_function','DOS_from_file','Hilbert_Transform']

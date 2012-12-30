@@ -10,8 +10,8 @@ First, we load the necessary modules::
   from pytriqs.dft.sumk_lda import *
   from pytriqs.dft.converters.wien2k_converter import *
   from pytriqs.dft.solver_multiband import *
-  from pytriqs.base.GF_Local import *
-  from pytriqs.base.archive.HDF_Archive import *
+  from pytriqs.base.gf_local import *
+  from pytriqs.base.archive import *
 
 Then we define some parameters::
 
@@ -102,7 +102,7 @@ previous section, with some additional refinement::
             # Init the DC term and the real part of Sigma, if no previous run was found:
             dm = S.G.density()
             SK.SetDoubleCounting( dm, U_interact = U, J_Hund = J, orb = 0, useDCformula = DC_type)
-            S.Sigma <<= GF_Initializers.Const(SK.dc_imp[0]['up'][0,0])
+            S.Sigma <<= gf_init.Const(SK.dc_imp[0]['up'][0,0])
         
         # now calculate new G0:
         if (MPI.IS_MASTER_NODE()):

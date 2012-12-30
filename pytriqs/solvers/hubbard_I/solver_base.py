@@ -23,10 +23,10 @@
 from types import *
 #from pytriqs.base import DataTestTools
 from pytriqs.solvers import SolverBase
-from pytriqs.base.gf_local.GFBloc_ImFreq import *
-from pytriqs.base.gf_local.GFBloc_ReFreq import *
-from pytriqs.base.gf_local.GF import GF
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local.gf_imfreq import *
+from pytriqs.base.gf_local.gf_refreq import *
+from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local import gf_init
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
 import copy
 from pytriqs.base.gf_local import inverse
@@ -144,7 +144,7 @@ class SolverBaseHub(SolverBase):
         self.G = GF(NameList = self.a_list, BlockList = glist(),Copy=False)
             
         # Self energy:
-        self.G0 <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0.0)
+        self.G0 <<= gf_init.A_Omega_Plus_B(A=1,B=0.0)
         
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M
@@ -212,7 +212,7 @@ class SolverBaseHub(SolverBase):
         # Self energy:
         self.G0 = self.G.copy()
         self.Sigma = self.G.copy()
-        self.G0 <<= GF_Initializers.A_Omega_Plus_B(A=1,B=1j*broadening)
+        self.G0 <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
         
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M

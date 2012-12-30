@@ -52,7 +52,7 @@ Slicing
 Just like numpy arrays, the Green's function can be sliced, *when the indices are integers* (otherwise it is meaningless).
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
-  >>> from pytriqs.base.GF_Local import *
+  >>> from pytriqs.base.gf_local import *
   >>> g = GFBloc_ImFreq(Indices = [1,2,3], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
   >>> g[1:3:,1:3]
   GFBloc_ImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
@@ -87,7 +87,7 @@ the = sign is possible and equivalent to the `<<=` operator.
    
    Let us illustrate this issue on a simple example::
   
-    from pytriqs.base.GF_Local import *
+    from pytriqs.base.gf_local import *
     # Create the Matsubara-frequency Green's function 
     g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
     
@@ -106,10 +106,10 @@ the = sign is possible and equivalent to the `<<=` operator.
 Lazy expressions
 ----------------
 
-To initialize the Green's function, one can use lazy_expression, made of Green's functions, `Descriptors`
+To initialize the Green's function, one can use lazy_expression, made of Green's functions, `descriptors`
 assembled with basic operations.
 
-:ref:`Descriptors<descriptors>` are abstract objects that do not contain data, but describe a simple function and 
+:ref:`descriptors<descriptors>` are abstract objects that do not contain data, but describe a simple function and 
 can be evaluated, can compute the high-frequency expansion, and so on. For example:
 
  * `Omega`: is the function :math:`f(\omega) = \omega`. 
@@ -217,7 +217,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
   For example::
 
    g = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 1000, Name = "egBlock") 
-   g <<= GF_Initializers.Function(lambda x: 3/x)
+   g <<= gf_init.Function(lambda x: 3/x)
    g._tail.zero()
    g._tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
 

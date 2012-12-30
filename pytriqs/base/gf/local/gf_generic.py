@@ -19,10 +19,10 @@
 #
 ################################################################################
 import numpy
-import lazy_expressions, Descriptors
+import lazy_expressions, descriptors
 import pytriqs.base.utility.myUtils
 from pytriqs.base.plot.protocol import clip_array
-import lazy_expressions,Descriptors
+import lazy_expressions,descriptors
 from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
 import impl_plot
@@ -124,22 +124,22 @@ class GfGeneric :
     
     def __ilshift__(self, A): 
         """ A can be two things :
-          * G <<= any_GF_Initializers will init the GFBloc with the initializer
+          * G <<= any_gf_init will init the GFBloc with the initializer
           * G <<= g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, self.__class__) : 
             if self is not A : self.copy_from(A) # otherwise it is useless AND does not work !!
         elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
-            A2= Descriptors.convert_scalar_to_Const(A)
+            A2= descriptors.convert_scalar_to_Const(A)
             def e_t (x) : 
-                if not isinstance(x, Descriptors.base) : return x
+                if not isinstance(x, descriptors.base) : return x
                 tmp = self.copy()
                 x(tmp)
                 return tmp
             self.copy_from ( lazy_expressions.eval_expr_with_context(e_t, A2) )
         elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
             self <<= lazy_expressions.lazy_expr(A)
-        elif Descriptors.is_scalar(A) : #in the case it is a scalar .... 
+        elif descriptors.is_scalar(A) : #in the case it is a scalar .... 
             self <<= lazy_expressions.lazy_expr(A)
         else :
             raise RuntimeError, " <<= operator : RHS  not understood"
@@ -155,7 +155,7 @@ class GfGeneric :
         elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
             for om in range (d.shape[-1]) : d[:,:,om ] += arg
             t[0][:,:] += arg
-        elif Descriptors.is_scalar(arg): # just a scalar
+        elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
             for om in range (d.shape[-1]) : d[:,:,om ] += arg
             t[0][:,:] += arg
@@ -164,7 +164,7 @@ class GfGeneric :
         return self
 
     def __add__(self,y):
-        if Descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) + y
+        if descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) + y
         c = self.copy()
         c += y
         return c
@@ -179,7 +179,7 @@ class GfGeneric :
         elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
             for om in range (d.shape[-1]) : d[:,:,om ] -= arg
             t[0][:,:] -= arg
-        elif Descriptors.is_scalar(arg): # just a scalar
+        elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
             for om in range (d.shape[-1]) : d[:,:,om ] -= arg
             t[0][:,:] -= arg
@@ -188,7 +188,7 @@ class GfGeneric :
         return self
 
     def __sub__(self,y):
-        if Descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) - y
+        if descriptors.is_lazy(y) : return lazy_expressions.make_lazy(self) - y
         c = self.copy()
         c -= y
         return c
@@ -216,7 +216,7 @@ class GfGeneric :
         return self
 
     def __mul__(self,arg):
-        if Descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) * arg
+        if descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) * arg
         res = self.copy()
         res *= arg
         return res
@@ -261,7 +261,7 @@ class GfGeneric :
     def __idiv__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
         """
-        if Descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) / arg
+        if descriptors.is_lazy(arg) : return lazy_expressions.make_lazy(self) / arg
         n = type(arg).__name__
         if n in ['float','int', 'complex'] : 
             self.data /= arg 

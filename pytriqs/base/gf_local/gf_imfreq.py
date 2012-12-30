@@ -22,8 +22,8 @@
 
 __all__ = ['GFBloc_ImFreq']
 from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
+from gf_base import gf_base
+from gf_concept import gf_concept
 import numpy
 from math import pi
 
@@ -34,7 +34,7 @@ from math import pi
 from pytriqs.base.utility.Injector import make_injector        # inject new code in the SAME class
 from pytriqs_GF import GFBloc_ImFreq     # the wrapped C++ class.
 
-class __inject (make_injector(GFBloc_ImFreq) ,_GFBloc_concept_impl, _GFBloc_base_data_tail, GFBloc_ImFreq):
+class __inject (make_injector(GFBloc_ImFreq) ,gf_concept, gf_base, GFBloc_ImFreq):
     """ 
     A matrix-valued block Green's function in Matsubara frequencies.
     """
@@ -177,7 +177,7 @@ class __inject (make_injector(GFBloc_ImFreq) ,_GFBloc_concept_impl, _GFBloc_base
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GFBloc_ImFreq)
 
 

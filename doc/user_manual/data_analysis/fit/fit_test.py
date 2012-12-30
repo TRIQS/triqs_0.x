@@ -1,1 +1,1 @@
-../../../../pytriqs/Base/Fit/fit_test.py
+../../../../pytriqs/base/fit/fit_test.py

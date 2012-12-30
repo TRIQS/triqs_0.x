@@ -35,7 +35,7 @@ Reference
 The Fit class is very simple and is provided for convenience, but the reader
 is encouraged to read it and adapt it (it is simply a call to scipy.leastsq).
 
-.. autoclass:: pytriqs.base.fit.fit.fit
+.. autoclass:: pytriqs.base.fit.Fit
   :members: 
 
 

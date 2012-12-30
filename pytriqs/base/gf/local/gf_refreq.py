@@ -92,7 +92,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
            Returns a GFBloc_ReTime containing the Inverse Fourier transform of self
            TimeMin is the minimal time. By default the time window is centered around 0
         """
-        import GFBloc_ReTime
+        import gf_retime
         (a,b),N = list(self.mesh)[0:2], len(self.mesh)
         om0 = b-a
         if TimeMin !=None :
@@ -100,7 +100,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
         else :
             TimeMax = pi/om0
             TimeMin = -TimeMax
-        gt = GFBloc_ReTime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
+        gt = gf_retime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
                                           Statistic = self.Statistic,
                                           TimeMin = TimeMin, TimeMax = TimeMax,NTimeSlices = N )
         gt.setFromInverseFourierOf(self)
@@ -111,7 +111,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GFBloc_ReFreq)
  
  

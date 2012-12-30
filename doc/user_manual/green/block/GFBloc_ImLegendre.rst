@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ImLegendre
+  module: gf_legendre
 
 .. _GFBloc_ImLegendre:
 
@@ -23,7 +23,7 @@ function in imaginary time <GFBloc_ImTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.GF_Local.GFBloc_ImLegendre
+.. autoclass:: pytriqs.base.gf_local.GFBloc_ImLegendre
   :members: density, determine_tail, enforce_discontinuity, copy_and_truncate
  
 

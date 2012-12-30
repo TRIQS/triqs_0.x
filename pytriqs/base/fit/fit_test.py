@@ -1,4 +1,4 @@
-from pytriqs.base.plot.MatplotlibInterface import oplot
+from pytriqs.base.plot.mpl_interface import oplot
 from pytriqs.base.gf_local import GFBloc_ImFreq, Omega, inverse
 g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
 g <<= inverse( Omega + 0.5 )

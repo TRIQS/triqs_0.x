@@ -1,4 +1,4 @@
-from pytriqs.base.GF_Local import *
+from pytriqs.base.gf_local import *
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
 

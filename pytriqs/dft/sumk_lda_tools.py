@@ -23,11 +23,11 @@
 from types import *
 import numpy
 import pytriqs.base.utility.Dichotomy as Dichotomy
-from pytriqs.base.gf_local.GF import GF
-from pytriqs.base.gf_local.GFBloc_ImFreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.GFBloc_ReFreq import GFBloc_ReFreq
-from pytriqs.base.gf_local.GFBloc_ImTime import GFBloc_ImTime
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
+from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
+from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
+from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.utility.myUtils import Sum
 import pytriqs.base.utility.MPI as MPI
@@ -148,7 +148,7 @@ class SumK_LDA_tools(SumK_LDA):
         
         idmat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]
 
-        self.Gupf_refreq <<= GF_Initializers.A_Omega_Plus_B(A=1,B=1j*broadening)
+        self.Gupf_refreq <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
         M = copy.deepcopy(idmat)
         for ibl in range(self.NspinblocsGF[self.SO]):
             ind = ntoi[bln[ibl]]

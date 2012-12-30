@@ -272,7 +272,7 @@ class Solver(SolverBase):
         for n,g in self.G0_inv:
           assert(g.N1==g.N2)
           identity=numpy.identity(g.N1)
-          self.G0[n] <<= GF_Initializers.A_Omega_Plus_B(identity, g._tail[0])
+          self.G0[n] <<= gf_init.A_Omega_Plus_B(identity, g._tail[0])
           self.G0[n] -= Delta[n]
           #self.G0[n] <<= iOmega_n + g._tail[0] - Delta[n]
         self.G0_inv <<= self.G0

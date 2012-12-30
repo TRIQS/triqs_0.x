@@ -1,7 +1,7 @@
 import numpy as np
-from pytriqs.base.plot.MatplotlibInterface import oplot
-from pytriqs.base.GF_Local import *
-from pytriqs.base.GF_Local.Descriptors import iOmega_n
+from pytriqs.base.plot.mpl_interface import oplot
+from pytriqs.base.gf_local import *
+from pytriqs.base.gf_local.descriptors import iOmega_n
 g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
 
 from pytriqs.base.archive import HDF_Archive

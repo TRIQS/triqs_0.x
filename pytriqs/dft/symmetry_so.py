@@ -24,7 +24,7 @@
 import copy,numpy
 import string
 from types import *
-from pytriqs.base.gf_local.GF import GF
+from pytriqs.base.gf_local.block_gf import GF
 from math import cos, sin
 
 

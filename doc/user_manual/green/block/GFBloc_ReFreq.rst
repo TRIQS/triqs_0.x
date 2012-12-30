@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ReFreq
+  module: gf_refreq
 
 .. _GFBloc_ReFreq:
 
@@ -18,7 +18,7 @@ where :math:`G(t)` is the :ref:`Green function in real time <GFBloc_ReTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.GF_Local.GFBloc_ReFreq
+.. autoclass:: pytriqs.base.gf_local.GFBloc_ReFreq
   :members: density, setFromFourierOf, transpose, conjugate, setFromPadeOf
  
 

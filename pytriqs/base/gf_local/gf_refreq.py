@@ -22,8 +22,8 @@
 
 __all__ = ['GFBloc_ReFreq']
 from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
+from gf_base import gf_base
+from gf_concept import gf_concept
 import numpy
 from math import pi
 
@@ -34,7 +34,7 @@ from math import pi
 from pytriqs.base.utility.Injector import make_injector        # inject new code in the SAME class
 from pytriqs_GF import GFBloc_ReFreq     # the wrapped C++ class.
 
-class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_data_tail, GFBloc_ReFreq):
+class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq):
     """ 
     A matrix-valued block Green's function in real frequencies.
     """
@@ -104,7 +104,7 @@ class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_
            Returns a GFBloc_ReTime containing the Inverse Fourier transform of self
            TimeMin is the minimal time. By default the time window is centered around 0
         """
-        import GFBloc_ReTime
+        import gf_retime
         (a,b),N = list(self.mesh)[0:2], len(self.mesh)
         om0 = b-a
         if TimeMin !=None :
@@ -112,7 +112,7 @@ class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_
         else :
             TimeMax = pi/om0
             TimeMin = -TimeMax
-        gt = GFBloc_ReTime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
+        gt = gf_retime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
                                           Statistic = self.Statistic,
                                           TimeMin = TimeMin, TimeMax = TimeMax,NTimeSlices = N )
         gt.setFromInverseFourierOf(self)
@@ -123,7 +123,7 @@ class __inject (make_injector(GFBloc_ReFreq) ,_GFBloc_concept_impl,_GFBloc_base_
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GFBloc_ReFreq)
  
  

@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ReTime
+  module: gf_retime
 
 .. _GFBloc_ReTime:
 
@@ -16,7 +16,7 @@ This object stores a retarded matrix valued Green function in real time :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.GF_Local.GFBloc_ReTime
+.. autoclass:: pytriqs.base.gf_local.GFBloc_ReTime
   :members: density, setFromInverseFourierOf, transpose, conjugate
  
 

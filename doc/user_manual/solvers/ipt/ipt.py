@@ -1,6 +1,6 @@
 import numpy
 
-from pytriqs.base.GF_Local import *
+from pytriqs.base.gf_local import *
 from pytriqs.solvers import Solver_base
 
 class Solver(Solver_base):

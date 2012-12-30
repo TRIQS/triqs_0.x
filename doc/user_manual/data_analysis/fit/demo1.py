@@ -1,7 +1,7 @@
-from pytriqs.base.plot.MatplotlibInterface import oplot
+from pytriqs.base.plot.mpl_interface import oplot
 from pytriqs.base.fit.fit import Fit, linear, quadratic
-from pytriqs.base.GF_Local import *
-from pytriqs.base.GF_Local.Descriptors import iOmega_n
+from pytriqs.base.gf_local import *
+from pytriqs.base.gf_local.descriptors import iOmega_n
 g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
 g <<= inverse( iOmega_n + 0.5 )
 

@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-import lazy_expressions, Descriptors
+import lazy_expressions, descriptors
 
 def inverse(x):
     if isinstance(x,(lazy_expressions.lazy_expr,lazy_expressions.lazy_expr_terminal)) : 

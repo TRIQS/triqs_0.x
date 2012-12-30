@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from SumK_Discrete import *
+from sumk_discrete import SumK_Discrete
 from pytriqs.base.lattice.SuperLattice import TBSuperLattice as SuperLattice, Lattice
 
 class SumK_Discrete_From_Lattice (SumK_Discrete) :

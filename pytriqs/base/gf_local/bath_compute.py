@@ -3,7 +3,7 @@
 #
 # TRIQS: a Toolbox for Research in Interacting Quantum Systems
 #
-# Copyright (C) 2011 by M. Aichhorn, L. Pourovskii, V. Vildosola
+# Copyright (C) 2011 by M. Ferrero, O. Parcollet
 #
 # TRIQS is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -20,31 +20,17 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-import numpy
-from pytriqs.dft.U_matrix import Umatrix
 
-U = Umatrix(U_interact = 2.0, J_Hund = 0.5, l=2)
+# For one block
+def Delta(self) :
+    """Computes Delta from self ...."""
+    if self.mesh.TypeGF not in [GF_Type.Real_Frequency, GF_Type.Imaginary_Frequency] :
+        raise RuntimeError, "Can not compute Delta for this GF"
+    G0 = self if self._tail.OrderMin <=-1 else inverse(self)
+    tmp = G0.copy()
+    tmp <<= gf_init.A_Omega_Plus_B(G0._tail[-1], G0._tail[0])
+    tmp -= G0
+    return tmp
+ 
 
-T = numpy.zeros([5,5],numpy.complex_)
-sqtwo = 1.0/numpy.sqrt(2.0)
-T[0,0] = 1j*sqtwo
-T[0,4] = -1j*sqtwo
-T[1,1] = -1j*sqtwo
-T[1,3] = -1j*sqtwo
-T[2,2] = 1.0
-T[3,1] = -sqtwo
-T[3,3] = sqtwo
-T[4,0] = sqtwo
-T[4,4] = sqtwo
-
-U(T=T)
-
-U.ReduceMatrix()
-
-ar=HDF_Archive('Umat.output.h5')
-ar['U'] = U.U
-ar['Up'] = U.Up
-ar['Ufull'] = U.Ufull
-del ar
-
+# F

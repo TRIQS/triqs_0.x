@@ -21,20 +21,12 @@
 ################################################################################
 
 __all__ = ['GFBloc_ReTime']
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from _GFBloc_base_data_tail import _GFBloc_base_data_tail
-from _GFBloc_concept_impl import _GFBloc_concept_impl
 import numpy
 from math import pi
+from gf import GFBloc_ReTime_cython, MeshReTime 
+from GFBloc_general import _GFBloc_general 
 
-#-----------------------------------------------------
-#  Code Injection
-#-----------------------------------------------------
-
-from pytriqs.base.utility.Injector import make_injector        # inject new code in the SAME class
-from pytriqs_GF import GFBloc_ReTime     # the wrapped C++ class.
-
-class __inject (make_injector(GFBloc_ReTime) ,_GFBloc_concept_impl,_GFBloc_base_data_tail, GFBloc_ReTime):
+class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
     """ 
     A matrix-valued block Green's function in real time.
     """
@@ -75,36 +67,29 @@ class __inject (make_injector(GFBloc_ReTime) ,_GFBloc_concept_impl,_GFBloc_base_
         if 'Mesh' not in d : 
             if 'Beta' not in d : raise ValueError, "Beta not provided"
             Beta = float(d['Beta'])
-            Nmax = d['NTimeSlices'] if 'NTimeSlices' in d else 1024
-            assert Nmax%2 ==0, "Better to use an even number of slices"
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
-            timeMin = d['TimeMin'] if 'TimeMin' in d else -10
-            timeMax = d['TimeMax'] if 'TimeMax' in d else 10
+            Nmax = d.pop('NTimeSlices',1024)
+            assert Nmax%2 ==0, "Use an even number of slices"
+            timeMin = d.pop('TimeMin',-10)
+            timeMax = d.pop('TimeMax', 10)
             dt = float (timeMax - timeMin)/ Nmax
-            sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshGF( GF_Type.Real_Time,stat,Beta,
+            d['Mesh'] = MeshRealTime( GF_Type.Real_Time,stat,Beta,
                                 numpy.array([ timeMin + (n+0.5)*dt for n in range(Nmax)]))
-            for a in [ 'Beta', 'Statistic', 'NTimeSlices', 'TimeMin', 'TimeMax'] : 
-                if a in d : del d[a]
-        else : 
-            assert d['Mesh'].TypeGF==GF_Type.Real_Time, "You provided a wrong type of mesh !!"
 
         self.TimeMin, self.TimeMax, self.Npts = min(d['Mesh']), max(d['Mesh']), len(d['Mesh'])
         dt = (self.TimeMax - self.TimeMin)/(self.Npts -1)
-        self.TimeMin -= dt/2 ;self.TimeMax += dt/2  # duplicated in C++... not very clean, but ok.
+        self.TimeMin -= dt/2 ;self.TimeMax += dt/2 
+        # ????? duplicated in C++... not very clean, but ok.
 
-        self._init_base__(d)
-        self._init_before_injection__(*self._param_for_cons)
-        del self._param_for_cons
-
+        GFBloc_ReTime_cython.__init__(self,*self._prepare_init(d))
+        
     #-----------------------------------------------------
     
     def Fourier(self):
         """Returns a GFBloc_ReFreq containing the Fourier transform of self"""
-        import GFBloc_ReFreq
+        import gf_refreq
         om0 = 2*pi/(self.TimeMax - self.TimeMin)
         N = self.Npts
-        gw = GFBloc_ReFreq.GFBloc_ReFreq(Indices = self.Indices,Beta = self.Beta,
+        gw = gf_refreq.GFBloc_ReFreq(Indices = self.Indices,Beta = self.Beta,
                                          Statistic = self.Statistic,
                                          MeshArray = numpy.array([ om0*i for i in range (- (N/2),N/2)]))
         gw.setFromFourierOf(self)
@@ -125,7 +110,7 @@ class __inject (make_injector(GFBloc_ReTime) ,_GFBloc_concept_impl,_GFBloc_base_
 #  Register the class for HDF_Archive
 #-----------------------------------------------------
 
-from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GFBloc_ReTime)
 
 

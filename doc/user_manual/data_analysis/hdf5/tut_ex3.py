@@ -1,5 +1,5 @@
-from pytriqs.base.GF_Local import GFBloc_ReFreq 
-from pytriqs.base.GF_Local.Descriptors import SemiCircular 
+from pytriqs.base.gf_local import GFBloc_ReFreq 
+from pytriqs.base.gf_local.descriptors import SemiCircular 
 from pytriqs.base.archive import HDF_Archive
 import numpy
 

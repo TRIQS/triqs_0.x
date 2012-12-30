@@ -20,10 +20,10 @@
 #
 ################################################################################
 
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local import gf_init
 import types,string,inspect,itertools
 from operator import isSequenceType
-from pytriqs.base.dos.dos import *
+from pytriqs.base.dos import DOS
 import pytriqs.base.utility.MPI as MPI
 
 class Hilbert_Transform : 
@@ -123,7 +123,7 @@ class Hilbert_Transform :
 
             # Perform the sum over eps[i]
             tmp,tmp2 = Res.copy(),Res.copy()
-            tmp <<= GF_Initializers.A_Omega_Plus_B(1,mu + eta * 1j)
+            tmp <<= gf_init.A_Omega_Plus_B(1,mu + eta * 1j)
             if not(Sigma_fnt) :
                 tmp -= Sigma
             if Field != None : tmp -= Field

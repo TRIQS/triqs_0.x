@@ -1,6 +1,6 @@
-from pytriqs.base.GF_Local import *
+from pytriqs.base.gf_local import *
 from pytriqs.base.archive import *
-from pytriqs.base.plot.MatplotlibInterface import *
+from pytriqs.base.plot.mpl_interface import *
 
 A = HDF_Archive("single_site_bethe.h5",'r')
 

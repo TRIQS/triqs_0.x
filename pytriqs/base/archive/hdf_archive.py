@@ -20,11 +20,10 @@
 #
 ################################################################################
 
-__all__ = ['HDF_Archive','HDF_Archive_Inert']
 import sys,numpy,string
-from HDF_Archive_basic_layer_h5py import HDF_Archive_group_basic_layer
+from hdf_archive_basic_layer_h5py import HDF_Archive_group_basic_layer
 
-from pytriqs.base.archive.HDF_Archive_Schemes import hdf_scheme_access, register_class
+from pytriqs.base.archive.hdf_archive_schemes import hdf_scheme_access, register_class
 
 # -------------------------------------------
 #
@@ -184,7 +183,7 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
              err = """
                You are trying to store an object of type "%s", with the TRIQS_HDF5_data_scheme "%s". 
                But that data_scheme is not registered, so you will not be able to reread the class.
-               Didn't you forget to register your class in pytriqs.base.archive.HDF_Archive_Schemes ?
+               Didn't you forget to register your class in pytriqs.base.archive.hdf_archive_schemes ?
                """ %(val.__class__.__name__,ds)
              raise IOError,err 
            g.write_attr("TRIQS_HDF5_data_scheme", ds)

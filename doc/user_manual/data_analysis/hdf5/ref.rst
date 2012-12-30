@@ -189,7 +189,7 @@ The class is registered using the module `HDF_Archive_Schemes` ::
  class myclass :
    pass #....
    
- from pytriqs.base.archive.HDF_Archive_Schemes import register_class
+ from pytriqs.base.archive.hdf_archive_schemes import register_class
  register_class (myclass)
 
 The function is 

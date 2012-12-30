@@ -20,7 +20,6 @@
 #
 ################################################################################
 
-__all__= ['SumK_Discrete']
 from pytriqs.base.gf_local import *
 import pytriqs.base.utility.MPI as MPI
 from itertools import *

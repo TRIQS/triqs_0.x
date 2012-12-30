@@ -92,7 +92,7 @@ Array<COMPLEX,2> TailGF::eval(COMPLEX omega) const {
 python::object TailGF::__getitem__(int i) const {
   if (!has_coef(i)) TRIQS_RUNTIME_ERROR<<"TailGF:: operator[] :: order is incorrect";
   python::object a2 = M.as_BoostObject() [python::make_tuple( i-OrderMinMIN, python::slice(),python::slice())];
-  python::object cls = python::import("pytriqs.base.GF_Local.ArrayViewWithIndexConverter").attr("ArrayViewWithIndexConverter");
+  python::object cls = python::import("pytriqs.base.gf_local.array_view").attr("ArrayViewWithIndexConverter");
   return cls(a2, IndicesL, IndicesR);
 }
 
@@ -124,7 +124,7 @@ python::object TailGF::__repr__() const {
 python::object TailGF::__call__(COMPLEX omega) const {
   PyArray<COMPLEX,2> Res(N1,N2,COrder);
   Res = eval(omega);
-  python::object cls = python::import("pytriqs.base.GF_Local.ArrayViewWithIndexConverter").attr("ArrayViewWithIndexConverter");
+  python::object cls = python::import("pytriqs.base.gf_local.array_view").attr("ArrayViewWithIndexConverter");
   return cls(Res, IndicesL,IndicesR);
 }
 

@@ -22,7 +22,7 @@
 
 #from pytriqs.base import *
 from SuperLattice import * 
-from pytriqs.base.dos.dos import DOS
+from pytriqs.base.dos import DOS
 
 class BZ_Patch : 
     """Description of a Patch of the BZ"""

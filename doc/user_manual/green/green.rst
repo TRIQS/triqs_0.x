@@ -1,7 +1,7 @@
 
 .. index:: Green's functions
 
-.. module:: pytriqs.base.GF_Local
+.. module:: pytriqs.base.gf_local
 
 .. _green:
 

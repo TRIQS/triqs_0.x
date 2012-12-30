@@ -22,7 +22,7 @@
 
 from pytriqs.base.archive import *
 from pytriqs.base.gf_local import *
-#import pytriqs.base.gf_local.GF_Initializers as GF_Initializers
+#import pytriqs.base.gf_local.gf_init as gf_init
 import numpy, copy
 from pytriqs.base.utility.myUtils import Conjugate
 
@@ -33,7 +33,7 @@ gb = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "b1Bl
 
 G = GF(NameList = ('a','b'), BlockList = (ga,gb), Copy = False)
 
-#G <<= GF_Initializers.A_Omega_Plus_B(1.0,2.0)
+#G <<= gf_init.A_Omega_Plus_B(1.0,2.0)
 G <<= iOmega_n + 2.0
 h['G1'] = G
 

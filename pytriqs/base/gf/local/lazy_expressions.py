@@ -18,7 +18,7 @@
 # TRIQS. If not, see <http://www.gnu.org/licenses/>.
 #
 ################################################################################
-import Descriptors
+import descriptors
 
 __all__ = ['lazy_expr','lazy_expr_terminal','eval_expr_with_context', 'lazy','lazy_function', 'transform', 'eval_expr']
 

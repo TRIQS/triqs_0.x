@@ -1,5 +1,5 @@
 from types import SliceType
-import Descriptors
+import descriptors
 
 class PlotWrapperPartialReduce : 
     """ Internal Use"""
@@ -18,7 +18,7 @@ class lazy_ctx :
     def __eq__ (self, y) :
         return isinstance(y, self.__class__) and self._is_compatible_for_ops(y.G)
     def __call__ (self, x) : 
-        if not isinstance(x, Descriptors.base) : return x
+        if not isinstance(x, descriptors.base) : return x
         tmp = self.G.copy()
         x(tmp)
         return tmp

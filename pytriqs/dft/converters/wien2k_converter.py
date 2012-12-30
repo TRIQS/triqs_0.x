@@ -22,7 +22,7 @@
 
 from types import *
 import numpy
-from pytriqs.base.archive.HDF_Archive import *
+from pytriqs.base.archive import *
 import pytriqs.base.utility.MPI as MPI
 import string
 

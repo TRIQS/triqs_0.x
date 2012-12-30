@@ -24,12 +24,12 @@ from types import *
 from pytriqs.dft.symmetry_so import *
 import numpy
 import pytriqs.base.utility.Dichotomy as Dichotomy
-from pytriqs.base.gf_local.GF import GF
-from pytriqs.base.gf_local.GFBloc_ImFreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.GFBloc_ReFreq import GFBloc_ReFreq
-from pytriqs.base.gf_local import GF_Initializers
+from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
+from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
+from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.archive.HDF_Archive import *
+from pytriqs.base.archive import *
 import pytriqs.base.utility.MPI as MPI
 
 from math import cos,sin
@@ -663,7 +663,7 @@ class SumK_LDA_SO:
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
                   
 
-            Gupf <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=0)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]
@@ -766,7 +766,7 @@ class SumK_LDA_SO:
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
                   
 
-            Gupf <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=0)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]
@@ -1325,7 +1325,7 @@ class SumK_LDA_SO:
             mupat *= mu
 
             tmp = tmp2.copy()             # initialise tmp with the correct size
-            tmp <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            tmp <<= gf_init.A_Omega_Plus_B(A=1,B=0)
            
             tmp -= self.__G               # substract sigma, it does not depend on k!
            
@@ -1377,7 +1377,7 @@ class SumK_LDA_SO:
                     for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
                                    
 
-                S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+                S <<= gf_init.A_Omega_Plus_B(A=1,B=0)
                 M = copy.deepcopy(mupat)
                 for ibl in range(self.NspinblocsGF[self.SO]): 
                     ind = ntoi[bln[ibl]]
@@ -1505,7 +1505,7 @@ class SumK_LDA_SO:
                     mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                     for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
               
-                S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+                S <<= gf_init.A_Omega_Plus_B(A=1,B=0)
                 M = copy.deepcopy(mupat)
                 for ibl in range(self.NspinblocsGF[self.SO]): 
                     ind = ntoi[bln[ibl]]
@@ -1600,7 +1600,7 @@ class SumK_LDA_SO:
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
               
-            S <<= GF_Initializers.A_Omega_Plus_B(A=1,B=0)
+            S <<= gf_init.A_Omega_Plus_B(A=1,B=0)
             M = copy.deepcopy(mupat)
             for ibl in range(self.NspinblocsGF[self.SO]): 
                 ind = ntoi[bln[ibl]]
