@@ -23,7 +23,7 @@ function in imaginary time <GFBloc_ImTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.Base.GF_Local.GFBloc_ImLegendre
+.. autoclass:: pytriqs.base.GF_Local.GFBloc_ImLegendre
   :members: density, determine_tail, enforce_discontinuity, copy_and_truncate
  
 

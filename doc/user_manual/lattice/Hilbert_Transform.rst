@@ -1,7 +1,7 @@
 
 .. _hilbert_transform:
 
-.. module:: pytriqs.Base.DOS.Hilbert_Transform
+.. module:: pytriqs.base.DOS.Hilbert_Transform
 
 
 Hilbert Transform
@@ -22,7 +22,7 @@ To construct a Green's function::
     G <<= H(Sigma = Sigma0,mu=0.)
 
 
-.. autoclass:: pytriqs.Base.DOS.Hilbert_Transform.Hilbert_Transform
+.. autoclass:: pytriqs.base.DOS.Hilbert_Transform.Hilbert_Transform
    :members: __call__
    :undoc-members:
   

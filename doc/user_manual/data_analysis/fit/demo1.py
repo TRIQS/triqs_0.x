@@ -1,7 +1,7 @@
-from pytriqs.Base.Plot.MatplotlibInterface import oplot
-from pytriqs.Base.Fit.fit import Fit, linear, quadratic
-from pytriqs.Base.GF_Local import *
-from pytriqs.Base.GF_Local.Descriptors import iOmega_n
+from pytriqs.base.Plot.MatplotlibInterface import oplot
+from pytriqs.base.Fit.fit import Fit, linear, quadratic
+from pytriqs.base.GF_Local import *
+from pytriqs.base.GF_Local.Descriptors import iOmega_n
 g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
 g <<= inverse( iOmega_n + 0.5 )
 
@@ -14,7 +14,7 @@ g<<= inverse( iOmega_n + 0.5 )
 print "ok ----------------------"
 
 
-from pytriqs.Base.Archive import HDF_Archive
+from pytriqs.base.Archive import HDF_Archive
 R = HDF_Archive('myfile.h5', 'r')
 
 for n, calculation in R.items() : 

@@ -22,5 +22,5 @@ A simple example
 Complete reference
 ------------------------
 
-.. autoclass:: pytriqs.Solvers.Operators.Operator
+.. autoclass:: pytriqs.solvers.operators.Operator
   :members:

@@ -1,6 +1,6 @@
-from pytriqs.Base.GF_Local import *
-from pytriqs.Solvers.Operators import *
-from pytriqs.Solvers.HybridizationExpansion import Solver
+from pytriqs.base.GF_Local import *
+from pytriqs.solvers.operators import *
+from pytriqs.solvers.ctqmc_hyb import Solver
 
 D, V, U = 1.0, 0.2, 4.0
 e_f, Beta = -U/2.0, 50
@@ -20,8 +20,8 @@ S = Solver(Beta = Beta,                             # inverse temperature
                (0.05, lambda (a,alpha,dag) : ( {'up':'down','down':'up'}[a],alpha,dag ) ) ], 
            )
 
-from pytriqs.Base.Archive import HDF_Archive
-import pytriqs.Base.Utility.MPI as MPI
+from pytriqs.base.Archive import HDF_Archive
+import pytriqs.base.Utility.MPI as MPI
 
 for random_name in ['mt11213b','lagged_fibonacci607']:
 

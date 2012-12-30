@@ -23,10 +23,10 @@ You can then customize the installation options using the :program:`ccmake` prog
 
 This opens an interface with your main installation options shown ::
 
- BUILD_SHARED_LIBS                ON  
- Build_CTHyb                      ON      
- Build_Documentation              OFF       
- Build_HubbardI                   ON               
+ BUILD_SHARED_LIBS                ON
+ Build_CTHyb                      ON
+ Build_Documentation              OFF
+ Build_HubbardI                   ON
  Build_Triqs_General_Tools_Test   ON    
  Build_Wien2k                     ON      
  CMAKE_INSTALL_PREFIX             /home/parcolle/BUILD2/Triqs_dynamic/INSTALL_DIR 

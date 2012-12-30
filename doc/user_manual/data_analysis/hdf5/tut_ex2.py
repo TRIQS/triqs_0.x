@@ -1,5 +1,5 @@
-from pytriqs.Base.Archive import HDF_Archive
-from pytriqs.Base.GF_Local import GFBloc_ImFreq
+from pytriqs.base.Archive import HDF_Archive
+from pytriqs.base.GF_Local import GFBloc_ImFreq
 
 # Define a Green function 
 G = GFBloc_ImFreq ( Indices = [1], Beta = 10, NFreqMatsubara = 1000) 

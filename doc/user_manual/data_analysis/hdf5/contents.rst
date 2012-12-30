@@ -1,6 +1,6 @@
 
 .. _hdf5_base:
-.. module:: pytriqs.Base.Archive
+.. module:: pytriqs.base.Archive
 
 HDF5 interface
 ###################################

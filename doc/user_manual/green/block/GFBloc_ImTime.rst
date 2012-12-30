@@ -18,7 +18,7 @@ in the Matsubara formalism :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.Base.GF_Local.GFBloc_ImTime
+.. autoclass:: pytriqs.base.GF_Local.GFBloc_ImTime
   :members: setFromInverseFourierOf, setFromLegendre, transpose, conjugate
 
 

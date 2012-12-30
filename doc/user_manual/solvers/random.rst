@@ -7,7 +7,7 @@ Random number generators
 It is possible (and highly recommended!) to use different random number generators with the CTQMC solver.
 A list of the available generators is obtained with the following script::
 
-  from pytriqs.Solvers.HybridizationExpansion import Solver
+  from pytriqs.solvers.ctqmc_hyb import Solver
   print Solver.Random_Generators_Available()
 
 The names in this list can then be used to set the ``Random_Generator_Name`` keyword argument

@@ -109,8 +109,8 @@ Coulomb interaction, Hund's rule coupling, and the type of double-counting that 
 
 At the end of the calculation, we can save the Greens function and self energy into a file::
 
-  from pytriqs.Base.Archive import HDF_Archive
-  import pytriqs.Base.Utility.MPI as MPI
+  from pytriqs.base.Archive import HDF_Archive
+  import pytriqs.base.Utility.MPI as MPI
   if MPI.IS_MASTER_NODE():
       R = HDF_Archive("SingleSiteBethe.h5",'w')
       R["G"] = S.G

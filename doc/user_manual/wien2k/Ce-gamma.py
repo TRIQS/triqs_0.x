@@ -1,6 +1,6 @@
 from pytriqs.Wien2k.SumK_LDA import *
 from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
-from pytriqs.Solvers.HubbardI.Solver_HubbardI import Solver_HubbardI 
+from pytriqs.solvers.hubbard_I.solver import Solver
 
 LDAFilename = 'Ce-gamma'
 Beta = 40
@@ -45,7 +45,7 @@ Norb = SK.corr_shells[0][3]
 l    = SK.corr_shells[0][2]
 
 # Init the Solver:
-S = Solver_HubbardI(Beta = Beta, Uint = Uint, JHund = JHund, l = l, Verbosity=2)
+S = Solver(Beta = Beta, Uint = Uint, JHund = JHund, l = l, Verbosity=2)
 S.Nmoments=10
 
 if (previous_present):

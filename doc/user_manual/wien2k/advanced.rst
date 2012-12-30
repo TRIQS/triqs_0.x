@@ -10,8 +10,8 @@ First, we load the necessary modules::
   from pytriqs.Wien2k.SumK_LDA import *
   from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
   from pytriqs.Wien2k.Solver_MultiBand import *
-  from pytriqs.Base.GF_Local import *
-  from pytriqs.Base.Archive.HDF_Archive import *
+  from pytriqs.base.GF_Local import *
+  from pytriqs.base.Archive.HDF_Archive import *
 
 Then we define some parameters::
 

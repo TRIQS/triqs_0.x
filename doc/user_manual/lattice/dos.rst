@@ -1,6 +1,6 @@
 .. index:: lattices; dos
 
-.. module:: pytriqs.Base.DOS.DOS
+.. module:: pytriqs.base.DOS.DOS
 
 .. _dos:
 
@@ -11,24 +11,24 @@ Density of state and related tools
 The Density of state : DOS 
 ---------------------------------
 
-.. autoclass:: pytriqs.Base.DOS.DOS.DOS
+.. autoclass:: pytriqs.base.DOS.DOS.DOS
    :members:
    :undoc-members:
   
 Reading a DOS from a text file
 ---------------------------------
 
-.. autofunction:: pytriqs.Base.DOS.DOS.DOS_from_file
+.. autofunction:: pytriqs.base.DOS.DOS.DOS_from_file
 
 Computing a DOS from a tight_binding
 ----------------------------------------------
 
-.. autofunction:: pytriqs.Base.Lattice.TightBinding.dos
+.. autofunction:: pytriqs.base.Lattice.TightBinding.dos
  
 The DOS computed from a function
 -----------------------------------------------
 
-.. autoclass:: pytriqs.Base.DOS.DOS.DOS_from_function
+.. autoclass:: pytriqs.base.DOS.DOS.DOS_from_function
    :members:
    :undoc-members:
  

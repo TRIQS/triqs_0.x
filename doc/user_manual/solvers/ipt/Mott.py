@@ -4,10 +4,10 @@ from math import *
 import os
 import numpy
 
-from pytriqs.Base.GF_Local import *
-from pytriqs.Base.GF_Local import Omega, SemiCircular, inverse
-from pytriqs.Base.Archive import *
-from pytriqs.Base.Plot.MatplotlibInterface import oplot
+from pytriqs.base.GF_Local import *
+from pytriqs.base.GF_Local import Omega, SemiCircular, inverse
+from pytriqs.base.Archive import *
+from pytriqs.base.Plot.MatplotlibInterface import oplot
 import matplotlib.pyplot as plt
 
 import IPT

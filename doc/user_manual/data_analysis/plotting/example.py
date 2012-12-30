@@ -1,10 +1,10 @@
-from pytriqs.Base.GF_Local import *
-from pytriqs.Base.GF_Local.Descriptors import Omega
+from pytriqs.base.GF_Local import *
+from pytriqs.base.GF_Local.Descriptors import Omega
 g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "g")
 g <<= inverse( Omega + 0.5 )
 
 # open 2 panels top (t) and bottom (b) 
-from pytriqs.Base.Plot.MatplotlibInterface import subplots
+from pytriqs.base.Plot.MatplotlibInterface import subplots
 f, (t,b) = subplots( 2,1)
 
 #plot ...

@@ -1,10 +1,10 @@
-from pytriqs.Base.GF_Local import GFBloc_ReFreq
-from pytriqs.Base.Archive import HDF_Archive
+from pytriqs.base.GF_Local import GFBloc_ReFreq
+from pytriqs.base.Archive import HDF_Archive
 from math import pi
 
 R = HDF_Archive('myfile.h5', 'r') 
  
-from pytriqs.Base.Plot.MatplotlibPlotter import oplot, plt
+from pytriqs.base.Plot.MatplotlibPlotter import oplot, plt
 plt.xrange(-1,1) 
 plt.yrange(0,7) 
 

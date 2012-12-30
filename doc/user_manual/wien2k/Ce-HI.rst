@@ -77,7 +77,7 @@ In order to run LDA+DMFT calculations within Hubbard-I we need the corresponding
 It is generally similar to the script for the case of DMFT calculations with the CT-QMC solver (see :ref:`advanced`), 
 however there are also some differences. First, instead of *pytriqs.Wien2k.Solver_MultiBand* we import Hubbard-I solver ::
 
-   from pytriqs.Solvers.HubbardI.Solver_HubbardI import Solver_HubbardI 
+   from pytriqs.solvers.hubbard_I.solver import Solver
 
 The Hubbard-I solver is very fast and we do not need to take into account the LDA blocking structure or use any approximation for the *U*-matrix ::
 
@@ -87,14 +87,14 @@ The Hubbard-I solver is very fast and we do not need to take into account the LD
 We load and convert the :program:`dmftproj` output and initialize the *SumK_LDA* class as described in :ref:`LDADMFTmain` and :ref:`advanced` and then set up the Hubbard-I solver ::
 
  
-   S = Solver_HubbardI(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
+   S = Solver(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
    S.Nmoments=10
 
 where the solver is initialized with the value of `Beta` as well  as the `U` parameter (`Uint`) and Hund's rule coupling `JHund`. Notice that `Solver_Hubbard-I` constructs the full 4-index `U`-matrix by default, and the `U` parameter is in fact the Slatter `F0` integral. 
 The last necessary parameter is the orbital quantum number `l` (equal to 3 in our case). 
 The next line gives the number of self-energy momenta used to compute contribution from the high-frequency tails.
 
-The Hubbard-I solver initialization `Solver_HubbardI` has also several optional parameters one may use:
+The Hubbard-I solver initialization `Solver` has also several optional parameters one may use:
 
   * `Nmsb`: is the number of Matsubara frequencies used (default is `Nmsb=1025`)
   * `T`: A matrix that transforms the interaction matrix from complex spherical harmonics to a symmetry adapted basis. By default complex spherical harmonics basis is used and `T=None`

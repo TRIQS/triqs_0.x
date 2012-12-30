@@ -7,7 +7,7 @@
 Bravais Lattice
 ===============
  
-.. autoclass:: pytriqs.Base.Lattice.TightBinding.bravais_lattice
+.. autoclass:: pytriqs.base.Lattice.TightBinding.bravais_lattice
    :members:
    :undoc-members:
    

@@ -1,4 +1,4 @@
-from pytriqs.Solvers.HybridizationExpansion import Solver
+from pytriqs.solvers.ctqmc_hyb import Solver
 import string
 import textwrap
 

@@ -1,10 +1,10 @@
 import numpy as np
-from pytriqs.Base.Plot.MatplotlibInterface import oplot
-from pytriqs.Base.GF_Local import *
-from pytriqs.Base.GF_Local.Descriptors import iOmega_n
+from pytriqs.base.Plot.MatplotlibInterface import oplot
+from pytriqs.base.GF_Local import *
+from pytriqs.base.GF_Local.Descriptors import iOmega_n
 g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
 
-from pytriqs.Base.Archive import HDF_Archive
+from pytriqs.base.Archive import HDF_Archive
 R = HDF_Archive('myfile.h5', 'w')
 
 for n, Z0 in enumerate( np.arange (1,0, -0.1) ) :

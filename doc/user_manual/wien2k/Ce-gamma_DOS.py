@@ -1,6 +1,6 @@
 from pytriqs.Wien2k.SumK_LDA_tools import *
 from pytriqs.Wien2k.SumK_LDA_Wien2k_input import *
-from pytriqs.Solvers.HubbardI.Solver_HubbardI import Solver_HubbardI 
+from pytriqs.solvers.hubbard_I.solver import Solver
 
 # Creates the data directory, cd into it:
 #Prepare_Run_Directory(DirectoryName = "Ce-Gamma") 
@@ -58,7 +58,7 @@ N = SK.corr_shells[0][3]
 l = SK.corr_shells[0][2]
 
 # Init the Solver:
-S = Solver_HubbardI(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
+S = Solver(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
 S.Nmoments=10
 
 # set atomic levels:

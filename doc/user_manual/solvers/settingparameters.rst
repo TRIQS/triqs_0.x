@@ -6,8 +6,8 @@ Take the time to go through this little guide as it can help you avoid doing
 simple mistakes. At first you need to create an instance of the CTQMC solver
 class. This is done with::
 
-    from pytriqs.Solvers.Operators import *
-    from pytriqs.Solvers.HybridizationExpansion import Solver
+    from pytriqs.solvers.operators import *
+    from pytriqs.solvers.ctqmc_hyb import Solver
 
     # Create a solver instance
     S = Solver( Beta = invT, parameters )

@@ -3,7 +3,7 @@
 The Solver class
 =================
 
-.. autoclass:: pytriqs.Solvers.HybridizationExpansion.Solver
+.. autoclass:: pytriqs.solvers.ctqmc_hyb.Solver
   :members: 
 
  

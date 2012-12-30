@@ -51,7 +51,7 @@ A little example::
         return cls(D['d'],D['t'])
  
  # registering my class
- from pytriqs.Base.Archive.HDF_Archive_Schemes import register_class
+ from pytriqs.base.Archive.HDF_Archive_Schemes import register_class
  register_class (myclass)
 
  # Testing it : 
@@ -61,7 +61,7 @@ A little example::
 What happens in details  ? 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~pytriqs.Base.Archive.HDF_Archive.HDF_Archive`/:py:class:`~pytriqs.Base.Archive.HDF_Archive.HDF_Archive_group`  `H`.
+Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~pytriqs.base.Archive.HDF_Archive.HDF_Archive`/:py:class:`~pytriqs.Base.Archive.HDF_Archive.HDF_Archive_group`  `H`.
 
 * **Writing** ::
 
@@ -85,6 +85,6 @@ Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~
         
        * Cls.__factory_from_dict__(D) is called and returns a new object Obj of type Cls, which is returned as `res`.
    
-     * Otherwise, a new :py:class:`~pytriqs.Base.Archive.HDF_Archive.HDF_Archive_group` is constructed with `S` as root, and returned as `res`.
+     * Otherwise, a new :py:class:`~pytriqs.base.Archive.HDF_Archive.HDF_Archive_group` is constructed with `S` as root, and returned as `res`.
 
    

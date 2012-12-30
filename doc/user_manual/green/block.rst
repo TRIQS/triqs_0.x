@@ -52,7 +52,7 @@ Slicing
 Just like numpy arrays, the Green's function can be sliced, *when the indices are integers* (otherwise it is meaningless).
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
-  >>> from pytriqs.Base.GF_Local import *
+  >>> from pytriqs.base.GF_Local import *
   >>> g = GFBloc_ImFreq(Indices = [1,2,3], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
   >>> g[1:3:,1:3]
   GFBloc_ImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
@@ -87,7 +87,7 @@ the = sign is possible and equivalent to the `<<=` operator.
    
    Let us illustrate this issue on a simple example::
   
-    from pytriqs.Base.GF_Local import *
+    from pytriqs.base.GF_Local import *
     # Create the Matsubara-frequency Green's function 
     g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
     
@@ -134,7 +134,7 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.Base.Utility import MPI
+     from pytriqs.base.Utility import MPI
      MPI.send (G, destination)
 
 .. warning::

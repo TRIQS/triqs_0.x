@@ -16,7 +16,7 @@ This object stores a retarded matrix valued Green function in real time :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.Base.GF_Local.GFBloc_ReTime
+.. autoclass:: pytriqs.base.GF_Local.GFBloc_ReTime
   :members: density, setFromInverseFourierOf, transpose, conjugate
  
 

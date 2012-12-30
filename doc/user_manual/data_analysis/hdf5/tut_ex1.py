@@ -1,4 +1,4 @@
-from pytriqs.Base.Archive import *
+from pytriqs.base.Archive import *
 import numpy
 R = HDF_Archive('myfile.h5', 'w')    # Opens the file myfile.h5, in read/write mode
 R['mu'] = 1.29
