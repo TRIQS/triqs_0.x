@@ -28,7 +28,7 @@ from pytriqs.base.utility.my_utils import Conjugate
  n = binary decomposition is the occupation number as usual
 """
         
-class _OpC:
+class OpC:
     """ C or B (?) operator """
     def __init__(self,dagger,n,*args):
         self.name,self.dag = args,dagger
@@ -38,8 +38,8 @@ class _OpC:
 
     WhichOrder=0
 
-    def Num(self) :
-        if self.dag and _OpC.WhichOrder != 0 :
+    def num(self) :
+        if self.dag and OpC.WhichOrder != 0 :
             return -self.number
         else :
             return self.number
@@ -81,7 +81,7 @@ class Operator:
     def __init__ (self,*args):
         """Construct from xxxx"""
         if args:
-            self.L=[ [ 1 , [] ,[ apply(_OpC,args) ] ]  ]
+            self.L=[ [ 1 , [] ,[ apply(OpC,args) ] ]  ]
         else:
             self.L=[ ]
         #self.const = 0
@@ -91,19 +91,19 @@ class Operator:
         res.L = [ [c,vl[:],mono[:]] for c,vl,mono in self.L]
         return res
     
-    def RemoveQuadraticTerms(self):
+    def remove_quadratic(self):
         res = Operator()
         res.L = [ [c,vl[:],mono[:]] for c,vl,mono in self.L if len(mono) >2 ]
         return res
 
 
-    def NormalOrder(self):
+    def normal_order(self):
         """Returns an new operator put in normal order : Cdag first, C at the right.
            Cdag are in increasing order, C in decreasing order."""
-        _OpC.WhichOrder = 1
+        OpC.WhichOrder = 1
         #res = self
         self.__redu()
-        _OpC.WhichOrder = 0
+        OpC.WhichOrder = 0
         return self 
     
     def __redu(self) :
@@ -111,11 +111,11 @@ class Operator:
         def tri1(IN):
             oplist = IN[2]
             for i in range(1,len(oplist)):
-                n,c= oplist[i].Num(),1
-                d = n - oplist[i-1].Num()
+                n,c= oplist[i].num(),1
+                d = n - oplist[i-1].num()
                 if (d<0) :
                     j,c = i-1,1
-                    while j>=0 and n<oplist[j].Num() : c *= -1; j -= 1
+                    while j>=0 and n<oplist[j].num() : c *= -1; j -= 1
                     oplist.insert(j+1,oplist.pop(i))
                     return  [ [c*IN[0], IN[1][:], oplist] ]
                 if (d==0) :
@@ -145,14 +145,6 @@ class Operator:
 		    l[0] +=b2[0]
                     b2[0]=0
         self.L = filter( lambda x : (abs(x[0])>=1.e-14),self.L)
-
-##    def __coerce__(self,other) :
-##        print "COERCE"
-##        if type(self)==type(other) : return self,other
-##        res = Operator()
-##        if type(other) not in [type(1),type(1.0),type(1j)] : raise "Error  : can not transcribe the element into an operator"
-##        res.L.append([other,[],[]])
-##        return self,res
 
     def dagger(self) :
         res = Operator()
@@ -261,7 +253,7 @@ class Operator:
             return x.real
         self.L = [ (f(coef),var,oplist) for coef,var,oplist in self.L]
 
-    def Number_as_C(self) :
+    def number_as_C(self) :
         """
         If the operator is alpha C , return the number of C
         """
@@ -269,17 +261,17 @@ class Operator:
             raise "Internal error : len of C is not right"
         return  self.L[0][2][0].number
  
-    def is_Fundamental(self) :
+    def is_fundamental(self) :
         """
         If the operator is alpha C , return true
         """
         return len(self.L)==1 and len(self.L[0][2])==1
 
-    def _as_Fundamental(self) :
+    def as_fundamental(self) :
         """
         If the operator is alpha C , return the C
         """
-        if not self.is_Fundamental():
+        if not self.is_fundamental():
             raise "Internal error : len of C is not right"
         return  self.L[0][2][0]
 
@@ -293,7 +285,7 @@ class Operator:
 
  
 _Varlist={}
-def Var(x):
+def var(x):
     global _Varlist
     _Varlist[x]=1
     return(Op(1,[x],()))
@@ -302,17 +294,17 @@ def Var(x):
 # list of all the C operators
 _C_list ={}
 
-def Clist():
+def C_list():
     for cdag,c,n,b in _C_list.values() :
         yield n,cdag,c
 
-def ClistNames():
+def C_list_names():
     return _C_list.keys()
 
-def Number_of_C():
+def number_of_C():
     return len(_C_list)
 
-def Operator_Id():
+def operator_id():
     res = Operator()
     res.L.append([1,[],[] ])
     return res
@@ -343,7 +335,7 @@ def N(*args):
     """ Short cut for Cdag(args)*C(args)"""
     return(apply(Cdag,args)*apply(C,args))
 
-def State(*args):
+def state(*args):
     """
 Input : a list of indices for C operators. e.g. State( (1,up), (1,down) )
 Returns : the corresponding indices, whose binary decomposition is given by 000100..1000
@@ -356,36 +348,36 @@ where the 1 are at the position described in input"""
         raise "One C operator unknown !"
     return r
     
-def AllPureStates():
+def all_pure_states():
     """ Generates all the pure states"""
     for i in xrange(2**len(_C_list)):
         yield {i : 1}
         
-def Commutator(A,B) :
+def commutator(A,B) :
     C = A*B - B*A
     return C
 
-def AntiCommutator(A,B) :
+def anti_commutator(A,B) :
     C = A*B + B*A
     return C
 
-def Extend_Function_on_Fundamentals( F) :
+def extend_function_on_fundamentals(func) :
     """
-    Given a function F that map any C operator to another one,
+    Given a function func that map any C operator to another one,
     it extends the function on the algebra of all operators.
     Returns : a function acting an operators.
     """
     def f(Op) : 
         RES = Operator()
         for l,X,M in Op.L : # term is of type (lambda, [...], [MOMEOME])
-            r = [ F(c)._as_Fundamental() for c in M]
+            r = [ func(c).as_fundamental() for c in M]
             RES.L.append ( [l, X, r] )
         RES._Operator__redu()
         return RES
     return f
 
 
-def Complete_OperatorsList_with_Fundamentals (OPdict) : 
+def complete_op_list_with_fundamentals (op_dict) : 
     """
       Given a dict of operators, it  : 
        - finds all the fundamental operators contained in these operators
@@ -398,7 +390,7 @@ def Complete_OperatorsList_with_Fundamentals (OPdict) :
     """      
     # first find all fundamental operators
     Opfund,NameOpFundamentalList = [],[] 
-    for name, Op in OPdict.items() :
+    for name, Op in op_dict.items() :
         for l,X,M in Op.L : # term is of type (lambda, [...], [MOMEOME])
             Opfund += M
     L = sorted( [ (Op.number, Op) for Op in set(Opfund) if not(Op.dag) ])
@@ -414,20 +406,20 @@ def Complete_OperatorsList_with_Fundamentals (OPdict) :
             else :
                 SymCharacters[sym_name] = {n : char}
         OP_C = C(*OP.name)
-        if len([ k for (k,v) in OPdict.items() if (v-OP_C).is_zero()]) == 0: 
+        if len([ k for (k,v) in op_dict.items() if (v-OP_C).is_zero()]) == 0: 
             k = 'C'    + string.join([ "%s"%x for x in OP.name],'')
-            OPdict[k] = OP_C
+            op_dict[k] = OP_C
             NameOpFundamentalList.append(k)
         OP_C = Cdag(*OP.name)
-        if len([ k for (k,v) in OPdict.items() if (v-OP_C).is_zero()]) == 0: 
+        if len([ k for (k,v) in op_dict.items() if (v-OP_C).is_zero()]) == 0: 
             k = 'Cdag' + string.join([ "%s"%x for x in OP.name],'')
-            OPdict[k] = OP_C
+            op_dict[k] = OP_C
             NameOpFundamentalList.append(k)
 
-    return OPdict,NF,NB,SymCharacters,NameOpFundamentalList
+    return op_dict,NF,NB,SymCharacters,NameOpFundamentalList
 
 
-def Transcribe_OpList_for_C (OPdict) : 
+def transcribe_op_list_for_C (op_dict) : 
     """
       Given a dict of operators, it  : 
        - transcribes all operators into a dict D : 
@@ -436,7 +428,7 @@ def Transcribe_OpList_for_C (OPdict) :
 
     """      
     D = {}
-    for name, Op in OPdict.items() :
+    for name, Op in op_dict.items() :
         opval = []
         for l,X,M in Op.L : # term is of type (lambda, [...], [MOMEOME])
             RES = [ c.number_for_C for c in M]
@@ -445,4 +437,3 @@ def Transcribe_OpList_for_C (OPdict) :
         D[name] = opval
     return D
 
- 

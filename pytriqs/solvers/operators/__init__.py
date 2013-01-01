@@ -20,6 +20,5 @@
 #
 ################################################################################
 
-from operators import Operator,C,Cdag,N,State,AllPureStates,Clist,Number_of_C,Commutator,AntiCommutator,Operator_Id,Extend_Function_on_Fundamentals
+from operators import Operator, C, Cdag, N, state, all_pure_states, C_list, number_of_C, commutator, anti_commutator, operator_id, extend_function_on_fundamentals
 
-__add__ =[]

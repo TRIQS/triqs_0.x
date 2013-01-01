@@ -111,7 +111,7 @@ class Solver(SolverBase):
          # first check that all indices of the Green Function do correspond to a C operator.
         for a,alpha_list in self.GFStruct :
           for alpha in alpha_list :
-            if (a,alpha) not in operators.ClistNames() :
+            if (a,alpha) not in operators.C_list_names() :
               raise "Error : Some indices (%s,%s) of the Green function do not correspond to existing operator"%(a,alpha)
 
     #--------------------------------------------------
@@ -161,11 +161,11 @@ class Solver(SolverBase):
 
         # Check that the quantum numbers commutes with the Hamiltonian
         for name,op in QuantumNumberOperators.items():
-            assert Commutator(self.H_Local ,op).is_zero(), "One quantum number is not commuting with Hamiltonian"
+            assert commutator(self.H_Local ,op).is_zero(), "One quantum number is not commuting with Hamiltonian"
             OPdict[name]=op
 
         # Complete the OPdict with the fundamental operators
-        OPdict, nf, nb, SymChar, NameOpFundamentalList = operators.Complete_OperatorsList_with_Fundamentals(OPdict)
+        OPdict, nf, nb, SymChar, NameOpFundamentalList = operators.complete_op_list_with_fundamentals(OPdict)
 
         # Add the operators to be averaged in OPdict and prepare the list for the C-code
         self.Measured_Operators_Results = {}
@@ -217,7 +217,7 @@ class Solver(SolverBase):
             added_something = False
             for n,(proba,GM) in enumerate(self.Global_Moves):
                 # F is a function that map all operators according to the global move
-                F = Extend_Function_on_Fundamentals(Map_GM_to_Fund_Ops(GM))
+                F = extend_function_on_fundamentals(Map_GM_to_Fund_Ops(GM))
                 # Make sure that OPdict is complete, i.e. all images of OPdict operators are in OPdict
                 for name,op in OPdict.items() :
                     op_im = F(op)
@@ -235,7 +235,7 @@ class Solver(SolverBase):
         # Now I have all operators, I make the transcription of the global moves
         self.Global_Moves_Mapping_List = []
         for n,(proba,GM) in enumerate(self.Global_Moves):
-            F = Extend_Function_on_Fundamentals(Map_GM_to_Fund_Ops(GM))
+            F = extend_function_on_fundamentals(Map_GM_to_Fund_Ops(GM))
             m = {}
             for name,op in OPdict.items() :
                 op_im = F(op)
@@ -247,10 +247,10 @@ class Solver(SolverBase):
 
         # Now add the operator for F calculation if needed
         if self.Use_F :
-            Hloc_WithoutQuadratic = self.H_Local.RemoveQuadraticTerms()
+            Hloc_WithoutQuadratic = self.H_Local.remove_quadratic()
             for n,op in OPdict.items() :
                 if op.is_Fundamental():
-                    op2 = Commutator(Hloc_WithoutQuadratic,op)
+                    op2 = commutator(Hloc_WithoutQuadratic,op)
                     if not mysearch(op2) : OPdict["%s_Comm_Hloc"%n] = op2
 
         # All operators have real coefficients. Check this and remove the 0j term
@@ -258,7 +258,7 @@ class Solver(SolverBase):
         for n,op in OPdict.items(): op.make_coef_real_and_check()
 
         # Transcription of operators for C++
-        Oplist2 = operators.Transcribe_OpList_for_C(OPdict)
+        Oplist2 = operators.transcribe_op_list_for_C(OPdict)
         SymList = [sym for (n,sym) in SymChar.items() if n in QuantumNumberSymmetries]
         self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0) 
 
