@@ -20,18 +20,18 @@
 #
 ################################################################################
 
-#from pytriqs.import myUtils 
+#from pytriqs.import my_utils 
 from types import *
 import numpy
-import pytriqs.base.utility.Dichotomy as Dichotomy
+import pytriqs.base.utility.dichotomy as dichotomy
 from pytriqs.base.gf_local.block_gf import GF
 from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
 from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.utility.myUtils import Sum
-import pytriqs.base.utility.MPI as MPI
+from pytriqs.base.utility.my_utils import Sum
+import pytriqs.base.utility.mpi as mpi
 
 from pytriqs.dft.symmetry import *
 from pytriqs.dft.sumk_lda_SO import SumK_LDA_SO
@@ -218,7 +218,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         # output:
         #if (self.Nspinblocs==1):
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             for ibn in range(self.Nspinblocs):
                 bn = self.blocnames[self.SO][ibn]
                 f=open('DOS%s.dat'%bn, 'w')
@@ -247,7 +247,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
         if (self.SO==0):
             self.__readprojfile(Proj_filename=Proj_filename,Symm_file=Symm_file)
         else:
-            MPI.report("WARNING: with SO we calculate only TOTAL DOS for the moment!")
+            mpi.report("WARNING: with SO we calculate only TOTAL DOS for the moment!")
 
         #GFStruct_proj has to be adapted for SO coupling!!
         #GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in self.blocnames ]  for i in xrange(self.N_shells) ]
@@ -286,7 +286,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
              ikarray=numpy.array(range(self.Nk))
              stmp = self.add_DC()
 
-             for ik in MPI.slice_array(ikarray):
+             for ik in mpi.slice_array(ikarray):
 
                  GFsize = [ gf.N1 for sig,gf in S] 
                  unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
@@ -330,12 +330,12 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                              for sig,gf in tmp: tmp[sig] <<= self.downfold_pc(ik,ir,ish,sig,S[sig],gf)
                              Gproj[ish] += tmp
                         
-        # collect data from MPI:
-        DOS = MPI.all_reduce(MPI.world,DOS,lambda x,y : x+y)
+        # collect data from mpi:
+        DOS = mpi.all_reduce(mpi.world,DOS,lambda x,y : x+y)
         if (self.SO==0):
             for ish in xrange(self.N_shells):
-                Gproj[ish] <<= MPI.all_reduce(MPI.world,Gproj[ish],lambda x,y : x+y)
-        MPI.barrier()        
+                Gproj[ish] <<= mpi.all_reduce(mpi.world,Gproj[ish],lambda x,y : x+y)
+        mpi.barrier()        
 
         if (self.SO==0):
             # Symmetrisation:            
@@ -350,7 +350,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 for sig,gf in Gproj[ish]:  DOSproj[ish][:,:,:] += gf._data.array[:,:,:].imag / (-3.1415926535)
 	    
 
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             # output to file
             f=open('./DOScorr.dat', 'w')
             for i in range(N_om): f.write("%s    %s\n"%(Msh[i],DOS[i]))
@@ -1018,7 +1018,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         ikarray=numpy.array(range(self.Nk))
         stmp = self.add_DC()
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             print ik
 
             GFsize = [ gf.N1 for sig,gf in S] 
@@ -1056,10 +1056,10 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                     for sig,gf in tmp: tmp[sig] <<= self.downfold_pc(ik,ir,ish,sig,S[sig],gf)
                     Gproj[ish] += tmp
 
-        #collect data from MPI:
+        #collect data from mpi:
         for ish in xrange(self.N_shells):
-            Gproj[ish] <<= MPI.all_reduce(MPI.world,Gproj[ish],lambda x,y : x+y)
-        MPI.barrier()
+            Gproj[ish] <<= mpi.all_reduce(mpi.world,Gproj[ish],lambda x,y : x+y)
+        mpi.barrier()
 
         # Symmetrisation:
         if (self.symm_op!=0): Gproj = self.Symm_par.symmetrise(Gproj)
@@ -1111,7 +1111,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         ikarray=numpy.array(range(self.Nk))
         
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
        
             GFsize = [ gf.N1 for sig,gf in S] 
             unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
@@ -1143,10 +1143,10 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                     for sig,gf in tmp: tmp[sig] <<= self.downfold_pc(ik,ir,ish,sig,S[sig],gf)
                     Gproj[ish] += tmp
 
-        #collect data from MPI:
+        #collect data from mpi:
         for ish in xrange(self.N_shells):
-            Gproj[ish] <<= MPI.all_reduce(MPI.world,Gproj[ish],lambda x,y : x+y)
-        MPI.barrier()
+            Gproj[ish] <<= mpi.all_reduce(mpi.world,Gproj[ish],lambda x,y : x+y)
+        mpi.barrier()
 
         # Symmetrisation:
         if (self.symm_op!=0): Gproj = self.Symm_par.symmetrise(Gproj)

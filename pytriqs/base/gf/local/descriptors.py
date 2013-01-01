@@ -24,7 +24,7 @@ r""" """
 import numpy
 from math import *
 from gf import MeshImFreq,TailGf #, MeshRealFrequency
-from pytriqs.base.utility.myUtils import sign
+from pytriqs.base.utility.my_utils import sign
 from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
 
 def is_lazy(y) :

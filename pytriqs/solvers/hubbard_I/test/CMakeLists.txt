@@ -1,6 +1,6 @@
 find_package(TestScriptHdf)
 
-add_triqs_test_hdf(HubbardI " -d 1.e-6" )
+add_triqs_test_hdf(hubbard " -d 1.e-6" )
 
 
 

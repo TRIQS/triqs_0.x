@@ -29,7 +29,7 @@ def make_injector(ClassIntoCodeWillBeInjected) :
     Usage : 
       If you want to inject code into class A (typically a C++ wrapped class) ::
       
-       from pytriqs.base.utility.Injector import make_injector
+       from pytriqs.base.utility.injector import make_injector
        class __inject (make_injector(A) ,Class1, Class 2, A) : # A MUST be the last one
            def method1() :  # etc, as normal class
            def __init__(): 

@@ -1,9 +1,9 @@
 
 SET(PYTHON_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/BZ_Patch.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/SuperLattice.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/TightBinding.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/bz_patch.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/super_lattice.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/tight_binding.py
 )
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/lattice)

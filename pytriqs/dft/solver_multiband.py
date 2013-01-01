@@ -23,8 +23,8 @@
 
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
-from pytriqs.base.utility.myUtils import Sum
-import pytriqs.base.utility.MPI as MPI
+from pytriqs.base.utility.my_utils import Sum
+import pytriqs.base.utility.mpi as mpi
 from types import *
 import numpy
 
@@ -280,7 +280,7 @@ class Solver_MultiBand (Solver):
 	#if (len(self.GFStruct)==2*self.Norb):
         if (self.blocssizeone):
             spinblocs = [v for v in self.map]
-            MPI.report("Fitting tails manually")
+            mpi.report("Fitting tails manually")
 	
             known_coeff = numpy.zeros([1,1,2],numpy.float_)
             msh = [x.imag for x in self.G[self.map[spinblocs[0]][0]].mesh ]
@@ -342,7 +342,7 @@ def set_umatrix(U_interact,J_Hund,Norb,l,useMatrix=True,T=None,Sl_Int=None,use_s
             Umat(T=T,Rcl=Rcl)
         else:
             if ((U_interact==None)and(J_Hund==None)):
-                MPI.report("Give U,J or Slater integrals!!!")
+                mpi.report("Give U,J or Slater integrals!!!")
                 assert 0
             Umat = Umatrix(U_interact=U_interact, J_Hund=J_Hund, l=l)
             Umat(T=T)
@@ -361,8 +361,8 @@ def set_umatrix(U_interact,J_Hund,Norb,l,useMatrix=True,T=None,Sl_Int=None,use_s
             #Take the 4index Umatrix
             # check for imaginary matrix elements:
             if (abs(Umat.Ufull.imag)>0.0001).any():
-                MPI.report("WARNING: complex interaction matrix!! Ignoring imaginary part for the moment!")
-                MPI.report("If you want to change this, look into Wien2k/Solver_MultiBand.py")
+                mpi.report("WARNING: complex interaction matrix!! Ignoring imaginary part for the moment!")
+                mpi.report("If you want to change this, look into Wien2k/Solver_MultiBand.py")
             U4ind = Umat.Ufull.real
     
         # this will be changed for arbitrary irep:
@@ -375,7 +375,7 @@ def set_umatrix(U_interact,J_Hund,Norb,l,useMatrix=True,T=None,Sl_Int=None,use_s
                 offset += dimreps[ii]
     else:
         if ((U_interact==None)and(J_Hund==None)):
-            MPI.report("For Kanamori representation, give U and J!!")
+            mpi.report("For Kanamori representation, give U and J!!")
             assert 0
         U  = numpy.zeros([Norb,Norb],numpy.float_)
         Up = numpy.zeros([Norb,Norb],numpy.float_)

@@ -23,14 +23,14 @@
 from types import *
 from pytriqs.dft.symmetry import *
 import numpy
-import pytriqs.base.utility.Dichotomy as Dichotomy
+import pytriqs.base.utility.dichotomy as dichotomy
 from pytriqs.base.gf_local.block_gf import GF
 from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
 from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.archive import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 from math import cos,sin
 
@@ -47,7 +47,7 @@ class SumK_LDA:
         """
 
         if  not (type(HDFfile)==StringType):
-            MPI.report("Give a string for the HDF5 filename to read the input!")
+            mpi.report("Give a string for the HDF5 filename to read the input!")
         else:
             self.HDFfile = HDFfile
             self.LDAdata = LDAdata
@@ -76,7 +76,7 @@ class SumK_LDA:
 
             if (self.SO) and (abs(self.hfield)>0.000001):
                 self.hfield=0.0
-                MPI.report("For SO, the external magnetic field is not implemented, setting it to 0!!")
+                mpi.report("For SO, the external magnetic field is not implemented, setting it to 0!!")
 
            
             self.inequiv_shells(self.corr_shells)     # determine the number of inequivalent correlated shells
@@ -114,7 +114,7 @@ class SumK_LDA:
                 self.deg_shells = [ [] for i in range(self.N_inequiv_corr_shells)]
 
             if self.symm_op:
-                #MPI.report("Do the init for symm:")
+                #mpi.report("Do the init for symm:")
                 self.Symm_corr = Symmetry(HDFfile,subgroup=self.Symmcorrdata)
 
             # determine the smallest blocs, if wanted:
@@ -122,7 +122,7 @@ class SumK_LDA:
 
           
             # now save things again to HDF5:
-            if (MPI.IS_MASTER_NODE()):
+            if (mpi.IS_MASTER_NODE()):
                 ar=HDF_Archive(self.HDFfile,'a')
                 ar[self.LDAdata]['hfield'] = self.hfield
                 del ar
@@ -144,7 +144,7 @@ class SumK_LDA:
         for it in thingstoread: exec "self.%s = 0"%it
         for it in optionalthings: exec "self.%s = 0"%it
         
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar=HDF_Archive(self.HDFfile,'a')
             if (SubGrp in ar):
                 # first read the necessary things:
@@ -152,7 +152,7 @@ class SumK_LDA:
                     if (it in ar[SubGrp]):
                         exec "self.%s = ar['%s']['%s']"%(it,SubGrp,it)
                     else:
-                        MPI.report("Loading %s failed!"%it)
+                        mpi.report("Loading %s failed!"%it)
                         retval = False
                    
                 if ((retval) and (len(optionalthings)>0)):
@@ -165,17 +165,17 @@ class SumK_LDA:
                         else:
                             retval['%s'%it] = False
             else:
-                MPI.report("Loading failed: No %s subgroup in HDF5!"%SubGrp)
+                mpi.report("Loading failed: No %s subgroup in HDF5!"%SubGrp)
                 retval = False
 
             del ar
 
         # now do the broadcasting:
-        for it in thingstoread: exec "self.%s = MPI.bcast(self.%s)"%(it,it)
-        for it in optionalthings: exec "self.%s = MPI.bcast(self.%s)"%(it,it)
+        for it in thingstoread: exec "self.%s = mpi.bcast(self.%s)"%(it,it)
+        for it in optionalthings: exec "self.%s = mpi.bcast(self.%s)"%(it,it)
         
 
-        retval = MPI.bcast(retval)
+        retval = mpi.bcast(retval)
                
         return retval
 
@@ -184,7 +184,7 @@ class SumK_LDA:
     def save(self):
         """Saves some quantities into an HDF5 arxiv"""
 
-        if not (MPI.IS_MASTER_NODE()): return # do nothing on nodes
+        if not (mpi.IS_MASTER_NODE()): return # do nothing on nodes
 
         ar=HDF_Archive(self.HDFfile,'a')
         ar[self.LDAdata]['Chemical_Potential'] = self.Chemical_Potential
@@ -350,7 +350,7 @@ class SumK_LDA:
 
         ikarray=numpy.array(range(self.Nk))
           
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             
             unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==len(MMat[ib]) 
                                    for ib in range(self.NspinblocsGF[self.SO]) ] )
@@ -377,8 +377,8 @@ class SumK_LDA:
         # get data from nodes:
         for icrsh in range(self.N_corr_shells):
             for sig in densmat[icrsh]:
-                densmat[icrsh][sig] = MPI.all_reduce(MPI.world,densmat[icrsh][sig],lambda x,y : x+y)
-        MPI.barrier()
+                densmat[icrsh][sig] = mpi.all_reduce(mpi.world,densmat[icrsh][sig],lambda x,y : x+y)
+        mpi.barrier()
 
                     
         if (self.symm_op!=0): densmat = self.Symm_corr.symmetrise(densmat)
@@ -405,7 +405,7 @@ class SumK_LDA:
 
         ikarray=numpy.array(range(self.Nk))
 
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             
             Gupf = self.latticeGF_Matsubara(ik=ik,mu=self.Chemical_Potential)
             Gupf *= self.BZ_weights[ik]
@@ -421,8 +421,8 @@ class SumK_LDA:
         # get data from nodes:
         for icrsh in range(self.N_corr_shells):
             for sig in densmat[icrsh]:
-                densmat[icrsh][sig] = MPI.all_reduce(MPI.world,densmat[icrsh][sig],lambda x,y : x+y)
-        MPI.barrier()
+                densmat[icrsh][sig] = mpi.all_reduce(mpi.world,densmat[icrsh][sig],lambda x,y : x+y)
+        mpi.barrier()
 
 
         if (self.symm_op!=0): densmat = self.Symm_corr.symmetrise(densmat)
@@ -519,7 +519,7 @@ class SumK_LDA:
                             elif ((ind1<0)and(ind2<0)):
                                 self.deg_shells[ish].append([bl[0],bl2[0]])
 
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar=HDF_Archive(self.HDFfile,'a')
             ar[self.LDAdata]['GFStruct_Solver'] = self.GFStruct_Solver
             ar[self.LDAdata]['map'] = self.map
@@ -527,7 +527,7 @@ class SumK_LDA:
             try:
                 ar[self.LDAdata]['deg_shells'] = self.deg_shells
             except:
-                MPI.report("deg_shells not stored, degeneracies not found")
+                mpi.report("deg_shells not stored, degeneracies not found")
             del ar
             
         return densmat
@@ -719,14 +719,14 @@ class SumK_LDA:
                             Uav = U_interact*(Ncrtot-0.5) - J_Hund*(Ncr[bl] - 0.5)
                             self.dc_imp[icrsh][bl] *= Uav                              
                             self.DCenerg[icrsh]  -= J_Hund / 2.0 * (Ncr[bl]) * (Ncr[bl]-1.0)
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     elif (useDCformula==1):
                         self.DCenerg[icrsh] = (U_interact + J_Hund * (2.0-(M-1)) / (2*M-1)  ) / 2.0 * Ncrtot * (Ncrtot-1.0)
                         for bl in a_list:
                             # Held's formula, with U_interact the interorbital onsite interaction
                             Uav = (U_interact + J_Hund * (2.0-(M-1)) / (2*M-1)  ) * (Ncrtot-0.5)
                             self.dc_imp[icrsh][bl] *= Uav 
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     elif (useDCformula==2):
                         self.DCenerg[icrsh] = 0.5 * U_interact * Ncrtot * Ncrtot
                         for bl in a_list:
@@ -734,10 +734,10 @@ class SumK_LDA:
                             Uav = U_interact*(Ncrtot - Ncr[bl]/M) - J_Hund * (Ncr[bl] - Ncr[bl]/M)
                             self.dc_imp[icrsh][bl] *= Uav
                             self.DCenerg[icrsh] -= (U_interact + (M-1)*J_Hund)/M * 0.5 * Ncr[bl] * Ncr[bl]
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     
                     # output:
-                    MPI.report("DC energy for shell %s = %s"%(icrsh,self.DCenerg[icrsh]))
+                    mpi.report("DC energy for shell %s = %s"%(icrsh,self.DCenerg[icrsh]))
 
                 else:    
             
@@ -748,8 +748,8 @@ class SumK_LDA:
                     self.DCenerg[icrsh] = useval * Ncrtot
 
                     # output:
-                    MPI.report("DC for shell %(icrsh)i = %(useval)f"%locals())
-                    MPI.report("DC energy = %s"%self.DCenerg[icrsh])
+                    mpi.report("DC for shell %(icrsh)i = %(useval)f"%locals())
+                    mpi.report("DC energy = %s"%self.DCenerg[icrsh])
 
 
         
@@ -775,7 +775,7 @@ class SumK_LDA:
         else:
             Dens_rel = densreq
         
-        dcnew = Dichotomy.Dichotomy(Function = F,
+        dcnew = dichotomy.Dichotomy(Function = F,
                                     xinit = guess, yvalue = Dens_rel,
                                     Precision_on_y = precision, Delta_x=0.5,
                                     MaxNbreLoop = 100, xname="Double-Counting", yname= "Total Density",
@@ -916,14 +916,14 @@ class SumK_LDA:
         dens = 0.0
         ikarray=numpy.array(range(self.Nk))
         
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
         
             S = self.latticeGF_Matsubara(ik=ik,mu=mu) 
             dens += self.BZ_weights[ik] * S.total_density()
                 
-        # collect data from MPI:
-        dens = MPI.all_reduce(MPI.world,dens,lambda x,y : x+y)
-        MPI.barrier()
+        # collect data from mpi:
+        dens = mpi.all_reduce(mpi.world,dens,lambda x,y : x+y)
+        mpi.barrier()
                 
         return dens
 
@@ -937,7 +937,7 @@ class SumK_LDA:
         Dens_rel = self.Density_Required - self.charge_below
 
         
-        self.Chemical_Potential = Dichotomy.Dichotomy(Function = F,
+        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
                                          xinit = self.Chemical_Potential, yvalue = Dens_rel,
                                          Precision_on_y = precision, Delta_x=0.5,
                                          MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Total Density",
@@ -963,7 +963,7 @@ class SumK_LDA:
             return dens
             
       
-        self.Chemical_Potential = Dichotomy.Dichotomy(Function = F,
+        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
                                       xinit = self.Chemical_Potential, yvalue = densreq,
                                       Precision_on_y = precision, Delta_x=0.5,
                                       MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Local Density",
@@ -987,7 +987,7 @@ class SumK_LDA:
 
         ikarray=numpy.array(range(self.Nk))
         
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             
             S = self.latticeGF_Matsubara(ik=ik,mu=mu,withSigma = withSigma) 
             S *= self.BZ_weights[ik]
@@ -998,10 +998,10 @@ class SumK_LDA:
                 for sig,gf in tmp: tmp[sig] <<= self.downfold(ik,icrsh,sig,S[sig],gf)
                 Gloc[icrsh] += tmp
 
-        #collect data from MPI:
+        #collect data from mpi:
         for icrsh in xrange(self.N_corr_shells):
-            Gloc[icrsh] <<= MPI.all_reduce(MPI.world,Gloc[icrsh],lambda x,y : x+y)
-        MPI.barrier()
+            Gloc[icrsh] <<= mpi.all_reduce(mpi.world,Gloc[icrsh],lambda x,y : x+y)
+        mpi.barrier()
 
   
         # Gloc[:] is now the sum over k projected to the local orbitals.
@@ -1050,7 +1050,7 @@ class SumK_LDA:
         for ib in bln:
             dens[ib] = 0.0
  
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
         
             S = self.latticeGF_Matsubara(ik=ik,mu=self.Chemical_Potential)
             for sig,g in S:
@@ -1059,16 +1059,16 @@ class SumK_LDA:
             
                 
 
-        #put MPI Barrier:
+        #put mpi Barrier:
         for sig in deltaN:
             for ik in range(self.Nk):
-                deltaN[sig][ik] = MPI.all_reduce(MPI.world,deltaN[sig][ik],lambda x,y : x+y)
-            dens[sig] = MPI.all_reduce(MPI.world,dens[sig],lambda x,y : x+y)
-        MPI.barrier()
+                deltaN[sig][ik] = mpi.all_reduce(mpi.world,deltaN[sig][ik],lambda x,y : x+y)
+            dens[sig] = mpi.all_reduce(mpi.world,dens[sig],lambda x,y : x+y)
+        mpi.barrier()
 
        
         # now save to file:
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             if (self.SP==0):
                 f=open(Filename,'w')
             else:

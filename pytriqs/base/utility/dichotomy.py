@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 def Dichotomy(Function, xinit,yvalue,Precision_on_y,Delta_x, MaxNbreLoop=1000, xname="", yname="",verbosity=1):
     """
@@ -45,7 +45,7 @@ def Dichotomy(Function, xinit,yvalue,Precision_on_y,Delta_x, MaxNbreLoop=1000, x
         if x<0.0 : return -1
         return 0
     
-    MPI.report("Dichotomy adjustment of %(xname)s to obtain %(yname)s = %(yvalue)f +/- %(Precision_on_y)f"%locals() )
+    mpi.report("Dichotomy adjustment of %(xname)s to obtain %(yname)s = %(yvalue)f +/- %(Precision_on_y)f"%locals() )
     PR = "    "
     if xname=="" or yname==""  : verbosity = max(verbosity,1)
     x=xinit;Delta_x= abs(Delta_x)
@@ -60,10 +60,10 @@ def Dichotomy(Function, xinit,yvalue,Precision_on_y,Delta_x, MaxNbreLoop=1000, x
         x2 -=  eps*Delta_x
         y2 = Function(x2)
         if xname!="" and verbosity>2:
-            MPI.report("%(PR)s%(xname)s = %(x2)f  \n%(PR)s%(yname)s = %(y2)f"%locals())
+            mpi.report("%(PR)s%(xname)s = %(x2)f  \n%(PR)s%(yname)s = %(y2)f"%locals())
 
-    MPI.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
-    MPI.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
+    mpi.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
+    mpi.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
 
     # Now mu is between mu1 and mu2
     yfound = y2
@@ -85,15 +85,15 @@ def Dichotomy(Function, xinit,yvalue,Precision_on_y,Delta_x, MaxNbreLoop=1000, x
         else :
             x2= x;y2=yfound;
         if verbosity>2 :
-            MPI.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
-            MPI.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
+            mpi.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
+            mpi.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
     if abs(yfound - yvalue) < Precision_on_y :
         if verbosity>0:
-            MPI.report("%(PR)s%(xname)s found in %(nbre_loop)d iterations : "%locals())
-            MPI.report("%(PR)s%(yname)s = %(yfound)f;%(xname)s = %(x)f"%locals())
+            mpi.report("%(PR)s%(xname)s found in %(nbre_loop)d iterations : "%locals())
+            mpi.report("%(PR)s%(yname)s = %(yfound)f;%(xname)s = %(x)f"%locals())
         return (x,yfound)
     else : 
         if verbosity>0:
-            MPI.report("%(PR)sFAILURE to adjust %(xname)s  to the value %(yvalue)f after %(nbre_loop)d iterations."%locals())
+            mpi.report("%(PR)sFAILURE to adjust %(xname)s  to the value %(yvalue)f after %(nbre_loop)d iterations."%locals())
         return (None,None)
     

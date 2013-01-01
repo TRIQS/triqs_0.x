@@ -23,14 +23,14 @@
 from types import *
 from pytriqs.dft.symmetry_so import *
 import numpy
-import pytriqs.base.utility.Dichotomy as Dichotomy
+import pytriqs.base.utility.dichotomy as dichotomy
 from pytriqs.base.gf_local.block_gf import GF
 from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
 from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.archive import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 from math import cos,sin
 
@@ -336,7 +336,7 @@ class SumK_LDA_SO:
                 #self.dc_imp = arxiv['SumK_LDA']['dc_imp']
             return True
         except:
-            MPI.report("Loading failed, starting from scratch...")
+            mpi.report("Loading failed, starting from scratch...")
             return False
    
 
@@ -344,7 +344,7 @@ class SumK_LDA_SO:
     def save(self,Filename):
         """Saves some quantities into a file"""
         
-        if not MPI.IS_MASTER_NODE(): return   # Do nothing if not master
+        if not mpi.IS_MASTER_NODE(): return   # Do nothing if not master
         assert type(Filename)==StringType,"Filename must be a filename"
         
         f=open(Filename, 'w')
@@ -373,7 +373,7 @@ class SumK_LDA_SO:
         assert type(Filename)==StringType,"Filename must be a filename"
         if not(os.path.exists(Filename)) :    #raise IOError, "File %s does not exists"%Filename
             # no file found:
-            MPI.report("Loading failed, starting from scratch...")
+            mpi.report("Loading failed, starting from scratch...")
             #self.analyse_BS()
             return False
         else:
@@ -565,7 +565,7 @@ class SumK_LDA_SO:
 
         ikarray=numpy.array(range(self.Nk))
           
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             
             unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==len(MMat[ib]) 
                                    for ib in range(self.NspinblocsGF[self.SO]) ] )
@@ -592,8 +592,8 @@ class SumK_LDA_SO:
         # get data from nodes:
         for icrsh in range(self.N_corr_shells):
             for sig in densmat[icrsh]:
-                densmat[icrsh][sig] = MPI.all_reduce(MPI.world,densmat[icrsh][sig],lambda x,y : x+y)
-        MPI.barrier()
+                densmat[icrsh][sig] = mpi.all_reduce(mpi.world,densmat[icrsh][sig],lambda x,y : x+y)
+        mpi.barrier()
                     
         if (self.symm_op!=0): densmat = self.Symm_corr.symmetrise(densmat)
 
@@ -645,7 +645,7 @@ class SumK_LDA_SO:
         ikarray=numpy.array(range(self.Nk))
         #ikarray=numpy.array([0])
 
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             
             GFsize = [ gf.N1 for sig,gf in Gupf]  
             unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
@@ -747,7 +747,7 @@ class SumK_LDA_SO:
         ikarray=numpy.array(range(self.Nk))
         #ikarray=numpy.array([100])
 
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             print ik
 
             GFsize = [ gf.N1 for sig,gf in Gupf]  
@@ -785,10 +785,10 @@ class SumK_LDA_SO:
                 Gloc[icrsh] += tmp
 
             
-            #collect data from MPI:
+            #collect data from mpi:
         for icrsh in xrange(self.N_corr_shells):
-            Gloc[icrsh] <<= MPI.all_reduce(MPI.world,Gloc[icrsh],lambda x,y : x+y)
-        MPI.barrier()
+            Gloc[icrsh] <<= mpi.all_reduce(mpi.world,Gloc[icrsh],lambda x,y : x+y)
+        mpi.barrier()
 
         # output for tests:
         #Gloc[0].save('Glocbfsymm1')
@@ -1099,14 +1099,14 @@ class SumK_LDA_SO:
                             Uav = U_interact*(Ncrtot-0.5) - J_Hund*(Ncr[bl] - 0.5)
                             self.dc_imp[icrsh][bl] *= Uav                              
                             self.DCenerg[icrsh]  -= J_Hund / 2.0 * (Ncr[bl]) * (Ncr[bl]-1.0)
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     elif (useDCformula==1):
                         self.DCenerg[icrsh] = (U_interact + J_Hund * (2.0-(M-1)) / (2*M-1)  ) / 2.0 * Ncrtot * (Ncrtot-1.0)
                         for bl in a_list:
                             # Held's formula, with U_interact the interorbital onsite interaction
                             Uav = (U_interact + J_Hund * (2.0-(M-1)) / (2*M-1)  ) * (Ncrtot-0.5)
                             self.dc_imp[icrsh][bl] *= Uav 
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     elif (useDCformula==2):
                         self.DCenerg[icrsh] = 0.5 * U_interact * Ncrtot * Ncrtot
                         for bl in a_list:
@@ -1114,10 +1114,10 @@ class SumK_LDA_SO:
                             Uav = U_interact*(Ncrtot - Ncr[bl]/M) - J_Hund * (Ncr[bl] - Ncr[bl]/M)
                             self.dc_imp[icrsh][bl] *= Uav
                             self.DCenerg[icrsh] -= (U_interact + (M-1)*J_Hund)/M * 0.5 * Ncr[bl] * Ncr[bl]
-                            MPI.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
+                            mpi.report("DC for shell %(icrsh)i and block %(bl)s = %(Uav)f"%locals())
                     
                     # output:
-                    MPI.report("DC energy for shell %s = %s"%(icrsh,self.DCenerg[icrsh]))
+                    mpi.report("DC energy for shell %s = %s"%(icrsh,self.DCenerg[icrsh]))
 
                 else:    
             
@@ -1128,8 +1128,8 @@ class SumK_LDA_SO:
                     self.DCenerg[icrsh] = useval * Ncrtot
 
                     # output:
-                    MPI.report("DC for shell %(icrsh)i = %(useval)f"%locals())
-                    MPI.report("DC energy = %s"%self.DCenerg[icrsh])
+                    mpi.report("DC for shell %(icrsh)i = %(useval)f"%locals())
+                    mpi.report("DC energy = %s"%self.DCenerg[icrsh])
 
         
 
@@ -1154,7 +1154,7 @@ class SumK_LDA_SO:
         else:
             Dens_rel = densreq
         
-        dcnew = Dichotomy.Dichotomy(Function = F,
+        dcnew = dichotomy.Dichotomy(Function = F,
                                     xinit = guess, yvalue = Dens_rel,
                                     Precision_on_y = precision, Delta_x=0.5,
                                     MaxNbreLoop = 100, xname="Double-Counting", yname= "Total Density",
@@ -1222,7 +1222,7 @@ class SumK_LDA_SO:
             for icrsh in xrange(self.N_corr_shells):
                 for bl,gf in sres[icrsh]: sres[icrsh][bl] -= self.dc_imp[icrsh][bl]
         #else:
-        #    MPI.report("WARNING: No DC term set!!!")
+        #    mpi.report("WARNING: No DC term set!!!")
             
         return sres 
 
@@ -1362,7 +1362,7 @@ class SumK_LDA_SO:
             ikarray=numpy.array(range(self.Nk))
             stmp = self.add_DC()
 
-            for ik in MPI.slice_array(ikarray):
+            for ik in mpi.slice_array(ikarray):
                 GFsize = [ gf.N1 for sig,gf in S]
                 unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
                                        for ib in range(self.NspinblocsGF[self.SO]) ] )
@@ -1393,9 +1393,9 @@ class SumK_LDA_SO:
 
                 dens += self.BZ_weights[ik] * S.total_density()
                 
-            # collect data from MPI:
-            dens = MPI.all_reduce(MPI.world,dens,lambda x,y : x+y)
-            MPI.barrier()
+            # collect data from mpi:
+            dens = mpi.all_reduce(mpi.world,dens,lambda x,y : x+y)
+            mpi.barrier()
                 
         return dens
 
@@ -1409,7 +1409,7 @@ class SumK_LDA_SO:
         Dens_rel = self.Density_Required - self.charge_below
 
         
-        self.Chemical_Potential = Dichotomy.Dichotomy(Function = F,
+        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
                                          xinit = self.Chemical_Potential, yvalue = Dens_rel,
                                          Precision_on_y = precision, Delta_x=0.5,
                                          MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Total Density",
@@ -1436,7 +1436,7 @@ class SumK_LDA_SO:
             
         #F = lambda mu : self.nonint_G(Beta=Beta,mu=mu)[orb].total_density()
 
-        self.Chemical_Potential = Dichotomy.Dichotomy(Function = F,
+        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
                                       xinit = self.Chemical_Potential, yvalue = densreq,
                                       Precision_on_y = precision, Delta_x=0.5,
                                       MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Local Density",
@@ -1491,7 +1491,7 @@ class SumK_LDA_SO:
             ikarray=numpy.array(range(self.Nk))
             stmp = self.add_DC()
 
-            for ik in MPI.slice_array(ikarray):
+            for ik in mpi.slice_array(ikarray):
                 GFsize = [ gf.N1 for sig,gf in S]  
                 unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
                                        for ib in range(self.NspinblocsGF[self.SO]) ] )
@@ -1528,10 +1528,10 @@ class SumK_LDA_SO:
                     for sig,gf in tmp: tmp[sig] <<= self.downfold(ik,icrsh,sig,S[sig],gf)
                     Gloc[icrsh] += tmp
 
-            #collect data from MPI:
+            #collect data from mpi:
             for icrsh in xrange(self.N_corr_shells):
-                Gloc[icrsh] <<= MPI.all_reduce(MPI.world,Gloc[icrsh],lambda x,y : x+y)
-            MPI.barrier()
+                Gloc[icrsh] <<= mpi.all_reduce(mpi.world,Gloc[icrsh],lambda x,y : x+y)
+            mpi.barrier()
 
   
         # Gloc[:] is now the sum over k projected to the local orbitals.
@@ -1587,7 +1587,7 @@ class SumK_LDA_SO:
         dens = 0.0
         stmp = self.add_DC()
 
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
             GFsize = [ gf.N1 for sig,gf in S]  
             unchangedsize = all( [ self.N_Orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
                                    for ib in range(self.NspinblocsGF[self.SO]) ] )
@@ -1640,16 +1640,16 @@ class SumK_LDA_SO:
             
                 
 
-        #put MPI Barrier:
+        #put mpi Barrier:
         for sig in deltaN:
             for ik in range(self.Nk):
-                deltaN[sig][ik] = MPI.all_reduce(MPI.world,deltaN[sig][ik],lambda x,y : x+y)
-        dens = MPI.all_reduce(MPI.world,dens,lambda x,y : x+y)
-        MPI.barrier()
+                deltaN[sig][ik] = mpi.all_reduce(mpi.world,deltaN[sig][ik],lambda x,y : x+y)
+        dens = mpi.all_reduce(mpi.world,dens,lambda x,y : x+y)
+        mpi.barrier()
 
        
         # now save to file:
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             if (self.SP==0):
                 f=open(Filename,'w')
             else:

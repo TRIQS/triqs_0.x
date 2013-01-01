@@ -55,5 +55,5 @@ g_pade = GFBloc_ReFreq(Indices = [0], Beta = beta, MeshArray = arange(-6,6,0.01)
 g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 from pytriqs.base.archive import HDF_Archive
-R = HDF_Archive('Pade.output.h5','w')
+R = HDF_Archive('pade.output.h5','w')
 R['g_pade'] = g_pade

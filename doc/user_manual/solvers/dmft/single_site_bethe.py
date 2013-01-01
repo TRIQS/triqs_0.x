@@ -1,6 +1,6 @@
 from pytriqs.base.gf_local import *
 from pytriqs.base.archive import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 # Set up a few parameters
 Half_Bandwidth = 1.0    
@@ -38,7 +38,7 @@ for IterationNumber in range(N_loops):
     S.Solve()
 
     # Some intermediate saves
-    if MPI.IS_MASTER_NODE():
+    if mpi.IS_MASTER_NODE():
       R = HDF_Archive("single_site_bethe.h5")
       R["G-%s"%IterationNumber] = S.G
       del R

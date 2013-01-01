@@ -20,5 +20,4 @@
 #
 ################################################################################
 
-
-__all__ = ['TightBinding','BZ_Patch','SuperLattice']
+__all__ = ['tight_binding','bz_patch','super_lattice']

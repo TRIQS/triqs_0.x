@@ -22,7 +22,7 @@
 
 import string
 from copy import deepcopy
-from pytriqs.base.utility.myUtils import Conjugate
+from pytriqs.base.utility.my_utils import Conjugate
 """
  State : represented by a dict : n-> lambda_n
  n = binary decomposition is the occupation number as usual

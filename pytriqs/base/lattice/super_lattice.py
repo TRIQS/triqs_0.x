@@ -22,9 +22,8 @@
 
 __all__=['TBSuperLattice']
 import numpy
-from pytriqs.base.utility.myUtils import nint_strict
-
-from TightBinding import TBLattice as Lattice
+from pytriqs.base.utility.my_utils import nint_strict
+from tight_binding import TBLattice as Lattice
 
 class TBSuperLattice (Lattice):
     """

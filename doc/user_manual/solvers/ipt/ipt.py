@@ -1,9 +1,9 @@
 import numpy
 
 from pytriqs.base.gf_local import *
-from pytriqs.solvers import Solver_base
+from pytriqs.solvers import SolverBase
 
-class Solver(Solver_base):
+class Solver(SolverBase):
     """A simple IPT solver for the symmetric one band Anderson model"""
     def __init__(self, **params):
         self.Name = 'Iterated Perturbation Theory'

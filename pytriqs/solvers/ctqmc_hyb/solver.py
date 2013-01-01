@@ -24,9 +24,9 @@ from types import *
 from pytriqs.base.gf_local import *
 from pytriqs.solvers import SolverBase
 from pytriqs.solvers.operators import *
-from pytriqs.base.utility.myUtils import *
-import pytriqs.base.utility.Parameters as Parameters
-import pytriqs.base.utility.MPI as MPI
+from pytriqs.base.utility.my_utils import *
+import pytriqs.base.utility.parameters as parameters
+import pytriqs.base.utility.mpi as mpi
 
 try :
     import ctqmc_hyb as C_Module
@@ -48,7 +48,7 @@ class Solver(SolverBase):
 
     Optional = {
                 "Random_Generator_Name" : ("Name of the random number generator", "", StringType),
-                "Random_Seed" : ("Seed for the random generator", 34788+928374*MPI.rank, IntType),
+                "Random_Seed" : ("Seed for the random generator", 34788+928374*mpi.rank, IntType),
                 "Length_Cycle":("Length of one QMC cycle", 200, IntType),
                 "Legendre_Accumulation" : ("Do we accumulate in legendre?", True, BooleanType),
                 "N_Legendre_Coeffs" : ("Number of Legendre coefficients that are used in practice", 50, IntType),
@@ -93,10 +93,10 @@ class Solver(SolverBase):
         # For backward compatibility
         self.update_params(param)
 
-        Parameters.check_no_parameters_not_in_union_of_dicts(param, self.Required, self.Optional)
+        parameters.check_no_parameters_not_in_union_of_dicts(param, self.Required, self.Optional)
         SolverBase.__init__(self,GFstruct,param)
         self.Beta = float(Beta)
-        self.Verbosity = 2 if MPI.rank ==0 else 0
+        self.Verbosity = 2 if mpi.rank ==0 else 0
 
         # Green function in frequencies
         a_list = [a for a,al in self.GFStruct]
@@ -142,7 +142,7 @@ class Solver(SolverBase):
         self.update_params(self.__dict__)
 
         # Test all a parameters before solutions
-        MPI.report(Parameters.check(self.__dict__,self.Required,self.Optional))
+        mpi.report(parameters.check(self.__dict__,self.Required,self.Optional))
 
         # We have to add the Hamiltonian the epsilon part of G0
         if type(self.H_Local) != type(Operator()) : raise "H_Local is not an operator"
@@ -153,7 +153,7 @@ class Solver(SolverBase):
                     H += real(self.G0[a]._tail[2][mu,nu]) * Cdag(a,mu)*C(a,nu)
 
         OPdict = {"Hamiltonian": H}
-        MPI.report("Hamiltonian with Eps0 term  : ",H)
+        mpi.report("Hamiltonian with Eps0 term  : ",H)
         
         # First separate the quantum Numbers that are operators and those which are symmetries.
         QuantumNumberOperators  = dict( (n,op) for (n,op) in self.Quantum_Numbers.items() if type(op) == type(Operator()))
@@ -178,7 +178,7 @@ class Solver(SolverBase):
               self.Measured_Operators_Results[name] = 0.0
               self.Operators_To_Average_List.append(name)
           else:
-              MPI.report("Operator %s already defined as %s, using this instead for measuring"%(name,opn))
+              mpi.report("Operator %s already defined as %s, using this instead for measuring"%(name,opn))
               self.twice_defined_Ops[name] = opn
               self.Measured_Operators_Results[opn] = 0.0
               if opn not in self.Operators_To_Average_List: self.Operators_To_Average_List.append(opn)
@@ -191,7 +191,7 @@ class Solver(SolverBase):
               OPdict[name] = op[0]
               self.OpCorr_To_Average_List.append(name)
           else:
-              MPI.report("Operator %s already defined as %s, using this instead for measuring"%(name,opn))
+              mpi.report("Operator %s already defined as %s, using this instead for measuring"%(name,opn))
               if opn not in self.OpCorr_To_Average_List: self.OpCorr_To_Average_List.append(opn)
         # Create storage for data:
         Nops = len(self.OpCorr_To_Average_List)
@@ -243,7 +243,7 @@ class Solver(SolverBase):
                 m[n1] = n2
             name = "%s"%n
             self.Global_Moves_Mapping_List.append((proba,m,name))
-        #MPI.report ("Global_Moves_Mapping_List", self.Global_Moves_Mapping_List)
+        #mpi.report ("Global_Moves_Mapping_List", self.Global_Moves_Mapping_List)
 
         # Now add the operator for F calculation if needed
         if self.Use_F :
@@ -285,7 +285,7 @@ class Solver(SolverBase):
         self.F_tau = GF(Name_Block_Generator = self.G_tau, Copy=True, Name='F')
         
         for (i,gt) in self.Delta_tau : gt.setFromInverseFourierOf(Delta[i])
-        MPI.report("Inv Fourier done")
+        mpi.report("Inv Fourier done")
         if (self.Legendre_Accumulation):
             self.G_Legendre = GF(Name_Block_Generator = [ (n,GFBloc_ImLegendre(Indices=g.Indices, Beta=g.Beta, NLegendreCoeffs=self.N_Legendre_Coeffs) )   for n,g in self.G], Copy=False, Name='Gl')
         else:
@@ -323,7 +323,7 @@ class Solver(SolverBase):
         # Now find the self-energy
         self.Sigma <<= self.G0_inv - inverse(self.G)
 
-        MPI.report("Solver %(Name)s has ended."%self.__dict__)
+        mpi.report("Solver %(Name)s has ended."%self.__dict__)
 
         # for operator averages: if twice defined operator, rename output:
         for op1,op2 in self.twice_defined_Ops.items():
@@ -387,4 +387,4 @@ class Solver(SolverBase):
  deprecated in future versions. Please check the documentation.
 **********************************************************************************
 """
-      if issue_warning: MPI.report(msg)
+      if issue_warning: mpi.report(msg)

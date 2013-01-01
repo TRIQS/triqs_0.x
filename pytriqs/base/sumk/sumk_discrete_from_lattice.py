@@ -21,7 +21,7 @@
 ################################################################################
 
 from sumk_discrete import SumK_Discrete
-from pytriqs.base.lattice.SuperLattice import TBSuperLattice as SuperLattice, Lattice
+from pytriqs.base.lattice.super_lattice import TBSuperLattice as SuperLattice, Lattice
 
 class SumK_Discrete_From_Lattice (SumK_Discrete) :
     r"""
@@ -40,7 +40,7 @@ class SumK_Discrete_From_Lattice (SumK_Discrete) :
     
     def __init__(self, TheLattice, Patch = None, Number_Points_in_BZ = 8, Method = "Riemann") : 
 	"""   
-        :param TheLattice: The underlying pytriqs.lattice or pytriqs.SuperLattice provinding t(k)
+        :param TheLattice: The underlying pytriqs.lattice or pytriqs.super_lattice provinding t(k)
         :param Number_Points_in_BZ:  Number of points in the BZ in EACH direction
         :param Method: Riemann (default) or 'Gauss' (not checked) 
         """

@@ -36,22 +36,22 @@ The next step, as described in the previous section, is to convert the input fil
 
   Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
   Converter.convert_DMFT_input()
-  MPI.barrier()
+  mpi.barrier()
 
-The command ``MPI.barrier()`` ensures that all nodes wait until the conversion of the input is finished on the master
+The command ``mpi.barrier()`` ensures that all nodes wait until the conversion of the input is finished on the master
 node. After the conversion, we can check in the hdf5 archive, if previous runs are present, or if we have to start
 from scratch::
 
   previous_runs = 0
   previous_present = False
-  if MPI.IS_MASTER_NODE():
+  if mpi.IS_MASTER_NODE():
       ar = HDF_Archive(LDAFilename+'.h5','a')
       if 'iterations' in ar:
           previous_present = True
           previous_runs = ar['iterations']
       del ar
-  previous_runs    = MPI.bcast(previous_runs)
-  previous_present = MPI.bcast(previous_present)
+  previous_runs    = mpi.bcast(previous_runs)
+  previous_present = mpi.bcast(previous_present)
   # if previous runs are present, no need for recalculating the bloc structure:
   calc_blocs = useBlocs and (not previous_present)
 
@@ -79,11 +79,11 @@ If there are previous runs stored in the hdf5 archive, we can now load the self 
 of the last iteration::
 
   if (previous_present):
-    if (MPI.IS_MASTER_NODE()):
+    if (mpi.IS_MASTER_NODE()):
         ar = HDF_Archive(LDAFilename+'.h5','a')
         S.Sigma <<= ar['SigmaF']
         del ar
-    S.Sigma = MPI.bcast(S.Sigma)
+    S.Sigma = mpi.bcast(S.Sigma)
     
 The last command is the broadcasting of the self energy from the master node to the slave nodes. 
 Now we can go to the definition of the self-consistency step. It consists again of the basic steps discussed in the 
@@ -96,7 +96,7 @@ previous section, with some additional refinement::
 
         Chemical_potential = SK.find_mu( precision = prec_mu )  # find the chemical potential
         S.G <<= SK.extract_Gloc()[0]                            # calculation of the local Green function
-        MPI.report("Total charge of Gloc : %.6f"%S.G.total_density())
+        mpi.report("Total charge of Gloc : %.6f"%S.G.total_density())
 
         if ((IterationNumber==1)and(previous_present==False)):
             # Init the DC term and the real part of Sigma, if no previous run was found:
@@ -105,12 +105,12 @@ previous section, with some additional refinement::
             S.Sigma <<= gf_init.Const(SK.dc_imp[0]['up'][0,0])
         
         # now calculate new G0:
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             # We can do a mixing of Delta in order to stabilize the DMFT iterations:
             S.G0 <<= S.Sigma + inverse(S.G)
             ar = HDF_Archive(LDAFilename+'.h5','a')
             if ((IterationNumber>1) or (previous_present)):
-                MPI.report("Mixing input Delta with factor %s"%DeltaMix)
+                mpi.report("Mixing input Delta with factor %s"%DeltaMix)
                 Delta = (DeltaMix * S.G0.Delta()) + (1.0-DeltaMix) * ar['DeltaF']
                 S.G0 <<= S.G0 + S.G0.Delta() - Delta
                 
@@ -118,27 +118,27 @@ previous section, with some additional refinement::
             S.G0 <<= inverse(S.G0)
             del ar
             
-        S.G0 = MPI.bcast(S.G0)
+        S.G0 = mpi.bcast(S.G0)
 
         # Solve the impurity problem:
         S.Solve()
 
         # solution done, do the post-processing:
-        MPI.report("Total charge of impurity problem : %.6f"%S.G.total_density())
+        mpi.report("Total charge of impurity problem : %.6f"%S.G.total_density())
 
         # Now mix Sigma and G with factor Mix, if wanted:
         if ((IterationNumber>1) or (previous_present)):
-            if (MPI.IS_MASTER_NODE()):
+            if (mpi.IS_MASTER_NODE()):
                 ar = HDF_Archive(LDAFilename+'.h5','a')
-                MPI.report("Mixing Sigma and G with factor %s"%Mix)
+                mpi.report("Mixing Sigma and G with factor %s"%Mix)
                 S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
                 S.G <<= Mix * S.G + (1.0-Mix) * ar['GF']
                 del ar
-            S.G = MPI.bcast(S.G)
-            S.Sigma = MPI.bcast(S.Sigma)
+            S.G = mpi.bcast(S.G)
+            S.Sigma = mpi.bcast(S.Sigma)
 
         # Write the final Sigma and G to the hdf5 archive:
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar = HDF_Archive(LDAFilename+'.h5','a')
             ar['iterations'] = previous_runs + IterationNumber	
             ar['SigmaF'] = S.Sigma

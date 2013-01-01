@@ -69,7 +69,7 @@ object MeshGF::next(){
 }
 
 object MeshGF::__reduce__() const { 
-  return python::make_tuple( python::import("pytriqs.base.utility.myUtils").attr("call_factory_from_dict"),
+  return python::make_tuple( python::import("pytriqs.base.utility.my_utils").attr("call_factory_from_dict"),
 			     python::make_tuple(object(*this).attr("__class__"),__reduce_to_dict__()));
 
 }

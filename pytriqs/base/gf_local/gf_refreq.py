@@ -31,7 +31,7 @@ from math import pi
 #  Code Injection
 #-----------------------------------------------------
 
-from pytriqs.base.utility.Injector import make_injector        # inject new code in the SAME class
+from pytriqs.base.utility.injector import make_injector        # inject new code in the SAME class
 from pytriqs_GF import GFBloc_ReFreq     # the wrapped C++ class.
 
 class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq):

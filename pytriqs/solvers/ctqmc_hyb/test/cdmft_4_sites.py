@@ -22,11 +22,11 @@
 
 from pytriqs.base.archive import *
 from pytriqs.base.gf_local import gf_init,GF,GFBloc_ImFreq,inverse
-from pytriqs.base.lattice.SuperLattice import TBSuperLattice as SuperLattice
-from pytriqs.base.lattice.TightBinding import TBLattice as Lattice
+from pytriqs.base.lattice.super_lattice import TBSuperLattice as SuperLattice
+from pytriqs.base.lattice.tight_binding import TBLattice as Lattice
 from pytriqs.base.sumk import *
 from pytriqs.base.dmft import DMFT_Loop_Generic
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 #
 # A plaquette calculation with CDMFT, and a basic Riemann sum over BZ
@@ -84,13 +84,13 @@ class myloop (DMFT_Loop_Generic) :
       F = lambda mu : SK(mu = mu,Sigma = Sigma, Field = None ,Res = G).total_density()/4 
       
       if Density_Required :
-         self.Chemical_potential = Dichotomy.Dichotomy(Function = F,
+         self.Chemical_potential = dichotomy.Dichotomy(Function = F,
                                                        xinit = self.Chemical_potential, yvalue =Density_Required,
                                                        Precision_on_y = 0.01, Delta_x=0.5,  MaxNbreLoop = 100, 
                                                        xname="Chemical_Potential", yname= "Total Density",
                                                        verbosity = 3)[0]
       else:
-         MPI.report("Total density  = %.3f"%F(self.Chemical_potential))
+         mpi.report("Total density  = %.3f"%F(self.Chemical_potential))
 
       S.Transform_RealSpace_to_SymmetryBasis (IN = G, OUT = S.G)       # Extraction 
       S.G0 = inverse(S.Sigma + inverse(S.G))                           # Finally get S.G0 
@@ -99,6 +99,6 @@ class myloop (DMFT_Loop_Generic) :
 myloop(Solver_List = S,Chemical_potential  = 2.0).run(N_Loops = 1)
                                                                      
 # Opens the results shelve
-if MPI.IS_MASTER_NODE():
+if mpi.IS_MASTER_NODE():
   Results = HDF_Archive("cdmft_4_sites.output.h5",'w')
   Results["G"] = S.G

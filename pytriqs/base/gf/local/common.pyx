@@ -20,7 +20,7 @@
 ################################################################################
 import numpy
 import lazy_expressions, descriptors
-import pytriqs.base.utility.myUtils
+import pytriqs.base.utility.my_utils
 from pytriqs.base.plot.protocol import clip_array
 import lazy_expressions,descriptors
 from types import IntType,SliceType,StringType

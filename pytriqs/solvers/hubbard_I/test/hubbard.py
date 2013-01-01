@@ -21,22 +21,19 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from numpy import *
+from pytriqs.solvers.hubbard_I.solver import Solver
+import numpy
 
-print "bonjour"
+S = Solver(Beta = 200, Uint = 6.0, JHund=0.6, l=2, UseSpinOrbit=False)
+eal={}
+eal['up'] = -1*numpy.identity(5)
+eal['down'] = -1*numpy.identity(5)
+S.set_atomic_levels(eal=eal)
 
-d = {'a' : 1.0, 'b' : [1,2,3]}
+S.Solve()
 
-h = HDF_Archive('ExampleTestH5.output.h5','w', Init = d.items())
+ar=HDF_Archive('hubbard.output.h5')
+ar['G'] = S.G
+ar['Sigma'] = S.Sigma
+del ar
 
-h['c'] = 100
-h['d'] = array([[1,2,3],[4,5,6]])
-h['e'] = (1,2,3)
-h['f'] = { 'a':10, 'b': 20}
-h.create_group('g')
-g = h['g']
-g['a'] = 98
-g['b'] = (1,2,3)
-g['c'] = 200
-
-del h

@@ -21,7 +21,7 @@
 ################################################################################
 
 from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from pytriqs.base.utility.myUtils import *
+from pytriqs.base.utility.my_utils import *
 import numpy
 from types import *
 from array_view import ArrayViewWithIndexConverter,_IndicesConverter

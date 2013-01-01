@@ -21,7 +21,7 @@
 ################################################################################
 
 #from pytriqs.base import *
-from SuperLattice import * 
+from super_lattice import * 
 from pytriqs.base.dos import DOS
 
 class BZ_Patch : 

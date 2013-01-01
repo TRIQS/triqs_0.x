@@ -21,7 +21,7 @@
 ################################################################################
 
 import os,sys,time,cPickle
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 class Distribution_on_nodes :
     """
@@ -46,8 +46,8 @@ class Distribution_on_nodes :
     def run(self):
         """
         """
-        MPI.barrier()
-        if MPI.size==1 : # single machine. Avoid the fork
+        mpi.barrier()
+        if mpi.size==1 : # single machine. Avoid the fork
             while not(self.Finished()):
                 n = self.Next()
                 if n!=None : 
@@ -56,13 +56,13 @@ class Distribution_on_nodes :
 
         # Code for multiprocessor machines
         RequestList,pid = [],0   # the pid of the child on the master
-        node_running,node_stopped= MPI.size*[False],MPI.size*[False]
+        node_running,node_stopped= mpi.size*[False],mpi.size*[False]
 
-        if MPI.rank==0 :
+        if mpi.rank==0 :
           while not(self.Finished()) or pid or [n for n in node_running if n] != [] :
               # Treat the request which have self.Finished
               def keep_request(r) :
-                  #if not(MPI.test(r)) :  return True
+                  #if not(mpi.test(r)) :  return True
                   #if r.message !=None : self.Treate(*r.message)
                   #node_running[r.status.source] = False
                   T = r.test()
@@ -73,13 +73,13 @@ class Distribution_on_nodes :
                   return False
               RequestList = filter(keep_request,RequestList)
               # send new calculation to the nodes or "stop" them
-              for node in [ n for n in range(1,MPI.size) if not(node_running[n] or node_stopped[n]) ] :
+              for node in [ n for n in range(1,mpi.size) if not(node_running[n] or node_stopped[n]) ] :
                   #open('tmp','a').write("master : comm to node %d %s\n"%(node,self.Finished()))
-                  MPI.send(self.Finished(),node)
+                  mpi.send(self.Finished(),node)
                   if not(self.Finished()) :
-                      MPI.send(self.Next(),node) # send the data for the computation
+                      mpi.send(self.Next(),node) # send the data for the computation
                       node_running[node] = True
-                      RequestList.append(MPI.irecv(node)) #Post the receive
+                      RequestList.append(mpi.irecv(node)) #Post the receive
                   else :
                       node_stopped[node] = True
 
@@ -96,21 +96,21 @@ class Distribution_on_nodes :
                               res = self.The_Function(currently_calculated_by_master)
                           else:
                               res = None
-                          cPickle.dump((res,MPI.rank),open('res_master','w'))
+                          cPickle.dump((res,mpi.rank),open('res_master','w'))
                           os._exit(0) # Cf python doc. Used for child only.
                   else : pid=0
               if (pid): time.sleep(self.SleepTime) # so that most of the time is for the actual calculation on the master
 
         else : # not master
-            while not(MPI.recv(0)) :  # master will first send a Finished flag
-                omega = MPI.recv(0)
+            while not(mpi.recv(0)) :  # master will first send a Finished flag
+                omega = mpi.recv(0)
                 if omega ==None :
                     res = None
                 else :
                     res = self.The_Function(omega)
-                MPI.send((res,MPI.rank),0)
+                mpi.send((res,mpi.rank),0)
                 
-        MPI.barrier()
+        mpi.barrier()
 
 #########################################
     
@@ -150,5 +150,5 @@ class Distribution_on_nodes_test(Distribution_on_nodes_one_stack) :
 if __name__ == '__main__' : 
     d = Distribution_on_nodes_test(range(21))
     d.run()
-    if MPI.rank==0 :
+    if mpi.rank==0 :
         print d.Result()

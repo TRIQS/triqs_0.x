@@ -1,4 +1,4 @@
-from pytriqs.base.lattice.TightBinding import *
+from pytriqs.base.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 

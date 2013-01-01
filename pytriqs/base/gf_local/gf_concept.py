@@ -23,7 +23,7 @@
 import numpy
 from array_view import ArrayViewWithIndexConverter,_IndicesConverter
 import lazy_expressions, descriptors
-from pytriqs.base.utility.myUtils import *
+from pytriqs.base.utility.my_utils import *
 from pytriqs.base.plot.protocol import clip_array
 
 class _Plot_Wrapper_Partial_Reduce : 

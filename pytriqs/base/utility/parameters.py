@@ -21,7 +21,7 @@
 ################################################################################
 
 from types import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 class Parameters(dict) : 
     """
@@ -31,7 +31,7 @@ class Parameters(dict) :
       - It has a method "check" to check and complete the parameters with 
         required, optional parameters, check contraints.
 
-    MPI : By default, the contruction is made on the master, and then bcasted.
+    mpi : By default, the contruction is made on the master, and then bcasted.
           See constructor. 
     """
     def __init__(self, S, BuildMasterOnly =True) :
@@ -43,11 +43,11 @@ class Parameters(dict) :
              The type of the file is determined from the extension: 
                 - .py, .txt : the file is executed in the Parameters
                 - .xml : to be written
-        MPI : if BuildMasterOnly is true, the contruction is only made on the master, 
+        mpi : if BuildMasterOnly is true, the contruction is only made on the master, 
               the result is then bcasted to all the nodes.
               Otherwise, it is done on all nodes (not recommended to read files).
         """
-        if MPI.IS_MASTER_NODE() or not BuildMasterOnly : 
+        if mpi.IS_MASTER_NODE() or not BuildMasterOnly : 
             if type(S) == type(''):
                # detect the type of the file
                try : 
@@ -63,7 +63,7 @@ class Parameters(dict) :
                   print "Error in Parameter constructor. Is the source an iterable ?"
                   raise
         # end of master only
-        if BuildMasterOnly : MPI.bcast(self) # bcast it on the nodes
+        if BuildMasterOnly : mpi.bcast(self) # bcast it on the nodes
 
 # The next functions are not in methods, since we may want to use them 
 # on true dictionnaries...

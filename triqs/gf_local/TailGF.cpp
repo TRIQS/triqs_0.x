@@ -262,7 +262,7 @@ python::object TailGF::__factory_from_dict__(const python::object & dic){
 
 
 python::tuple TailGF::__reduce__() const { 
-  return python::make_tuple( python::import("pytriqs.base.utility.myUtils").attr("call_factory_from_dict"),
+  return python::make_tuple( python::import("pytriqs.base.utility.my_utils").attr("call_factory_from_dict"),
 			     python::make_tuple(python::object(*this).attr("__class__"),__reduce_to_dict__()));
 
 }

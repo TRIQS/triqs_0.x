@@ -1,4 +1,4 @@
-from pytriqs.base.lattice.TightBinding import *
+from pytriqs.base.lattice.tight_binding import *
 from pytriqs.base.dos import Hilbert_Transform
 from pytriqs.base.gf_local import GFBloc_ImFreq
 

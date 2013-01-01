@@ -24,7 +24,7 @@ __all__ = ["DMFT_Loop_Generic"]
 
 import shelve,os,signal,types
 from pytriqs.solvers import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 class DMFT_Loop_Generic:
   """ This class provides a generic and simple DMFT loop for convenience.
@@ -84,10 +84,10 @@ class DMFT_Loop_Generic:
   def __should_continue(self,N_Iter_SelfCons_Max) :
     """ stop test"""
     should_continue = True
-    if MPI.IS_MASTER_NODE():
+    if mpi.IS_MASTER_NODE():
       if (self.Iteration_Number > N_Iter_SelfCons_Max):
         should_continue = False
-    should_continue = MPI.bcast(should_continue)
+    should_continue = mpi.bcast(should_continue)
     return should_continue
 
   #**************************************************************************************************************
@@ -116,7 +116,7 @@ class DMFT_Loop_Generic:
     """
 
     # Set up the signal
-    #   MPI.report("DMFTlab Job PID = %s"%os.getpid())
+    #   mpi.report("DMFTlab Job PID = %s"%os.getpid())
     # Set the signal handler and a 5-second alarm
     signal.signal(signal.SIGALRM, self.handler)
     signal.alarm(MaxTime)
@@ -124,7 +124,7 @@ class DMFT_Loop_Generic:
     should_continue = True
     
     while (should_continue):
-      MPI.report("------ Node : %d -------- Iteration Number = %d"%(MPI.rank,self.Iteration_Number))
+      mpi.report("------ Node : %d -------- Iteration Number = %d"%(mpi.rank,self.Iteration_Number))
       
       self.Self_Consistency()
 
@@ -142,7 +142,7 @@ class DMFT_Loop_Generic:
       should_continue = self.__should_continue(N_Loops)
  
     # end of the while loop
-    MPI.report("----------- END of DMFT_Loop ----------------")
-    MPI.barrier()
+    mpi.report("----------- END of DMFT_Loop ----------------")
+    mpi.barrier()
    
 

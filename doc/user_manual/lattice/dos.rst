@@ -23,7 +23,7 @@ Reading a DOS from a text file
 Computing a DOS from a tight_binding
 ----------------------------------------------
 
-.. autofunction:: pytriqs.base.lattice.TightBinding.dos
+.. autofunction:: pytriqs.base.lattice.tight_binding.dos
  
 The DOS computed from a function
 -----------------------------------------------

@@ -135,7 +135,7 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 * It can be sent/broadcasted/reduced over mpi ::
 
      from pytriqs.base.utility import MPI
-     MPI.send (G, destination)
+     mpi.send (G, destination)
 
 .. warning::
    Shelve is not a portable format, it may change from python version to another (and it actually does).

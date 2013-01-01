@@ -33,9 +33,9 @@ S.Solve()
 
 # Save the results in an hdf5 file (only on the master node)
 from pytriqs.base.archive import HDF_Archive
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
-if MPI.IS_MASTER_NODE():
+if mpi.IS_MASTER_NODE():
   Results = HDF_Archive("solution.h5",'w')
   Results["G"] = S.G
   Results["Gl"] = S.G_Legendre

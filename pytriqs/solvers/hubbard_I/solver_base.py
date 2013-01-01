@@ -30,8 +30,8 @@ from pytriqs.base.gf_local import gf_init
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
 import copy
 from pytriqs.base.gf_local import inverse
-import pytriqs.base.utility.Parameters as Parameters
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.parameters as parameters
+import pytriqs.base.utility.mpi as mpi
 import numpy
 from itertools import izip
 
@@ -61,8 +61,7 @@ class SolverBaseHub(SolverBase):
     # initialisation:
     def __init__(self,Beta,GFstruct,**param):
         self.Beta = float(Beta)
-        Parameters.check_no_parameters_not_in_union_of_dicts (param,self.Required, self.Optional)
-        #DataTestTools.EnsureAllParametersMakeSense(self,param)
+        parameters.check_no_parameters_not_in_union_of_dicts (param,self.Required, self.Optional)
         if 'Nmsb' not in param : param['Nmsb'] = 1025
         if 'Nspin' not in param : param['Nspin'] = 2
 
@@ -98,16 +97,16 @@ class SolverBaseHub(SolverBase):
         """Calculation of the impurity Greens function using Hubbard-I"""
 
         # Test all a parameters before solutions
-        print Parameters.check(self.__dict__,self.Required,self.Optional)
+        print parameters.check(self.__dict__,self.Required,self.Optional)
        	#SolverBase.Solve(self,is_last_iteration,Iteration_Number,Test_Convergence)
        
         if self.Converged :
-            MPI.report("Solver %(Name)s has already converted: SKIPPING"%self.__dict__)
+            mpi.report("Solver %(Name)s has already converted: SKIPPING"%self.__dict__)
             return
 
         self.__save_eal('eal.dat',Iteration_Number)
 
-        MPI.report( "Starting Fortran solver %(Name)s"%self.__dict__)
+        mpi.report( "Starting Fortran solver %(Name)s"%self.__dict__)
 
         self.Sigma_Old <<= self.Sigma
         self.G_Old <<= self.G
@@ -121,8 +120,8 @@ class SolverBaseHub(SolverBase):
 
         if (self.Verbosity==0):
             # No fortran output, so give basic results here
-            MPI.report("Atomic occupancy in Hubbard I Solver  : %s"%self.atocc)
-            MPI.report("Atomic magn. mom. in Hubbard I Solver : %s"%self.atmag)
+            mpi.report("Atomic occupancy in Hubbard I Solver  : %s"%self.atocc)
+            mpi.report("Atomic magn. mom. in Hubbard I Solver : %s"%self.atmag)
 
         # transfer the data to the GF class:
         if (self.UseSpinOrbit): 
@@ -161,13 +160,13 @@ class SolverBaseHub(SolverBase):
                 return dS <= aS*dist
             return reduce(lambda x,y : x and y, [f(g1,g2) for (i1,g1),(i2,g2) in izip(G1,G2)])
 
-        MPI.report("\nChecking Sigma for convergence...\nUsing tolerance %s"%Test_Convergence)
+        mpi.report("\nChecking Sigma for convergence...\nUsing tolerance %s"%Test_Convergence)
         self.Converged = test_distance(self.Sigma,self.Sigma_Old,Test_Convergence)
 
         if self.Converged :
-            MPI.report("Solver HAS CONVERGED")
+            mpi.report("Solver HAS CONVERGED")
         else :
-            MPI.report("Solver has not yet converged")
+            mpi.report("Solver has not yet converged")
 
     def GF_realomega(self,ommin,ommax,N_om,broadening=0.01):
         """Calculates the GF and spectral function on the real axis."""

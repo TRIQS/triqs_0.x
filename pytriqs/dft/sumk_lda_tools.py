@@ -22,15 +22,15 @@
 
 from types import *
 import numpy
-import pytriqs.base.utility.Dichotomy as Dichotomy
+import pytriqs.base.utility.dichotomy as dichotomy
 from pytriqs.base.gf_local.block_gf import GF
 from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
 from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.utility.myUtils import Sum
-import pytriqs.base.utility.MPI as MPI
+from pytriqs.base.utility.my_utils import Sum
+import pytriqs.base.utility.mpi as mpi
 from datetime import datetime
 
 from pytriqs.dft.symmetry import *
@@ -228,7 +228,7 @@ class SumK_LDA_tools(SumK_LDA):
                 DOSproj_orb[ish][sig][:,:,:] += gf._data.array[:,:,:].imag/(-3.1415926535)
      
         # output:
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             for bn in self.blocnames[self.SO]:
                 f=open('DOS%s.dat'%bn, 'w')
                 for i in range(N_om): f.write("%s    %s\n"%(Mesh[i],DOS[bn][i]))
@@ -295,7 +295,7 @@ class SumK_LDA_tools(SumK_LDA):
 
         ikarray=numpy.array(range(self.Nk))
 
-        for ik in MPI.slice_array(ikarray):
+        for ik in mpi.slice_array(ikarray):
 
             S = self.latticeGF_realfreq(ik=ik,mu=mu,broadening=broadening)
             S *= self.BZ_weights[ik]
@@ -311,12 +311,12 @@ class SumK_LDA_tools(SumK_LDA):
                     for sig,gf in tmp: tmp[sig] <<= self.downfold_pc(ik,ir,ish,sig,S[sig],gf)
                     Gproj[ish] += tmp
                    
-        # collect data from MPI:
+        # collect data from mpi:
         for sig in DOS:
-            DOS[sig] = MPI.all_reduce(MPI.world,DOS[sig],lambda x,y : x+y)
+            DOS[sig] = mpi.all_reduce(mpi.world,DOS[sig],lambda x,y : x+y)
         for ish in xrange(self.N_shells):
-            Gproj[ish] <<= MPI.all_reduce(MPI.world,Gproj[ish],lambda x,y : x+y)
-        MPI.barrier()        
+            Gproj[ish] <<= mpi.all_reduce(mpi.world,Gproj[ish],lambda x,y : x+y)
+        mpi.barrier()        
                   
         if (self.symm_op!=0): Gproj = self.Symm_par.symmetrise(Gproj)
 
@@ -331,7 +331,7 @@ class SumK_LDA_tools(SumK_LDA):
                 DOSproj_orb[ish][sig][:,:,:] += gf._data.array[:,:,:].imag / (-3.1415926535)
 	    
 
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             # output to files
             for bn in self.blocnames[self.SO]:
                 f=open('./DOScorr%s.dat'%bn, 'w')
@@ -458,7 +458,7 @@ class SumK_LDA_tools(SumK_LDA):
                
             
         # END k-LOOP
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             if (ishell is None):
         
                 for ibn in bln:
@@ -582,11 +582,11 @@ class SumK_LDA_tools(SumK_LDA):
         for ish in xrange(self.N_shells): Gproj[ish].zero()
 
         ikarray=numpy.array(range(self.Nk))
-        #print MPI.rank, MPI.slice_array(ikarray)
-        #print "K-Sum starts on node",MPI.rank," at ",datetime.now()
+        #print mpi.rank, mpi.slice_array(ikarray)
+        #print "K-Sum starts on node",mpi.rank," at ",datetime.now()
         
-        for ik in MPI.slice_array(ikarray):
-            #print MPI.rank, ik, datetime.now()
+        for ik in mpi.slice_array(ikarray):
+            #print mpi.rank, ik, datetime.now()
             S = self.latticeGF_Matsubara(ik=ik,mu=mu)
             S *= self.BZ_weights[ik]
 
@@ -596,17 +596,17 @@ class SumK_LDA_tools(SumK_LDA):
                     for sig,gf in tmp: tmp[sig] <<= self.downfold_pc(ik,ir,ish,sig,S[sig],gf)
                     Gproj[ish] += tmp
         
-        #print "K-Sum done on node",MPI.rank," at ",datetime.now()
-        #collect data from MPI:
+        #print "K-Sum done on node",mpi.rank," at ",datetime.now()
+        #collect data from mpi:
         for ish in xrange(self.N_shells):
-            Gproj[ish] <<= MPI.all_reduce(MPI.world,Gproj[ish],lambda x,y : x+y)
-        MPI.barrier()
+            Gproj[ish] <<= mpi.all_reduce(mpi.world,Gproj[ish],lambda x,y : x+y)
+        mpi.barrier()
 
-        #print "Data collected on node",MPI.rank," at ",datetime.now()
+        #print "Data collected on node",mpi.rank," at ",datetime.now()
 
         # Symmetrisation:
         if (self.symm_op!=0): Gproj = self.Symm_par.symmetrise(Gproj)
-        #print "Symmetrisation done on node",MPI.rank," at ",datetime.now()
+        #print "Symmetrisation done on node",mpi.rank," at ",datetime.now()
         
         for ish in xrange(self.N_shells):
 

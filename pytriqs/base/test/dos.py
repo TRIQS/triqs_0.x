@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.lattice.TightBinding import *
+from pytriqs.base.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
 BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 
@@ -46,6 +46,6 @@ TB = tight_binding ( BL, hop)
 d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
 
 from pytriqs.base.archive import HDF_Archive
-R = HDF_Archive('dos1.output.h5','w')
+R = HDF_Archive('dos.output.h5','w')
 R['SquareLatt'] = d
 

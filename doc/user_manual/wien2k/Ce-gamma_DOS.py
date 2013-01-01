@@ -29,7 +29,7 @@ Converter.convert_Parproj_input()
 previous_runs = 0
 previous_present = False
 
-if MPI.IS_MASTER_NODE():
+if mpi.IS_MASTER_NODE():
     ar = HDF_Archive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
@@ -39,9 +39,9 @@ if MPI.IS_MASTER_NODE():
         previous_present = False
     del ar
 
-MPI.barrier()
-previous_runs    = MPI.bcast(previous_runs)
-previous_present = MPI.bcast(previous_present)
+mpi.barrier()
+previous_runs    = mpi.bcast(previous_runs)
+previous_present = mpi.bcast(previous_present)
 
 # if previous runs are present, no need for recalculating the bloc structure
 # It has to be commented, if you run this script for the first time, starting
@@ -51,7 +51,7 @@ previous_present = MPI.bcast(previous_present)
 SK=SumK_LDA_tools(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
 
 
-if (MPI.IS_MASTER_NODE()):
+if (mpi.IS_MASTER_NODE()):
     print 'DC after reading SK: ',SK.dc_imp[SK.invshellmap[0]]
 
 N = SK.corr_shells[0][3]

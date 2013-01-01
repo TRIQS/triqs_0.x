@@ -24,7 +24,7 @@ Converter.convert_DMFT_input()
 previous_runs = 0
 previous_present = False
 
-if MPI.IS_MASTER_NODE():
+if mpi.IS_MASTER_NODE():
     ar = HDF_Archive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
@@ -34,9 +34,9 @@ if MPI.IS_MASTER_NODE():
         previous_present = False
     del ar
 
-MPI.barrier()
-previous_runs    = MPI.bcast(previous_runs)
-previous_present = MPI.bcast(previous_present)
+mpi.barrier()
+previous_runs    = mpi.bcast(previous_runs)
+previous_present = mpi.bcast(previous_present)
 
 # Init the SumK class
 SK=SumK_LDA(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
@@ -50,12 +50,12 @@ S.Nmoments=10
 
 if (previous_present):
     # load previous data:
-    MPI.report("Using stored data for initialisation")
-    if (MPI.IS_MASTER_NODE()):
+    mpi.report("Using stored data for initialisation")
+    if (mpi.IS_MASTER_NODE()):
         ar = HDF_Archive(HDFfilename,'a')
         S.Sigma <<= ar['SigmaF']
         del ar
-    S.Sigma = MPI.bcast(S.Sigma)
+    S.Sigma = mpi.bcast(S.Sigma)
     SK.load()
 
 # DMFT loop:
@@ -70,11 +70,11 @@ for Iteration_Number in range(1,Loops+1):
         if SK.Density_Required and (Iteration_Number > 0):
             Chemical_potential = SK.find_mu( precision = 0.000001 )
         else:
-            MPI.report("No adjustment of chemical potential\nTotal density  = %.3f"%SK.total_density(mu=Chemical_potential))
+            mpi.report("No adjustment of chemical potential\nTotal density  = %.3f"%SK.total_density(mu=Chemical_potential))
 
         # Density:
         S.G <<= SK.extract_Gloc()[0]
-        MPI.report("Total charge of Gloc : %.6f"%S.G.total_density())
+        mpi.report("Total charge of Gloc : %.6f"%S.G.total_density())
         dm = S.G.density()
 
         if ((Iteration_Number==1)and(previous_present==False)):
@@ -85,7 +85,7 @@ for Iteration_Number in range(1,Loops+1):
         S.set_atomic_levels( eal = eal )
 
         # update hdf5
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar = HDF_Archive(HDFfilename,'a')
             ar['Chemical_Potential%s'%itn] = Chemical_potential
             del ar
@@ -93,25 +93,25 @@ for Iteration_Number in range(1,Loops+1):
         # solve it:
         S.Solve()
 
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar = HDF_Archive(HDFfilename)
             ar['iterations'] = itn
  
         # Now mix Sigma and G:
         if ((itn>1)or(previous_present)):
-            if (MPI.IS_MASTER_NODE()):
-                MPI.report("Mixing Sigma and G with factor %s"%Mix)
+            if (mpi.IS_MASTER_NODE()):
+                mpi.report("Mixing Sigma and G with factor %s"%Mix)
                 if ('SigmaF' in ar):
                     S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
                 if ('GF' in ar):
                     S.G <<= Mix * S.G + (1.0-Mix) * ar['GF']
 
-            S.G = MPI.bcast(S.G)
-            S.Sigma = MPI.bcast(S.Sigma)
+            S.G = mpi.bcast(S.G)
+            S.Sigma = mpi.bcast(S.Sigma)
 
 
         
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             ar['SigmaF'] = S.Sigma
             ar['GF'] = S.G
         
@@ -120,8 +120,8 @@ for Iteration_Number in range(1,Loops+1):
         SK.SetDoubleCounting( dm, U_interact = Uint, J_Hund = JHund, orb = 0, useDCformula = DC_type )
         # correlation energy calculations:
         correnerg = 0.5 * (S.G * S.Sigma).total_density()
-        MPI.report("Corr. energy = %s"%correnerg)
-        if (MPI.IS_MASTER_NODE()):
+        mpi.report("Corr. energy = %s"%correnerg)
+        if (mpi.IS_MASTER_NODE()):
             ar['correnerg%s'%itn] = correnerg
             ar['DCenerg%s'%itn] = SK.DCenerg
             del ar
@@ -129,15 +129,15 @@ for Iteration_Number in range(1,Loops+1):
 
         #Save stuff:
         SK.save()
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             print 'DC after solver: ',SK.dc_imp[SK.invshellmap[0]]
 
 
         # do some analysis:
-        MPI.report("Orbital densities of impurity Green function:")
+        mpi.report("Orbital densities of impurity Green function:")
         dm1 = S.G.density()
         for s in dm1:
-            MPI.report("Block %s: "%s)
+            mpi.report("Block %s: "%s)
             for ii in range(len(dm1[s])):
                 str = ''
                 for jj in range(len(dm1[s])):
@@ -145,8 +145,8 @@ for Iteration_Number in range(1,Loops+1):
                         str += "   %.4f"%(dm1[s][ii,jj].real)
                     else:
                         str += "  %.4f"%(dm1[s][ii,jj].real)
-                MPI.report(str)
-        MPI.report("Total charge of impurity problem : %.6f"%S.G.total_density())
+                mpi.report(str)
+        mpi.report("Total charge of impurity problem : %.6f"%S.G.total_density())
 
 
 # find exact chemical potential
@@ -154,10 +154,10 @@ if (SK.Density_Required):
     SK.Chemical_potential = SK.find_mu( precision = 0.000001 )
 dN,d = SK.calc_DensityCorrection(Filename = LDAFilename+'.qdmft')
 
-MPI.report("Trace of Density Matrix: %s"%d)
+mpi.report("Trace of Density Matrix: %s"%d)
 
 #correlation energy:
-if (MPI.IS_MASTER_NODE()):
+if (mpi.IS_MASTER_NODE()):
     ar = HDF_Archive(HDFfilename)
     itn = ar['iterations'] 
     correnerg = ar['correnerg%s'%itn] 

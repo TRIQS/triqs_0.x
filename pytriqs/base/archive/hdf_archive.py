@@ -414,7 +414,7 @@ class HDF_Archive_Inert:
     """
     A fake class for the node in MPI. It does nothing, but 
     permits to write simply : 
-       a= MPI.bcast(H['a']) # run on all nodes
+       a= mpi.bcast(H['a']) # run on all nodes
     -[] : __getitem__ returns self so that H['a']['b'] is ok...
     - setitem : does nothing.
     """

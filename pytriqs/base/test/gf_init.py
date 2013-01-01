@@ -29,7 +29,7 @@ import numpy
 
 
 
-h=HDF_Archive('GF_Init.output.h5','w')
+h=HDF_Archive('gf_init.output.h5','w')
 
 g = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 100, Name = "egBlock")
 g['eg1','eg1'] <<= gf_init.SemiCircular(HalfBandwidth = 1)

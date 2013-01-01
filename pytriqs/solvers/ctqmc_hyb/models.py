@@ -22,8 +22,8 @@
 
 from math import *
 import numpy
-from pytriqs.base.gf_local import gf_init
-from pytriqs.base.utility.myUtils import Sum
+from pytriqs.base.gf_local import GF
+from pytriqs.base.utility.my_utils import Sum
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
 

@@ -4,7 +4,7 @@ from math import pi
 
 R = HDF_Archive('myfile.h5', 'r') 
  
-from pytriqs.base.plot.MatplotlibPlotter import oplot, plt
+from pytriqs.base.plot.mpl_interface import oplot, plt
 plt.xrange(-1,1) 
 plt.yrange(0,7) 
 

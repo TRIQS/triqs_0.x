@@ -21,7 +21,7 @@
 ################################################################################
 
 from pytriqs.base.gf_local import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 from itertools import *
 import inspect
 import copy,numpy
@@ -122,7 +122,7 @@ class SumK_Discrete :
         if Sigma_Nargs==0: tmp -= Sigma  # substract Sigma once for all
 
         # Loop on k points...
-        for w, k, eps_k in izip(*[MPI.slice_array(A) for A in [self.BZ_weights, self.BZ_Points, self.Hopping]]):
+        for w, k, eps_k in izip(*[mpi.slice_array(A) for A in [self.BZ_weights, self.BZ_Points, self.Hopping]]):
 
             eps_hat = Epsilon_Hat(eps_k) if Epsilon_Hat else eps_k
             tmp2 <<= tmp
@@ -135,8 +135,8 @@ class SumK_Discrete :
             tmp2 *= w
             G += tmp2
 
-        G <<= MPI.all_reduce(MPI.world,G,lambda x,y : x+y)
-        MPI.barrier()
+        G <<= mpi.all_reduce(mpi.world,G,lambda x,y : x+y)
+        mpi.barrier()
 
         return Gres
 

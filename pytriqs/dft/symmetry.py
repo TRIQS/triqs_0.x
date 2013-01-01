@@ -26,7 +26,7 @@ import string
 from types import *
 from pytriqs.base.gf_local.block_gf import GF
 from pytriqs.base.archive import *
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 
 class Symmetry:
@@ -46,7 +46,7 @@ class Symmetry:
         thingstoread = ['Ns','Natoms','perm','orbits','SO','SP','timeinv','mat','mat_tinv']
         for it in thingstoread: exec "self.%s = 0"%it
 
-        if (MPI.IS_MASTER_NODE()):
+        if (mpi.IS_MASTER_NODE()):
             #Read the stuff on master:
             ar = HDF_Archive(HDFfile,'a')
             if (subgroup is None):
@@ -59,7 +59,7 @@ class Symmetry:
             del ar
 
         #broadcasting
-        for it in thingstoread: exec "self.%s = MPI.bcast(self.%s)"%(it,it)
+        for it in thingstoread: exec "self.%s = mpi.bcast(self.%s)"%(it,it)
         
         # now define the mapping of orbitals:
         # self.map[iorb]=jorb gives the permutation of the orbitals as given in the list, when the 
@@ -148,7 +148,7 @@ class Symmetry:
 # This does not what it is supposed to do, check how this should work:       
 #        if ((self.SO==0) and (self.SP==0)):
 #            # add time inv:
-            #MPI.report("Add time inversion")
+            #mpi.report("Add time inversion")
 #            for iorb in range(self.N_orbits):
 #                if (isinstance(symm_obj[0],GF)):
 #                    tmp = symm_obj[iorb].copy()

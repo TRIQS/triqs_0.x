@@ -24,9 +24,9 @@ from pytriqs.base.archive import *
 from pytriqs.base.gf_local import *
 #import pytriqs.base.gf_local.gf_init as gf_init
 import numpy, copy
-from pytriqs.base.utility.myUtils import Conjugate
+from pytriqs.base.utility.my_utils import Conjugate
 
-h=HDF_Archive('GF_BasOps.output.h5','w')
+h=HDF_Archive('gf_base_op.output.h5','w')
 
 ga = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "a1Block")
 gb = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "b1Block")

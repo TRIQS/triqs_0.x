@@ -24,7 +24,7 @@ from pytriqs.base.gf_local import gf_init
 import types,string,inspect,itertools
 from operator import isSequenceType
 from pytriqs.base.dos import DOS
-import pytriqs.base.utility.MPI as MPI
+import pytriqs.base.utility.mpi as mpi
 
 class Hilbert_Transform : 
     r"""
@@ -129,7 +129,7 @@ class Hilbert_Transform :
             if Field != None : tmp -= Field
             
             # I slice all the arrays on the node. Cf reduce operation below. 
-            for d,e_h,e in  itertools.izip (*[MPI.slice_array(A) for A in [self.rho_for_sum,eps_hat,self.dos.eps]]):
+            for d,e_h,e in  itertools.izip (*[mpi.slice_array(A) for A in [self.rho_for_sum,eps_hat,self.dos.eps]]):
                 tmp2.copyFrom(tmp)
                 tmp2 -= e_h
                 if Sigma_fnt : tmp2 -= Sigma(e)
@@ -139,8 +139,8 @@ class Hilbert_Transform :
             # sum the Res GF of all nodes and returns the results on all nodes...
             # Cf Boost.mpi.python, collective communicator for documentation.
             # The point is that Res is pickable, hence can be transmitted between nodes without further code...
-            Res <<= MPI.all_reduce(MPI.world,Res,lambda x,y : x+y)
-            MPI.barrier()
+            Res <<= mpi.all_reduce(mpi.world,Res,lambda x,y : x+y)
+            mpi.barrier()
         # END of HT
 
         def test_distance(G1,G2, dist) :
