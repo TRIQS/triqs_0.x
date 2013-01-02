@@ -344,7 +344,7 @@ class SumK_LDA_SO:
     def save(self,Filename):
         """Saves some quantities into a file"""
         
-        if not mpi.IS_MASTER_NODE(): return   # Do nothing if not master
+        if not mpi.is_master_node(): return   # Do nothing if not master
         assert type(Filename)==StringType,"Filename must be a filename"
         
         f=open(Filename, 'w')
@@ -1154,10 +1154,10 @@ class SumK_LDA_SO:
         else:
             Dens_rel = densreq
         
-        dcnew = dichotomy.Dichotomy(Function = F,
-                                    xinit = guess, yvalue = Dens_rel,
-                                    Precision_on_y = precision, Delta_x=0.5,
-                                    MaxNbreLoop = 100, xname="Double-Counting", yname= "Total Density",
+        dcnew = dichotomy.dichotomy(function = F,
+                                    x_init = guess, y_value = Dens_rel,
+                                    precision_on_y = precision, delta_x=0.5,
+                                    max_loops = 100, x_name="Double-Counting", y_name= "Total Density",
                                     verbosity = 3)[0]
 
         return dcnew
@@ -1409,10 +1409,10 @@ class SumK_LDA_SO:
         Dens_rel = self.Density_Required - self.charge_below
 
         
-        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
-                                         xinit = self.Chemical_Potential, yvalue = Dens_rel,
-                                         Precision_on_y = precision, Delta_x=0.5,
-                                         MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Total Density",
+        self.Chemical_Potential = dichotomy.dichotomy(function = F,
+                                         x_init = self.Chemical_Potential, y_value = Dens_rel,
+                                         precision_on_y = precision, delta_x=0.5,
+                                         max_loops = 100, x_name="Chemical_Potential", y_name= "Total Density",
                                          verbosity = 3)[0]
 
         return self.Chemical_Potential
@@ -1436,10 +1436,10 @@ class SumK_LDA_SO:
             
         #F = lambda mu : self.nonint_G(Beta=Beta,mu=mu)[orb].total_density()
 
-        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
-                                      xinit = self.Chemical_Potential, yvalue = densreq,
-                                      Precision_on_y = precision, Delta_x=0.5,
-                                      MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Local Density",
+        self.Chemical_Potential = dichotomy.dichotomy(function = F,
+                                      x_init = self.Chemical_Potential, y_value = densreq,
+                                      precision_on_y = precision, delta_x=0.5,
+                                      max_loops = 100, x_name="Chemical_Potential", y_name= "Local Density",
                                       verbosity = 3)[0]
 
         return self.Chemical_Potential
@@ -1649,7 +1649,7 @@ class SumK_LDA_SO:
 
        
         # now save to file:
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             if (self.SP==0):
                 f=open(Filename,'w')
             else:

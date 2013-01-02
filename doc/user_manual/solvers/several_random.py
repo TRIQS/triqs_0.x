@@ -32,7 +32,7 @@ for random_name in ['mt11213b','lagged_fibonacci607']:
   S.Solve()
 
   # Save the results in an hdf5 file (only on the master node)
-  if mpi.IS_MASTER_NODE():
+  if mpi.is_master_node():
     Results = HDF_Archive("random.h5")
     Results["G_%s"%(random_name)] = S.G
     del Results

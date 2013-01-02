@@ -38,7 +38,7 @@ for IterationNumber in range(N_loops):
     S.Solve()
 
     # Some intermediate saves
-    if mpi.IS_MASTER_NODE():
+    if mpi.is_master_node():
       R = HDF_Archive("single_site_bethe.h5")
       R["G-%s"%IterationNumber] = S.G
       del R

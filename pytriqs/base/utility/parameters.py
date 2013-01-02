@@ -34,7 +34,7 @@ class Parameters(dict) :
     mpi : By default, the contruction is made on the master, and then bcasted.
           See constructor. 
     """
-    def __init__(self, S, BuildMasterOnly =True) :
+    def __init__(self, S, build_master_only =True) :
         """
         Construction : with named arguments only.
         Possible constructors from source S : 
@@ -43,11 +43,11 @@ class Parameters(dict) :
              The type of the file is determined from the extension: 
                 - .py, .txt : the file is executed in the Parameters
                 - .xml : to be written
-        mpi : if BuildMasterOnly is true, the contruction is only made on the master, 
+        mpi : if build_master_only is true, the contruction is only made on the master, 
               the result is then bcasted to all the nodes.
               Otherwise, it is done on all nodes (not recommended to read files).
         """
-        if mpi.IS_MASTER_NODE() or not BuildMasterOnly : 
+        if mpi.is_master_node() or not build_master_only : 
             if type(S) == type(''):
                # detect the type of the file
                try : 
@@ -63,7 +63,7 @@ class Parameters(dict) :
                   print "Error in Parameter constructor. Is the source an iterable ?"
                   raise
         # end of master only
-        if BuildMasterOnly : mpi.bcast(self) # bcast it on the nodes
+        if build_master_only : mpi.bcast(self) # bcast it on the nodes
 
 # The next functions are not in methods, since we may want to use them 
 # on true dictionnaries...
@@ -92,32 +92,32 @@ def check_no_parameters_not_in_union_of_dicts (DIC, *d_list):
 
 #----------------------------------------------------------------
  
-def check (DIC, Required, Optional, Deprecated = (), Constraints={}):
+def check (DIC, required, optional, deprecated = (), constraints={}):
     """ 
      Checks that :
-       - Required parameters are present with the correct type
-       - Optional parameters are present, and if not defines them with the default
-       - No parameter is Deprecated
-       - Constraints are satisfied
+       - required parameters are present with the correct type
+       - optional parameters are present, and if not defines them with the default
+       - No parameter is deprecated
+       - constraints are satisfied
 
      Inputs : 
-        - Required   : a dict which associates 
+        - required   : a dict which associates 
               name -> (documentation string, type_or_type_list) 
-        - Optional   : a dict which associates 
+        - optional   : a dict which associates 
               name -> (documentation string,
                        defaultValue : a element of the required type or a function : DIC -> defaultValue,
                        type_or_type_list) 
               where type_or_type_list is a type or a list of types
-        - Deprecated : a list of forbidden names for parameters.
-        - Constraints : a dict of functions taking the dict and returning bool.
+        - deprecated : a list of forbidden names for parameters.
+        - constraints : a dict of functions taking the dict and returning bool.
 
      Action : 
        This method : 
-         - checks that all keys of Required are keys of Parameters withthe right type.
-         - for all keys of Optional : 
+         - checks that all keys of required are keys of Parameters withthe right type.
+         - for all keys of optional : 
             - if the key is present in DIC, check its type.
             - otherwise, add this key in DIC, with the defaultValue.
-         - checks that no parameters has a name in Deprecated.
+         - checks that no parameters has a name in deprecated.
          - check that every constraints is true when evaluated for DIC. 
      
      Returns : a string containing its report.
@@ -128,24 +128,24 @@ def check (DIC, Required, Optional, Deprecated = (), Constraints={}):
     report = ""
     
     # First check that parameters are not deprecated
-    for p in Deprecated:
+    for p in deprecated:
         if p in DIC : raise ValueError, "Parameter %s is deprecated."%p
 
-    # Check the Required dict
-    for p,v in Required.items() :
-        if len(v) not in [2] : raise SyntaxError,"Required : Syntax error for parameter %s"%p
+    # Check the required dict
+    for p,v in required.items() :
+        if len(v) not in [2] : raise SyntaxError,"required : Syntax error for parameter %s"%p
 
     def check_type(p,val,ty):
        """ check that val is of type ty"""
        if type(ty) not in [ListType,TypeType]:
-          raise SyntaxError,"Syntax error for Required parameter %s : second element is not a type or a list of types."%p
+          raise SyntaxError,"Syntax error for required parameter %s : second element is not a type or a list of types."%p
        ty_list = ty if type(ty)==ListType else [ty]
        if type(val) not in ty_list : 
             raise TypeError, "%s is not of the correct type. Should be %s, not %s"%(p,ty, type(val))
            
     # Check all required items
     missing={}
-    for p,v in Required.items() :    
+    for p,v in required.items() :    
         if p not in DIC :
             print "missing", p,DIC.keys()
             missing[p] =v
@@ -160,15 +160,15 @@ def check (DIC, Required, Optional, Deprecated = (), Constraints={}):
                 report += "\n *- %s of %s \n  Description : %s"%(p,v[1],v[0])
         raise ValueError, report
 
-    # check for the Optional parameters
+    # check for the optional parameters
     report_add, toadd ="\nOptional parameters defined to their default values: ", True
-    for p,v in Optional.items() :
+    for p,v in optional.items() :
         if len(v) == 2 : 
            doc, default= v; ty = type(default)
         elif len(v) ==3 : 
            doc, default, ty = v
         else :
-           raise SyntaxError,"Optional : Syntax error for parameter %s"%p
+           raise SyntaxError,"optional : Syntax error for parameter %s"%p
         
         if p in DIC:
            check_type(p,DIC[p],ty)
@@ -178,9 +178,9 @@ def check (DIC, Required, Optional, Deprecated = (), Constraints={}):
             report += "\n *%s -> %s"%(p,default)
             if doc.strip() : report += "\n   Description :\n     %s\n"%doc
             
-    # Check the Constraints
+    # Check the constraints
     ok = True
-    for name,F in Constraints.items() : 
+    for name,F in constraints.items() : 
         if not F(DIC) : 
             ok =False
             report += "\n Constraint '%s' is not satisfied"%(name)

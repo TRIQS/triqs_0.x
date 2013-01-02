@@ -44,7 +44,7 @@ from scratch::
 
   previous_runs = 0
   previous_present = False
-  if mpi.IS_MASTER_NODE():
+  if mpi.is_master_node():
       ar = HDF_Archive(LDAFilename+'.h5','a')
       if 'iterations' in ar:
           previous_present = True
@@ -79,7 +79,7 @@ If there are previous runs stored in the hdf5 archive, we can now load the self 
 of the last iteration::
 
   if (previous_present):
-    if (mpi.IS_MASTER_NODE()):
+    if (mpi.is_master_node()):
         ar = HDF_Archive(LDAFilename+'.h5','a')
         S.Sigma <<= ar['SigmaF']
         del ar
@@ -105,7 +105,7 @@ previous section, with some additional refinement::
             S.Sigma <<= gf_init.Const(SK.dc_imp[0]['up'][0,0])
         
         # now calculate new G0:
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             # We can do a mixing of Delta in order to stabilize the DMFT iterations:
             S.G0 <<= S.Sigma + inverse(S.G)
             ar = HDF_Archive(LDAFilename+'.h5','a')
@@ -128,7 +128,7 @@ previous section, with some additional refinement::
 
         # Now mix Sigma and G with factor Mix, if wanted:
         if ((IterationNumber>1) or (previous_present)):
-            if (mpi.IS_MASTER_NODE()):
+            if (mpi.is_master_node()):
                 ar = HDF_Archive(LDAFilename+'.h5','a')
                 mpi.report("Mixing Sigma and G with factor %s"%Mix)
                 S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
@@ -138,7 +138,7 @@ previous section, with some additional refinement::
             S.Sigma = mpi.bcast(S.Sigma)
 
         # Write the final Sigma and G to the hdf5 archive:
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar = HDF_Archive(LDAFilename+'.h5','a')
             ar['iterations'] = previous_runs + IterationNumber	
             ar['SigmaF'] = S.Sigma

@@ -58,11 +58,11 @@ std::ostream & REPORT_PTR();
 const int myMPI_master=0;
 
 /// Test : are we on master node ?
-#define IS_MASTER_NODE  (myMPI_myid()==myMPI_master)
-#define REPORT_WARNING(s){if IS_MASTER_NODE std::clog<<"WARNING : "<<s<<endl;}
+#define is_master_node  (myMPI_myid()==myMPI_master)
+#define REPORT_WARNING(s){if is_master_node std::clog<<"WARNING : "<<s<<endl;}
 
 /// Beginning of section : master only
-#define BEGIN_MASTER_ONLY  if IS_MASTER_NODE {
+#define BEGIN_MASTER_ONLY  if is_master_node {
 
 /// End of "master only" section
 #define END_MASTER_ONLY  }
@@ -138,7 +138,7 @@ template <class T> struct mpi_datatype { static const MPI::Datatype value;};
 
 // we have to redefine the FATAL to end properly in MPI.
 //#undef FATAL
-//#define FATAL(s) { if (IS_MASTER_NODE) std::clog<<"FATAL : "<<s<<endl; myMPI_barrier(); myMPI_finalize(); exit(1);}
+//#define FATAL(s) { if (is_master_node) std::clog<<"FATAL : "<<s<<endl; myMPI_barrier(); myMPI_finalize(); exit(1);}
 
 inline void myMPI_init(int argc, char *argv[] ){MPI::Init(argc,argv);}
 inline int myMPI_myid(){return MPI::COMM_WORLD.Get_rank();} 
@@ -240,7 +240,7 @@ template <class T> struct mpi_datatype { static const MPI_Datatype value;};
 
 // we have to redefine the FATAL to end properly in MPI.
 //#undef FATAL
-//#define FATAL(s) { if (IS_MASTER_NODE) std::clog<<"FATAL : "<<s<<endl; myMPI_barrier(); myMPI_finalize(); exit(1);}
+//#define FATAL(s) { if (is_master_node) std::clog<<"FATAL : "<<s<<endl; myMPI_barrier(); myMPI_finalize(); exit(1);}
 
 inline void myMPI_init(int argc, char *argv[] ){MPI_Init(&argc,&argv);}
 inline int myMPI_myid(){int num; MPI_Comm_rank(MPI_COMM_WORLD,&num);return(num);} 

@@ -84,7 +84,7 @@ class DMFT_Loop_Generic:
   def __should_continue(self,N_Iter_SelfCons_Max) :
     """ stop test"""
     should_continue = True
-    if mpi.IS_MASTER_NODE():
+    if mpi.is_master_node():
       if (self.Iteration_Number > N_Iter_SelfCons_Max):
         should_continue = False
     should_continue = mpi.bcast(should_continue)

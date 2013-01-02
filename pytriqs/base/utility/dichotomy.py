@@ -22,7 +22,7 @@
 
 import pytriqs.base.utility.mpi as mpi
 
-def Dichotomy(Function, xinit,yvalue,Precision_on_y,Delta_x, MaxNbreLoop=1000, xname="", yname="",verbosity=1):
+def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 1000, x_name="", y_name="", verbosity=1):
     """
     Solver Function(x) = yvalue.
     

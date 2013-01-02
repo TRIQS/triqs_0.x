@@ -122,7 +122,7 @@ class SumK_LDA:
 
           
             # now save things again to HDF5:
-            if (mpi.IS_MASTER_NODE()):
+            if (mpi.is_master_node()):
                 ar=HDF_Archive(self.HDFfile,'a')
                 ar[self.LDAdata]['hfield'] = self.hfield
                 del ar
@@ -144,7 +144,7 @@ class SumK_LDA:
         for it in thingstoread: exec "self.%s = 0"%it
         for it in optionalthings: exec "self.%s = 0"%it
         
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar=HDF_Archive(self.HDFfile,'a')
             if (SubGrp in ar):
                 # first read the necessary things:
@@ -184,7 +184,7 @@ class SumK_LDA:
     def save(self):
         """Saves some quantities into an HDF5 arxiv"""
 
-        if not (mpi.IS_MASTER_NODE()): return # do nothing on nodes
+        if not (mpi.is_master_node()): return # do nothing on nodes
 
         ar=HDF_Archive(self.HDFfile,'a')
         ar[self.LDAdata]['Chemical_Potential'] = self.Chemical_Potential
@@ -519,7 +519,7 @@ class SumK_LDA:
                             elif ((ind1<0)and(ind2<0)):
                                 self.deg_shells[ish].append([bl[0],bl2[0]])
 
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar=HDF_Archive(self.HDFfile,'a')
             ar[self.LDAdata]['GFStruct_Solver'] = self.GFStruct_Solver
             ar[self.LDAdata]['map'] = self.map
@@ -775,10 +775,10 @@ class SumK_LDA:
         else:
             Dens_rel = densreq
         
-        dcnew = dichotomy.Dichotomy(Function = F,
-                                    xinit = guess, yvalue = Dens_rel,
-                                    Precision_on_y = precision, Delta_x=0.5,
-                                    MaxNbreLoop = 100, xname="Double-Counting", yname= "Total Density",
+        dcnew = dichotomy.dichotomy(function = F,
+                                    x_init = guess, y_value = Dens_rel,
+                                    precision_on_y = precision, delta_x=0.5,
+                                    max_loops = 100, x_name="Double-Counting", y_name= "Total Density",
                                     verbosity = 3)[0]
 
         return dcnew
@@ -937,10 +937,10 @@ class SumK_LDA:
         Dens_rel = self.Density_Required - self.charge_below
 
         
-        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
-                                         xinit = self.Chemical_Potential, yvalue = Dens_rel,
-                                         Precision_on_y = precision, Delta_x=0.5,
-                                         MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Total Density",
+        self.Chemical_Potential = dichotomy.dichotomy(function = F,
+                                         x_init = self.Chemical_Potential, y_value = Dens_rel,
+                                         precision_on_y = precision, delta_x=0.5,
+                                         max_loops = 100, x_name="Chemical_Potential", y_name= "Total Density",
                                          verbosity = 3)[0]
 
         return self.Chemical_Potential
@@ -963,10 +963,10 @@ class SumK_LDA:
             return dens
             
       
-        self.Chemical_Potential = dichotomy.Dichotomy(Function = F,
-                                      xinit = self.Chemical_Potential, yvalue = densreq,
-                                      Precision_on_y = precision, Delta_x=0.5,
-                                      MaxNbreLoop = 100, xname="Chemical_Potential", yname= "Local Density",
+        self.Chemical_Potential = dichotomy.dichotomy(function = F,
+                                      x_init = self.Chemical_Potential, y_value = densreq,
+                                      precision_on_y = precision, delta_x=0.5,
+                                      max_loops = 100, x_name="Chemical_Potential", y_name= "Local Density",
                                       verbosity = 3)[0]
 
         return self.Chemical_Potential
@@ -1068,7 +1068,7 @@ class SumK_LDA:
 
        
         # now save to file:
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             if (self.SP==0):
                 f=open(Filename,'w')
             else:

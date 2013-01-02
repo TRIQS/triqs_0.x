@@ -84,10 +84,10 @@ class myloop (DMFT_Loop_Generic) :
       F = lambda mu : SK(mu = mu,Sigma = Sigma, Field = None ,Res = G).total_density()/4 
       
       if Density_Required :
-         self.Chemical_potential = dichotomy.Dichotomy(Function = F,
-                                                       xinit = self.Chemical_potential, yvalue =Density_Required,
-                                                       Precision_on_y = 0.01, Delta_x=0.5,  MaxNbreLoop = 100, 
-                                                       xname="Chemical_Potential", yname= "Total Density",
+         self.Chemical_potential = dichotomy.dichotomy(function = F,
+                                                       x_init = self.Chemical_potential, y_value =Density_Required,
+                                                       precision_on_y = 0.01, delta_x=0.5,  max_loops = 100, 
+                                                       x_name="Chemical_Potential", y_name= "Total Density",
                                                        verbosity = 3)[0]
       else:
          mpi.report("Total density  = %.3f"%F(self.Chemical_potential))
@@ -99,6 +99,6 @@ class myloop (DMFT_Loop_Generic) :
 myloop(Solver_List = S,Chemical_potential  = 2.0).run(N_Loops = 1)
                                                                      
 # Opens the results shelve
-if mpi.IS_MASTER_NODE():
+if mpi.is_master_node():
   Results = HDF_Archive("cdmft_4_sites.output.h5",'w')
   Results["G"] = S.G

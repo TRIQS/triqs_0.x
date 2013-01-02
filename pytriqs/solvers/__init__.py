@@ -25,7 +25,7 @@ __add__ =[]
 from types import *
 from pytriqs.base.utility.my_utils import *
 
-class SolverBase(object, Pretty_Print):
+class SolverBase(object, PrettyPrint):
     """
         - GFstruct : structure of the Green function in the format
                          (  ( name_of_the_bloc , [list of names for the bloc components]), ...)

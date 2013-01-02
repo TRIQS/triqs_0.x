@@ -30,7 +30,7 @@ from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.utility.my_utils import Sum
+from pytriqs.base.utility.my_utils import sum_list
 import pytriqs.base.utility.mpi as mpi
 
 from pytriqs.dft.symmetry import *
@@ -218,7 +218,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         # output:
         #if (self.Nspinblocs==1):
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             for ibn in range(self.Nspinblocs):
                 bn = self.blocnames[self.SO][ibn]
                 f=open('DOS%s.dat'%bn, 'w')
@@ -350,7 +350,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 for sig,gf in Gproj[ish]:  DOSproj[ish][:,:,:] += gf._data.array[:,:,:].imag / (-3.1415926535)
 	    
 
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             # output to file
             f=open('./DOScorr.dat', 'w')
             for i in range(N_om): f.write("%s    %s\n"%(Msh[i],DOS[i]))

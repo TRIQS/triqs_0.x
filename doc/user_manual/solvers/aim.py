@@ -35,7 +35,7 @@ S.Solve()
 from pytriqs.base.archive import HDF_Archive
 import pytriqs.base.utility.mpi as mpi
 
-if mpi.IS_MASTER_NODE():
+if mpi.is_master_node():
   Results = HDF_Archive("solution.h5",'w')
   Results["G"] = S.G
   Results["Gl"] = S.G_Legendre

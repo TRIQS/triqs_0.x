@@ -23,7 +23,7 @@
 from math import *
 import numpy
 from pytriqs.base.gf_local import GF
-from pytriqs.base.utility.my_utils import Sum
+from pytriqs.base.utility.my_utils import sum_list
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
 
@@ -46,10 +46,10 @@ class Solver_2x2_Para_Hubbard (Solver) :
       Cnat,Nnat={},{}
       for i in range(4) :
          s= 'up-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
          s= 'down-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
 
       def symm(s):
@@ -61,10 +61,10 @@ class Solver_2x2_Para_Hubbard (Solver) :
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact* Sum( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
+      Hamiltonian = U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
 
-      N_u = Sum( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
-      N_d = Sum( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
+      N_u = sum_list( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
+      N_d = sum_list( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
 
       Quantum_Numbers = { 'Z4' : 'Z4', 'N_u' : N_u, 'N_d' : N_d }
 
@@ -78,7 +78,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
       OUT = OUT if OUT else GF(G)
       for sig,B in IN:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
-            OUT[ind+sig] = Sum ( [ Sum ( [ B[i+1,j+1]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
+            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[i+1,j+1]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
       return OUT
 
    def Transform_SymmetryBasis_toRealSpace(self,IN, OUT = None):
@@ -87,7 +87,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
-               B[i+1,j+1]  = Sum( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
+               B[i+1,j+1]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
                                     for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) ])
       return OUT
 
@@ -110,10 +110,10 @@ class Solver_2x2_Para_Hubbard_Momentum (Solver) :
       Cnat,Nnat={},{}
       for i in range(4) :
          s= 'up-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
          s= 'down-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
 
       def symm(s):
@@ -129,10 +129,10 @@ class Solver_2x2_Para_Hubbard_Momentum (Solver) :
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact* Sum( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
+      Hamiltonian = U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
 
-      N_u = Sum( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
-      N_d = Sum( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
+      N_u = sum_list( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
+      N_d = sum_list( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
 
       Quantum_Numbers = { 'kx' : 'kx', 'ky' : 'ky', 'N_u' : N_u, 'N_d' : N_d }
 
@@ -154,7 +154,7 @@ class Solver_3_band_Hubbard (Solver) :
       GFstruct = [ ('1up',[1]), ('1down',[1]), ('23up',[1,2]), ('23down',[1,2]) ]
 	 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      #Hamiltonian =   U_interact * Sum( [ N('%d-up'%(i+1),1)*N('%d-down'%(i+1),1)  for i in range(3) ] )
+      #Hamiltonian =   U_interact * sum_list( [ N('%d-up'%(i+1),1)*N('%d-down'%(i+1),1)  for i in range(3) ] )
       Hamiltonian =   U_interact * ( N('1up',1)*N('1down',1) + N('23up',1)*N('23down',1) + N('23up',2)*N('23down',2) )
       Hamiltonian +=  (U_interact-2.0*J_Hund) * ( N('1up',1) * (N('23down',1)+N('23down',2)) + N('23up',1) * N('23down',2) )
       Hamiltonian +=  (U_interact-2.0*J_Hund) * ( N('1down',1) * (N('23up',1)+N('23up',2)) + N('23up',2) * N('23down',1) )
@@ -192,7 +192,7 @@ class Solver_2_or_3_bands_Hubbard (Solver) :
    def __init__(self,Beta,Norb,U_interact,J_Hund) : 
       
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact * Sum( [ N('up',i)*N('down',i) for i in range(Norb) ] )
+      Hamiltonian = U_interact * sum_list( [ N('up',i)*N('down',i) for i in range(Norb) ] )
       for i in range(Norb-1):
         for j in range(i+1,Norb):
           Hamiltonian += (U_interact-2*J_Hund) * ( N('up',i) * N('down',j) +
@@ -205,8 +205,8 @@ class Solver_2_or_3_bands_Hubbard (Solver) :
       #  Quantum_Numbers['N%sup'%(i+1)]   = N('up',i)
       #  Quantum_Numbers['N%sdown'%(i+1)] = N('down',i)
 
-      Ntot = Sum( [ N(s,i) for s in ['up','down'] for i in range(Norb) ] )
-      Sz = Sum( [ N('up',i)-N('down',i) for i in range(Norb) ] )
+      Ntot = sum_list( [ N(s,i) for s in ['up','down'] for i in range(Norb) ] )
+      Sz = sum_list( [ N('up',i)-N('down',i) for i in range(Norb) ] )
 
       Quantum_Numbers = {'Ntot' : Ntot, 'Sz' : Sz}
 
@@ -352,10 +352,10 @@ class Solver_Anderson_4sites (Solver) :
       Cnat,Nnat={},{}
       for i in range(4) :
          s= 'up-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
          s= 'down-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
 
       def symm(s):
@@ -367,10 +367,10 @@ class Solver_Anderson_4sites (Solver) :
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact* Sum( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)] for i in range (4)])
+      Hamiltonian = U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)] for i in range (4)])
 
-      N_u = Sum( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
-      N_d = Sum( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
+      N_u = sum_list( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
+      N_d = sum_list( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
 
       Quantum_Numbers = { 'Z4' : 'Z4', 'N_u' : N_u, 'N_d' : N_d }
 
@@ -394,7 +394,7 @@ class Solver_Anderson_4sites (Solver) :
       OUT = OUT if OUT else GF(G)
       for sig,B in IN:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
-            OUT[ind+sig] = Sum ( [ Sum ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
+            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
       return OUT
 
    def Transform_SymmetryBasis_to_RealSpace(self,IN, OUT = None):
@@ -403,7 +403,7 @@ class Solver_Anderson_4sites (Solver) :
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
-               B[(i+1,1),(j+1,1)]  = Sum( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
+               B[(i+1,1),(j+1,1)]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
                                     for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) ])
       return OUT
 
@@ -426,10 +426,10 @@ class Solver_Anderson_4sites_Momentum (Solver) :
       Cnat,Nnat={},{}
       for i in range(4) :
          s= 'up-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('up'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
          s= 'down-%d'%(i+1)
-         Cnat[s] = Sum( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
+         Cnat[s] = sum_list( [ self.P[i,j]*c  for j,c in enumerate(Cdiag('down'))] )
          Nnat[s] = Cnat[s].dagger() * Cnat[s]
 
       def symm(s):
@@ -445,10 +445,10 @@ class Solver_Anderson_4sites_Momentum (Solver) :
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact* Sum( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)] for i in range (4)])
+      Hamiltonian = U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)] for i in range (4)])
 
-      N_u = Sum( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
-      N_d = Sum( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
+      N_u = sum_list( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
+      N_d = sum_list( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
 
       Quantum_Numbers = { 'kx' : 'kx', 'ky' : 'ky', 'N_u' : N_u, 'N_d' : N_d }
 
@@ -472,7 +472,7 @@ class Solver_Anderson_4sites_Momentum (Solver) :
       OUT = OUT if OUT else GF(G)
       for sig,B in IN:
          for k,ind in enumerate(['00-', '10-','01-', '11-']) : 
-            OUT[ind+sig] = Sum ( [ Sum ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
+            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
       return OUT
 
    def Transform_SymmetryBasis_to_RealSpace(self,IN, OUT = None):
@@ -481,6 +481,6 @@ class Solver_Anderson_4sites_Momentum (Solver) :
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
-               B[(i+1,1),(j+1,1)]  = Sum( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
+               B[(i+1,1),(j+1,1)]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
                                     for k,ind in enumerate(['00-', '10-','01-', '11-']) ])
       return OUT

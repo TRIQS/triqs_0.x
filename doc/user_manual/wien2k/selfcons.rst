@@ -53,7 +53,7 @@ From this value, we have to substract the double counting energy::
 
 and save this value into the file::
 
-  if (mpi.IS_MASTER_NODE()):
+  if (mpi.is_master_node()):
     f=open(LDAFilename+'.qdmft','a')
     f.write("%.16f\n"%correnerg)
     f.close()

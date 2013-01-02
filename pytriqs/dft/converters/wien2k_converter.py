@@ -71,7 +71,7 @@ class Wien2kConverter:
         """
         
                    
-        if not (mpi.IS_MASTER_NODE()): return # do it only on master:
+        if not (mpi.is_master_node()): return # do it only on master:
         mpi.report("Reading input from %s..."%self.LDA_file)
 
         # Read and write only on Master!!!
@@ -260,7 +260,7 @@ class Wien2kConverter:
         group in the HDF5.
         """
 
-        if not (mpi.IS_MASTER_NODE()): return
+        if not (mpi.is_master_node()): return
 
         self.ParProjSubGrp = ParProjSubGrp
         self.SymmParSubGrp = SymmParSubGrp
@@ -351,7 +351,7 @@ class Wien2kConverter:
         HDF5.
         """
 
-        if not (mpi.IS_MASTER_NODE()): return
+        if not (mpi.is_master_node()): return
 
         self.BandsSubGrp = BandsSubGrp
         mpi.report("Reading bands input from %s..."%self.Band_file)
@@ -455,7 +455,7 @@ class Wien2kConverter:
         Reads input for the symmetrisations from symmfile, which is case.sympar or case.symqmc.
         """
 
-        if not (mpi.IS_MASTER_NODE()): return
+        if not (mpi.is_master_node()): return
 
         mpi.report("Reading symmetry input from %s..."%symmfile)
 
@@ -523,7 +523,7 @@ class Wien2kConverter:
 
         import subprocess
 
-        if not (mpi.IS_MASTER_NODE()): return
+        if not (mpi.is_master_node()): return
 
         mpi.report("Repacking the file %s"%self.HDFfile)
 

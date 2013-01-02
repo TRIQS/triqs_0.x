@@ -24,7 +24,7 @@ Converter.convert_DMFT_input()
 previous_runs = 0
 previous_present = False
 
-if mpi.IS_MASTER_NODE():
+if mpi.is_master_node():
     ar = HDF_Archive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
@@ -51,7 +51,7 @@ S.Nmoments=10
 if (previous_present):
     # load previous data:
     mpi.report("Using stored data for initialisation")
-    if (mpi.IS_MASTER_NODE()):
+    if (mpi.is_master_node()):
         ar = HDF_Archive(HDFfilename,'a')
         S.Sigma <<= ar['SigmaF']
         del ar
@@ -85,7 +85,7 @@ for Iteration_Number in range(1,Loops+1):
         S.set_atomic_levels( eal = eal )
 
         # update hdf5
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar = HDF_Archive(HDFfilename,'a')
             ar['Chemical_Potential%s'%itn] = Chemical_potential
             del ar
@@ -93,13 +93,13 @@ for Iteration_Number in range(1,Loops+1):
         # solve it:
         S.Solve()
 
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar = HDF_Archive(HDFfilename)
             ar['iterations'] = itn
  
         # Now mix Sigma and G:
         if ((itn>1)or(previous_present)):
-            if (mpi.IS_MASTER_NODE()):
+            if (mpi.is_master_node()):
                 mpi.report("Mixing Sigma and G with factor %s"%Mix)
                 if ('SigmaF' in ar):
                     S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
@@ -111,7 +111,7 @@ for Iteration_Number in range(1,Loops+1):
 
 
         
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar['SigmaF'] = S.Sigma
             ar['GF'] = S.G
         
@@ -121,7 +121,7 @@ for Iteration_Number in range(1,Loops+1):
         # correlation energy calculations:
         correnerg = 0.5 * (S.G * S.Sigma).total_density()
         mpi.report("Corr. energy = %s"%correnerg)
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             ar['correnerg%s'%itn] = correnerg
             ar['DCenerg%s'%itn] = SK.DCenerg
             del ar
@@ -129,7 +129,7 @@ for Iteration_Number in range(1,Loops+1):
 
         #Save stuff:
         SK.save()
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             print 'DC after solver: ',SK.dc_imp[SK.invshellmap[0]]
 
 
@@ -157,7 +157,7 @@ dN,d = SK.calc_DensityCorrection(Filename = LDAFilename+'.qdmft')
 mpi.report("Trace of Density Matrix: %s"%d)
 
 #correlation energy:
-if (mpi.IS_MASTER_NODE()):
+if (mpi.is_master_node()):
     ar = HDF_Archive(HDFfilename)
     itn = ar['iterations'] 
     correnerg = ar['correnerg%s'%itn] 

@@ -29,7 +29,7 @@ Converter.convert_Parproj_input()
 previous_runs = 0
 previous_present = False
 
-if mpi.IS_MASTER_NODE():
+if mpi.is_master_node():
     ar = HDF_Archive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
@@ -51,7 +51,7 @@ previous_present = mpi.bcast(previous_present)
 SK=SumK_LDA_tools(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
 
 
-if (mpi.IS_MASTER_NODE()):
+if (mpi.is_master_node()):
     print 'DC after reading SK: ',SK.dc_imp[SK.invshellmap[0]]
 
 N = SK.corr_shells[0][3]

@@ -153,7 +153,7 @@ HDF_Archive_Inert
 
    Usage in a mpi code, e.g. ::
 
-     R = HDF_Archive("Results.h5",'w') if mpi.IS_MASTER_NODE() else HDF_Archive_Inert()
+     R = HDF_Archive("Results.h5",'w') if mpi.is_master_node() else HDF_Archive_Inert()
      a= mpi.bcast(R['a'])       # properly broadcast the R['a'] from the master to the nodes.
      R['b'] = X                 # sets R['b'] in the file on the master only, does nothing on the nodes.
 

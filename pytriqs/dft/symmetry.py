@@ -46,7 +46,7 @@ class Symmetry:
         thingstoread = ['Ns','Natoms','perm','orbits','SO','SP','timeinv','mat','mat_tinv']
         for it in thingstoread: exec "self.%s = 0"%it
 
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             #Read the stuff on master:
             ar = HDF_Archive(HDFfile,'a')
             if (subgroup is None):

@@ -29,7 +29,7 @@ from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
 from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
-from pytriqs.base.utility.my_utils import Sum
+from pytriqs.base.utility.my_utils import sum_list
 import pytriqs.base.utility.mpi as mpi
 from datetime import datetime
 
@@ -228,7 +228,7 @@ class SumK_LDA_tools(SumK_LDA):
                 DOSproj_orb[ish][sig][:,:,:] += gf._data.array[:,:,:].imag/(-3.1415926535)
      
         # output:
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             for bn in self.blocnames[self.SO]:
                 f=open('DOS%s.dat'%bn, 'w')
                 for i in range(N_om): f.write("%s    %s\n"%(Mesh[i],DOS[bn][i]))
@@ -331,7 +331,7 @@ class SumK_LDA_tools(SumK_LDA):
                 DOSproj_orb[ish][sig][:,:,:] += gf._data.array[:,:,:].imag / (-3.1415926535)
 	    
 
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             # output to files
             for bn in self.blocnames[self.SO]:
                 f=open('./DOScorr%s.dat'%bn, 'w')
@@ -458,7 +458,7 @@ class SumK_LDA_tools(SumK_LDA):
                
             
         # END k-LOOP
-        if (mpi.IS_MASTER_NODE()):
+        if (mpi.is_master_node()):
             if (ishell is None):
         
                 for ibn in bln:

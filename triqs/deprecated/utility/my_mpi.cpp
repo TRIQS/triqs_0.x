@@ -30,15 +30,15 @@ using namespace std;
 std::ostream *REPORT_ptr_ =NULL;
 
 void REPORT_FINALIZE() {}
-//{if (IS_MASTER_NODE) {REPORT<<"Ending at : "<<endl; cout<<"okok"<<endl; system("date"); cout<<"finifini"<<endl; } }
+//{if (is_master_node) {REPORT<<"Ending at : "<<endl; cout<<"okok"<<endl; system("date"); cout<<"finifini"<<endl; } }
 
  
 std::ostream & REPORT_PTR() {
   if (!REPORT_ptr_) 
     {
       cout.setf(ios::fixed,ios::floatfield);cout.precision(PRECISION_OUTPUT);
-      REPORT_ptr_ =  (IS_MASTER_NODE ?  &(cout) :  new ofstream("/dev/null",ios::out));
-      //if (IS_MASTER_NODE) { 
+      REPORT_ptr_ =  (is_master_node ?  &(cout) :  new ofstream("/dev/null",ios::out));
+      //if (is_master_node) { 
       //(*REPORT_ptr_)<<"Starting on "<<myMPI_number_proc()<< "Nodes at : "<<endl;
       //system("date");
       //}

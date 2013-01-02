@@ -28,15 +28,15 @@ def call_factory_from_dict (cl,dic) :
     """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
     return cl.__factory_from_dict__(dic)
 
-def Sum(L) :
+def sum_list(L) :
     """ Can sum any list"""
     return reduce(lambda x, y: x+y, L) if len(L)>0 else []
 
-def Conjugate(x) :
+def conjugate(x) :
     try:
       return x.conjugate()
     except:
-      print "The object you're using Conjugate on has no attribute conjugate!"
+      print "The object you're using conjugate on has no attribute conjugate!"
 
 def real(x) : 
      return x.real if hasattr(x,'real') else x
@@ -49,11 +49,11 @@ def sign(x):
     if x<0.0 : return -1
     return 0
 
-def CartesianProduct(*L):
+def cartesian_product(*L):
     """The cartesian product of lists"""
-    return [li for li in xCartesianProduct(*L)]
+    return [li for li in x_cartesian_product(*L)]
 
-def xCartesianProduct(*L):
+def x_cartesian_product(*L):
     """ A generator for the cartesian product of lists"""
     if len(L)==1 :
         for x in L[0] :
@@ -64,7 +64,7 @@ def xCartesianProduct(*L):
                 yield (x,y)
     else:
         for x in L[0]:
-            for xx in apply(xCartesianProduct,L[1:]):
+            for xx in apply(x_cartesian_product,L[1:]):
                 yield tuple([x] + list(xx))
 
 
@@ -98,9 +98,9 @@ def nint_strict(x,precision=1.e-9):
         assert abs(i-x)<precision,  repr(i) + " "+repr(x) + " The Float is not close enough to the integer "
         return (int(i))
     
-class Pretty_Print:
-    def __init__(self, Exclude=()) :
-        self._excl = Exclude
+class PrettyPrint:
+    def __init__(self, exclude=()) :
+        self._excl = exclude
         
     def __repr__(self):
         """ Print all the elements of the class which are list, string, number, bool, Numarrays"""
@@ -119,31 +119,31 @@ def find_instance(CLASS,DIC):
     return([ y for x,y in DIC.items() if isinstance(y,CLASS)])
 
 
-def s_to_number(x,ReturnType):
+def s_to_number(x, return_type):
     """
     Transform a string into a complex or a float (using a regexp).
     x : string containing the number
-    ReturnType : 'float' or 'complex'
+    return_type : 'float' or 'complex'
     Returns : if one  number has been found, this number, otherwise a list of the number found.
     """
     def assemble(t) : 
        return float(t[0]) * (  10** float(t[1])  if t[1] else 1)
 
     if type(x) !=type('') : raise TypeError, "x must be a string"
-    if ReturnType in ['float','complex'] :
+    if return_type in ['float','complex'] :
       reg ={'float' : r'([-+]?\d+(?:\.\d*)?|\d*\.\d+)(?:[eEdD]([-+]?\d+))?'}
       reg['complex'] =  r"\(\s*%s\s*,\s*%s\s*\)"%(reg['float'],reg['float']) 
-      res1 = re.compile(reg[ReturnType]).findall(x)
+      res1 = re.compile(reg[return_type]).findall(x)
       #print res1
       res = []
-      if ReturnType=='float':
+      if return_type=='float':
         for t in res1 :
           res.append( assemble(t[0:2]))
       else:
         for t in res1 :
           res.append(complex(assemble(t[0:2]),assemble(t[2:4])))
     else :
-      raise TypeError, "ReturnType unknown"
+      raise TypeError, "return_type unknown"
     if len(res)==1 : return res[0]
     else : return res
 

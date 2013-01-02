@@ -111,7 +111,7 @@ At the end of the calculation, we can save the Greens function and self energy i
 
   from pytriqs.base.archive import HDF_Archive
   import pytriqs.base.utility.mpi as mpi
-  if mpi.IS_MASTER_NODE():
+  if mpi.is_master_node():
       R = HDF_Archive("single_site_bethe.h5",'w')
       R["G"] = S.G
       R["Sigma"] = S.Sigma

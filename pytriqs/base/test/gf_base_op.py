@@ -24,7 +24,7 @@ from pytriqs.base.archive import *
 from pytriqs.base.gf_local import *
 #import pytriqs.base.gf_local.gf_init as gf_init
 import numpy, copy
-from pytriqs.base.utility.my_utils import Conjugate
+from pytriqs.base.utility.my_utils import conjugate
 
 h=HDF_Archive('gf_base_op.output.h5','w')
 
@@ -61,7 +61,7 @@ h['ga2'] = ga2
 
 
 # conjugate:
-Gc = Conjugate(G)
+Gc = conjugate(G)
 h['Gc'] = Gc
 
 # Some tail stuff:

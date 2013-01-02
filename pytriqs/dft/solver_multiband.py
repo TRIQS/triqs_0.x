@@ -23,7 +23,7 @@
 
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
-from pytriqs.base.utility.my_utils import Sum
+from pytriqs.base.utility.my_utils import sum_list
 import pytriqs.base.utility.mpi as mpi
 from types import *
 import numpy
@@ -255,12 +255,12 @@ class Solver_MultiBand (Solver):
 
         # Define the quantum numbers:
         if (self.use_spinflip) :            
-            Ntot = Sum( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.Norb) ] )
+            Ntot = sum_list( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.Norb) ] )
             QN['NtotQN'] = Ntot
-            #QN['Ntot'] = Sum( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.Norb) ] )
+            #QN['Ntot'] = sum_list( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.Norb) ] )
             if (len(spinblocs)==2):
                 # Assuming up/down structure:
-                Sz = Sum( [ N(self.map[spinblocs[0]][i],i)-N(self.map[spinblocs[1]][i],i) for i in range(self.Norb) ] )
+                Sz = sum_list( [ N(self.map[spinblocs[0]][i],i)-N(self.map[spinblocs[1]][i],i) for i in range(self.Norb) ] )
                 QN['SzQN'] = Sz
                 # new quantum number: works only if there are only spin-flip and pair hopping, not any more complicated things
                 for i in range(self.Norb):
@@ -268,7 +268,7 @@ class Solver_MultiBand (Solver):
 
         else :
             for ibl in range(len(GFStruct)):
-                QN['N%s'%GFStruct[ibl][0]] = Sum( [ N(GFStruct[ibl][0],GFStruct[ibl][1][i]) for i in range(len(GFStruct[ibl][1])) ] )
+                QN['N%s'%GFStruct[ibl][0]] = sum_list( [ N(GFStruct[ibl][0],GFStruct[ibl][1][i]) for i in range(len(GFStruct[ibl][1])) ] )
 
         return QN
 

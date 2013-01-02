@@ -87,7 +87,7 @@ def slice_array(A) :
     imax = A.shape[0]-1
     return A[slice_inf(0,imax):slice_sup(0,imax)+1] # +1 due to the slice convention
 
-def IS_MASTER_NODE(): return rank== master
+def is_master_node(): return rank == master
 
 HostNames = {}
 def master_gets_host_names():
@@ -95,7 +95,7 @@ def master_gets_host_names():
     from socket import gethostname
     global HostNames
     HostNames[rank] = gethostname()
-    if IS_MASTER_NODE() :
+    if is_master_node() :
       for proc in range (1,size) :
         HostNames[proc],status = recv(proc)
     else:
@@ -103,7 +103,7 @@ def master_gets_host_names():
     barrier()
     assert len(HostNames)==size," internal pb MPI module"
     
-    if IS_MASTER_NODE() :
+    if is_master_node() :
       print "Hostnames : "
       for u,host in HostNames.items() :
         print "Node %d  on machine %s"%(u,host)
