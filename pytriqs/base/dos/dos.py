@@ -42,7 +42,7 @@ class DOS :
 * Implement :ref:`Plot Protocol <plotting>`.
 
     """
-    def __init__(self, eps, rho ,Name = ''):
+    def __init__(self, eps, rho, name = ''):
         """  
 Parameters 
 ------------
@@ -50,11 +50,11 @@ eps : 1d array-type
     eps[i] is value of epsilon.
 rho : 1d array-type
     The corresponding value of the dos. 
-Name : string
+name : string
      Name of the dos/orbital
 
         """
-        self.Name = Name
+        self.name = name
         try :
             self.eps = numpy.array( eps )
             assert  len(self.eps.shape) ==1
@@ -71,14 +71,14 @@ Name : string
     #-------------------------------------------------------------
 
     def __reduce__(self) : 
-        return self.__class__, (self.eps,self.rho, self.Name)
+        return self.__class__, (self.eps,self.rho, self.name)
 
     def __reduce_to_dict__(self) :
-        return {'epsilon' : self.eps, 'rho': self.rho, 'Name' : self.Name}
+        return {'epsilon' : self.eps, 'rho': self.rho, 'name' : self.name}
 
     @classmethod
     def __factory_from_dict__(cls,D) :
-        return cls(D['epsilon'],D['rho'], D['Name'])
+        return cls(D['epsilon'],D['rho'], D['name'])
  
     def __repr__(self) : 
         return  """
@@ -86,7 +86,7 @@ Name : string
         """%self.__dict__ 
 
     def _plot_(self, Options) : 
-        return  [ {'Type' : "XY", 'label' : self.Name, 'xlabel' :r'$\epsilon$','ylabel' : r'%s$(\epsilon)$'%self.Name, 'xdata' : self.eps,'ydata' : self.rho } ]
+        return  [ {'Type' : "XY", 'label' : self.name, 'xlabel' :r'$\epsilon$','ylabel' : r'%s$(\epsilon)$'%self.name, 'xdata' : self.eps,'ydata' : self.rho } ]
 
     def density(self,mu=0):
         """Calculates the density of free fermions for the given DOS for chemical potential mu."""
@@ -108,17 +108,17 @@ Name : string
 
 ##########################################################################
 
-def DOS_from_file(Filename, Name = '', OneOrbitalOnly = None):
+def dos_from_file(Filename, name = '', single_orbital = None):
     """   
     Read the DOS from a file 
 
     :param Filename:  a string  : name of the file
-    :param Name: name of the DOS
-    :param OneOrbitalOnly: can be None or an integer.
+    :param name: name of the DOS
+    :param single_orbital: can be None or an integer.
                     
     :rtype: 
-       * if OneOrbitalOnly== None, returns a tuple of DOS (even if there is one dos !).
-       * If OneOrbitalOnly==i, return only ONE DOS corresponding to ith orbital (starting at 1).
+       * if single_orbital== None, returns a tuple of DOS (even if there is one dos !).
+       * If single_orbital==i, return only ONE DOS corresponding to ith orbital (starting at 1).
 
     Format of the file :   
         * N_orbitals +1 columns, 
@@ -137,50 +137,50 @@ def DOS_from_file(Filename, Name = '', OneOrbitalOnly = None):
     assert l%(div)==0,"File does not contains N*%d numbers !"%(div)
     r.shape =  l//(div) , div # reshape the array
     eps = r[:,0]
-    if OneOrbitalOnly : 
-        assert OneOrbitalOnly>0 and OneOrbitalOnly <= N_Orbitals, " OneOrbitalOnly  "
-        return DOS (r[:,0] ,r[:,OneOrbitalOnly], Name)
+    if single_orbital : 
+        assert single_orbital>0 and single_orbital <= N_Orbitals, " single_orbital  "
+        return DOS (r[:,0] ,r[:,single_orbital], name)
     else :
-        return [  DOS (r[:,0] ,r[:,i +1 ], Name) for i in range (N_Orbitals)]
+        return [  DOS (r[:,0] ,r[:,i +1 ], name) for i in range (N_Orbitals)]
 
 
 ##########################################################################
 
-class DOS_from_function(DOS):
+class DOSFromFunction(DOS):
     """
     * A DOS class, but constructed from a function.
     
     * The number of points can be variable and self-adjusted in the Hilbert transform to adapt precision.
     """
-    def __init__(self, Function, xmin,xmax, Npts= 100,Name = ''):
+    def __init__(self, function, x_min, x_max, n_pts=100, name=''):
         """
-        :param Function: * a function :math:`\\epsilon \\rightarrow \\rho(\\epsilon)`
+        :param function: * a function :math:`\\epsilon \\rightarrow \\rho(\\epsilon)`
                          * The result type can be anything from which a 1d-array can be constructed by numpy
-        :param xmin,xmax: Bound of the mesh (domain of the function). 
-        :param Npts: Number of points in the mesh.
-        :param Name: Name of the DOS.
+        :param x_min,x_max: Bound of the mesh (domain of the function). 
+        :param n_pts: Number of points in the mesh.
+        :param name: Name of the DOS.
         """
-        assert callable(Function), "Function is not callable"
-        self.Function,self.xmin,self.xmax = Function,xmin,xmax
+        assert callable(function), "function is not callable"
+        self.function,self.x_min,self.x_max = function,x_min,x_max
         try :
-            e = Function(0.001)
+            e = function(0.001)
             len(numpy.array(e).shape) ==1
         except :
             raise RuntimeError , "Value of the function must be a 1d-array"
-        self.__f(Npts) # compute arrays
-        DOS.__init__(self,self.eps,self.rho,Name) 
+        self.__f(n_pts) # compute arrays
+        DOS.__init__(self,self.eps,self.rho,name) 
         
     #-------------------------------------------------------------
     
     def __reduce__(self) : 
-        return  self.__class__, (self.Function,self.xmin, self.xmax, len(self.eps), self.Name)
+        return  self.__class__, (self.function,self.x_min, self.x_max, len(self.eps), self.name)
     
     #-------------------------------------------------------------
   
     def __f(self,N) :
-        r = (self.xmax - self.xmin)/float(N-1)
-        self.eps  = numpy.array( [self.xmin + r* i for i in range(N) ] )
-        self.rho  = numpy.array( [self.Function(e) for e in self.eps])
+        r = (self.x_max - self.x_min)/float(N-1)
+        self.eps  = numpy.array( [self.x_min + r* i for i in range(N) ] )
+        self.rho  = numpy.array( [self.function(e) for e in self.eps])
 
 #-----------------------------------------------------
 #  Register the class for HDFArchive

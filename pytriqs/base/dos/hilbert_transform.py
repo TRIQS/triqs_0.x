@@ -81,7 +81,7 @@ class Hilbert_Transform :
                  * a GBloc 
         Epsilon_Hat : a function that takes a 1d array eps[i] and returns 3d-array   eps[i,:,:]
                             where the :,: has the matrix structure of Sigma. Default : eps[i] * Identity_Matrix
-                            Used only when DOS is a DOS_from_Function : 
+                            Used only when DOS is a DOSFromFunction : 
         Number_Points_in_integral : How many points to use. If None, use the Npts of construction
         Test_Convergence : If defined, it will refine the grid until CV is reached
                           starting from Number_Points_in_integral and multiplying by 2
@@ -102,7 +102,7 @@ class Hilbert_Transform :
         else :
             Res = Sigma.copy()
 
-        if not( isinstance (self.dos, DOS_from_function)):
+        if not( isinstance (self.dos, DOSFromFunction)):
             assert Number_Points_in_integral==None and Test_Convergence == None, " Those parameters can only be used with an Dos_from_function"
         if Field !=None : 
             try : 
@@ -151,7 +151,7 @@ class Hilbert_Transform :
             #return reduce(lambda x,y : x and y, [f(g1,g2) for (i1,g1),(i2,g2) in izip(G1,G2)])
             return f(G1,G2) # for block function, the previous one is for GF functions
 
-        if isinstance (self.dos, DOS_from_function): 
+        if isinstance (self.dos, DOSFromFunction): 
             
             if not(Number_Points_in_integral) : # if not defined, use the defaults given at construction of the dos
                 Number_Points_in_integral=  len(self.dos.eps)

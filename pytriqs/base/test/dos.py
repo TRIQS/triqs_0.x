@@ -43,7 +43,7 @@ hop= {  (1,0)  :  [[ t]],
 TB = tight_binding ( BL, hop)
 
 # Compute the density of states
-d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
+d = dos (TB, nkpts= 500, neps = 101, name = 'dos')[0]
 
 from pytriqs.base.archive import HDFArchive
 R = HDFArchive('dos.output.h5','w')

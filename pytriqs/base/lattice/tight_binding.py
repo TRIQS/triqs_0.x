@@ -25,24 +25,24 @@ __all__ = [ 'bravais_lattice','tight_binding','dos','dos_patch','energies_on_bz_
 from pytriqs_LatticeTools import bravais_lattice, tight_binding,dos_patch as dos_patch_c, dos as dos_c, energies_on_bz_grid,energies_on_bz_path,hopping_stack
 from pytriqs.base.dos import DOS
 
-def dos( TB, nkpts, neps, Name) : 
+def dos( TB, nkpts, neps, name) : 
     """
     :param TB: a tight_binding object
     :param nkpts: the number of k points to use in each dimension
     :param neps: number of points used in the binning of the energy
-    :param Name: name of the resulting dos
+    :param name: name of the resulting dos
 
     :rtype: return a list of DOS, one for each band
     """
     eps, arr = dos_c(TB, nkpts,neps)
-    return [ DOS (eps, arr[:,i], Name) for i in range (arr.shape[1]) ]
+    return [ DOS (eps, arr[:,i], name) for i in range (arr.shape[1]) ]
 
-def dos_patch( TB, triangles, nkpts, ndiv, Name) :  
+def dos_patch( TB, triangles, nkpts, ndiv, name) :  
     """
     To be written
     """
     eps, arr = dos_c(TB, nkpts,eps)
-    return DOS (eps, arr, Name)
+    return DOS (eps, arr, name)
 
 
 
@@ -77,6 +77,6 @@ class TBLattice :
     def Hopping(self,k_stack) :
         return hopping_stack(self.tb,k_stack)
 
-    #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, Name = 'dos2')
+    #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, name = 'dos2')
 
 
