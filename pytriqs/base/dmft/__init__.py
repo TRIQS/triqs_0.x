@@ -20,6 +20,6 @@
 #
 ################################################################################
 
-from loop_generic import DMFT_Loop_Generic
+from loop_generic import DMFTLoopGeneric
 
-__all__ = ['DMFT_Loop_Generic']
+__all__ = ['DMFTLoopGeneric']

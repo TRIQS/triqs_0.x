@@ -20,19 +20,19 @@
 #
 ################################################################################
 
-__all__ = ["DMFT_Loop_Generic"]
+__all__ = ["DMFTLoopGeneric"]
 
 import shelve,os,signal,types
 from pytriqs.solvers import *
 import pytriqs.base.utility.mpi as mpi
 
-class DMFT_Loop_Generic:
+class DMFTLoopGeneric:
   """ This class provides a generic and simple DMFT loop for convenience.
       Given a list of solvers, its method `run` runs the generic DMFT loop.
 
       Usage : 
 
-        * Derive and redefine Self_Consistency() (and maybe PostSolver)
+        * Derive and redefine Self_Consistency() (and maybe post_solver)
 
       Useful elements : 
 
@@ -40,18 +40,18 @@ class DMFT_Loop_Generic:
               
       """
 
-  def __init__(self, Solver_List ,  **AdditionnalParameters) : 
+  def __init__(self, solver_list,  **params) : 
     """
 
-    :param Solver_List:  * List of the solvers to be called in the loop. 
-                         *  If there is only one solver S, the syntax Solver_List = S 
-                            is tolerated instead of Solver_List = [S]
+    :param solver_list:  * List of the solvers to be called in the loop. 
+                         *  If there is only one solver S, the syntax solver_list = S 
+                            is tolerated instead of solver_list = [S]
 
-    :param AdditionnalParameters: 
+    :param params: 
                         * all keywords arguments are simply put in the namespace
                         * of the loop e.g. :: 
                             
-                             myloop(Solver_List = S,Chemical_potential= 2.0, theta = 78)
+                             myloop(solver_list = S,Chemical_potential= 2.0, theta = 78)
                           
                           myloop will be constructed with ::
 
@@ -61,16 +61,16 @@ class DMFT_Loop_Generic:
     """
     import warnings
     warnings.warn("The class %s is deprecated and scheduled for removal in later version of TRIQS. Please upgrade your code (write your own loop)"%(self.__class__.__name__), DeprecationWarning)
-    self.SolverList = Solver_List if type(Solver_List) in [types.ListType,types.TupleType] else [Solver_List]
-    for s in self.SolverList : assert isinstance(s,SolverBase), "Oops, one element of Solver_List is not a solver !!!"
+    self.SolverList = solver_list if type(solver_list) in [types.ListType,types.TupleType] else [solver_list]
+    for s in self.SolverList : assert isinstance(s,SolverBase), "Oops, one element of solver_list is not a solver !!!"
 
     self.Iteration_Number  = 1
     # Put the additionnal parameters in my name space.
-    self.__dict__.update(AdditionnalParameters)
+    self.__dict__.update(params)
      
   ##--------------------------------------------
       
-  def PostSolver(self) : 
+  def post_solver(self) : 
       """ Do nothing by default """
       pass
      
@@ -81,11 +81,11 @@ class DMFT_Loop_Generic:
 
   ##------------------------------------------ 
 
-  def __should_continue(self,N_Iter_SelfCons_Max) :
+  def __should_continue(self, n_iter_max) :
     """ stop test"""
     should_continue = True
     if mpi.is_master_node():
-      if (self.Iteration_Number > N_Iter_SelfCons_Max):
+      if (self.Iteration_Number > n_iter_max):
         should_continue = False
     should_continue = mpi.bcast(should_continue)
     return should_continue
@@ -99,27 +99,27 @@ class DMFT_Loop_Generic:
 
   ##-------------------------------------------
 
-  def run(self,N_Loops, Mixing_Coefficient = 0.5, MaxTime = 0 ):
+  def run(self, n_loops, mixing_coeff = 0.5, max_time = 0 ):
     r"""
       Run the DMFT Loop with the following algorithm :: 
        
         while STOP_CONDITION : 
             self.Self_Consistency()
-            for solver in Solver_List : S.solve()
-            self.PostSolver() # defaults : does nothing
+            for solver in solver_list : S.solve()
+            self.post_solver() # defaults : does nothing
 
       where STOP_CONDITION is determined by the number of iterations.
         
-      :param N_Loops:    Maximum number of iteration of the loop
-      :param Mixing_Coefficient: 
-      :param MaxTime: Maximum time of the loop.
+      :param n_loops:    Maximum number of iteration of the loop
+      :param mixing_coeff: 
+      :param max_time: Maximum time of the loop.
     """
 
     # Set up the signal
     #   mpi.report("DMFTlab Job PID = %s"%os.getpid())
     # Set the signal handler and a 5-second alarm
     signal.signal(signal.SIGALRM, self.handler)
-    signal.alarm(MaxTime)
+    signal.alarm(max_time)
  
     should_continue = True
     
@@ -133,13 +133,13 @@ class DMFT_Loop_Generic:
         if hasattr(self,"Chemical_potential") : sol.Chemical_potential=self.Chemical_potential
         sol.Iteration_Number=self.Iteration_Number
         sol.Solve()
-        sol.Sigma  = sol.Sigma * Mixing_Coefficient + sol.Sigma_Old * (1-Mixing_Coefficient)
+        sol.Sigma  = sol.Sigma * mixing_coeff + sol.Sigma_Old * (1-mixing_coeff)
       
       # post-solver processing
-      self.PostSolver()
+      self.post_solver()
                          
       self.Iteration_Number +=1
-      should_continue = self.__should_continue(N_Loops)
+      should_continue = self.__should_continue(n_loops)
  
     # end of the while loop
     mpi.report("----------- END of DMFT_Loop ----------------")

@@ -22,7 +22,7 @@
 
 from pytriqs.base.archive import HDFArchive
 from pytriqs.base.gf_local import *
-from pytriqs.base.dmft import DMFT_Loop_Generic
+from pytriqs.base.dmft import DMFTLoopGeneric
 from pytriqs.base.gf_local.descriptors import iOmega_n,SemiCircular
 
 #
@@ -64,7 +64,7 @@ S = Solver(Beta = Beta,                                                      # i
 S.G <<= SemiCircular(Half_Bandwidth)
 
 # Derive a DMFT loop
-class myloop (DMFT_Loop_Generic) : 
+class myloop (DMFTLoopGeneric) : 
       def Self_Consistency(self) :
             # Impose Paramagnetism
             g = 0.5*(S.G['up']+S.G['down'])
@@ -80,7 +80,7 @@ class myloop (DMFT_Loop_Generic) :
 
 
 # instanciate and run
-myloop(Solver_List = S).run(N_Loops = 1)
+myloop(solver_list = S).run(n_loops = 1)
 
 # Calculation is done. Now save a few things
 # Save into the shelve

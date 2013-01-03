@@ -25,7 +25,7 @@ from pytriqs.base.gf_local import gf_init,GF,GFBloc_ImFreq,inverse
 from pytriqs.base.lattice.super_lattice import TBSuperLattice as SuperLattice
 from pytriqs.base.lattice.tight_binding import TBLattice as Lattice
 from pytriqs.base.sumk import *
-from pytriqs.base.dmft import DMFT_Loop_Generic
+from pytriqs.base.dmft import DMFTLoopGeneric
 import pytriqs.base.utility.mpi as mpi
 
 #
@@ -76,7 +76,7 @@ Sigma = G.copy()
 for n,B in S.Sigma : B <<= gf_init.Const(2.0)
 
 # Now I write my DMFT loop...
-class myloop (DMFT_Loop_Generic) : 
+class myloop (DMFTLoopGeneric) : 
    def Self_Consistency(self) :
       S.Transform_SymmetryBasis_toRealSpace (IN= S.Sigma, OUT = Sigma) # Embedding     
       
@@ -96,7 +96,7 @@ class myloop (DMFT_Loop_Generic) :
       S.G0 = inverse(S.Sigma + inverse(S.G))                           # Finally get S.G0 
 
 # Construct an instance and run.
-myloop(Solver_List = S,Chemical_potential  = 2.0).run(N_Loops = 1)
+myloop(solver_list = S,Chemical_potential  = 2.0).run(n_loops = 1)
                                                                      
 # Opens the results shelve
 if mpi.is_master_node():
