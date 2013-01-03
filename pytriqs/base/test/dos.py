@@ -45,7 +45,7 @@ TB = tight_binding ( BL, hop)
 # Compute the density of states
 d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
 
-from pytriqs.base.archive import HDF_Archive
-R = HDF_Archive('dos.output.h5','w')
+from pytriqs.base.archive import HDFArchive
+R = HDFArchive('dos.output.h5','w')
 R['SquareLatt'] = d
 

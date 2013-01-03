@@ -56,7 +56,7 @@ namespace triqs { namespace python_tools {
   // register_exception_translator<OP_Tools::GF_Exception>(translatorGF);
   register_exception_translator<std::string>(translatorString);
 
-  // I set up the sys.argv variable first here because it is used in the init of the tables modules used e.g. in HDF_Archive
+  // I set up the sys.argv variable first here because it is used in the init of the tables modules used e.g. in HDFArchive
   PySys_SetArgv(argc,argv);
 
   // init the private dict 

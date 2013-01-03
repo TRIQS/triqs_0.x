@@ -1,6 +1,6 @@
 from pytriqs.base.archive import *
 import numpy
-R = HDF_Archive('myfile.h5', 'w')    # Opens the file myfile.h5, in read/write mode
+R = HDFArchive('myfile.h5', 'w')    # Opens the file myfile.h5, in read/write mode
 R['mu'] = 1.29
 R.create_group('S')
 S= R['S']

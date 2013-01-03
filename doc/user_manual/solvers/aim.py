@@ -32,11 +32,11 @@ for spin, g0 in S.G0 :
 S.Solve()
 
 # Save the results in an hdf5 file (only on the master node)
-from pytriqs.base.archive import HDF_Archive
+from pytriqs.base.archive import HDFArchive
 import pytriqs.base.utility.mpi as mpi
 
 if mpi.is_master_node():
-  Results = HDF_Archive("solution.h5",'w')
+  Results = HDFArchive("solution.h5",'w')
   Results["G"] = S.G
   Results["Gl"] = S.G_Legendre
   Results["Nimp"] = S.Measured_Operators_Results['Nimp']

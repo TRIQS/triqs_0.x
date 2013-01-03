@@ -25,7 +25,7 @@ previous_runs = 0
 previous_present = False
 
 if mpi.is_master_node():
-    ar = HDF_Archive(HDFfilename,'a')
+    ar = HDFArchive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
         previous_runs = ar['iterations']
@@ -52,7 +52,7 @@ if (previous_present):
     # load previous data:
     mpi.report("Using stored data for initialisation")
     if (mpi.is_master_node()):
-        ar = HDF_Archive(HDFfilename,'a')
+        ar = HDFArchive(HDFfilename,'a')
         S.Sigma <<= ar['SigmaF']
         del ar
     S.Sigma = mpi.bcast(S.Sigma)
@@ -86,7 +86,7 @@ for Iteration_Number in range(1,Loops+1):
 
         # update hdf5
         if (mpi.is_master_node()):
-            ar = HDF_Archive(HDFfilename,'a')
+            ar = HDFArchive(HDFfilename,'a')
             ar['Chemical_Potential%s'%itn] = Chemical_potential
             del ar
 
@@ -94,7 +94,7 @@ for Iteration_Number in range(1,Loops+1):
         S.Solve()
 
         if (mpi.is_master_node()):
-            ar = HDF_Archive(HDFfilename)
+            ar = HDFArchive(HDFfilename)
             ar['iterations'] = itn
  
         # Now mix Sigma and G:
@@ -158,7 +158,7 @@ mpi.report("Trace of Density Matrix: %s"%d)
 
 #correlation energy:
 if (mpi.is_master_node()):
-    ar = HDF_Archive(HDFfilename)
+    ar = HDFArchive(HDFfilename)
     itn = ar['iterations'] 
     correnerg = ar['correnerg%s'%itn] 
     DCenerg = ar['DCenerg%s'%itn]

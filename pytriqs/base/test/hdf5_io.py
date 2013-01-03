@@ -26,7 +26,7 @@ from numpy import *
 
 d = {'a' : 1.0, 'b' : [1,2,3]}
 
-h = HDF_Archive('hdf5_io.output.h5','w', Init = d.items())
+h = HDFArchive('hdf5_io.output.h5','w', init = d.items())
 
 h['c'] = 100
 h['d'] = array([[1,2,3],[4,5,6]])
@@ -40,7 +40,7 @@ g['c'] = 200
 
 del h
 
-h = HDF_Archive('hdf5_io.output.h5')
+h = HDFArchive('hdf5_io.output.h5')
 
 dd = h['f']
 dd['a'] = 25

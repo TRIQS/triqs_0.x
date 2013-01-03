@@ -55,13 +55,13 @@ A little example::
  register_class (myclass)
 
  # Testing it : 
- HDF_Archive("myfile2.h5")['e'] = Example( [1,2,3], 56)
+ HDFArchive("myfile2.h5")['e'] = Example( [1,2,3], 56)
 
 
 What happens in details  ? 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~pytriqs.base.archive.hdf_archive.HDF_Archive`/:py:class:`~pytriqs.base.archive.hdf_archive.HDF_Archive_group`  `H`.
+Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~pytriqs.base.archive.hdf_archive.HDFArchive`/:py:class:`~pytriqs.base.archive.hdf_archive.HDFArchiveGroup`  `H`.
 
 * **Writing** ::
 
@@ -85,6 +85,6 @@ Let us consider an object `Ob` of class `Cls`, interacting with and :py:class:`~
         
        * Cls.__factory_from_dict__(D) is called and returns a new object Obj of type Cls, which is returned as `res`.
    
-     * Otherwise, a new :py:class:`~pytriqs.base.archive.hdf_archive.HDF_Archive_group` is constructed with `S` as root, and returned as `res`.
+     * Otherwise, a new :py:class:`~pytriqs.base.archive.hdf_archive.HDFArchiveGroup` is constructed with `S` as root, and returned as `res`.
 
    

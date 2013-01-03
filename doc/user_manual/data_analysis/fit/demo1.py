@@ -14,8 +14,8 @@ g<<= inverse( iOmega_n + 0.5 )
 print "ok ----------------------"
 
 
-from pytriqs.base.archive import HDF_Archive
-R = HDF_Archive('myfile.h5', 'r')
+from pytriqs.base.archive import HDFArchive
+R = HDFArchive('myfile.h5', 'r')
 
 for n, calculation in R.items() : 
     #g = calculation['g']

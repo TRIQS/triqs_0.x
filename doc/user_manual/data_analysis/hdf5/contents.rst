@@ -31,7 +31,7 @@ and new subgroup for other hdf-compliant data.
 Using HDF5 format has several advantages :
 
 * Most basic objects of TRIQS, like Green function, are hdf-compliant.
-* TRIQS provides a **simple and intuitive interface HDF_Archive** to manipulate them.
+* TRIQS provides a **simple and intuitive interface HDFArchive** to manipulate them.
 * HDF5 is **standard**, well maintained and widely used.
 * HDF5 is **portable** from various machines (32-bits, 64-bits, various OS, etc...)
 * HDF5 can be read and written in **many langages** (python, C/C++, F90, etc...), beyond TRIQS. One is not tied to a particular program.

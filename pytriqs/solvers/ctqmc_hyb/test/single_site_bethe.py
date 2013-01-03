@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import HDF_Archive
+from pytriqs.base.archive import HDFArchive
 from pytriqs.base.gf_local import *
 from pytriqs.base.dmft import DMFT_Loop_Generic
 from pytriqs.base.gf_local.descriptors import iOmega_n,SemiCircular
@@ -30,7 +30,7 @@ from pytriqs.base.gf_local.descriptors import iOmega_n,SemiCircular
 #
 
 # Opens the results hdf5 file
-Results = HDF_Archive("single_site_bethe.output.h5",'w')
+Results = HDFArchive("single_site_bethe.output.h5",'w')
 
 # set up a few parameters
 Half_Bandwidth= 1.0    

@@ -122,7 +122,7 @@ class __inject (make_injector(GFBloc_ReTime) ,gf_concept,gf_base, GFBloc_ReTime)
         return self._plot_base( OptionsDict,  r'$t$', lambda name : r'%s$(t)$'%name, True, M)
  
 #-----------------------------------------------------
-#  Register the class for HDF_Archive
+#  Register the class for HDFArchive
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class

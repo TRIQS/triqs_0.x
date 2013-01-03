@@ -26,7 +26,7 @@ from pytriqs.base.gf_local import *
 import numpy, copy
 from pytriqs.base.utility.my_utils import conjugate
 
-h=HDF_Archive('gf_base_op.output.h5','w')
+h=HDFArchive('gf_base_op.output.h5','w')
 
 ga = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "a1Block")
 gb = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "b1Block")

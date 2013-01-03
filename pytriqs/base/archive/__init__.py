@@ -20,5 +20,5 @@
 #
 ################################################################################
 
-from hdf_archive import HDF_Archive
-__all__ = ['HDF_Archive']
+from hdf_archive import HDFArchive
+__all__ = ['HDFArchive']

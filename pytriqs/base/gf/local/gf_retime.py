@@ -107,7 +107,7 @@ class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
         return self._plot_base( OptionsDict,  r'$t$', lambda name : r'%s$(t)$'%name, True, M)
  
 #-----------------------------------------------------
-#  Register the class for HDF_Archive
+#  Register the class for HDFArchive
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class

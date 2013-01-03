@@ -50,7 +50,7 @@ by default.
 Since we can calculate the partial charges directly from the Matsubara Green's functions, we also don't need a
 real frequency self energy for this purpose. The calculation is done by::
 
-  ar=HDF_Archive(SK.HDFfile)
+  ar=HDFArchive(SK.HDFfile)
   SK.put_Sigma([ ar['SigmaF'] ])
   del ar
   dm = SK.partial_charges()
@@ -74,7 +74,7 @@ keep in mind. The real frequency self energy has to carry the note `ReFreq`::
 This tells the SumK_LDA routines, that it is indeed a real frequency Greens function. Supposed you have your self energy now
 in the archive, you can type::
 
-  ar=HDF_Archive(SK.HDFfile)
+  ar=HDFArchive(SK.HDFfile)
   SK.put_Sigma([ ar['SigmaReFreq'] ])
   del ar
 

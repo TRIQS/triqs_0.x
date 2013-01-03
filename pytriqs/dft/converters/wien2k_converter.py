@@ -219,7 +219,7 @@ class Wien2kConverter:
 
         #-----------------------------------------
         # Store the input into HDF5:
-        ar = HDF_Archive(self.HDFfile,'a')
+        ar = HDFArchive(self.HDFfile,'a')
         if not (self.LDASubGrp in ar): ar.create_group(self.LDASubGrp) 
         # The subgroup containing the data. If it does not exist, it is created.
         # If it exists, the data is overwritten!!!
@@ -332,7 +332,7 @@ class Wien2kConverter:
 
         #-----------------------------------------
         # Store the input into HDF5:
-        ar = HDF_Archive(self.HDFfile,'a')
+        ar = HDFArchive(self.HDFfile,'a')
         if not (self.ParProjSubGrp in ar): ar.create_group(self.ParProjSubGrp) 
         # The subgroup containing the data. If it does not exist, it is created.
         # If it exists, the data is overwritten!!!
@@ -430,7 +430,7 @@ class Wien2kConverter:
 
         #-----------------------------------------
         # Store the input into HDF5:
-        ar = HDF_Archive(self.HDFfile,'a')
+        ar = HDFArchive(self.HDFfile,'a')
         if not (self.BandsSubGrp in ar): ar.create_group(self.BandsSubGrp) 
         # The subgroup containing the data. If it does not exist, it is created.
         # If it exists, the data is overwritten!!!
@@ -508,7 +508,7 @@ class Wien2kConverter:
         R.close()
 
         # Save it to the HDF:
-        ar=HDF_Archive(self.HDFfile,'a')
+        ar=HDFArchive(self.HDFfile,'a')
         if not (SymmSubGrp in ar): ar.create_group(SymmSubGrp)
         thingstowrite = ['Ns','Natoms','perm','orbits','SO','SP','timeinv','mat','mat_tinv']
         for it in thingstowrite: exec "ar['%s']['%s'] = %s"%(SymmSubGrp,it,it)
@@ -518,7 +518,7 @@ class Wien2kConverter:
 
     def __repack(self):
         """Calls the h5repack routine, in order to reduce the file size of the hdf5 archive.
-           Should only be used BEFORE the first invokation of HDF_Archive in the program, otherwise
+           Should only be used BEFORE the first invokation of HDFArchive in the program, otherwise
            the hdf5 linking is broken!!!"""
 
         import subprocess

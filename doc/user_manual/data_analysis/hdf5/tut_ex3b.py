@@ -1,8 +1,8 @@
 from pytriqs.base.gf_local import GFBloc_ReFreq
-from pytriqs.base.archive import HDF_Archive
+from pytriqs.base.archive import HDFArchive
 from math import pi
 
-R = HDF_Archive('myfile.h5', 'r') 
+R = HDFArchive('myfile.h5', 'r') 
  
 from pytriqs.base.plot.mpl_interface import oplot, plt
 plt.xrange(-1,1) 

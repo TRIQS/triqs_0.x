@@ -303,7 +303,7 @@ class SumK_LDA_SO:
     def save_HDF(self,arxiv):
         """Saves some quantities into an HDF5 arxiv"""
 
-        assert isinstance(arxiv,HDF_Archive),"Give an HDF Archive"
+        assert isinstance(arxiv,HDFArchive),"Give an HDF Archive"
 
         arxiv['SumK_LDA'] = {'Chemical_Potential' : self.Chemical_Potential,
                              'GFStruct_Solver' : self.GFStruct_Solver,
@@ -316,7 +316,7 @@ class SumK_LDA_SO:
     def load_HDF(self,arxiv):
         """Loads some quantities from an HDF5 arxiv"""
 
-        assert isinstance(arxiv,HDF_Archive),"Give an HDF Archive"
+        assert isinstance(arxiv,HDFArchive),"Give an HDF Archive"
         try:
             self.Chemical_Potential = arxiv['SumK_LDA']['Chemical_Potential']
             self.GFStruct_Solver = arxiv['SumK_LDA']['GFStruct_Solver']

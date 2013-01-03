@@ -2,52 +2,52 @@
 Reference manual
 ##############################
 
-The :class:`HDF_Archive` class offers a convenient interface between the python objects and the HDF5 files, 
+The :class:`HDFArchive` class offers a convenient interface between the python objects and the HDF5 files, 
 similar to a dictionary (or a shelve).
 
 The module contains two classes : 
 
-* :class:`HDF_Archive_group` : operates on a subtree of the HDF5 file
-* :class:`HDF_Archive` : an :class:`HDF_Archive_group` at the root path, with a simple constructor.
-* :class:`HDF_Archive_Inert` : 
+* :class:`HDFArchiveGroup` : operates on a subtree of the HDF5 file
+* :class:`HDFArchive` : an :class:`HDFArchiveGroup` at the root path, with a simple constructor.
+* :class:`HDFArchiveInert` : 
 
-Typically, one constructs an :class:`HDF_Archive` explicitely, the :class:`HDF_Archive_group` is created during operations, e.g.::
+Typically, one constructs an :class:`HDFArchive` explicitely, the :class:`HDFArchiveGroup` is created during operations, e.g.::
 
-  h = HDF_Archive( "myfile.h5", 'r') 
-  g = h['subgroup1'] # g is a HDF_Archive_group.
+  h = HDFArchive( "myfile.h5", 'r') 
+  g = h['subgroup1'] # g is a HDFArchiveGroup.
   
-Apart from the root path and the constructor, the classes are the same (in fact :class:`HDF_Archive` `is a` :class:`HDF_Archive_group`).
-Let us first document :class:`HDF_Archive`.
+Apart from the root path and the constructor, the classes are the same (in fact :class:`HDFArchive` `is a` :class:`HDFArchiveGroup`).
+Let us first document :class:`HDFArchive`.
 
 .. warning::  
 
-   :class:`HDF_Archive` and :class:`HDF_Archive_group` do **NOT** handle parallelism.
-   Check however the :class:`HDF_Archive_Inert` below.   
+   :class:`HDFArchive` and :class:`HDFArchiveGroup` do **NOT** handle parallelism.
+   Check however the :class:`HDFArchiveInert` below.   
  
-HDF_Archive
+HDFArchive
 =======================================
 
-.. autoclass::  pytriqs.base.archive.HDF_Archive
+.. autoclass::  pytriqs.base.archive.HDFArchive
 
 
 
-HDF_Archive_group
+HDFArchiveGroup
 =======================================
 
-.. class::  HDF_Archive_group
+.. class::  HDFArchiveGroup
 
    There is no explicit constructor for the user of the class.
 
-   The :class:`HDF_Archive_group` support most of the operations supported by dictionaries. In the following, *H* is a :class:`HDF_Archive_group`. 
+   The :class:`HDFArchiveGroup` support most of the operations supported by dictionaries. In the following, *H* is a :class:`HDFArchiveGroup`. 
 
    .. describe:: len(H)
 
-      Return the number of items in the :class:`HDF_Archive_group` *H*.
+      Return the number of items in the :class:`HDFArchiveGroup` *H*.
 
    .. describe:: H[key]
 
       Return the item of *H* with key *key*, retrieved from the file.  Raises a :exc:`KeyError` if *key*
-      is not in the :class:`HDF_Archive_group`.
+      is not in the :class:`HDFArchiveGroup`.
 
    .. method:: get_raw (key)
 
@@ -60,7 +60,7 @@ HDF_Archive_group
    .. describe:: del H[key]
 
       Remove ``H[key]`` from *H*.  Raises a :exc:`KeyError` if *key* is not in the
-      :class:`HDF_Archive_group`.
+      :class:`HDFArchiveGroup`.
 
    .. describe:: key in H
 
@@ -130,17 +130,17 @@ HDF_Archive_group
            - an `empty tuple` ()       : the leaf is removed from the tree
            - an hdf-compliant value    : the leaf is replaced by the value
  
-HDF_Archive_Inert
+HDFArchiveInert
 =======================================
 
 
-.. class:: HDF_Archive_Inert
+.. class:: HDFArchiveInert
  
-   :class:`HDFArchive` and :class:`HDFArchive_group` do **NOT** handle parallelism.
+   :class:`HDFArchive` and :class:`HDFArchiveGroup` do **NOT** handle parallelism.
    In general, one wish to write/read only on master node, which is a good practice
    cluster : reading from all nodes may lead to communication problems.
 
-   To simplify the writing of code, the simple HDF_Archive_Inert class may be useful.
+   To simplify the writing of code, the simple HDFArchiveInert class may be useful.
    It is basically inert but does not fail.
 
    .. describe:: H[key]
@@ -153,7 +153,7 @@ HDF_Archive_Inert
 
    Usage in a mpi code, e.g. ::
 
-     R = HDF_Archive("Results.h5",'w') if mpi.is_master_node() else HDF_Archive_Inert()
+     R = HDFArchive("Results.h5",'w') if mpi.is_master_node() else HDFArchiveInert()
      a= mpi.bcast(R['a'])       # properly broadcast the R['a'] from the master to the nodes.
      R['b'] = X                 # sets R['b'] in the file on the master only, does nothing on the nodes.
 
@@ -165,7 +165,7 @@ HDF_Archive_Inert
 Hdf-compliant objects
 =======================================
 
-By definition, hdf-compliant objects are those which can be stored/retrieved in an :class:`HDF_Archive`.
+By definition, hdf-compliant objects are those which can be stored/retrieved in an :class:`HDFArchive`.
 In order to be hdf-compliant, a class must : 
 
 * have a `HDF5_data_scheme` tag properly registered.
@@ -183,8 +183,8 @@ This `data scheme` is added in the attribute `HDF5_data_scheme`
 at the node corresponding to the object in the file.
 
 For a given class `Cls`, the `HDF5_data_scheme` is `Cls._hdf5_data_scheme_` if it exists or the name of the class `Cls.__name__`.
-The `HDF5_data_scheme` of a class must be registered in order for :class:`HDF_Archive` to properly reconstruct the object when rereading.
-The class is registered using the module `HDF_Archive_Schemes` ::
+The `HDF5_data_scheme` of a class must be registered in order for :class:`HDFArchive` to properly reconstruct the object when rereading.
+The class is registered using the module `hdf_archive_schemes` ::
 
  class myclass :
    pass #....
@@ -199,7 +199,7 @@ The function is
      :param cls: the class to be registered.
      :param doc: a doc directory
 
-     Register the class for :class:`HDF_Archive` use.
+     Register the class for :class:`HDFArchive` use.
       
      The name of `data scheme` will be `myclass._hdf5_data_scheme_` if it is defined, or the name of the class otherwise.
 

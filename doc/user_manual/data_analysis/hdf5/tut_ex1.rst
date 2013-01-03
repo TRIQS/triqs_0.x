@@ -4,7 +4,7 @@
 Example 1 : A basic example
 --------------------------------
 
-The simplest way to interact with HDF5 files is to use the TRIQS HDF_Archive class, which 
+The simplest way to interact with HDF5 files is to use the TRIQS HDFArchive class, which 
 represents the tree structure of the file in a way similar to a dictionary.
 
 Let us start with a very simple example :download:`[file] <./tut_ex1.py>`:

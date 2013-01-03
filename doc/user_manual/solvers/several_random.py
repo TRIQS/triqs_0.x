@@ -20,7 +20,7 @@ S = Solver(Beta = Beta,                             # inverse temperature
                (0.05, lambda (a,alpha,dag) : ( {'up':'down','down':'up'}[a],alpha,dag ) ) ], 
            )
 
-from pytriqs.base.archive import HDF_Archive
+from pytriqs.base.archive import HDFArchive
 import pytriqs.base.utility.mpi as mpi
 
 for random_name in ['mt11213b','lagged_fibonacci607']:
@@ -33,7 +33,7 @@ for random_name in ['mt11213b','lagged_fibonacci607']:
 
   # Save the results in an hdf5 file (only on the master node)
   if mpi.is_master_node():
-    Results = HDF_Archive("random.h5")
+    Results = HDFArchive("random.h5")
     Results["G_%s"%(random_name)] = S.G
     del Results
 

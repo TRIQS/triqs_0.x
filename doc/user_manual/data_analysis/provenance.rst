@@ -54,10 +54,10 @@ Saving the script in the data archive
 
 It is actually very simple to  save the script 
 (hence the parameters) along with the data, 
-simply by putting it in the HDF_Archive, e.g. ::
+simply by putting it in the HDFArchive, e.g. ::
 
   # ... computation ...
-  Results = HDF_Archive("solution.h5",'w')
+  Results = HDFArchive("solution.h5",'w')
   Results["G"] = S.G # save the results
   
   import sys, pytriqs.base.version as version

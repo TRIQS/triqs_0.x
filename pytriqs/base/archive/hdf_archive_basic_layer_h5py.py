@@ -22,7 +22,7 @@
 
 # h5py
 import numpy,string,h5py
-class HDF_Archive_group_basic_layer : 
+class HDFArchiveGroupBasicLayer : 
     _class_version = 1
 
     def __init__(self, parent, subpath ): 
@@ -33,22 +33,22 @@ class HDF_Archive_group_basic_layer :
         self.ignored_keys = [] 
         self._cached_keys = None
 
-    def _init_root(self, LocalFileName, Open_Flag) : 
+    def _init_root(self, LocalFileName, open_flag) : 
         try : 
-            fich = h5py.File(LocalFileName, Open_Flag)
+            fich = h5py.File(LocalFileName, open_flag)
         except : 
             print "Can not open the HDF file %s"%LocalFileName
             raise
         # checking the version
-        if Open_Flag not in ['r','r+','a'] : 
+        if open_flag not in ['r','r+','a'] : 
             self._version = self._class_version
         else : 
             try : 
-                self._version = int(fich.attrs['HDF_Archive_Version']) 
+                self._version = int(fich.attrs['HDFArchive_Version']) 
             except : 
                 self._version = 1
             if self._version > self._class_version : 
-                raise IOError, "File %s is too recent for this version of HDF_Archive module"%Filename
+                raise IOError, "File %s is too recent for this version of HDFArchive module"%Filename
         self._group = fich
 
     def is_group(self,p) :
@@ -64,8 +64,8 @@ class HDF_Archive_group_basic_layer :
     def write_attr (self, key, val) : 
         self._group.attrs[key] =  val 
 
-    def read_attr(self,AttributeName) : 
-        return self._group.attrs[AttributeName] 
+    def read_attr(self,attribute_name) : 
+        return self._group.attrs[attribute_name] 
 
     def _read (self, key) : 
         A = self._group[key] 

@@ -39,7 +39,7 @@ for IterationNumber in range(N_loops):
 
     # Some intermediate saves
     if mpi.is_master_node():
-      R = HDF_Archive("single_site_bethe.h5")
+      R = HDFArchive("single_site_bethe.h5")
       R["G-%s"%IterationNumber] = S.G
       del R
 

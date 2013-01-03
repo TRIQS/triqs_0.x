@@ -21,7 +21,7 @@
 ################################################################################
 
 
-class hdf5_scheme : 
+class HDF5Scheme : 
     def __init__(self, classname, modulename, doc, read_fun= None) : 
         self.classname, self.modulename, self.doc, self.read_fun = classname, modulename,doc, read_fun
     def __str__(self) : 
@@ -36,13 +36,13 @@ def register_class (cls, doc = None, read_fun = None) :
     """
      For each class, register it with::
 
-         from HDF_Archive_Schemes_dict import register_class 
+         from HDFArchive_Schemes_dict import register_class 
          register_class (GFBloc_ImFreq, doc= doc_if_different_from cls._hdf5_data_scheme_doc_ )
 
     """
     SchemeName = cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__ 
     doc = doc if doc else (cls._hdf5_data_scheme_doc_ if hasattr(cls,"_hdf5_data_scheme_doc_") else {})
-    _hdf5_schemes_dict [SchemeName] = hdf5_scheme (cls.__name__, cls.__module__,doc, read_fun)
+    _hdf5_schemes_dict [SchemeName] = HDF5Scheme (cls.__name__, cls.__module__,doc, read_fun)
 
 def hdf_scheme_access (SchemeName) : 
     try : 

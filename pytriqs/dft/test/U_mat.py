@@ -42,7 +42,7 @@ U(T=T)
 
 U.ReduceMatrix()
 
-ar=HDF_Archive('U_mat.output.h5')
+ar=HDFArchive('U_mat.output.h5')
 ar['U'] = U.U
 ar['Up'] = U.Up
 ar['Ufull'] = U.Ufull

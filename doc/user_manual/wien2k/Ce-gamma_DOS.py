@@ -30,7 +30,7 @@ previous_runs = 0
 previous_present = False
 
 if mpi.is_master_node():
-    ar = HDF_Archive(HDFfilename,'a')
+    ar = HDFArchive(HDFfilename,'a')
     if 'iterations' in ar:
         previous_present = True
         previous_runs = ar['iterations']

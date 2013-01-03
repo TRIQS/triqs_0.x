@@ -101,7 +101,7 @@ class __inject (make_injector(GFBloc_ImTime) ,gf_concept, gf_base, GFBloc_ImTime
         return self._plot_base( OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value , M)
  
 #-----------------------------------------------------
-#  Register the class for HDF_Archive
+#  Register the class for HDFArchive
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class

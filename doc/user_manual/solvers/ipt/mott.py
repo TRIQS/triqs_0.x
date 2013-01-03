@@ -32,7 +32,7 @@ def Self_Consistency(G0,G):
     G0['0'] <<= inverse(Omega - (t**2)*G['0'])
 
 # Save results to an HDF5-archive
-ar = HDF_Archive('Mott.h5','w')
+ar = HDFArchive('Mott.h5','w')
 ar['beta'] = beta
 ar['t'] = t
     

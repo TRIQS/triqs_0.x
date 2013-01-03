@@ -45,7 +45,7 @@ from scratch::
   previous_runs = 0
   previous_present = False
   if mpi.is_master_node():
-      ar = HDF_Archive(LDAFilename+'.h5','a')
+      ar = HDFArchive(LDAFilename+'.h5','a')
       if 'iterations' in ar:
           previous_present = True
           previous_runs = ar['iterations']
@@ -80,7 +80,7 @@ of the last iteration::
 
   if (previous_present):
     if (mpi.is_master_node()):
-        ar = HDF_Archive(LDAFilename+'.h5','a')
+        ar = HDFArchive(LDAFilename+'.h5','a')
         S.Sigma <<= ar['SigmaF']
         del ar
     S.Sigma = mpi.bcast(S.Sigma)
@@ -108,7 +108,7 @@ previous section, with some additional refinement::
         if (mpi.is_master_node()):
             # We can do a mixing of Delta in order to stabilize the DMFT iterations:
             S.G0 <<= S.Sigma + inverse(S.G)
-            ar = HDF_Archive(LDAFilename+'.h5','a')
+            ar = HDFArchive(LDAFilename+'.h5','a')
             if ((IterationNumber>1) or (previous_present)):
                 mpi.report("Mixing input Delta with factor %s"%DeltaMix)
                 Delta = (DeltaMix * S.G0.Delta()) + (1.0-DeltaMix) * ar['DeltaF']
@@ -129,7 +129,7 @@ previous section, with some additional refinement::
         # Now mix Sigma and G with factor Mix, if wanted:
         if ((IterationNumber>1) or (previous_present)):
             if (mpi.is_master_node()):
-                ar = HDF_Archive(LDAFilename+'.h5','a')
+                ar = HDFArchive(LDAFilename+'.h5','a')
                 mpi.report("Mixing Sigma and G with factor %s"%Mix)
                 S.Sigma <<= Mix * S.Sigma + (1.0-Mix) * ar['SigmaF']
                 S.G <<= Mix * S.G + (1.0-Mix) * ar['GF']
@@ -139,7 +139,7 @@ previous section, with some additional refinement::
 
         # Write the final Sigma and G to the hdf5 archive:
         if (mpi.is_master_node()):
-            ar = HDF_Archive(LDAFilename+'.h5','a')
+            ar = HDFArchive(LDAFilename+'.h5','a')
             ar['iterations'] = previous_runs + IterationNumber	
             ar['SigmaF'] = S.Sigma
             ar['GF'] = S.G

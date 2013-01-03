@@ -66,12 +66,12 @@ class SumK_LDA:
                             'dim_reps','T','N_Orbitals','Proj_Mat','BZ_weights','Hopping']
             optionalthings = ['GFStruct_Solver','mapinv','map','Chemical_Potential','dc_imp','DCenerg','deg_shells']
 
-            #ar=HDF_Archive(self.HDFfile,'a')
+            #ar=HDFArchive(self.HDFfile,'a')
             #del ar
 
             self.retval = self.read_input_from_HDF(SubGrp=self.LDAdata,thingstoread=thingstoread,optionalthings=optionalthings)
 
-            #ar=HDF_Archive(self.HDFfile,'a')
+            #ar=HDFArchive(self.HDFfile,'a')
             #del ar
 
             if (self.SO) and (abs(self.hfield)>0.000001):
@@ -123,7 +123,7 @@ class SumK_LDA:
           
             # now save things again to HDF5:
             if (mpi.is_master_node()):
-                ar=HDF_Archive(self.HDFfile,'a')
+                ar=HDFArchive(self.HDFfile,'a')
                 ar[self.LDAdata]['hfield'] = self.hfield
                 del ar
             self.save()
@@ -145,7 +145,7 @@ class SumK_LDA:
         for it in optionalthings: exec "self.%s = 0"%it
         
         if (mpi.is_master_node()):
-            ar=HDF_Archive(self.HDFfile,'a')
+            ar=HDFArchive(self.HDFfile,'a')
             if (SubGrp in ar):
                 # first read the necessary things:
                 for it in thingstoread:
@@ -186,7 +186,7 @@ class SumK_LDA:
 
         if not (mpi.is_master_node()): return # do nothing on nodes
 
-        ar=HDF_Archive(self.HDFfile,'a')
+        ar=HDFArchive(self.HDFfile,'a')
         ar[self.LDAdata]['Chemical_Potential'] = self.Chemical_Potential
         ar[self.LDAdata]['DCenerg'] = self.DCenerg
         ar[self.LDAdata]['dc_imp'] = self.dc_imp
@@ -520,7 +520,7 @@ class SumK_LDA:
                                 self.deg_shells[ish].append([bl[0],bl2[0]])
 
         if (mpi.is_master_node()):
-            ar=HDF_Archive(self.HDFfile,'a')
+            ar=HDFArchive(self.HDFfile,'a')
             ar[self.LDAdata]['GFStruct_Solver'] = self.GFStruct_Solver
             ar[self.LDAdata]['map'] = self.map
             ar[self.LDAdata]['mapinv'] = self.mapinv

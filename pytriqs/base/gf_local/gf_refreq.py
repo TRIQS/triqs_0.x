@@ -120,7 +120,7 @@ class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq)
 
 
 #-----------------------------------------------------
-#  Register the class for HDF_Archive
+#  Register the class for HDFArchive
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class

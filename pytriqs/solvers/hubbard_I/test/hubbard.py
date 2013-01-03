@@ -32,7 +32,7 @@ S.set_atomic_levels(eal=eal)
 
 S.Solve()
 
-ar=HDF_Archive('hubbard.output.h5')
+ar=HDFArchive('hubbard.output.h5')
 ar['G'] = S.G
 ar['Sigma'] = S.Sigma
 del ar

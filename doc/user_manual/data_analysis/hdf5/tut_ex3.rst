@@ -25,7 +25,7 @@ This produces the following plot (scaled semi-circular density of states).
    :width: 750
    :align: center
 
-Various pythonic constructs can be used in combinaison with HDF_Archive, e.g. 
+Various pythonic constructs can be used in combinaison with HDFArchive, e.g. 
 in order to plot only a few curves from a list ::
   
  keylist = ['D=1', 'D=3']

@@ -183,7 +183,7 @@ class DOS_from_function(DOS):
         self.rho  = numpy.array( [self.Function(e) for e in self.eps])
 
 #-----------------------------------------------------
-#  Register the class for HDF_Archive
+#  Register the class for HDFArchive
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class

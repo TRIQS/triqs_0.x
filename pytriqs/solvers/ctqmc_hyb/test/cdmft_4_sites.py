@@ -100,5 +100,5 @@ myloop(Solver_List = S,Chemical_potential  = 2.0).run(N_Loops = 1)
                                                                      
 # Opens the results shelve
 if mpi.is_master_node():
-  Results = HDF_Archive("cdmft_4_sites.output.h5",'w')
+  Results = HDFArchive("cdmft_4_sites.output.h5",'w')
   Results["G"] = S.G
