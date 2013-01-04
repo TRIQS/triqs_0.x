@@ -66,7 +66,7 @@ L = Lattice ( Units = [(1,0,0) , (0,1,0) ], Hopping = hop)
 SL = SuperLattice(BaseLattice=L, SuperLatticeUnits=[ (2,0), (0,2) ])
 
 # SumK function that will perform the sum over the BZ
-SK = SumK_Discrete_From_Lattice (TheLattice = SL, Number_Points_in_BZ = 8, Method = "Riemann")
+SK = SumkDiscreteFromLattice (lattice = SL, n_points = 8, method = "Riemann")
 
 # Defines G and Sigma with a block structure compatible with the SumK function 
 G= GF( Name_Block_Generator = [ (s,GFBloc_ImFreq(Indices = SK.GFBlocIndices, Mesh = S.G.mesh)) for s in ['up','down'] ], Copy = False)
@@ -81,7 +81,7 @@ class myloop (DMFTLoopGeneric) :
       S.Transform_SymmetryBasis_toRealSpace (IN= S.Sigma, OUT = Sigma) # Embedding     
       
       # Computes sum over BZ and returns density
-      F = lambda mu : SK(mu = mu,Sigma = Sigma, Field = None ,Res = G).total_density()/4 
+      F = lambda mu : SK(mu = mu,Sigma = Sigma, field = None ,result = G).total_density()/4 
       
       if Density_Required :
          self.Chemical_potential = dichotomy.dichotomy(function = F,

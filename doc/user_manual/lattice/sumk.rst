@@ -5,7 +5,7 @@
 Sums over Brillouin zone
 ================================
 
-.. autoclass:: pytriqs.base.sumk.SumK_Discrete_From_Lattice
+.. autoclass:: pytriqs.base.sumk.SumkDiscreteFromLattice
    :members:
    :inherited-members:
    :undoc-members:

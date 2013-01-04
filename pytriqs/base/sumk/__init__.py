@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from sumk_discrete import SumK_Discrete
-from sumk_discrete_from_lattice import SumK_Discrete_From_Lattice
+from sumk_discrete import SumkDiscrete
+from sumk_discrete_from_lattice import SumkDiscreteFromLattice
 
-__all__ = ['SumK_Discrete','SumK_Discrete_From_Lattice']
+__all__ = ['SumkDiscrete','SumkDiscreteFromLattice']
