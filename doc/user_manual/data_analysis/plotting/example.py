@@ -10,6 +10,6 @@ f, (t,b) = subplots( 2,1)
 #plot ...
 t.oplot(g.real, '-o', x_window = (0,10) )
 b.oplot(g.imag, '-x', x_window = (0,12) )   
-b.oplot( lambda om : -om*0.8/(om*om + 4), Name = "Bad Fit !")
+b.oplot( lambda om : -om*0.8/(om*om + 4), name = "Bad Fit !")
 b.text(5,-0.5, r'$g(i\omega_n) = \frac{1}{i \omega_n + 1/2} $', size = 20, color='r')
 

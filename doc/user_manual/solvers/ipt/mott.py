@@ -56,7 +56,7 @@ for u in U:
    
     # Plot the DOS
     fig = plt.figure()
-    oplot(G_real['0'][0,0], RI='S', Name="DOS", figure = fig)
+    oplot(G_real['0'][0,0], RI='S', name="DOS", figure = fig)
     
     # Adjust 'y' axis limits accordingly to the Luttinger sum rule 
     fig.axes[0].set_ylim(0,1/pi/t*1.1)

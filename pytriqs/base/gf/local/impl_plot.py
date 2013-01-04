@@ -27,7 +27,7 @@ def plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
     sl = clip_array (X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
     def mdic( prefix, f) : 
-       return [{'Type' : "XY", 
+       return [{'type' : "XY", 
                 'xlabel' : xlabel,
                 'ylabel' : ylabel (self.Name),
                 'xdata' : X[sl],

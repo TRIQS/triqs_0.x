@@ -22,52 +22,52 @@
 
 import numpy
 
-def clip_array (X, xmin, xmax) : 
+def clip_array(x_array, x_min, x_max): 
     """
-     Given : 
-      - X a 1d numpy array of shape (L), of ordered values
+     Given: 
+      - x_array a 1d numpy array of shape (L), of ordered values
         or in fact any generator of ordered values.
-      - xmin, xmax
+      - x_min, x_max
       it returns the slice sl such that 
-        * X[sl] is in [xmin, xmax]
+        * x_array[sl] is in [x_min, x_max]
     """
-    try : 
-        low  = (i for i,x in enumerate(X) if not( x < xmin)  ).next() 
-    except StopIteration :
+    try: 
+        low  = (i for i,x in enumerate(x_array) if not( x < x_min)  ).next() 
+    except StopIteration:
         low = 0
 
-    try :
-        high = (i for i,x in enumerate(X) if x > xmax ).next()
+    try:
+        high = (i for i,x in enumerate(x_array) if x > x_max ).next()
         r = slice(low,high)
-    except StopIteration :
+    except StopIteration:
         r = slice(low,)
 
     return r
 
-def plot_protocol_apply(ob, OptionsDict, xlims) : 
+def plot_protocol_apply(ob, opt_dict, xlims): 
     """
     Given an object ob that supports the plot protocol, it applies the protocol
     or emulate it
     """
  
-    if hasattr(ob, '_plot_') : return ob._plot_(OptionsDict)
-    elif callable(ob) :
-        NPoints = OptionsDict.pop('NPoints',100)        
-        rx = OptionsDict.pop('x_window',None ) # consume it
-        xmin,xmax = rx if rx else xlims()
-        X = numpy.arange(xmin,xmax, (xmax- xmin)/float(NPoints))
+    if hasattr(ob, '_plot_'): return ob._plot_(opt_dict)
+    elif callable(ob):
+        n_points = opt_dict.pop('n_points',100)        
+        rx = opt_dict.pop('x_window', None)
+        xmin, xmax = rx if rx else xlims()
+        X = numpy.arange(xmin,xmax, (xmax- xmin)/float(n_points))
         Y = numpy.array( [ob(x) for x in X] )
-    else :
-        try : # generator x,y
+    else:
+        try: # generator x,y
             X, Y = izip (*ob)
-        except : 
+        except: 
             raise RuntimeError, "Object can not be plotted"
 
-    Name = OptionsDict.pop('Name','') 
-    if not Name : Name = str(ob)
-    if numpy.iscomplexobj(Y) : 
-        return( [  {'Type' : "XY", 'xdata':X, 'ydata':Y.real, 'label': "Re " + Name} , 
-                   {'Type' : "XY", 'xdata':X, 'ydata':Y.imag, 'label': "Im " + Name} ] )
+    name = opt_dict.pop('name','') 
+    if not name: name = str(ob)
+    if numpy.iscomplexobj(Y): 
+        return( [  {'type': "XY", 'xdata':X, 'ydata':Y.real, 'label': "Re " + name} , 
+                   {'type': "XY", 'xdata':X, 'ydata':Y.imag, 'label': "Im " + name} ] )
     else:
-        return( [ {'Type' : "XY", 'xdata':X, 'ydata':Y, 'label': Name} ] )
+        return( [ {'type': "XY", 'xdata':X, 'ydata':Y, 'label': name} ] )
  

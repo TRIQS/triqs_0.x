@@ -15,7 +15,7 @@ hop= {  (1,0)  :  [[ t]],
         (1,-1) :  [[ tp]],
         (-1,1) :  [[ tp]]}
 TB = tight_binding ( BL, hop)
-d = dos (TB, nkpts= 500, neps = 101, Name = 'dos')[0]
+d = dos (TB, nkpts= 500, neps = 101, name = 'dos')[0]
 
 #define a Hilbert transform
 H = Hilbert_Transform(d)

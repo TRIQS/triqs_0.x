@@ -35,20 +35,20 @@ except:
 figsize_default = (12,8)
 
 
-def oplot (*ob_list, **OptionsDict) : 
+def oplot (*ob_list, **opt_dict) : 
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays. 
     Options are the same as for the pyplot.plot function.
     """
-    plt.figure(1, figsize = OptionsDict.pop('figsize', figsize_default ) )
-    __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**OptionsDict)
+    plt.figure(1, figsize = opt_dict.pop('figsize', figsize_default ) )
+    __oplot_impl(plt.plot, plt.xlabel,plt.ylabel,plt.legend, *ob_list,**opt_dict)
     # remove this in the notebook...
     #if hasattr(plt.figure(1), "show") : plt.figure(1).show()
 
-mpl.axes.Axes.oplot = lambda self, *ob_list, **OptionsDict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**OptionsDict)
+mpl.axes.Axes.oplot = lambda self, *ob_list, **opt_dict : __oplot_impl(self.plot,self.set_xlabel, self.set_ylabel, self.legend, *ob_list,**opt_dict)
 
-def __oplot_impl (plotFnt,xlabelFnt, ylabelFnt, legendFnt, *ob_list, **OptionsDict) : 
+def __oplot_impl (plot_fct, xlabel_fct, ylabel_fct, legend_fct, *ob_list, **opt_dict) : 
     """
     A thin layer above pyplot.plot function that allows plotting objects with
     plot protocol as well as arrays. 
@@ -67,14 +67,14 @@ def __oplot_impl (plotFnt,xlabelFnt, ylabelFnt, legendFnt, *ob_list, **OptionsDi
             yield res
 
     for ob, OptionsList in objs() :
-        opt = OptionsDict.copy() # the plot protocol will consume the dict....
+        opt = opt_dict.copy() # the plot protocol will consume the dict....
         #ob2 = eval_expr_or_pass (ob) # if it is a lazy_expr, it is time to evaluate it !
-        for curvedata in plot_protocol_apply(ob,opt, plt.xlim ) : 
+        for curvedata in plot_protocol_apply(ob, opt, plt.xlim ) : 
             X,Y = curvedata['xdata'],curvedata['ydata']
             d = { 'label' :  curvedata['label'] } 
             d.update(opt)
             try : 
-                plotFnt(X,Y,*OptionsList,**d)
+                plot_fct(X,Y,*OptionsList,**d)
             except TypeError, e:
                 import re
                 m = re.search('(?<=There is no line property )"(.*)"', str(e) )
@@ -82,10 +82,10 @@ def __oplot_impl (plotFnt,xlabelFnt, ylabelFnt, legendFnt, *ob_list, **OptionsDi
                    raise RuntimeError, "Option %s is not understood in plot function : it is not an option of the object to be plotted, nor a matplotlib option"%m.group(0)
                 else : 
                    raise 
-            if 'xlabel' in curvedata : xlabelFnt(curvedata['xlabel'], fontsize=20) 
-            if 'ylabel' in curvedata : ylabelFnt(curvedata['ylabel'], fontsize=20) 
+            if 'xlabel' in curvedata : xlabel_fct(curvedata['xlabel'], fontsize=20) 
+            if 'ylabel' in curvedata : ylabel_fct(curvedata['ylabel'], fontsize=20) 
 
-    legendFnt(loc = 1) #legend is built from the label
+    legend_fct(loc = 1) #legend is built from the label
 
 def use_amsmath():
   rc('text', usetex=True)

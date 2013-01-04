@@ -40,5 +40,5 @@ g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 # Comparison plot
 from pytriqs.base.plot.mpl_interface import oplot
-oplot(gr[0,0], '-o', RI = 'S', Name = "Original DOS")
-oplot(g_pade[0,0], '-x', RI = 'S', Name = "Pade-reconstructed DOS")
+oplot(gr[0,0], '-o', RI = 'S', name = "Original DOS")
+oplot(g_pade[0,0], '-x', RI = 'S', name = "Pade-reconstructed DOS")

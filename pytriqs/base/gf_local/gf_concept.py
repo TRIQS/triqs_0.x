@@ -158,22 +158,22 @@ class gf_concept:
 
     #-----------------------------------------------------
 
-    def _plot_base (self, OptionsDict, xlabel, ylabel, use_ris, X):
-        """ Plot protocol. OptionsDict can contain : 
+    def _plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
+        """ Plot protocol. opt_dict can contain : 
              * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]
              * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        Name = OptionsDict.pop('Name', '' )  # consume it
-        NamePrefix = OptionsDict.pop('NamePrefix', '' )  # consume it
-        if Name and NamePrefix : raise ValueError, 'Name and NamePrefix can not be used at the same time'
+        Name = opt_dict.pop('name', '' )  # consume it
+        NamePrefix = opt_dict.pop('name_prefix', '' )  # consume it
+        if Name and NamePrefix : raise ValueError, 'name and name_prefix can not be used at the same time'
         if NamePrefix : name_save, self.Name = self.Name, Name or NamePrefix
 
-        rx = OptionsDict.pop('x_window',None ) # consume it
+        rx = opt_dict.pop('x_window',None ) # consume it
         sl = clip_array (X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
 
         def mdic( prefix, f) : 
-           return [{'Type' : "XY", 
+           return [{'type' : "XY", 
                     'xlabel' : xlabel,
                     'ylabel' : ylabel (self.Name),
                     'xdata' : X[sl],
@@ -181,7 +181,7 @@ class gf_concept:
                     'ydata' : f( B._data.array[0,0,sl] ) } for (i,j,B) in self ] 
     
         if use_ris : 
-            ris = OptionsDict.pop('RI','RI') 
+            ris = opt_dict.pop('RI','RI') 
             if   ris == "R" : 
                 res = mdic( 'Re ', lambda x : x.real)
             elif ris == "I" : 

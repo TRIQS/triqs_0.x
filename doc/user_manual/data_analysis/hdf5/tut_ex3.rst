@@ -31,12 +31,12 @@ in order to plot only a few curves from a list ::
  keylist = ['D=1', 'D=3']
 
  for g in ( R[x] for x in keylist) : # use an iterator
-    oplot( (- 1/pi * g).imag, "-o", Name = 'g' )
+    oplot( (- 1/pi * g).imag, "-o", name = 'g' )
    
 or if we want to add the names ::
 
  for n,g in ( (x,R[x]) for x in keylist) : # use an iterator
-    oplot( (- 1/pi * g).imag, "-o", Name = n )
+    oplot( (- 1/pi * g).imag, "-o", name = n )
  
 The advantage of using an iterator is that the object is only retrieved from disk when needed.
 

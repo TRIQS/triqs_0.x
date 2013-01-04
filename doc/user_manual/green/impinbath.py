@@ -13,5 +13,5 @@ g.invert()
 
 # Plot it with matplotlib. 'S' means: spectral function ( -1/pi Imag (g) )
 from pytriqs.base.plot.mpl_interface import oplot
-oplot( g['d','d'], '-o', RI = 'S', x_window  = (-1.8,1.8), Name = "Impurity" )
-oplot( g['s','s'], '-x', RI = 'S', x_window  = (-1.8,1.8), Name = "Bath" )
+oplot( g['d','d'], '-o', RI = 'S', x_window  = (-1.8,1.8), name = "Impurity" )
+oplot( g['s','s'], '-x', RI = 'S', x_window  = (-1.8,1.8), name = "Bath" )
