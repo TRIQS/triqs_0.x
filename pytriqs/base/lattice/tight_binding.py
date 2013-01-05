@@ -20,51 +20,56 @@
 #
 ################################################################################
 
-__all__ = [ 'bravais_lattice','tight_binding','dos','dos_patch','energies_on_bz_grid','energies_on_bz_path','hopping_stack']
+__all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path',
+           'hopping_stack', 'TBLattice']
 
-from pytriqs_LatticeTools import bravais_lattice, tight_binding,dos_patch as dos_patch_c, dos as dos_c, energies_on_bz_grid,energies_on_bz_path,hopping_stack
+from pytriqs_LatticeTools import bravais_lattice as BravaisLattice
+from pytriqs_LatticeTools import tight_binding as TightBinding
+from pytriqs_LatticeTools import dos_patch as dos_patch_c
+from pytriqs_LatticeTools import dos as dos_c
+from pytriqs_LatticeTools import energies_on_bz_grid, energies_on_bz_path, hopping_stack
 from pytriqs.base.dos import DOS
+import numpy
 
-def dos( TB, nkpts, neps, name) : 
+def dos(tight_binding, n_kpts, n_eps, name) : 
     """
-    :param TB: a tight_binding object
-    :param nkpts: the number of k points to use in each dimension
-    :param neps: number of points used in the binning of the energy
+    :param tight_binding: a tight_binding object
+    :param n_kpts: the number of k points to use in each dimension
+    :param n_eps: number of points used in the binning of the energy
     :param name: name of the resulting dos
 
     :rtype: return a list of DOS, one for each band
     """
-    eps, arr = dos_c(TB, nkpts,neps)
-    return [ DOS (eps, arr[:,i], name) for i in range (arr.shape[1]) ]
+    eps, arr = dos_c(tight_binding, n_kpts, n_eps)
+    return [ DOS (eps, arr[:, i], name) for i in range (arr.shape[1]) ]
 
-def dos_patch( TB, triangles, nkpts, ndiv, name) :  
+def dos_patch(tight_binding, triangles, n_kpts, n_div, name) :  
     """
     To be written
     """
-    eps, arr = dos_c(TB, nkpts,eps)
+    eps, arr = dos_c(tight_binding, n_kpts, eps)
     return DOS (eps, arr, name)
 
 
 
 
-import numpy
 
 # for backward compatibility. Not documented. 
-class TBLattice : 
+class TBLattice:
 
-    def __init__ (self, Units, Hopping, Orbital_Positions= [ (0,0,0) ] , Orbital_Names = [""]) : 
+    def __init__ (self, units, hopping, orbital_positions = [ (0, 0, 0) ], orbital_names = [""]):
 
         # the k are int32 which boost python does like to convert 
         def reg(k) : return tuple( int(x) for x in k) 
-        self._hop = dict ( ( reg(k),numpy.array(v)) for k,v in Hopping.items())
-        orb = dict ( (str(i),orb) for (i,orb) in enumerate(Orbital_Positions))
-        self.bl = bravais_lattice(Units, orb)
-        self.tb = tight_binding ( self.bl, self._hop) #, Orbital_Positions)
+        self._hop = dict ( ( reg(k), numpy.array(v)) for k, v in hopping.items())
+        orb = dict ( (str(i), orb) for (i, orb) in enumerate(orbital_positions ))
+        self.bl = BravaisLattice(units, orb)
+        self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
         self.dim = self.bl.dim
         self.NOrbitalsInUnitCell = self.bl.n_orbitals
-        self.Units =Units
-        self.OrbitalPositions = Orbital_Positions
-        self.OrbitalNames = Orbital_Names
+        self.Units = units
+        self.OrbitalPositions = orbital_positions 
+        self.OrbitalNames = orbital_names
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
     def latt_to_real_x(self, p) : 
@@ -72,10 +77,10 @@ class TBLattice :
         # modified since array are not converted automatically any more
         ##return self.bl.lattice_to_real_coordinates (p ) #numpy.array(p.float64))
 
-    def HoppingDictionnary(self) : return self._hop
+    def hopping_dict(self) : return self._hop
 
-    def Hopping(self,k_stack) :
-        return hopping_stack(self.tb,k_stack)
+    def hopping(self, k_stack) :
+        return hopping_stack(self.tb, k_stack)
 
     #def dos(self) : d = dos (TB, nkpts= 100, neps = 100, name = 'dos2')
 

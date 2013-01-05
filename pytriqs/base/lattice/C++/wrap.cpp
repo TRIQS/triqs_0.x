@@ -48,16 +48,16 @@ int _r = _import_array();assert(_r==0);
   doc_options.disable_cpp_signatures();
 
   char bravais_lattice_doc_init[] = 
-   " :param Units: a list of 3d vectors representing the units of the lattice in R^3 \n"
+   " :param units: a list of 3d vectors representing the units of the lattice in R^3 \n"
    "               the dimension of the lattice is the number of these vectors.\n"
-   " :param Orbital_Positions: Position of the orbitals close to the origin. Default = (0,0,0)";
+   " :param orbital_positions: Position of the orbitals close to the origin. Default = (0,0,0)";
 
   class_<bravais_lattice>("bravais_lattice", 
     init<object , object  >
     //init<array_view<double,2>, object  >
     ( bravais_lattice_doc_init,
-      ( boost::python::arg("Units"), 
-	boost::python::arg("Orbital_Positions")=boost::python::list(make_tuple(make_tuple(0.0,0.0,0.0)))
+      ( boost::python::arg("units"), 
+	boost::python::arg("orbital_positions")=boost::python::list(make_tuple(make_tuple(0.0,0.0,0.0)))
       )
     ))
    .def("lattice_to_real_coordinates",&bravais_lattice::lattice_to_real_coordinates,
@@ -75,7 +75,7 @@ int _r = _import_array();assert(_r==0);
    "        * values are matrices t_ab(R), as 2d numpy or list of list (anything from which numpy can make a 2d array)\n";  
 
   class_<tight_binding>("tight_binding", 
-    init <bravais_lattice, object >(tight_binding_doc_init, ( arg("BravaisLattice"), arg("Hopping") ))
+    init <bravais_lattice, object >(tight_binding_doc_init, ( arg("bravais_lattice"), arg("hopping") ))
     )
    ;
 

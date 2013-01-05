@@ -103,7 +103,7 @@ class Hilbert_Transform :
             result = Sigma.copy()
 
         if not( isinstance (self.dos, DOSFromFunction)):
-            assert Number_Points_in_integral==None and Test_Convergence == None, " Those parameters can only be used with an Dos_from_function"
+            assert Number_Points_in_integral==None and Test_Convergence == None, " Those parameters can only be used with an dos_from_function"
         if field !=None : 
             try : 
                 result += field

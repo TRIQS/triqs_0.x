@@ -1,6 +1,6 @@
 .. index::
   single: Green's functions; full Green's function
-  module: GF
+  module: gf_local
 
 .. _fullgreen:
 

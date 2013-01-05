@@ -1,13 +1,13 @@
 .. index::
   single: lattices; Bravais lattice
-  module: BravaisLattice
 
 .. _bravaislattice:
+
 
 Bravais Lattice
 ===============
  
-.. autoclass:: pytriqs.base.lattice.tight_binding.bravais_lattice
+.. autoclass:: pytriqs.base.lattice.tight_binding.BravaisLattice
    :members:
    :undoc-members:
    

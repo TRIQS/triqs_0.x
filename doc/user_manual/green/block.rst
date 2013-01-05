@@ -1,10 +1,10 @@
 .. index::
   single: Green's functions; block Green's function
-  module: GFBloc_ImFreq
-  module: GFBloc_ReFreq
-  module: GFBloc_ImTime
-  module: GFBloc_ReTime
-  module: GFBloc_ImLegendre
+  module: gf_imfreq
+  module: gf_refreq
+  module: gf_imtime
+  module: gf_retime
+  module: gf_legendre
 
 .. _blockgreen:
 

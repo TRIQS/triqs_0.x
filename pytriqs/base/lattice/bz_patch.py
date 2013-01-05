@@ -24,18 +24,18 @@
 from super_lattice import * 
 from pytriqs.base.dos import DOS
 
-class BZ_Patch : 
+class BZPatch:
     """Description of a Patch of the BZ"""
-    def __init__(self, Name, Polygons) :
-        """ TO BE WRITTEN : MICHEL! """
+    def __init__(self, name, polygons):
+        """ TO BE WRITTEN: MICHEL! """
         # Cut the patch in triangles (this is what is asked by the C-code)
-        self.weight,self.Name = 0,Name
+        self.weight, self.name = 0, name
         self._triangles = []
         self._weights = []
-        for polygon in Polygons :
-            pnt = [0,0,0]
-            for np,point in enumerate(polygon) :
-                if np > 1 :
+        for polygon in polygons:
+            pnt = [0, 0, 0]
+            for np, point in enumerate(polygon):
+                if np > 1:
                     pnt[2] = point
                     self._triangles += pnt
                     self._weights += [ 0.5*abs((pnt[1][0]-pnt[0][0])*(pnt[2][1]-pnt[0][1])
@@ -43,16 +43,13 @@ class BZ_Patch :
                     self.weight += 0.5*abs((pnt[1][0]-pnt[0][0])*(pnt[2][1]-pnt[0][1])
                                       -(pnt[1][1]-pnt[0][1])*(pnt[2][0]-pnt[0][0]))
                     pnt[1] = pnt[2]
-                else :
+                else:
                     pnt[np%3] = point
    
-    def Dos(self, theLattice,Number_Bins,Number_Div_in_Triangle) : 
-        """ Compute the partial dos of the Patch for the Lattice theLattice"""
-        assert isinstance(theLattice,(Lattice, TBSuperLattice))
-        # call the C++ routine
-        return theLattice.dos_patch(self._triangles, Number_Bins,Number_Div_in_Triangle,self.Name)
-        #epsdos = theLattice.Compute_DOS_patches(self._triangles, Number_Bins,Number_Div_in_Triangle)
-        #return DOS( eps = epsdos[:,0] , rho = epsdos[:,1], Name = self.Name )
+    def dos(self, lattice, n_bins, n_div_triangle): 
+        """ Compute the partial dos of the Patch for the Lattice lattice"""
+        assert isinstance(lattice, (Lattice, TBSuperLattice))
+        return lattice.dos_patch(self._triangles, n_bins, n_div_triangle, self.name)
 
   
  

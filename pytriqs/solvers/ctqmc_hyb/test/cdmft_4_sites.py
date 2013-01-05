@@ -22,8 +22,8 @@
 
 from pytriqs.base.archive import *
 from pytriqs.base.gf_local import gf_init,GF,GFBloc_ImFreq,inverse
-from pytriqs.base.lattice.super_lattice import TBSuperLattice as SuperLattice
-from pytriqs.base.lattice.tight_binding import TBLattice as Lattice
+from pytriqs.base.lattice.super_lattice import TBSuperLattice
+from pytriqs.base.lattice.tight_binding import TBLattice
 from pytriqs.base.sumk import *
 from pytriqs.base.dmft import DMFTLoopGeneric
 import pytriqs.base.utility.mpi as mpi
@@ -62,8 +62,8 @@ hop= {  (1,0)  :  [[ t]], # Hopping[ Displacement on the lattice] = [[t11,t12,t1
         (1,-1) :  [[ tp]],
         (-1,1) :  [[ tp]]}
 
-L = Lattice ( Units = [(1,0,0) , (0,1,0) ], Hopping = hop)
-SL = SuperLattice(BaseLattice=L, SuperLatticeUnits=[ (2,0), (0,2) ])
+L = TBLattice ( units = [(1,0,0) , (0,1,0) ], hopping = hop)
+SL = TBSuperLattice(tb_lattice =L, super_lattice_units = [ (2,0), (0,2) ])
 
 # SumK function that will perform the sum over the BZ
 SK = SumkDiscreteFromLattice (lattice = SL, n_points = 8, method = "Riemann")

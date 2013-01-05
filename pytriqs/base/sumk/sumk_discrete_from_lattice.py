@@ -21,7 +21,7 @@
 ################################################################################
 
 from sumk_discrete import SumkDiscrete
-from pytriqs.base.lattice.super_lattice import TBSuperLattice as SuperLattice, Lattice
+from pytriqs.base.lattice.tight_binding import TBLattice
 
 class SumkDiscreteFromLattice (SumkDiscrete) :
     r"""
@@ -44,7 +44,7 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
         :param n_points:  Number of points in the BZ in EACH direction
         :param method: Riemann (default) or 'Gauss' (not checked) 
         """
-        assert isinstance(lattice,Lattice), "lattice must be a Lattice instance"
+        assert isinstance(lattice,TBLattice), "lattice must be a TBLattice instance"
         self.SL = lattice
         self.patch,self.method = patch,method
         # init the array
@@ -122,7 +122,7 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
 		self.BZ_Points[k_index,:] +=Q
 
 	# Compute the discretized hoppings from the Superlattice
-	self.Hopping[:,:,:] = self.SL.Hopping(self.BZ_Points.transpose()).transpose(2,0,1)
+	self.Hopping[:,:,:] = self.SL.hopping(self.BZ_Points.transpose()).transpose(2,0,1)
 
 	if self.orthogonal_basis: 
             self.Mu_Pattern[:,:] =  self.SL.MuPattern[:,:]
@@ -170,7 +170,7 @@ class SumkDiscreteFromLattice (SumkDiscrete) :
         self.BZ_weights /= total_weight
 
 	# Compute the discretized hoppings from the Superlattice
-	self.Hopping[:,:,:] = self.SL.Hopping(self.BZ_Points.transpose()).transpose(2,0,1)
+	self.Hopping[:,:,:] = self.SL.hopping(self.BZ_Points.transpose()).transpose(2,0,1)
 
 	if self.orthogonal_basis: 
             self.Mu_Pattern[:,:] =  self.SL.MuPattern[:,:]
