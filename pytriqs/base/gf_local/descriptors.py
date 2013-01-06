@@ -24,19 +24,19 @@ r""" """
 
 import numpy
 from math import *
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF import GF_Statistic,GF_Type,TailGf,MeshGf
 from pytriqs.base.utility.my_utils import sign
 from pytriqs.base.gf_local.array_view import ArrayViewWithIndexConverter
-from lazy_expressions import lazy_expr_terminal, transform, lazy_expr
+from lazy_expressions import LazyExprTerminal, LazyExpr, transform
 
 def is_scalar (x) : 
     return type(x) in [ type(1), type(1.0), type(1j), numpy.ndarray, numpy.int, numpy.int_, numpy.int8, numpy.int16, numpy.int32, numpy.float, numpy.float_, numpy.float32, numpy.float64, numpy.complex, numpy.complex_, numpy.complex64, numpy.complex128, type(ArrayViewWithIndexConverter) ]
 
-def convert_scalar_to_Const(expr) : 
+def convert_scalar_to_const(expr) : 
 
   # if the expression is a pure scalar, replace it by Const
   t= expr.get_terminal()
-  if is_scalar(t) : return lazy_expr( Const(t) )
+  if is_scalar(t) : return LazyExpr( Const(t) )
 
   # otherwise : replace all scalar appearing in +/- operations by Const
   def act (tag, childs) : 
@@ -50,41 +50,41 @@ def convert_scalar_to_Const(expr) :
     
 #########################################################################
 
-class base (lazy_expr_terminal) :
+class Base (LazyExprTerminal) :
     def __init__(self,**kargs) :
         self.__dict__.update(kargs)
                 
 #########################################################################
 
-class Function (base):
+class Function (Base):
     r"""   
        Stores a python function and a tail.
        
        If the Green's function is defined on an array of points :math:`x_i`, then it will be initialized to :math:`F(x_i)`.
     """
-    def __init__ (self, F, Tail=None) : 
+    def __init__ (self, function, tail=None) : 
         r"""
-          :param F: the function  :math:`\omega \rightarrow F(\omega)`
-          :param Tail: The tail. Use None if you don't use any tail (will be put to 0)
+          :param function: the function  :math:`\omega \rightarrow function(\omega)`
+          :param tail: The tail. Use None if you don't use any tail (will be put to 0)
         """
-        base.__init__(self,F=F, Tail=Tail)
+        Base.__init__(self,function=function, tail=tail)
         
     def __call__(self,G) :
-        if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
+        if not(callable(self.function)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
         res = G._data.array[:,:,:]
         try : 
-            for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
+            for n,om in enumerate(G.mesh) : res[:,:,n] = self.function(om)
         except :
             raise RuntimeError, "The given function has a problem..."
-        if self.Tail : G._tail.copyFrom(self.Tail)
+        if self.tail : G._tail.copy_from(self.tail)
         return G
 
 #########################################################################
 
-class Const(base):
+class Const(Base):
     def __init__ (self, C) :
         if isinstance(C,ArrayViewWithIndexConverter) : C=C.array # trasnform to numpy.array
-        base.__init__(self, C=C)
+        Base.__init__(self, C=C)
          
     def __call__(self,G) :
         C = self.C
@@ -96,8 +96,6 @@ class Const(base):
             C = C*numpy.identity(G.N1) 
         if C.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of constant incorrect"
 
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
-        #t[0][:,:] = C
         G._tail.zero()
         G._tail[0].array[:,:] = C
         
@@ -106,7 +104,7 @@ class Const(base):
     
 #########################################################################
 
-class Omega_(base):
+class Omega_(Base):
     r"""The function :math:`\omega \rightarrow \omega` """
     def __str__(self) : return "Omega" 
     def __call__(self,G) :
@@ -124,12 +122,12 @@ iOmega_n = Omega_()
 
 ##########################################################################
 
-class A_Omega_Plus_B(base):
+class A_Omega_Plus_B(Base):
     "deprecated. do not use"
     def __init__ (self, A=1, B=0, Invert= False) :
         if isinstance(A,ArrayViewWithIndexConverter) : A=A.array[:,:] # trasnform to numpy.array
         if isinstance(B,ArrayViewWithIndexConverter) : B=B.array[:,:]# trasnform to numpy.array
-        base.__init__(self, A=A, B=B,Invert=Invert)
+        Base.__init__(self, A=A, B=B,Invert=Invert)
          
     def __call__(self,G) :
         A,B = self.A, self.B
@@ -145,9 +143,6 @@ class A_Omega_Plus_B(base):
         t.zero()
         t[-1].array[:,:] = A
         t[0].array[:,:] = B
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
-        #t[-1][:,:] = A
-        #t[0][:,:] = B
 
         Function(lambda om : A*om + B, None)(G)
 
@@ -156,9 +151,9 @@ class A_Omega_Plus_B(base):
 
 #######################################
 
-class OneFermionInTime(base):
+class OneFermionInTime(Base):
     def __init__ (self, l =0) :
-         base.__init__(self, L=l)
+         Base.__init__(self, L=l)
          
     def __call__(self,G) :
         L = self.L
@@ -171,21 +166,21 @@ class OneFermionInTime(base):
         t[2].array[:,:] = L
         t[3].array[:,:] = L*L
         
-        fact = -1/(1+exp(-L*G.Beta))
+        fact = -1/(1+exp(-L*G.beta))
         Function(lambda t : fact* exp(-L*t) *numpy.identity(G.N1), None)(G)
         return G
 
 
 ##################################################
 
-def _SemiCircularDOS(HalfBandwidth):
+def _SemiCircularDOS(half_bandwidth):
     """
        Semi_Circular DOS function
        Input : the 1/2 bandwidth
        Returns : a function omega-> dos(omega)
     """
     from math import sqrt,pi
-    larg = HalfBandwidth
+    larg = half_bandwidth
     def semi(x):
         if (abs(x)<larg) : return sqrt( 1 - (x/larg)**2 )*2/pi/larg
         else: return 0.0
@@ -196,7 +191,7 @@ def semi(x) :
 
 ##################################################
 
-class SemiCircular (base):
+class SemiCircular (Base):
     r"""Hilbert transform of a semi circular density of state, i.e.
 
      .. math ::
@@ -206,14 +201,14 @@ class SemiCircular (base):
       
      (only works in combination with frequency Green's functions).
     """
-    def __init__ (self, HalfBandwidth) :
-        """ :param HalfBandwidth:  :math:`D`, the half bandwidth of the semicircular"""
-        base.__init__(self, HalfBandwidth=HalfBandwidth)
+    def __init__ (self, half_bandwidth) :
+        """ :param half_bandwidth:  :math:`D`, the half bandwidth of the semicircular"""
+        Base.__init__(self, half_bandwidth=half_bandwidth)
 
-    def __str__(self) : return "SemiCircular(%s)"%self.HalfBandwidth 
+    def __str__(self) : return "SemiCircular(%s)"%self.half_bandwidth 
 
     def __call__(self,G) :
-        D= self.HalfBandwidth
+        D= self.half_bandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
         if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
@@ -239,7 +234,7 @@ class SemiCircular (base):
 
 ##################################################
 
-class Wilson (base):
+class Wilson (Base):
     r"""The Hilbert transform of a flat density of states, with cut-off
 
     .. math ::
@@ -249,15 +244,15 @@ class Wilson (base):
       
     (only works in combination with frequency Green's functions).
     """
-    def __init__ (self, HalfBandwidth) :
-        """:param HalfBandwidth: :math:`D`, the half bandwidth """
-        base.__init__(self, HalfBandwidth=HalfBandwidth)
+    def __init__ (self, half_bandwidth) :
+        """:param half_bandwidth: :math:`D`, the half bandwidth """
+        Base.__init__(self, half_bandwidth=half_bandwidth)
 
-    def __str__(self) : return "Wilson(%s)"%HalfBandwidth 
+    def __str__(self) : return "Wilson(%s)"%half_bandwidth 
 
     def __call__(self,G) :
 
-        D = self.HalfBandwidth
+        D = self.half_bandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
 
         if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
@@ -287,57 +282,57 @@ class Wilson (base):
 
 ##################################################
 
-class Fourier (base):
+class Fourier (Base):
     r"""
     The Fourier transform as a lazy expression
     """
     def __init__ (self, G) :
         """:param G: :math:`G`, the function to be transformed. Must in the time domain"""
-        base.__init__(self, G = G)
+        Base.__init__(self, G = G)
 
-    def __str__(self) : return "Fourier(%s)"%self.G.Name
+    def __str__(self) : return "Fourier(%s)"%self.G.name
 
     def __call__(self,G2) :
         G2.setFromFourierOf(self.G)
         return G2
 
-class InverseFourier (base):
+class InverseFourier (Base):
     r"""
     The Inverse Fourier transform as a lazy expression
     """
     def __init__ (self, G) :
         """:param G: :math:`G`, the function to be transformed. Must in the frequency domain"""
-        base.__init__(self, G = G)
+        Base.__init__(self, G = G)
 
-    def __str__(self) : return "InverseFourier(%s)"%self.G.Name
+    def __str__(self) : return "InverseFourier(%s)"%self.G.name
 
     def __call__(self,G2) :
         G2.setFromInverseFourierOf(self.G)
         return G2
 
-class LegendreToMatsubara (base):
+class LegendreToMatsubara (Base):
     r"""
     The transformation from Legendre to Matsubara as a lazy expression
     """
     def __init__ (self, G) :
         """:param G: :math:`G`, the function to be transformed. Must in the Legendre domain"""
-        base.__init__(self, G = G)
+        Base.__init__(self, G = G)
 
-    def __str__(self) : return "LegendreToMatsubara(%s)"%self.G.Name
+    def __str__(self) : return "LegendreToMatsubara(%s)"%self.G.name
 
     def __call__(self,G2) :
         G2.setFromLegendre(self.G)
         return G2
 
-class MatsubaraToLegendre (base):
+class MatsubaraToLegendre (Base):
     r"""
     The transformation from Legendre to Matsubara as a lazy expression
     """
     def __init__ (self, G) :
         """:param G: :math:`G`, the function to be transformed. Must in the Matsubara domain"""
-        base.__init__(self, G = G)
+        Base.__init__(self, G = G)
 
-    def __str__(self) : return "MatsubaraToLegendre(%s)"%self.G.Name
+    def __str__(self) : return "MatsubaraToLegendre(%s)"%self.G.name
 
     def __call__(self,G2) :
         G2.setFromMatsubara(self.G)

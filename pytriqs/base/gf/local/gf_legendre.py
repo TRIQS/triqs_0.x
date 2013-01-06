@@ -19,12 +19,12 @@
 #
 ################################################################################
 
-__all__ = ['GFBloc_ImLegendre']
+__all__ = ['GfLegendre']
 import numpy
-from gf import GFBloc_ReTime_cython, MeshReTime 
+from gf import GfReTime_cython, MeshReTime 
 from GFBloc_general import _GFBloc_general 
 
-class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
+class GfLegendre (GfLegendre_cython, _GFBloc_general):
     """
     A matrix-valued block Green's function described using Legendre coefficients.
     """
@@ -36,7 +36,7 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
      yourself (see below), or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GFBloc_ImLegendre(Indices, Beta, Statistic, NLegendreCoeffs, Data, Tail, Name, Note)
+     GfLegendre(Indices, Beta, Statistic, NLegendreCoeffs, Data, Tail, Name, Note)
 
            * ``Indices``: a list of indices names of the block
            * ``Beta``: the inverse Temperature 
@@ -49,10 +49,10 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
 
      If you already have the mesh, you can use a simpler version:
 
-     GFBloc_ImLegendre(Indices, Mesh, Data, Tail, Name,Note)
+     GfLegendre(Indices, Mesh, Data, Tail, Name,Note)
         
            * ``Indices``:  a list of indices names of the block
-           * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF == GF_Type.Imaginary_Legendre
+           * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF == GF_Type.Imaginary_Legendre
            * ``Data``:  a numpy array of dimensions (len(Indices),len(Indices),NLegendreCoeffs) representing the value of the coefficients.
            * ``Tail``:  the tail 
            * ``Name``:  a name for the Green's function
@@ -69,9 +69,9 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
             stat = d.pop('Statistic','F') # GF_Statistic.Fermion
             sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
             d['Mesh'] = MeshLegendre(Beta,'F',Nmax)
-            #d['Mesh'] = MeshGF( GF_Type.Imaginary_Legendre, stat, Beta, numpy.array(range(Nmax)) )
+            #d['Mesh'] = MeshGf( GF_Type.Imaginary_Legendre, stat, Beta, numpy.array(range(Nmax)) )
 
-        GFBloc_ImLegendre_cython.__init__(self,*self._prepare_init(d))
+        GfLegendre_cython.__init__(self,*self._prepare_init(d))
                 
     #-----------------------------------------------------
 
@@ -97,7 +97,7 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
         """
         new_g = self.__class__(IndicesL = self._IndicesL,
                                IndicesR = self._IndicesR,
-                               Beta = self.Beta,
+                               Beta = self.beta,
                                Statistic = self.Statistic,
                                NLegendreCoeffs = Nleg,
                                Name = self.Name, Note = self.Note)
@@ -111,6 +111,6 @@ class GFBloc_ImLegendre (GFBloc_ImLegendre_cython, _GFBloc_general):
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
-register_class (GFBloc_ImLegendre)
+register_class (GfLegendre)
 
 

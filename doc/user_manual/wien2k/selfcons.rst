@@ -26,7 +26,7 @@ same as in one-shot calculations. Only at the very end we have to calculate the 
 and store it in a format such that :program:`Wien2k` can read it. Therefore, after the DMFT loop that we saw in the 
 previous section, we symmetrise the self energy, and recalculate the impurity Green function::
 
-  SK.symm_deg_GF(S.Sigma,orb=0)
+  SK.symm_deg_BlockGf(S.Sigma,orb=0)
   S.G <<= inverse(S.G0) - S.Sigma
   S.G.invert()
 

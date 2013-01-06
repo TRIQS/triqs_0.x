@@ -91,7 +91,7 @@ previous section, with some additional refinement::
 
   for IterationNumber in range(1,Loops+1) :
      
-        SK.symm_deg_GF(S.Sigma,orb=0)                           # symmetrise Sigma
+        SK.symm_deg_BlockGf(S.Sigma,orb=0)                           # symmetrise Sigma
         SK.put_Sigma(Sigmaimp = [ S.Sigma ])                    # put Sigma into the SumK class:
 
         Chemical_potential = SK.find_mu( precision = prec_mu )  # find the chemical potential
@@ -111,10 +111,10 @@ previous section, with some additional refinement::
             ar = HDFArchive(LDAFilename+'.h5','a')
             if ((IterationNumber>1) or (previous_present)):
                 mpi.report("Mixing input Delta with factor %s"%DeltaMix)
-                Delta = (DeltaMix * S.G0.Delta()) + (1.0-DeltaMix) * ar['DeltaF']
-                S.G0 <<= S.G0 + S.G0.Delta() - Delta
+                Delta = (DeltaMix * S.G0.delta()) + (1.0-DeltaMix) * ar['DeltaF']
+                S.G0 <<= S.G0 + S.G0.delta() - Delta
                 
-            ar['DeltaF'] = S.G0.Delta()
+            ar['DeltaF'] = S.G0.delta()
             S.G0 <<= inverse(S.G0)
             del ar
             

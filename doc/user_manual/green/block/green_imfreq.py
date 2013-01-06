@@ -1,9 +1,9 @@
-from pytriqs.base.gf_local import GFBloc_ImFreq, SemiCircular
+from pytriqs.base.gf_local import GfImFreq, SemiCircular
 
-g = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 1000, Name = "egBlock") 
+g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
 
-g['eg1','eg1'] = SemiCircular(HalfBandwidth = 1)
-g['eg2','eg2'] = SemiCircular(HalfBandwidth = 2)
+g['eg1','eg1'] = SemiCircular(half_bandwidth = 1)
+g['eg2','eg2'] = SemiCircular(half_bandwidth = 2)
 
 from pytriqs.base.plot.mpl_interface import oplot,plt
 oplot(g, '-o', x_window = (0,10))

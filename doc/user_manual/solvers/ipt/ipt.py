@@ -12,15 +12,15 @@ class Solver(SolverBase):
         self.beta = params['beta']
 
         # Only one block in GFs
-        g = GFBloc_ImFreq(Indices=[0], Beta=self.beta, Name='0')
-        self.G = GF(NameList=('0',), BlockList=(g,))
+        g = GfImFreq(indices =[0], beta =self.beta, name ='0')
+        self.G = BlockGf(name_list=('0',), block_list=(g,))
         self.G0 = self.G.copy()
 
     def Solve(self):
 
         # Imaginary time representation of G_0
-        g0t = GFBloc_ImTime(Indices=[0], Beta=self.beta, Name='0')
-        G0t = GF(NameList=('0',), BlockList=(g0t,))
+        g0t = GfImTime(indices =[0], beta =self.beta, name ='0')
+        G0t = BlockGf(name_list=('0',), block_list=(g0t,))
         G0t['0'].setFromInverseFourierOf(self.G0['0'])
 
         # IPT expression for the self-energy (particle-holy symmetric case is implied)

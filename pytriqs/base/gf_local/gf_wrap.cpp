@@ -44,12 +44,12 @@ using namespace python;
     .def_readonly("N2",  &GF_Bloc_Base<DataType>::N2)			\
     .def_readonly("_IndicesL",  &GF_Bloc_Base<DataType>::IndicesL)	\
     .def_readonly("_IndicesR",  &GF_Bloc_Base<DataType>::IndicesR)	\
-    .def_readonly("Statistic",  &GF_Bloc_Base<DataType>::Statistic)	\
-    .def_readonly("Beta",  &GF_Bloc_Base<DataType>::Beta)		\
-    .def("copyFrom", &GF_Bloc_Base<DataType>::operator=)			\
+    .def_readonly("statistic",  &GF_Bloc_Base<DataType>::Statistic)	\
+    .def_readonly("beta",  &GF_Bloc_Base<DataType>::Beta)		\
+    .def("copy_from", &GF_Bloc_Base<DataType>::operator=)			\
     .def("save",&GF_Bloc_Base<DataType>::save,save_overlo("Save the Green's function into text files.")) \
-    .def("load",&GF_Bloc_Base<DataType>::load,"Load the Green function from text files on all nodes. Inverse of save") \
-    .def("zero",&GF_Bloc_Base<DataType>::zero,"Puts the GF to 0")	\
+    .def("load",&GF_Bloc_Base<DataType>::load,"Load the Green's function from text files on all nodes. Inverse of save") \
+    .def("zero",&GF_Bloc_Base<DataType>::zero,"Puts the Green's function to 0")	\
  ; 
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(save_overlo, save, 1,2);
@@ -84,11 +84,11 @@ BOOST_PYTHON_MODULE(_pytriqs_GF) {
 
   // **********  MeshGF  ******************
 
-  class_<MeshGF, boost::shared_ptr<MeshGF> >("MeshGF", init<Type_GF,Statistic_GF,double,PyObject *>())
+  class_<MeshGF, boost::shared_ptr<MeshGF> >("MeshGf", init<Type_GF,Statistic_GF,double,PyObject *>())
     .def(init<MeshGF, Statistic_GF>())
-    .def_readonly("Statistic", &MeshGF::Statistic)
+    .def_readonly("statistic", &MeshGF::Statistic)
     .def_readonly("TypeGF",  &MeshGF::typeGF)
-    .def_readonly("Beta",  &MeshGF::Beta)
+    .def_readonly("beta",  &MeshGF::Beta)
     .def("__len__",&MeshGF::len)
     .def("__iter__",&MeshGF::__iter__)
     .def("next",&MeshGF::next)
@@ -102,9 +102,9 @@ BOOST_PYTHON_MODULE(_pytriqs_GF) {
 
   // **********  TailGF  ******************
 
-  class_<TailGF, boost::shared_ptr<TailGF> >("TailGF", init<int,int,boost::python::list,boost::python::list>() )
+  class_<TailGF, boost::shared_ptr<TailGF> >("TailGf", init<int,int,boost::python::list,boost::python::list>() )
     .def (init<const TailGF &, boost::python::object, boost::python::object>())
-    .def ("copyFrom",&TailGF::copyFrom)
+    .def ("copy_from",&TailGF::copyFrom)
     .def ("invert",&TailGF::invert,"Replace itself by the expansion of the inverse of the function.")
     .def ("__call__",&TailGF::__call__,"Sets the expansion to 0")
     .def ("zero",&TailGF::zero,"Sets the expansion to 0")
@@ -143,7 +143,7 @@ Sets to the Fourier transform of Gt.\n\
 :**Return type**: a new Green's function\n";
   char imfreq_doc_legendre[] = "Transforms from Legendre and sets it's tail";
 
-  class_<GF_Bloc_ImFreq, bases<GF_Bloc_Base<COMPLEX> > >("GFBloc_ImFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
+  class_<GF_Bloc_ImFreq, bases<GF_Bloc_Base<COMPLEX> > >("GfImFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ImFreq::density, imfreq_doc_density)
     .def("setFromFourierOf",&GF_Bloc_ImFreq::setFromFourierOf,F_overloads(imfreq_doc_fourier))
     .def("setFromLegendre",&GF_Bloc_ImFreq::setFromLegendre,imfreq_doc_legendre)
@@ -153,7 +153,7 @@ Sets to the Fourier transform of Gt.\n\
 
   char refreq_doc_pade[] = "Sets to the analytic continuation of Gw using Pade approximants.";
 
-  class_<GF_Bloc_ReFreq, bases<GF_Bloc_Base<COMPLEX> > >("GFBloc_ReFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
+  class_<GF_Bloc_ReFreq, bases<GF_Bloc_Base<COMPLEX> > >("GfReFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReFreq::density, "Computes the density :math:`G(\\tau = 0^-)`")
     .def("setFromFourierOf",&GF_Bloc_ReFreq::setFromFourierOf,"Sets to the Fourier transform of Gt")
     .def("setFromPadeOf",&GF_Bloc_ReFreq::setFromPadeOf,
@@ -162,14 +162,14 @@ Sets to the Fourier transform of Gt.\n\
 
   // **********   ImTime ******************
 
-  class_<GF_Bloc_ImTime, bases<GF_Bloc_Base<double> > >("GFBloc_ImTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
+  class_<GF_Bloc_ImTime, bases<GF_Bloc_Base<double> > >("GfImTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("setFromLegendre",&GF_Bloc_ImTime::setFromLegendre,"Transforms from Legendre and set it's tail")
     .def("setFromInverseFourierOf",&GF_Bloc_ImTime::setFromInverseFourierOf,Finv_overloads("Sets to the inverse Fourier transform of Gw"))
     ;
 
  // **********   ReTime ******************
 
-  class_<GF_Bloc_ReTime, bases<GF_Bloc_Base<COMPLEX> > >("GFBloc_ReTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
+  class_<GF_Bloc_ReTime, bases<GF_Bloc_Base<COMPLEX> > >("GfReTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReTime::density, "Computes the density :math:`G(\\tau = 0^-)`")
     .def("__call__",&GF_Bloc_ReTime::operator(), "Evaluate the function by linear interpolation $ ")
     .def("setFromInverseFourierOf",&GF_Bloc_ReTime::setFromInverseFourierOf,"Sets to the inverse Fourier transform of Gw")
@@ -186,7 +186,7 @@ Parameters\n\
 A : numpy array\n\
   a matrix giving the discontinuities\n";
 
-  class_<GF_Bloc_ImLegendre, bases<GF_Bloc_Base<double> > >("GFBloc_ImLegendre", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
+  class_<GF_Bloc_ImLegendre, bases<GF_Bloc_Base<double> > >("GfLegendre", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ImLegendre::density,"Computes the density :math:`G(\\tau = 0^-)`")
     .def("determine_tail",&GF_Bloc_ImLegendre::determine_tail,"Set the tail from the Legendre coefficients")
     .def("enforce_discontinuity",&GF_Bloc_ImLegendre::enforce_discontinuity_py,imleg_doc_enforce)

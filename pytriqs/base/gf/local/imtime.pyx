@@ -50,5 +50,5 @@ cdef make_BlockGfImTime (gf_block_imtime G) :
     name_list = G.mesh().domain().names()
     for i,n in enumerate(name_list):
         gl.append( make_GfImTime(G[i] ) )
-    return BlockGf( NameList = name_list, BlockList = gl)
+    return BlockGf( name_list = name_list, block_list = gl)
 

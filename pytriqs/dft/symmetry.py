@@ -24,7 +24,7 @@
 import copy,numpy
 import string
 from types import *
-from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.block_gf import BlockGf
 from pytriqs.base.archive import *
 import pytriqs.base.utility.mpi as mpi
 
@@ -81,11 +81,11 @@ class Symmetry:
         assert isinstance(obj,list),"obj has to be a list of objects!"
         assert len(obj)==self.N_orbits,"obj has to be a list of the same length as defined in the init"
 
-        if (isinstance(obj[0],GF)):
-            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a GF!
+        if (isinstance(obj[0],BlockGf)):
+            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a BlockGf!
             for iorb in range(self.N_orbits): symm_obj[iorb].zero()      # set to zero
         else:
-            # if not a GF, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
+            # if not a BlockGf, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
             #symm_obj = [ numpy.zeros([self.orbits[iorb][3],self.orbits[iorb][3]],numpy.complex_) for iorb in range(self.N_orbits) ]
             symm_obj = [ copy.deepcopy(obj[i]) for i in range(len(obj)) ]
          
@@ -105,7 +105,7 @@ class Symmetry:
                 jorb = self.map[iNs][iorb]
 
              
-                if (isinstance(obj[0],GF)):
+                if (isinstance(obj[0],BlockGf)):
                     
                     #if l==0:
                     #    symm_obj[jorb] += obj[iorb]
@@ -150,7 +150,7 @@ class Symmetry:
 #            # add time inv:
             #mpi.report("Add time inversion")
 #            for iorb in range(self.N_orbits):
-#                if (isinstance(symm_obj[0],GF)):
+#                if (isinstance(symm_obj[0],BlockGf)):
 #                    tmp = symm_obj[iorb].copy()
 #                    tmp <<= tmp.transpose()
 #                    for sig,gf in tmp: tmp[sig].from_L_G_R(self.mat_tinv[iorb],tmp[sig],self.mat_tinv[iorb].transpose().conjugate())

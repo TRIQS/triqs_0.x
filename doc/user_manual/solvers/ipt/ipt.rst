@@ -52,7 +52,7 @@ values of :math:`U`. On every run the resulting data are saved in
 an :ref:`HDF5 archive<hdf5_base>` and the density of states is plotted into
 a PNG file using the :ref:`TRIQS matplotlib interface<plotting>`
 (:math:`G(i\omega_n)` is analytically continued to the real axis by the
-:ref:`Padé approximant<GFBloc_ReFreq>`). 
+:ref:`Padé approximant<GfReFreq>`). 
 
 At the end of the script an external utility `convert` is invoked to join the
 DOS plots into a single animated GIF file which illustrates how a metallic

@@ -23,7 +23,7 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from pytriqs.base.gf_local import GFBloc_ImFreq, GFBloc_ReFreq
+from pytriqs.base.gf_local import GfImFreq, GfReFreq
 from pytriqs.base.gf_local.descriptors import Function
 
 beta = 100  # Inverse temperature
@@ -45,13 +45,13 @@ def G(z):
     return 0.5*GLorentz(z) + 0.5*GSC(z)
 
 # Matsubara GF
-gm = GFBloc_ImFreq(Indices = [0], Beta = beta, Name = "gm")
+gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm <<= Function(G)
 gm._tail.zero()
 gm._tail[1] = array([[1.0]])
 
 # Analytic continuation of gm
-g_pade = GFBloc_ReFreq(Indices = [0], Beta = beta, MeshArray = arange(-6,6,0.01), Name = "g_pade")
+g_pade = GfReFreq(indices = [0], beta = beta, mesh_array = arange(-6,6,0.01), name = "g_pade")
 g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 from pytriqs.base.archive import HDFArchive

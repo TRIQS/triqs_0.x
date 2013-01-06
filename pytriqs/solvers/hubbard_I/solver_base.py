@@ -25,7 +25,7 @@ from types import *
 from pytriqs.solvers import SolverBase
 from pytriqs.base.gf_local.gf_imfreq import *
 from pytriqs.base.gf_local.gf_refreq import *
-from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.block_gf import BlockGf
 from pytriqs.base.gf_local import gf_init
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
 import copy
@@ -60,7 +60,7 @@ class SolverBaseHub(SolverBase):
 
     # initialisation:
     def __init__(self,Beta,GFstruct,**param):
-        self.Beta = float(Beta)
+        self.beta = float(Beta)
         parameters.check_no_parameters_not_in_union_of_dicts (param,self.Required, self.Optional)
         if 'Nmsb' not in param : param['Nmsb'] = 1025
         if 'Nspin' not in param : param['Nspin'] = 2
@@ -69,8 +69,8 @@ class SolverBaseHub(SolverBase):
 
         # construct Greens functions:
         self.a_list = [a for a,al in self.GFStruct]
-        glist = lambda : [ GFBloc_ImFreq(Indices = al, Beta = self.Beta, NFreqMatsubara = self.Nmsb) for a,al in self.GFStruct]
-        self.G = GF(NameList = self.a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_matsubara = self.Nmsb) for a,al in self.GFStruct]
+        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
         self.G_Old = self.G.copy()
         self.G0 = self.G.copy()
         self.Sigma = self.G.copy()
@@ -112,7 +112,7 @@ class SolverBaseHub(SolverBase):
         self.G_Old <<= self.G
 
         # call the fortran solver:
-        temp = 1.0/self.Beta
+        temp = 1.0/self.beta
         gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=self.ur, umn=self.umn, ujmn=self.ujmn, 
                                                     zmsb=self.zmsb, nmom=self.Nmoments, ns=self.Nspin, temp=temp, verbosity = self.Verbosity)
 
@@ -138,9 +138,9 @@ class SolverBaseHub(SolverBase):
             for i in range(min(self.Nmoments,10)):
                 self.tailtempl[a][i+1].array[:] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
                  
-        glist = lambda : [ GFBloc_ImFreq(Indices = al, Beta = self.Beta, NFreqMatsubara = self.Nmsb, Data=M[a], Tail=self.tailtempl[a]) 
+        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_matsubara = self.Nmsb, data =M[a], tail =self.tailtempl[a]) 
                            for a,al in self.GFStruct]
-        self.G = GF(NameList = self.a_list, BlockList = glist(),Copy=False)
+        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
             
         # Self energy:
         self.G0 <<= gf_init.A_Omega_Plus_B(A=1,B=0.0)
@@ -180,7 +180,7 @@ class SolverBaseHub(SolverBase):
             omega[i] = ommin + delta_om * i + 1j * broadening
             Mesh[i] = ommin + delta_om * i
 
-        temp = 1.0/self.Beta
+        temp = 1.0/self.beta
         gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=self.ur, umn=self.umn, ujmn=self.ujmn, 
                                                     zmsb=omega, nmom=self.Nmoments, ns=self.Nspin, temp=temp, verbosity = self.Verbosity)
         
@@ -204,9 +204,9 @@ class SolverBaseHub(SolverBase):
             for i in range(min(self.Nmoments,10)):
                 self.tailtempl[a][i+1].array[:] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
 
-        glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = self.Beta, MeshArray = Mesh, Data=M[a], Tail=self.tailtempl[a]) 
+        glist = lambda : [ GfReFreq(indices = al, beta = self.beta, mesh_array = Mesh, data =M[a], tail =self.tailtempl[a]) 
                            for a,al in self.GFStruct]       # Indices for the upfolded G
-        self.G = GF(NameList = self.a_list, BlockList = glist(),Copy=False)
+        self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
 
         # Self energy:
         self.G0 = self.G.copy()

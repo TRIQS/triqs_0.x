@@ -35,26 +35,26 @@ GFInitializer functions are used to initialize the GFBloc_xxx objects
     * SemiCircular :...
 
   Motivations : 
-    Put the init out of the base class. Hence, one can add a new initialiser
+    Put the init out of the Base class. Hence, one can add a new initialiser
     without touching the GFBloc_xxx classes
 
 """ 
 
 import numpy
 from math import *
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF import GF_Statistic,GF_Type,TailGf,MeshGf
 from pytriqs.base.utility.my_utils import sign
 from pytriqs.base.gf_local.array_view import ArrayViewWithIndexConverter
 
-class base:
+class Base:
     def __init__(self,**kargs) :
         self.__dict__.update(kargs)
 
 #########################################################################
 
-class Function (base):
+class Function (Base):
     def __init__ (self, F, Tail = None) : 
-        base.__init__(self,F=F, Tail=Tail)
+        Base.__init__(self,F=F, Tail=Tail)
         
     def __call__(self,G) :
         if not(callable(self.F)) : raise RuntimeError, "GFInitializer.Function : f must be callable"
@@ -63,15 +63,15 @@ class Function (base):
             for n,om in enumerate(G.mesh) : res[:,:,n] = self.F(om)
         except :
             raise RuntimeError, "The given function has a problem..."
-        if self.Tail : G._tail.copyFrom(self.Tail)
+        if self.Tail : G._tail.copy_from(self.Tail)
         return G
 
 #########################################################################
 
-class Const(base):
+class Const(Base):
     def __init__ (self, C) :
         if isinstance(C,ArrayViewWithIndexConverter) : C=C.array # trasnform to numpy.array
-        base.__init__(self, C=C)
+        Base.__init__(self, C=C)
          
     def __call__(self,G) :
         C = self.C
@@ -83,8 +83,6 @@ class Const(base):
             C = C*numpy.identity(G.N1) 
         if C.shape !=(G.N1,G.N2) : raise RuntimeError, "Size of constant incorrect"
 
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
-        #t[0][:,:] = C
         G._tail.zero()
         G._tail[0].array[:,:] = C
         
@@ -93,11 +91,11 @@ class Const(base):
     
 #########################################################################
 
-class A_Omega_Plus_B(base):
+class A_Omega_Plus_B(Base):
     def __init__ (self, A=1, B=0, Invert= False) :
         if isinstance(A,ArrayViewWithIndexConverter) : A=A.array[:,:] # trasnform to numpy.array
         if isinstance(B,ArrayViewWithIndexConverter) : B=B.array[:,:]# trasnform to numpy.array
-        base.__init__(self, A=A, B=B,Invert=Invert)
+        Base.__init__(self, A=A, B=B,Invert=Invert)
          
     def __call__(self,G) :
         A,B = self.A, self.B
@@ -113,9 +111,6 @@ class A_Omega_Plus_B(base):
         t.zero()
         t[-1].array[:,:] = A
         t[0].array[:,:] = B
-        #t= TailGF(-1,3,list(G.Indices),list(G.Indices))
-        #t[-1][:,:] = A
-        #t[0][:,:] = B
 
         Function(lambda om : A*om + B, None)(G)
 
@@ -123,9 +118,9 @@ class A_Omega_Plus_B(base):
         return G
 #######################################
 
-class OneFermionInTime(base):
+class OneFermionInTime(Base):
     def __init__ (self, l =0) :
-         base.__init__(self, L=l)
+         Base.__init__(self, L=l)
          
     def __call__(self,G) :
         L = self.L
@@ -138,21 +133,21 @@ class OneFermionInTime(base):
         t[2].array[:,:] = L
         t[3].array[:,:] = L*L
         
-        fact = -1/(1+exp(-L*G.Beta))
+        fact = -1/(1+exp(-L*G.beta))
         Function(lambda t : fact* exp(-L*t), None)(G)
         return G
 
 
 ##################################################
 
-def _SemiCircularDOS(HalfBandwidth):
+def _SemiCircularDOS(half_bandwidth):
     """
        Semi_Circular DOS function
        Input : the 1/2 bandwidth
        Returns : a function omega-> dos(omega)
     """
     from math import sqrt,pi
-    larg = HalfBandwidth
+    larg = half_bandwidth
     def semi(x):
         if (abs(x)<larg) : return sqrt( 1 - (x/larg)**2 )*2/pi/larg
         else: return 0.0
@@ -163,12 +158,12 @@ def semi(x) :
 
 ##################################################
 
-class SemiCircular (base):
-    def __init__ (self, HalfBandwidth) :
-        base.__init__(self, HalfBandwidth=HalfBandwidth)
+class SemiCircular (Base):
+    def __init__ (self, half_bandwidth) :
+        Base.__init__(self, half_bandwidth=half_bandwidth)
 
     def __call__(self,G) :
-        D= self.HalfBandwidth
+        D= self.half_bandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
         if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
             f = lambda om : (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
@@ -177,8 +172,6 @@ class SemiCircular (base):
             f = lambda om : -1j*pi*dos(om)*Id
         else :
             raise TypeError, "This initializer is only correct in frequency"
-
-        #assert G.N1==1, "Not valid for large GF"
 
         t =G._tail
         t.zero()
@@ -202,13 +195,13 @@ class SemiCircular (base):
 
 ##################################################
 
-class Wilson (base):
-    def __init__ (self, HalfBandwidth) :
-        base.__init__(self, HalfBandwidth=HalfBandwidth)
+class Wilson (Base):
+    def __init__ (self, half_bandwidth) :
+        Base.__init__(self, half_bandwidth=half_bandwidth)
 
     def __call__(self,G) :
 
-        D = self.HalfBandwidth
+        D = self.half_bandwidth
         Id = numpy.identity(G.N1,numpy.complex_)
 
         if G.mesh.TypeGF == GF_Type.Imaginary_Frequency:
@@ -282,7 +275,7 @@ class FreeBath (Function):
 	    return res
 
         # compute the moments
-        tail = TailGF(0,4, []) ##### FAUX @@@@@@@@@@@@
+        tail = TailGf(0,4, []) ##### FAUX @@@@@@@@@@@@
         Mom = numpy.zeros((self.alpha_Max+2,self.Nnd,self.Nnd),numpy.complex_)
         Mom[0,:,:] = Id # 1/omega
         Mom[1,:,:] = - eps0

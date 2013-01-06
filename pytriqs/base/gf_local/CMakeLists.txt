@@ -1,7 +1,6 @@
 
 SET(PYTHON_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/gf_concept.py
   ${CMAKE_CURRENT_SOURCE_DIR}/gf_base.py
   ${CMAKE_CURRENT_SOURCE_DIR}/inverse.py
   ${CMAKE_CURRENT_SOURCE_DIR}/array_view.py

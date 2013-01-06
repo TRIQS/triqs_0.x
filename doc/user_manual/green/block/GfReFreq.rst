@@ -1,44 +1,41 @@
 .. index::
   single: Green's functions; block Green's function
-  module: gf_imfreq
+  module: gf_refreq
 
-.. _GFBloc_ImFreq:
+.. _GfReFreq:
 
-Matsubara Green's function in imaginary frequencies (GFBloc_ImFreq)
+Retarded Green's function in real frequencies (GfReFreq)
 =====================================================================================
 
-This object stores a matrix valued Green function in imaginary frequencies
-in the Matsubara formalism : 
+This object stores a matrix valued Green function in real frequencies : 
 
 .. math::
-  G_{\alpha \beta} (i \omega_n) \equiv \int_0^\beta G_{\alpha \beta} ( \tau) e^{-i \omega_n \tau}
+  G_{\alpha \beta} (\omega) \equiv \int_{-\infty}^{\infty} G_{\alpha \beta} ( t ) e^{-i \omega t}
 
-where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <GFBloc_ImTime>`.
+where :math:`G(t)` is the :ref:`Green function in real time <GfReTime>`.
 
 
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GFBloc_ImFreq
-  :members: density, setFromFourierOf, setFromLegendre
+.. autoclass:: pytriqs.base.gf_local.GfReFreq
+  :members: density, setFromFourierOf, transpose, conjugate, setFromPadeOf
  
+
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GFBloc_ImFreq (TRIQS_HDF5_data_scheme= "GFBloc_ImFreq") is decomposed in the following objects : 
+The GfReFreq (TRIQS_HDF5_data_scheme = "GfReFreq") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-Mesh                        MeshGF                       The mesh
-Tail                        TailGF                       The tail
+Mesh                        MeshGf                       The mesh
+Tail                        TailGf                       The tail
 Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
                                                           * i1, i2 are the indices
-                                                          * n is the Matsubara index 
-                                                         
-                                                         For real GF in time, we store only starting from n=0 and the
-                                                         rest is deduced by symmetry
+                                                          * n is the frequency index 
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
                                                          repr(this_string) reproduces the indices 
 Name                        string                       Name of the Green function block
@@ -46,9 +43,21 @@ Note                        string                       Note
 =========================   ===========================  ===========================================================================
 
 
-Example 
---------------- 
+Examples 
+---------------
 
-.. plot:: green/block/green_imfreq.py
+.. plot:: green/block/green_refreq.py
    :include-source:
-   :scale: 70 
+   :scale: 70
+
+Note that `g` is a **retarded** Green's function.
+
+
+The next example demonstrates how a real frequency Green's function can be
+reconstructed from an imaginary frequency counterpart using setFromPadeOf()
+method. Note that in order to use this method you need to activate the
+``Use_Pade`` option when you run cmake (``cmake -DUse_Pade=ON``).
+
+.. plot:: green/block/green_pade.py
+   :include-source:
+   :scale: 70

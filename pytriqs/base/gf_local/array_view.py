@@ -26,44 +26,44 @@ from types import *
 class _IndicesConverter : 
     def __init__(self, indices) : 
         if indices == None : # none is a trivial converter
-            self.Indices=None
+            self.indices=None
             return
 
         #print "Indices are ", indices
         try : 
-            self.Indices = list(indices)[:] # make a copy
+            self.indices = list(indices)[:] # make a copy
         except :
             raise RuntimeError, "Indices must be a list or transformable into a list %s"(indices,)
-        assert len(set(repr(x) for x in self.Indices)) == len(self.Indices), "Error : indices are not unique !!!"
-        assert self.Indices != [], "Error : indices are empty!!!"
+        assert len(set(repr(x) for x in self.indices)) == len(self.indices), "Error : indices are not unique !!!"
+        assert self.indices != [], "Error : indices are empty!!!"
         try :
             # a continuous list of ordered integers
-            self.__indices_are_sliceable = (self.Indices== range(min(self.Indices),max(self.Indices)+1)) 
-            self.__indexmin = min(self.Indices)
-            self.__indexmax = max(self.Indices)
+            self.__indices_are_sliceable = (self.indices== range(min(self.indices),max(self.indices)+1)) 
+            self.__indexmin = min(self.indices)
+            self.__indexmax = max(self.indices)
             #self.__indexlen = self.__indexmax - self.__indexmin +1
         except:
             self.__indices_are_sliceable =False
-        self.Length = len(self.Indices)
+        self.Length = len(self.indices)
     
     def convertToNumpyIndex(self,a,noslice=False):
         """
         Transcription of one Python index/slice into the index/slice of the numpy
         """
-        if self.Indices==None: 
+        if self.indices==None: 
             if type(a)==SliceType : return a
             return a if noslice else slice(a,a+1,1)
 
         if type(a)==SliceType :
-            if not self.__indices_are_sliceable : raise IndexError, "Indices %s can't be sliced"%self.Indices
+            if not self.__indices_are_sliceable : raise IndexError, "Indices %s can't be sliced"%self.indices
             # put the slice to start at 0, and clip it
             sta,sto,ste = slice(a.start, a.stop , a.step).indices(self.__indexmax+1)
             return slice( max(0,sta-self.__indexmin), sto - self.__indexmin, ste)
                     
         try :
-            s1 = self.Indices.index(a) 
+            s1 = self.indices.index(a) 
         except  :
-            raise IndexError, "Index %s out of range %s"%(a,self.Indices)
+            raise IndexError, "Index %s out of range %s"%(a,self.indices)
         return s1 if noslice else slice(s1,s1+1,1)
 
 ######################################################
@@ -79,7 +79,7 @@ class ArrayViewWithIndexConverter(object):
        # g is a GFBloc with indices [1,2,...] or ['A','B', ...]
        
        # Create such an array from g  e.g.
-       A = g.arrayWithIndices()
+       A = g.array_with_indices()
        A['a','b'] = 2
 
        # When you slice, you get back a ArrayViewWithIndexConverter: 
@@ -102,8 +102,8 @@ class ArrayViewWithIndexConverter(object):
         #assert self.__dim<= len( IndicesList), "Error : you provided to few indices for this array !"
 
         for n,conv in enumerate(self.__converters) : 
-            if conv.Indices and conv.Length !=  A.shape[n] :
-                print conv.Indices,A
+            if conv.indices and conv.Length !=  A.shape[n] :
+                print conv.indices,A
                 raise RuntimeError, "Array size and number of indices mismatch for index %s"%n
         
     def __getitem__(self,key):
@@ -113,7 +113,7 @@ class ArrayViewWithIndexConverter(object):
             s = c.convertToNumpyIndex(k,noslice=True) #either an index or a slice
             sl.append(s)
             if type(s) ==SliceType :
-                ind.append(c.Indices[s] if c.Indices else None)
+                ind.append(c.indices[s] if c.indices else None)
         #print "ind is ",ind,sl
         return ArrayViewWithIndexConverter( self.__A[tuple(sl)], *ind) if ind else self.__A[tuple(sl)]
         
@@ -128,11 +128,11 @@ class ArrayViewWithIndexConverter(object):
     array = property(__get_array,None)
 
     def Indices(self,n) :
-        for i in self.__converters[n].Indices if self.__converters[n].Indices else range(self.__A.shape[n]) : 
+        for i in self.__converters[n].indices if self.__converters[n].indices else range(self.__A.shape[n]) : 
             yield i
              
     def __repr__(self) :
-        ind = dict([ (n,c.Indices if c.Indices else range(self.__A.shape[n])) for n,c in enumerate(self.__converters)])
+        ind = dict([ (n,c.indices if c.indices else range(self.__A.shape[n])) for n,c in enumerate(self.__converters)])
         return "ArrayViewWithIndexConverter with : \n  Indices = %s\n  Array = %s"%(ind,self.__A)
     
     

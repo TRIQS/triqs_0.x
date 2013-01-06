@@ -28,7 +28,7 @@ the different steps of the example:
    :lines: 1-2
 
 This imports all the necessary classes to manipulate Green's functions. In this example it allows
-to use ``GFBloc_ImFreq``, ``GF`` :
+to use ``GfImFreq``, ``BlockGf`` :
 
 .. literalinclude:: example.py
    :lines: 4-5

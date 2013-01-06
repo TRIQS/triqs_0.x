@@ -1,8 +1,8 @@
 # Import the Green's functions 
-from pytriqs.base.gf_local import GFBloc_ImFreq, iOmega_n, inverse 
+from pytriqs.base.gf_local import GfImFreq, iOmega_n, inverse 
 
 # Create the Matsubara-frequency Green's function and initialize it
-g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
+g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "imp")
 g <<= inverse( iOmega_n + 0.5 )
 
 from pytriqs.base.plot.mpl_interface import oplot

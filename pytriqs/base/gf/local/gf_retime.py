@@ -20,13 +20,13 @@
 #
 ################################################################################
 
-__all__ = ['GFBloc_ReTime']
+__all__ = ['GfReTime']
 import numpy
 from math import pi
-from gf import GFBloc_ReTime_cython, MeshReTime 
+from gf import GfReTime_cython, MeshReTime 
 from GFBloc_general import _GFBloc_general 
 
-class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
+class GfReTime (GfReTime_cython, _GFBloc_general):
     """ 
     A matrix-valued block Green's function in real time.
     """
@@ -36,7 +36,7 @@ class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
     real time yourself, or give the parameters to build it.
     All parameters must be given with keyword arguments.
 
-    GFBloc_ReTime (Indices, Beta, Statistic, NTimeSlices, TimeMin, TimeMax,  Data, Tail, Name,Note)
+    GfReTime (Indices, Beta, Statistic, NTimeSlices, TimeMin, TimeMax,  Data, Tail, Name,Note)
 
            * ``Indices``:  a list of indices names of the block
            * ``Beta``:  Inverse Temperature 
@@ -50,10 +50,10 @@ class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
 
     If you already have the mesh, you can use a simpler version :
 
-    GFBloc_ReTime (Indices, Mesh, Data, Tail, Name,Note)
+    GfReTime (Indices, Mesh, Data, Tail, Name,Note)
         
            * ``Indices``:  a list of indices names of the block
-           * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Real_Time 
+           * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF== GF_Type.Real_Time 
            * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
            * ``Tail``:  the tail 
            * ``Name``:  a name of the GF
@@ -80,16 +80,16 @@ class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
         self.TimeMin -= dt/2 ;self.TimeMax += dt/2 
         # ????? duplicated in C++... not very clean, but ok.
 
-        GFBloc_ReTime_cython.__init__(self,*self._prepare_init(d))
+        GfReTime_cython.__init__(self,*self._prepare_init(d))
         
     #-----------------------------------------------------
     
     def Fourier(self):
-        """Returns a GFBloc_ReFreq containing the Fourier transform of self"""
+        """Returns a GfReFreq containing the Fourier transform of self"""
         import gf_refreq
         om0 = 2*pi/(self.TimeMax - self.TimeMin)
         N = self.Npts
-        gw = gf_refreq.GFBloc_ReFreq(Indices = self.Indices,Beta = self.Beta,
+        gw = gf_refreq.GfReFreq(indices = self.indices,beta = self.beta,
                                          Statistic = self.Statistic,
                                          MeshArray = numpy.array([ om0*i for i in range (- (N/2),N/2)]))
         gw.setFromFourierOf(self)
@@ -111,7 +111,7 @@ class GFBloc_ReTime (GFBloc_ReTime_cython, _GFBloc_general):
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
-register_class (GFBloc_ReTime)
+register_class (GfReTime)
 
 
 

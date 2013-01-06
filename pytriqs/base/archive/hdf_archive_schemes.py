@@ -37,7 +37,7 @@ def register_class (cls, doc = None, read_fun = None) :
      For each class, register it with::
 
          from HDFArchive_Schemes_dict import register_class 
-         register_class (GFBloc_ImFreq, doc= doc_if_different_from cls._hdf5_data_scheme_doc_ )
+         register_class (GfImFreq, doc= doc_if_different_from cls._hdf5_data_scheme_doc_ )
 
     """
     SchemeName = cls._hdf5_data_scheme_ if hasattr(cls,"_hdf5_data_scheme_") else cls.__name__ 

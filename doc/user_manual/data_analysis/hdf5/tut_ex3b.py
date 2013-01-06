@@ -1,4 +1,4 @@
-from pytriqs.base.gf_local import GFBloc_ReFreq
+from pytriqs.base.gf_local import GfReFreq
 from pytriqs.base.archive import HDFArchive
 from math import pi
 

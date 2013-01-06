@@ -24,10 +24,10 @@
 from types import *
 import numpy
 import pytriqs.base.utility.dichotomy as dichotomy
-from pytriqs.base.gf_local.block_gf import GF
-from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
-from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
+from pytriqs.base.gf_local.block_gf import BlockGf
+from pytriqs.base.gf_local.gf_imfreq import GfImFreq
+from pytriqs.base.gf_local.gf_refreq import GfReFreq
+from pytriqs.base.gf_local.gf_imtime import GfImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.utility.my_utils import sum_list
@@ -125,8 +125,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
         Gloc = []
         for icrsh in range(self.N_corr_shells):
             b_list = [a for a,al in self.GFStruct_corr[icrsh]]
-            glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in self.GFStruct_corr[icrsh]]   
-            Gloc.append(GF(NameList = b_list, BlockList = glist(),Copy=False))
+            glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in self.GFStruct_corr[icrsh]]   
+            Gloc.append(BlockGf(name_list = b_list, block_list = glist(),make_copies=False))
         for icrsh in xrange(self.N_corr_shells): Gloc[icrsh].zero()                        # initialize to zero
             
 
@@ -136,8 +136,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
         BS = [ range(self.N_Orbitals[0][ntoi[ib]]) for ib in bln ]
         GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
         a_list = [a for a,al in GFStruct] 
-        glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in GFStruct]       # Indices for the upfolded G
-        Gupf = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in GFStruct]       # Indices for the upfolded G
+        Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         Gupf.zero()
         mupat = [numpy.identity(self.N_Orbitals[0][ntoi[bl]],numpy.complex_) for bl in bln] 
         for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
@@ -145,8 +145,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         #GFStruct = [ (ib, BS[self.names_to_ind[ib]]) for ib in self.blocnames ]
         #a_list = [a for a,al in GFStruct]   
-        #glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in GFStruct]       # Indices for the upfolded G
-        #Gupf = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        #glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in GFStruct]       # Indices for the upfolded G
+        #Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         #Gupf.zero()
         #mupat = [numpy.identity(self.N_Orbitals[0][self.names_to_ind[bl]],numpy.complex_) for bl in self.blocnames] 
         #for ibl in range(len(self.blocnames)): mupat[ibl] *= self.Chemical_Potential
@@ -164,8 +164,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 BS = [ range(self.N_Orbitals[ik][ntoi[ib]]) for ib in bln ]
                 GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
                 a_list = [a for a,al in GFStruct]                                 
-                glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in GFStruct]    
-                Gupf = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in GFStruct]    
+                Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
                 Gupf.zero()
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= self.Chemical_Potential
@@ -251,7 +251,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         #GFStruct_proj has to be adapted for SO coupling!!
         #GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in self.blocnames ]  for i in xrange(self.N_shells) ]
-	#Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ReFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], Copy = False ) 
+	#Gproj = [BlockGf(name_block_generator = [ (a,GfReFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False ) 
 	#	 for ish in xrange(self.N_shells)]
 	#for ish in range(self.N_shells): Gproj[ish].zero()
 
@@ -261,7 +261,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         if (self.SO==0):
             GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in bln ]  for i in xrange(self.N_shells) ]
-            Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ReFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], Copy = False ) 
+            Gproj = [BlockGf(name_block_generator = [ (a,GfReFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False ) 
                      for ish in xrange(self.N_shells)]
             for ish in range(self.N_shells): Gproj[ish].zero()
 
@@ -272,8 +272,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
              BS = [ range(self.N_Orbitals[0][ntoi[ib]]) for ib in bln ]
              GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
              a_list = [a for a,al in GFStruct]   
-             glist = lambda : [ GFBloc_ReFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]  
-             S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+             glist = lambda : [ GfReFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]  
+             S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
              S.zero()
              mupat = [numpy.identity(self.N_Orbitals[0][ntoi[bl]],numpy.complex_) for bl in bln] 
              for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
@@ -296,8 +296,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                      BS = [ range(self.N_Orbitals[ik][ntoi[ib]]) for ib in bln ]
                      GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
                      a_list = [a for a,al in GFStruct]                                 
-                     glist = lambda : [ GFBloc_ReFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]    
-                     S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                     glist = lambda : [ GfReFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]    
+                     S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
                      S.zero()
                      mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                      for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
@@ -487,18 +487,18 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                     if (self.N_Orbitals[ik]!=self.N_Orbitals[ik-1]):
                         BS = range(self.N_Orbitals[ik])
                         # construct the upfolded Sigma, if #bands changed
-                        S = GF(Name_Block_Generator = [ (s,GFBloc_ReFreq(Indices = BS, Mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],Copy = False)
+                        S = BlockGf(name_block_generator = [ (s,GfReFreq(indices = BS, mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],make_copies = False)
                         mupat = numpy.identity(self.N_Orbitals[ik],numpy.complex_)                                     # change size of mupat
                         mupat *= mu
 
                 else:
                     BS = range(self.N_Orbitals[ik])
                     # construct the upfolded Sigma
-                    S = GF(Name_Block_Generator = [ (s,GFBloc_ReFreq(Indices = BS, Mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],Copy = False)
+                    S = BlockGf(name_block_generator = [ (s,GfReFreq(indices = BS, mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],make_copies = False)
                     mupat = numpy.identity(self.N_Orbitals[ik],numpy.complex_)                                         # construct mupat 
                     mupat *= mu
                     if not (ishell is None):
-                        Gproj = GF(Name_Block_Generator = [ (a,GFBloc_ReFreq(Indices = al, Mesh = S.mesh)) for a,al in GFStruct_proj ], Copy = False)
+                        Gproj = BlockGf(name_block_generator = [ (a,GfReFreq(indices = al, mesh = S.mesh)) for a,al in GFStruct_proj ], make_copies = False)
                         Gproj.zero()
                         
                     # init DOS:
@@ -521,7 +521,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                     
 
                 S <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
-                S -= S.NBlocks * [ self.Hopping[ik] - mupat ]  
+                S -= S.n_blocks * [ self.Hopping[ik] - mupat ]  
 
                 tmp = S.copy()    # init temporary storage
                 for icrsh in xrange(self.N_corr_shells):
@@ -719,14 +719,14 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 if (self.N_Orbitals[ik]!=self.N_Orbitals[ik-1]):
                     BS = range(self.N_Orbitals[ik])
                     # construct the upfolded Sigma, if #bands changed
-                    S = GF(Name_Block_Generator = [ (s,GFBloc_ReFreq(Indices = BS, Mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],Copy = False)
+                    S = BlockGf(name_block_generator = [ (s,GfReFreq(indices = BS, mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],make_copies = False)
                     mupat = numpy.identity(self.N_Orbitals[ik],numpy.complex_)                                     # change size of mupat
                     mupat *= mu
                     
             else:
                 BS = range(self.N_Orbitals[ik])
                 # construct the upfolded Sigma
-                S = GF(Name_Block_Generator = [ (s,GFBloc_ReFreq(Indices = BS, Mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],Copy = False)
+                S = BlockGf(name_block_generator = [ (s,GfReFreq(indices = BS, mesh = self.Sigmaimp[0].mesh)) for s in ['up','down'] ],make_copies = False)
                 mupat = numpy.identity(self.N_Orbitals[ik],numpy.complex_)                                         # construct mupat 
                 mupat *= mu
 
@@ -765,7 +765,7 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
             
                 
             S <<= gf_init.A_Omega_Plus_B(A=A,B=1j*broadening)
-            S -= S.NBlocks * [ self.Hopping[ik] - mupat + Dmu ]  
+            S -= S.n_blocks * [ self.Hopping[ik] - mupat + Dmu ]  
 
 
                     
@@ -868,8 +868,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
 
         # now initialize the GF with the mesh
         a_list = [a for a,al in self.GFStruct_Solver[orb]]
-        glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = mesh) for a,al in self.GFStruct_Solver[orb] ] 
-        SigmaME = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = mesh) for a,al in self.GFStruct_Solver[orb] ] 
+        SigmaME = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         SigmaME.load(Filename)
         SigmaME.Note='ReFreq'          # This is important for the put_Sigma routine!!!
 
@@ -1002,15 +1002,15 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                for isp in range(len(bln)) ]    # init the density matrix
 
         GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in bln ]  for i in xrange(self.N_shells) ]
-        Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ImFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], Copy = False)
+        Gproj = [BlockGf(name_block_generator = [ (a,GfImFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False)
                  for ish in xrange(self.N_shells)]
         for ish in xrange(self.N_shells): Gproj[ish].zero()
 
         BS = [ range(self.N_Orbitals[0][ntoi[ib]]) for ib in bln ]
         GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
         a_list = [a for a,al in GFStruct]  
-        glist = lambda : [ GFBloc_ImFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]  
-        S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfImFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]  
+        S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         S.zero()
 
         mupat = [numpy.identity(self.N_Orbitals[0][ntoi[bl]],numpy.complex_) for bl in bln]   # construct mupat
@@ -1029,8 +1029,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 BS = [ range(self.N_Orbitals[ik][ntoi[ib]]) for ib in bln ]
                 GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
                 a_list = [a for a,al in GFStruct]                                 
-                glist = lambda : [ GFBloc_ImFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]    
-                S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                glist = lambda : [ GfImFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]    
+                S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
                 S.zero()
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
@@ -1097,14 +1097,14 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
         BS = [ range(self.N_Orbitals[0][ntoi[ib]]) for ib in bln ]
         GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
         a_list = [a for a,al in GFStruct]  
-        glist = lambda : [ GFBloc_ImFreq(Indices = al, Beta=Beta) for a,al in GFStruct]  
-        S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfImFreq(indices = al, beta =Beta) for a,al in GFStruct]  
+        S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         S.zero()
         mupat = [numpy.identity(self.N_Orbitals[0][ntoi[bl]],numpy.complex_) for bl in bln]   # construct mupat
         for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu
 
         GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in bln ]  for i in xrange(self.N_shells) ]
-        Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ImFreq(Indices = al, Mesh = S.mesh)) for a,al in GFStruct_proj[ish] ], Copy = False)
+        Gproj = [BlockGf(name_block_generator = [ (a,GfImFreq(indices = al, mesh = S.mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False)
                  for ish in xrange(self.N_shells)]
         for ish in xrange(self.N_shells): Gproj[ish].zero()
 
@@ -1121,8 +1121,8 @@ class SumK_LDA_SOtools(SumK_LDA_SO):
                 BS = [ range(self.N_Orbitals[ik][ntoi[ib]]) for ib in bln ]
                 GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
                 a_list = [a for a,al in GFStruct]                                 
-                glist = lambda : [ GFBloc_ImFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]    
-                S = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                glist = lambda : [ GfImFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]    
+                S = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
                 S.zero()
                 mupat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]   # change size of mupat
                 for ibl in range(self.NspinblocsGF[self.SO]): mupat[ibl] *= mu

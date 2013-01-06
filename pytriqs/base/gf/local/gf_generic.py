@@ -22,7 +22,6 @@ import numpy
 import lazy_expressions, descriptors
 import pytriqs.base.utility.my_utils
 from pytriqs.base.plot.protocol import clip_array
-import lazy_expressions,descriptors
 from types import IntType,SliceType,StringType
 from tools import PlotWrapperPartialReduce, lazy_ctx, IndicesConverter,get_indices_in_dict, py_deserialize
 import impl_plot
@@ -129,18 +128,18 @@ class GfGeneric :
         """
         if isinstance(A, self.__class__) : 
             if self is not A : self.copy_from(A) # otherwise it is useless AND does not work !!
-        elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
-            A2= descriptors.convert_scalar_to_Const(A)
+        elif isinstance(A, lazy_expressions.LazyExpr) : # A is a lazy_expression made of GF, scalars, descriptors 
+            A2= descriptors.convert_scalar_to_const(A)
             def e_t (x) : 
-                if not isinstance(x, descriptors.base) : return x
+                if not isinstance(x, descriptors.Base) : return x
                 tmp = self.copy()
                 x(tmp)
                 return tmp
             self.copy_from ( lazy_expressions.eval_expr_with_context(e_t, A2) )
-        elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
-            self <<= lazy_expressions.lazy_expr(A)
+        elif isinstance(A, lazy_expressions.LazyExprTerminal) : #e.g. g<<= SemiCircular (...) 
+            self <<= lazy_expressions.LazyExpr(A)
         elif descriptors.is_scalar(A) : #in the case it is a scalar .... 
-            self <<= lazy_expressions.lazy_expr(A)
+            self <<= lazy_expressions.LazyExpr(A)
         else :
             raise RuntimeError, " <<= operator : RHS  not understood"
         return self
@@ -200,7 +199,7 @@ class GfGeneric :
 
     def __imul__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
+            If arg is a BlockGf(any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
         """
         if type(self) == type(arg) :
             d,d2 = self.data, arg.data

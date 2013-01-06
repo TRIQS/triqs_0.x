@@ -66,7 +66,7 @@ Routines with real-frequency self energy
 ----------------------------------------
 
 In order to plot data including correlation effects on the real axis, one has to provide the real frequency self energy. 
-Most conveniently, it is stored as a real frequency :class:`GF` object in the hdf5 file. There is one important thing to
+Most conveniently, it is stored as a real frequency :class:`BlockGf` object in the hdf5 file. There is one important thing to
 keep in mind. The real frequency self energy has to carry the note `ReFreq`::
 
   SigmaReFreq.Note = 'ReFreq'

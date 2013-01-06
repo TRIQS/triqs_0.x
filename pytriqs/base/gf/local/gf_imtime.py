@@ -25,7 +25,7 @@ class GfImTime ( GfImTime_cython, GfGeneric ) :
         GfImTime (Indices, Mesh, Data, Tail, Name)
            
               * ``Indices``:  a list of indices names of the block
-              * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
+              * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NTimeSlices) representing the value of the Green function on the mesh. 
               * ``Tail``:  the tail 
               * ``Name``:  a name of the GF

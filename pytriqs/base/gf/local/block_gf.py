@@ -30,40 +30,40 @@ class BlockGf(object):
     Generic Green Function by Block. 
     """
     # not implemented as a dictionnary since we want to be sure of the order !).
-    def __init__(self,**kwargs) : 
+    def __init__(self, **kwargs) : 
         """
    * There are several possible constructors, which accept only keyword arguments.
             
-            * BlockGf ( NameList = list of names, BlockList = list of blocks, Copy=False, Name='')
+            * BlockGf(name_list = list of names, block_list = list of blocks, make_copies = False, name = '')
                    
-                   * ``NameList`` : list of the name of the blocks : e.g. ["up","down"].
-                   * ``BlockList`` : list of blocks of Green functions.
-                   * ``Copy`` : If True, it makes a copy of the blocks and build the Green function from these copies.
+                   * ``name_list`` : list of the name of the blocks : e.g. ["up","down"].
+                   * ``block_list`` : list of blocks of Green functions.
+                   * ``make_copies`` : If True, it makes a copy of the blocks and build the Green function from these copies.
             
-            * BlockGf ( Name_Block_Generator, Copy = False, Name='')
+            * BlockGf(name_block_generator, make_copies = False, name = '')
                    
-                   * ``Name_Block_Generator`` : a generator of (index, block)
-                   * ``Copy`` : If True, it makes a copy of the blocks and build the Green function from these copies.
+                   * ``name_block_generator`` : a generator of (index, block)
+                   * ``make_copies`` : If True, it makes a copy of the blocks and build the Green function from these copies.
                      
           """
-        # first extract the optional Name argument
-        self.name = kwargs.pop('Name','G')
-        self._name_bloc = kwargs.pop('RenameBlock',True)
-        self.Note = kwargs.pop('Note','')
+        # first extract the optional name argument
+        self.name = kwargs.pop('name','G')
+        self.note = kwargs.pop('note','')
+        self._rename_gf = kwargs.pop('rename_gf',True)
 
-        if 'Copy' not in kwargs : kwargs['Copy'] = False
+        if 'make_copies' not in kwargs : kwargs['make_copies'] = False
  
-        if set(kwargs.keys()) == set(['NameList','BlockList','Copy']) :
-            BlockNameList, GFlist = kwargs['NameList'],kwargs['BlockList']
-        elif set(kwargs.keys()) == set(['Name_Block_Generator','Copy']) : 
-            BlockNameList,GFlist = zip (* kwargs['Name_Block_Generator'])
+        if set(kwargs.keys()) == set(['name_list','block_list','make_copies']) :
+            BlockNameList, GFlist = kwargs['name_list'],kwargs['block_list']
+        elif set(kwargs.keys()) == set(['name_block_generator','make_copies']) : 
+            BlockNameList,GFlist = zip (* kwargs['name_block_generator'])
         else : 
-            raise RuntimeError, "GF construction : error in parameters, see the documentation"
-        if kwargs['Copy'] : GFlist =[g.copy() for g in GFlist]
+            raise RuntimeError, "BlockGf construction : error in parameters, see the documentation"
+        if kwargs['make_copies'] : GFlist =[g.copy() for g in GFlist]
 
         # First a few checks
         assert GFlist !=[], "Empty list of blocks !"
-        for ind in BlockNameList : assert str(ind)[0:2] !='__', "Indices should not start with __"
+        for ind in BlockNameList : assert str(ind)[0:2] !='__', "indices should not start with __"
         assert len(set(BlockNameList)) == len(BlockNameList),"Bloc indices of the Green Function are not unique"
         assert len(BlockNameList) == len(GFlist), "Number of indices and of Green Function Blocks differ"
 
@@ -75,55 +75,49 @@ class BlockGf(object):
             raise RuntimeError, "BlockGf : All block must have the same type %s"%GFlist
 
         # init
-        self.__Indices,self.__GFlist = BlockNameList,GFlist
+        self.__indices,self.__GFlist = BlockNameList,GFlist
         try : 
             self.__me_as_dict = dict(self)
         except TypeError: 
-            raise TypeError, "Indices are not of the correct type"
-        self.__BlockIndexNumberTable = dict( (i,n) for n,i in enumerate(self.__Indices) ) # a dict : index -> numero of its order
+            raise TypeError, "indices are not of the correct type"
+        self.__BlockIndexNumberTable = dict( (i,n) for n,i in enumerate(self.__indices) ) # a dict : index -> numero of its order
         
         # Add the name to the G
-        self.Note = ''
-        if self._name_bloc:
+        self.note = ''
+        if self._rename_gf:
             for i,g in self : g.name = "%s_%s"%(self.name,i) if self.name else '%s'%(i,)
-        del self._name_bloc
+        del self._rename_gf
 
-    #------------ Copy and construction -----------------------------------------------
+    #------------ copy and construction -----------------------------------------------
 
     def copy(self,*args):
        """Returns a (deep) copy of self (i.e. new independant Blocks initialised with self) """
-       return self.__class__ (NameList = self.__Indices[:], BlockList = [ g.copy(*args) for g in self.__GFlist],Copy=False)
+       return self.__class__ (name_list = self.__indices[:], block_list = [ g.copy(*args) for g in self.__GFlist],make_copies=False)
     
-    def View_SelectedBlocks(self, SelectedBlocks) :
+    def view_selected_blocks(self, selected_blocks) :
         """Returns a VIEW of the selected blocks of self, in the same order as self."""
-        for b in SelectedBlocks : assert b in self.__Indices,"Selected Blocks must be existing blocks"
-        return self.__class__ ( Name_Block_Generator = [(n,g) for n,g in G if n in SelectedBlocks ],Copy=False)
+        for b in selected_blocks : assert b in self.__indices,"Selected Blocks must be existing blocks"
+        return self.__class__ ( name_block_generator = [(n,g) for n,g in G if n in selected_blocks ],make_copies=False)
 
-    def Copy_SelectedBlocks(self, SelectedBlocks) :
+    def copy_selected_blocks(self, selected_blocks) :
         """Returns a COPY of the selected blocks of self, in the same order as self."""
-        for b in SelectedBlocks : assert b in self.__Indices,"Selected Blocks must be existing blocks"
-        return self.__class__ ( Name_Block_Generator = [(n,g) for n,g in G if n in SelectedBlocks ],Copy=True)
+        for b in selected_blocks : assert b in self.__indices,"Selected Blocks must be existing blocks"
+        return self.__class__ ( name_block_generator = [(n,g) for n,g in G if n in selected_blocks ],make_copies=True)
  
-    def copyFrom(self, G2):
+    def copy_from(self, G2):
         """Copy the green function from G2: G2 MUST have the same structure !!""" 
         assert isinstance(G2, BlockGf)
         for (i,g),(i2,g2) in itertools.izip(self,G2) : 
            if  (g.N1,g.N2) != (g2.N1,g2.N2) : 
                raise RuntimeError, "Blocks %s and %s of the Green Function do have the same dimension"%(i1,i2) 
-        for (i,g),(i2,g2) in itertools.izip(self,G2) : g.copyFrom(g2)
+        for (i,g),(i2,g2) in itertools.izip(self,G2) : g.copy_from(g2)
 
      #--------------  Iterators -------------------------
 
     def __iter__(self) : 
-        return izip(self.__Indices,self.__GFlist)
+        return izip(self.__indices,self.__GFlist)
 
     #---------------------------------------------------------------------------------
-
-    def blockArrayWithIndices(self) : 
-        """Returns a new Array_with_GFBloc_Indices adapted to self"""
-        return   dict([ (sig, g.arrayWithIndices()) for sig, g in self])
-
-    #-----------------------------------------------------------
 
     def _first(self) :
         return self.__GFlist[0]
@@ -141,47 +135,43 @@ class BlockGf(object):
         return  self._first().mesh
 
     @property
-    def Beta(self) : 
+    def beta(self) : 
         """ Inverse Temperature"""
-        return  self._first().Beta
+        return  self._first().beta
     
     @property
-    def Indices(self) : 
+    def indices(self) : 
         """A generator of the block indices"""
-        for ind in self.__Indices: 
+        for ind in self.__indices: 
             yield ind
     
     @property 
-    def AllIndices(self):
-       """  An Iterator on BlockGf Indices and indices of the blocs of the form : block_index,n1,n2, where n1,n2 are indices of the block"""
+    def all_indices(self):
+       """  An Iterator on BlockGf indices and indices of the blocs of the form : block_index,n1,n2, where n1,n2 are indices of the block"""
        for sig,g in self : 
-          val = g.Indices
+          val = g.indices
           for x in val :
               for y in val : 
                   yield  (sig,x,y)
 
     @property 
-    def NBlocks(self):
+    def n_blocks(self):
         """ Number of blocks"""
         return len(self.__GFlist)
-
-    def blockSizeMax(self) : 
-        """ Maximum dimension of the block"""#
-        return max([ g.N1 for i,g in self])
 
     #----------------------   IO    -------------------------------------
     
     def __mymakestring(self,x):
         return str(x).replace(' ','').replace('(','').replace(')','').replace("'",'').replace(',','-')
     
-    def save(self, filename, Accumulate=False) : 
+    def save(self, filename, accumulate=False) : 
         """ Save the Green function in i omega_n (as 2 columns).
-           - Accumulate : 
+           - accumulate : 
         """
         for i,g in self : 
-            g.save( "%s_%s"%(filename,self.__mymakestring(i)), Accumulate)
+            g.save( "%s_%s"%(filename, self.__mymakestring(i)), accumulate)
  
-    def load (self, filename, adjust_temperature = False,NoException = False):
+    def load(self, filename, adjust_temperature = False, no_exception = False):
         """ 
         adjust_temperature : if true, 
         """
@@ -189,31 +179,31 @@ class BlockGf(object):
             try : 
                 g.load( "%s_%s"%(filename,self.__mymakestring(i))) #,adjust_temperature)
             except : 
-                if not(NoException) : raise  
+                if not(no_exception) : raise  
     
     def __reduce__(self):
         return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
 
     def __reduce_to_dict__(self):
-        val = {'__Name' : self.name, "__Note": self.Note, "__BlockIndicesList" : repr(self.__Indices) }
-        val.update(  dict(self ) )
+        val = {'name' : self.name, "note": self.note, "indices" : repr(self.__indices) }
+        val.update( dict(self ) )
         return val 
 
     @classmethod
     def __factory_from_dict__(cls,value):
-        exec "ind=%s"%value['__BlockIndicesList']
-        res = cls(NameList = ind, BlockList = [value[i] for i in ind], Copy=False, Name=value['__Name'])
-        res.Note = value['__Note']
+        exec "ind=%s"%value['indices']
+        res = cls(name_list = ind, block_list = [value[i] for i in ind], make_copies=False, name=value['name'])
+        res.note = value['note']
         return res
 
     #--------------  Pretty print -------------------------
 
     def __repr__(self) :
-        s =  "Green Function %s composed of %d blocks : \n"%(self.name,self.NBlocks)
-        #s =  "Green Function %s composed of %d blocks at inverse temperature Beta = %s: \n"%(self.name,self.NBlocks,self.Beta)
+        s =  "Green Function %s composed of %d blocks : \n"%(self.name,self.n_blocks)
+        #s =  "Green Function %s composed of %d blocks at inverse temperature beta = %s: \n"%(self.name,self.n_blocks,self.beta)
         for i,g in self:
-            s += " %s \n"%repr(g)  #"  Bloc %s  : Indices %s \n"%(i,self[i].Indices)
-        if self.Note : s += "NB : %s\n"%self.Note
+            s += " %s \n"%repr(g)  #"  Bloc %s  : indices %s \n"%(i,self[i].indices)
+        if self.note : s += "NB : %s\n"%self.note
         return s
 
     def __str__ (self) : 
@@ -225,14 +215,14 @@ class BlockGf(object):
         try :
             g = self.__me_as_dict[key]
         except KeyError : 
-            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are : "+ repr(self.__Indices)
+            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are : "+ repr(self.__indices)
         return g
 
     def __setitem__(self,key,val):
         try :
             g = self.__me_as_dict[key]
         except KeyError : 
-            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are : "+ repr(self.__Indices)
+            raise IndexError, "bloc index '" + repr(key) + "' incorrect. Possible indices are : "+ repr(self.__indices)
         g <<= val
        
     # -------------- Various operations -------------------------------------
@@ -242,8 +232,8 @@ class BlockGf(object):
 
     def __ilshift__(self, A): 
         """ A can be 2 things :
-          * G <<= any_gf_init will init all the GFBloc with the initializer
-          * G <<= g2 where g2 is a GFB will copy g2 into self
+          * G <<= any_gf_init will init all the BlockGf with the initializer
+          * G <<= g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
            for (i,g) in self : g.copy_from(A[i])
@@ -332,7 +322,7 @@ class BlockGf(object):
         """Use self.imag in a plot to plot only the imag part"""
         return _Plot_Wrapper_Partial_Reduce(self,RI='I')
 
-    def _plot_(self, *l,**kw) : 
+    def _plot_(self, *l, **kw) : 
         """ Implement the plot protocol"""
         # NB : it is important to make a copy of the dictionnary, since the
         # options are consumed by the _plot_ method
@@ -340,10 +330,6 @@ class BlockGf(object):
         return sum([ g._plot_(*l, ** dict (** kw)) for sig,g in self],[])
 
    #--------------------------------------------------------------------------
-
-    def test_distance( self,G2, dist) : 
-       """ Test distance on all blocks"""
-       return reduce(operator.and_, [g.test_distance(g2,dist) for (i,g),(i2,g2) in izip(self,G2)])
 
     def zero(self) : 
         for i,g in self : g.zero()
@@ -365,20 +351,20 @@ class BlockGf(object):
        self.__check_attr("invert")
        for i,g in self : g.invert()
 
-    def Delta(self) :
-       """Compute Delta from G0"""
-       self.__check_attr("Delta")
-       return self.__class__( Name_Block_Generator = [ (n, g.Delta()) for n,g in self], Copy=False)
+    def delta(self) :
+       """Compute delta from G0"""
+       self.__check_attr("delta")
+       return self.__class__( name_block_generator = [ (n, g.delta()) for n,g in self], make_copies=False)
 
     def transpose(self):
        """Transpose of the BlockGf"""
        self.__check_attr("transpose")
-       return self.__class__( Name_Block_Generator = [ (n, g.transpose()) for n,g in self], Copy=False)
+       return self.__class__( name_block_generator = [ (n, g.transpose()) for n,g in self], make_copies=False)
 
     def conjugate(self):
        """Conjugate of the BlockGf"""
        self.__check_attr("conjugate")
-       return self.__class__( Name_Block_Generator = [ (n, g.conjugate()) for n,g in self], Copy=False)
+       return self.__class__( name_block_generator = [ (n, g.conjugate()) for n,g in self], make_copies=False)
 
 #---------------------------------------------------------
 

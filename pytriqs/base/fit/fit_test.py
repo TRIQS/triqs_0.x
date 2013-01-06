@@ -1,6 +1,6 @@
 from pytriqs.base.plot.mpl_interface import oplot
-from pytriqs.base.gf_local import GFBloc_ImFreq, Omega, inverse
-g = GFBloc_ImFreq(Indices = [1], Beta = 300, NFreqMatsubara = 1000, Name = "g")
+from pytriqs.base.gf_local import GfImFreq, Omega, inverse
+g = GfImFreq(indices = [1], beta = 300, n_matsubara = 1000, name = "g")
 g <<= inverse( Omega + 0.5 )
 
 # the data we want to fit...

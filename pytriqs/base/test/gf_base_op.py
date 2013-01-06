@@ -28,10 +28,10 @@ from pytriqs.base.utility.my_utils import conjugate
 
 h=HDFArchive('gf_base_op.output.h5','w')
 
-ga = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "a1Block")
-gb = GFBloc_ImFreq(Indices = [1,2], Beta= 50, NFreqMatsubara = 100, Name = "b1Block")
+ga = GfImFreq(indices = [1,2], beta = 50, n_matsubara = 100, name = "a1Block")
+gb = GfImFreq(indices = [1,2], beta = 50, n_matsubara = 100, name = "b1Block")
 
-G = GF(NameList = ('a','b'), BlockList = (ga,gb), Copy = False)
+G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 
 #G <<= gf_init.A_Omega_Plus_B(1.0,2.0)
 G <<= iOmega_n + 2.0
@@ -45,14 +45,14 @@ dens = G.total_density()
 h['dens'] = dens
 
 # FT:
-f = lambda g,L : GFBloc_ImTime(Indices= g.Indices, Beta = g.Beta, NTimeSlices=L )
-gt = GF(Name_Block_Generator = [ (n,f(g,200) ) for n,g in G], Copy=False, Name='gt')
+f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_slices =L )
+gt = BlockGf(name_block_generator = [ (n,f(g,200) ) for n,g in G], make_copies=False, name='gt')
 for (i,gtt) in gt : gtt.setFromInverseFourierOf(G[i])
 
 h['gt'] = gt
 
 # Matrix operations:
-ga2 = GFBloc_ImFreq(Indices = [1,2,3], Beta= 50, NFreqMatsubara = 100, Name = "a1Block")
+ga2 = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 100, name = "a1Block")
 mat = numpy.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]])
 
 ga2.from_L_G_R(mat.transpose(),ga,mat)

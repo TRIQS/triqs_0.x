@@ -23,7 +23,7 @@
 from types import *
 from pytriqs.solvers.hubbard_I.solver_base import SolverBaseHub
 from pytriqs.base.gf_local.gf_imfreq import *
-from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.block_gf import BlockGf
 from pytriqs.dft.U_matrix import Umatrix
 import copy,numpy
 

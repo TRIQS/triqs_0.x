@@ -45,8 +45,8 @@ for u in U:
     ipt.run(N_loops = N_loops, beta=beta, U=u, Initial_G0=Initial_G0, Self_Consistency=Self_Consistency)
     
     # The resulting local GF on the real axis
-    g_real = GFBloc_ReFreq(Indices = [0], Beta = beta, MeshArray = DOSMesh, Name = '0')
-    G_real = GF(NameList = ('0',), BlockList = (g_real,), Copy = True)
+    g_real = GfReFreq(indices = [0], beta = beta, mesh_array = DOSMesh, name = '0')
+    G_real = BlockGf(name_list = ('0',), block_list = (g_real,), make_copies = True)
     
     # Analytic continuation with Pade
     G_real['0'].setFromPadeOf(ipt.S.G['0'], N_Matsubara_Frequencies=Pade_L, Freq_Offset=eta)

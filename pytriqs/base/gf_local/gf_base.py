@@ -20,37 +20,45 @@
 #
 ################################################################################
 
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
+from pytriqs_GF import GF_Statistic,GF_Type,TailGf,MeshGf
 from pytriqs.base.utility.my_utils import *
 import numpy
 from types import *
 from array_view import ArrayViewWithIndexConverter,_IndicesConverter
 import gf_init
-import lazy_expressions,descriptors
+import lazy_expressions, descriptors
 from pytriqs.base.plot.protocol import clip_array
 
-class gf_base  :
+class _Plot_Wrapper_Partial_Reduce : 
+    """ Internal Use"""
+    def __init__(self, obj,  **opt) : 
+        self.obj, self.opt = obj,opt
+    def _plot_(self, options) : 
+        options.update(self.opt)
+        return self.obj._plot_(options)
+
+class GfBase:
     
     def _init_base__(self,d) :
-        if 'Indices' in d: 
-            indL = list(d.pop('Indices') )
+        if 'indices' in d: 
+            indL = list(d.pop('indices') )
             indR = indL
-        elif 'IndicesL' in d and 'IndicesR' in d :
-            indL,indR = list(d.pop('IndicesL')) , list(d.pop('IndicesR'))
+        elif 'indices_l' in d and 'indices_r' in d :
+            indL,indR = list(d.pop('indices_l')) , list(d.pop('indices_r'))
         else: 
             raise ValueError, "No Indices !!"
         
         self._myIndicesGFBlocL = _IndicesConverter(indL)
         self._myIndicesGFBlocR = _IndicesConverter(indR)
-        Mesh = d.pop('Mesh')
-        Data = d.pop('Data', None)
-        Tail = d.pop('Tail', None)
-        if not Tail : Tail = TailGF(-2,10,indL,indR)
-        self.Name = d.pop('Name','g')
-        self.Note = d.pop('Note','') 
+        mesh = d.pop('mesh')
+        data = d.pop('data', None)
+        tail = d.pop('tail', None)
+        if not tail : tail = TailGf(-2,10,indL,indR)
+        self.name = d.pop('name','g')
+        self.note = d.pop('note','') 
         
-        self._param_for_cons = (indL,indR, Data,Mesh,Tail)
-        assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
+        self._param_for_cons = (indL,indR,data,mesh,tail)
+        assert len(d) ==0, "Unknown parameters in BlockGf constructions %s"%d.keys() 
 
     #---------------------------------------------------------------------------------
  
@@ -64,32 +72,32 @@ class gf_base  :
     #---------------------------------------------------------------------------------
     
     def _make_slice(self,sl1, sl2): 
-        return self.__class__(IndicesL = self._IndicesL[sl1],
-                              IndicesR = self._IndicesR[sl2],
-                              Name = self.Name,
-                              Mesh = self.mesh,
-                              Data = self._data.array[sl1,sl2,:],
-                              Tail = TailGF(self._tail,sl1,sl2))
+        return self.__class__(indices_l = self._IndicesL[sl1],
+                              indices_r = self._IndicesR[sl2],
+                              name = self.name,
+                              mesh = self.mesh,
+                              data = self._data.array[sl1,sl2,:],
+                              tail = TailGf(self._tail,sl1,sl2))
 
     #-----------------------------------------------------
 
     def copy (self) : 
-        new_g = self.__class__(IndicesL = self._IndicesL,
-                               IndicesR = self._IndicesR,
-                               Mesh = self.mesh,
-                               Name = self.Name, Note = self.Note)
-        new_g._tail.copyFrom(self._tail)
+        new_g = self.__class__(indices_l = self._IndicesL,
+                               indices_r = self._IndicesR,
+                               mesh = self.mesh,
+                               name = self.name, note = self.note)
+        new_g._tail.copy_from(self._tail)
         new_g._data.array[:,:,:] = self._data.array[:,:,:]
         return new_g
         
     #-----------------------------------------------------
         
     def copy_with_new_stat(self,stat) :
-        new_g = self.__class__(IndicesL = self._IndicesL,
-                               IndicesR = self._IndicesR,
-                               Mesh = MeshGF(self.mesh,stat),
-                               Name = self.Name, Note = self.Note)
-        new_g._tail.copyFrom(self._tail)
+        new_g = self.__class__(indices_l = self._IndicesL,
+                               indices_r = self._IndicesR,
+                               mesh = MeshGf(self.mesh,stat),
+                               name = self.name, note = self.note)
+        new_g._tail.copy_from(self._tail)
         new_g._data.array[:,:,:] = self._data.array[:,:,:]
         return new_g        
 
@@ -102,17 +110,17 @@ class gf_base  :
     #-----------------------------------------------------
 
     def __reduce_to_dict__(self):
-        indL = repr(tuple(self.IndicesL))
-        indR = repr(tuple(self.IndicesR))
-        assert(eval(indL)==tuple(self.IndicesL))
-        assert(eval(indR)==tuple(self.IndicesR))
+        indL = repr(tuple(self.indices_l))
+        indR = repr(tuple(self.indices_r))
+        assert(eval(indL)==tuple(self.indices_l))
+        assert(eval(indR)==tuple(self.indices_r))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
                 'Data' : self._data.array,
                 'Mesh' : self.mesh,
                 'Tail' : self._tail,
-                'Name' : self.Name,
-                'Note' : self.Note }
+                'Name' : self.name,
+                'Note' : self.note }
 
     # a classmethod receives the names of the class instead of self.
     @classmethod
@@ -120,7 +128,12 @@ class gf_base  :
         # a little treatment for backward compatibility
         for s in [ 'Indices' ,'IndicesR' ,'IndicesL' ] : 
             if s in value and  type(value[s]) == type(''):  value[s] = eval(value[s])
-        return CLS(**value)
+        return CLS(indices_l = value['IndicesL'],
+                   indices_r = value['IndicesR'],
+                   data = value['Data'],
+                   mesh = value['Mesh'],
+                   name = value['Name'],
+                   note = value['Note'])
  
     #-------------------------------------------------
                 
@@ -132,7 +145,7 @@ class gf_base  :
             def __eq__ (self, y) :
                 return isinstance(y, self.__class__) and self.G._is_compatible_for_ops(y.G)
             def __call__ (self, x) : 
-                if not isinstance(x, descriptors.base) : return x
+                if not isinstance(x, descriptors.Base) : return x
                 tmp = self.G.copy()
                 x(tmp)
                 return tmp
@@ -141,28 +154,28 @@ class gf_base  :
 
     def __ilshift__(self, A): 
         """ A can be two things :
-          * G <<= any_gf_init will init the GFBloc with the initializer
-          * G <<= g2 where g2 is a GFBloc will copy g2 into self
+          * G <<= any_gf_init will init the BlockGf with the initializer
+          * G <<= g2 where g2 is a BlockGf will copy g2 into self
         """
         if isinstance(A, self.__class__) : 
-            if self is not A : self.copyFrom(A) # otherwise it is useless AND does not work !!
-        elif isinstance(A, lazy_expressions.lazy_expr) : # A is a lazy_expression made of GF, scalars, descriptors 
-            A2= descriptors.convert_scalar_to_Const(A)
+            if self is not A : self.copy_from(A) # otherwise it is useless AND does not work !!
+        elif isinstance(A, lazy_expressions.LazyExpr) : # A is a lazy_expression made of BlockGf, scalars, descriptors 
+            A2= descriptors.convert_scalar_to_const(A)
             def e_t (x) : 
-                if not isinstance(x, descriptors.base) : return x
+                if not isinstance(x, descriptors.Base) : return x
                 tmp = self.copy()
                 x(tmp)
                 return tmp
             #e_t2 = self.__lazy_expr_eval_context__()
-            self.copyFrom ( lazy_expressions.eval_lazy_expr(e_t, A2) )
-        elif isinstance(A, lazy_expressions.lazy_expr_terminal) : #e.g. g<<= SemiCircular (...) 
-            self <<= lazy_expressions.lazy_expr(A)
+            self.copy_from ( lazy_expressions.eval_lazy_expr(e_t, A2) )
+        elif isinstance(A, lazy_expressions.LazyExprTerminal) : #e.g. g<<= SemiCircular (...) 
+            self <<= lazy_expressions.LazyExpr(A)
         elif descriptors.is_scalar(A) : #in the case it is a scalar .... 
-            self <<= lazy_expressions.lazy_expr(A)
-        elif isinstance(A, gf_init.base) : # backwards compatibility, deprecated
+            self <<= lazy_expressions.LazyExpr(A)
+        elif isinstance(A, gf_init.Base) : # backwards compatibility, deprecated
             A(self)
         else :
-            raise RuntimeError, " GF Block : <<= operator : RHS not understood"
+            raise RuntimeError, " BlockGf: <<= operator : RHS not understood"
         return self
 
     #-----------------------------------------------------
@@ -189,7 +202,7 @@ class gf_base  :
 
     def __iadd__(self,arg):
         d,t = self._data.array, self._tail
-        if hasattr(arg,"_data") : # a GF
+        if hasattr(arg,"_data") : # a Green's function
             d[:,:,:] += arg._data.array
             t += arg._tail
         elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
@@ -217,7 +230,7 @@ class gf_base  :
 
     def __isub__(self,arg):
         d,t = self._data.array, self._tail
-        if hasattr(arg,"_data") : # a GF
+        if hasattr(arg,"_data") : # a Green's function
             d[:,:,:] -= arg._data.array
             t -= arg._tail
         elif isinstance(arg,numpy.ndarray): # an array considered as a constant function 
@@ -249,7 +262,7 @@ class gf_base  :
 
     def __imul__(self,arg):
         """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with _data and _tail as in GF), they it is a matrix multiplication, slice by slice
+            If arg is a BlockGf(any object with _data and _tail as in BlockGf), they it is a matrix multiplication, slice by slice
         """
         d,t = self._data.array, self._tail
         if hasattr(arg,"_data") : 
@@ -316,7 +329,7 @@ class gf_base  :
             d[:,:,om ] = numpy.linalg.inv(d[:,:,om])
         self._tail.invert()
 
-    def replaceByTail(self,start) : 
+    def replace_by_tail(self,start) : 
         d = self._data.array
         t = self._tail
         for n, om in enumerate(self.mesh) : # not the most efficient ...
@@ -326,7 +339,7 @@ class gf_base  :
 
     # remove this
     def copy_and_transpose(self):
-        """deprecated :Transposes the GF Bloc, but gives back a new instance. Does not change the actual GF!"""
+        """deprecated :Transposes the BlocGf, but gives back a new instance. Does not change the actual BlockGf!"""
         assert 0
         gtmp = self.copy()
          
@@ -342,46 +355,180 @@ class gf_base  :
         return gtmp
 
     def transpose(self):
-        """Transposes the GF Bloc: return a new transposed view"""
+        """Transposes the BlocGf: return a new transposed view"""
         
         return self.__class__( 
-                Indices = list(self.Indices),
-                Mesh  = self.mesh,
-                Data = self._data.array.transpose( (1,0,2) ), 
-                Tail = self._tail.transpose(),
-                Name = self.Name+'(t)', 
-                Note = self.Note)
+                indices = list(self.indices),
+                mesh  = self.mesh,
+                data = self._data.array.transpose( (1,0,2) ), 
+                tail = self._tail.transpose(),
+                name = self.name+'(t)', 
+                note = self.note)
 
     def conjugate(self):
-        """Complex conjugate of the GF Bloc. It follow the policy of numpy and
+        """Complex conjugate of the BlocGf. It follow the policy of numpy and
         make a copy only if the Green function is complex valued"""
         
         return self.__class__( 
-                Indices = list(self.Indices),
-                Mesh  = self.mesh,
-                Data = self._data.array.conjugate(), 
-                Tail = self._tail.conjugate(self.mesh.TypeGF==GF_Type.Imaginary_Frequency),
-                Name = self.Name+'*', 
-                Note = self.Note)
+                indices = list(self.indices),
+                mesh  = self.mesh,
+                data = self._data.array.conjugate(), 
+                tail = self._tail.conjugate(self.mesh.TypeGF==GF_Type.Imaginary_Frequency),
+                name = self.name+'*', 
+                note = self.note)
 
     #-----------------------------------------------------
 
     # Put it out a a free funciton in a module. Nothing to do here...
     # why is this here ???
-    def Delta(self) :
-        """Computes Delta from self ...."""
+    def delta(self) :
+        """Computes delta from self ...."""
         if self.mesh.TypeGF not in [GF_Type.Real_Frequency, GF_Type.Imaginary_Frequency] :
-            raise RuntimeError, "Can not compute Delta for this GF"
+            raise RuntimeError, "Can not compute delta for this BlockGf"
         G0 = self if self._tail.OrderMin <=-1 else inverse(self)
         tmp = G0.copy()
         tmp <<= gf_init.A_Omega_Plus_B(G0._tail[-1], G0._tail[0])
         tmp -= G0
         return tmp
 
+    #-------------  Indices management ---------------------
+
+    def __get_Indices(self) : 
+	"""A generator of the indices"""
+        if self._IndicesL != self._IndicesR : raise RuntimeError, "Indices R and L are not the same. I can not give you the Indices"
+        for ind in self._IndicesL: 
+            yield ind
+
+    def __get_IndicesL(self) : 
+        for ind in self._IndicesL: 
+            yield ind
+    
+    def __get_IndicesR(self) : 
+        for ind in self._IndicesR: 
+            yield ind
+    
+    indices = property(__get_Indices)
+    indices_l = property(__get_IndicesL)
+    indices_r = property(__get_IndicesR)
+            
+    def array_with_indices(self) :
+        """ 
+        Returns ArrayViewWithIndexConverter with : 
+            * the indices of the Green function
+            * the correct size
+            * an array initialized to 0
+        """
+        return ArrayViewWithIndexConverter(A = numpy.zeros((self.N1,self.N2), dtype = numpy.complex_),
+                                           IndicesL = self._IndicesL, IndicesR = self._IndicesR)
+
+    #---------------------   [  ] operator        ------------------------------------------
+    
+    def __getitem__(self,key):
+        """Key is a tuple of index (n1,n2) as defined at construction"""
+        if len(key) !=2 : raise ValueError, "[ ] must be given two arguments"
+        try :
+            sl1 = self._myIndicesGFBlocL.convertToNumpyIndex(key[0])
+        except IndexError, ValueError:
+	    raise IndexError, "Indices %s incorrect. Indices are %s"%(key[0],list(self._IndicesL))
+
+        try :
+            sl2 = self._myIndicesGFBlocR.convertToNumpyIndex(key[1])
+        except IndexError, ValueError:
+	    raise IndexError, "Indices %s incorrect. Indices are %s"%(key[1],list(self._IndicesR))
+
+        return self._make_slice (sl1, sl2)
+
+    def __setitem__(self,key,val):
+        g = self.__getitem__(key)
+        g <<= val
+ 
+     #-----------------------------------------------------
+
+    def __reduce__(self):
+        return call_factory_from_dict, (self.__class__,self.__reduce_to_dict__())
+        
+    #-------------------------------------------------
+
+    def __le__(self, other) :
+        """ Forbidden : to avoid typo with <<="""
+        raise RuntimeError, " Operator <= not defined "
+        
+    #-------------------------------------------------
+
+    def __str__ (self) : 
+	return self.name if self.name else repr(self)
+    
+    #-------------------------------------------------
+
+    def __repr__(self) : 
+	return """%s %s :  Beta = %.3f; IndicesL = %s, IndicesR = %s """%(self.__class__.__name__, self.name,
+          self.beta, [x for x in self.indices_l], [x for x in self.indices_r])
+
+    #-------------------------------------------------
+
+    def __iter__(self) :
+	for i in self._IndicesL : 
+	    for j in self._IndicesR :
+                b =self[i,j]
+		b.name = "%s_%s_%s"%(self.name if hasattr(self,'name') else '',i,j)
+		yield i,j,b
+
+    #-----------------------------------------------------
+ 
+    def __get_real(self) : return _Plot_Wrapper_Partial_Reduce(self,RI='R')
+    def __get_imag(self) : return _Plot_Wrapper_Partial_Reduce(self,RI='I')
+    real = property(__get_real,None, doc = "Use self.real in a plot to plot only the real part")
+    imag = property(__get_imag,None, doc = "Use self.imag in a plot to plot only the imag part")
+
+    #-----------------------------------------------------
+    def total_density(self) :
+        """Trace density"""
+        return numpy.trace(self.density())
+
+    #-----------------------------------------------------
+
+    def _plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
+        """ Plot protocol. opt_dict can contain : 
+             * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
+             * :param x_window: (xmin,xmax) or None [default]
+             * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
+        """
+        Name = opt_dict.pop('name', '' )  # consume it
+        NamePrefix = opt_dict.pop('name_prefix', '' )  # consume it
+        if Name and NamePrefix : raise ValueError, 'name and name_prefix can not be used at the same time'
+        if NamePrefix : name_save, self.name = self.name, Name or NamePrefix
+
+        rx = opt_dict.pop('x_window',None ) # consume it
+        sl = clip_array (X, *rx) if rx else slice(len(X)) # the slice due to clip option x_window
+
+        def mdic( prefix, f) : 
+           return [{'type' : "XY", 
+                    'xlabel' : xlabel,
+                    'ylabel' : ylabel (self.name),
+                    'xdata' : X[sl],
+                    'label' : Name if Name else prefix + B.name ,
+                    'ydata' : f( B._data.array[0,0,sl] ) } for (i,j,B) in self ] 
+    
+        if use_ris : 
+            ris = opt_dict.pop('RI','RI') 
+            if   ris == "R" : 
+                res = mdic( 'Re ', lambda x : x.real)
+            elif ris == "I" : 
+                res = mdic( 'Im ', lambda x : x.imag)
+            elif ris == "S" :
+                res = mdic( '', lambda x : -1/numpy.pi *x.imag)
+            elif ris == 'RI' :
+                 res = mdic( 'Re ', lambda x : x.real) + mdic( 'Im ', lambda x : x.imag)
+            else : 
+                 raise ValueError, "RIS flags meaningless %s"%ris
+        else: 
+            res = mdic( '', lambda x : x)
+            
+        if NamePrefix: self.name = name_save
+        return res 
+ 
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
-register_class (TailGF)
-register_class (MeshGF)
-
-
+register_class (TailGf)
+register_class (MeshGf)

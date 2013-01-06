@@ -130,7 +130,7 @@ class Hilbert_Transform :
             
             # I slice all the arrays on the node. Cf reduce operation below. 
             for d, e_h, e in  itertools.izip (*[mpi.slice_array(A) for A in [self.rho_for_sum, eps_hat, self.dos.eps]]):
-                tmp2.copyFrom(tmp)
+                tmp2.copy_from(tmp)
                 tmp2 -= e_h
                 if Sigma_fnt : tmp2 -= Sigma(e)
                 tmp2.invert()

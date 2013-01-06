@@ -1,41 +1,38 @@
 .. index::
   single: Green's functions; block Green's function
-  module: gf_refreq
+  module: gf_retime
 
-.. _GFBloc_ReFreq:
+.. _GfReTime:
 
-Retarded Green's function in real frequencies (GFBloc_ReFreq)
+Retarded Green's function in real time (GfReTime)
 =====================================================================================
 
-This object stores a matrix valued Green function in real frequencies : 
+This object stores a retarded matrix valued Green function in real time : 
 
 .. math::
-  G_{\alpha \beta} (\omega) \equiv \int_{-\infty}^{\infty} G_{\alpha \beta} ( t ) e^{-i \omega t}
-
-where :math:`G(t)` is the :ref:`Green function in real time <GFBloc_ReTime>`.
+  G_{\alpha \beta} (t) \equiv - \theta(t) <\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}> 
 
 
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GFBloc_ReFreq
-  :members: density, setFromFourierOf, transpose, conjugate, setFromPadeOf
+.. autoclass:: pytriqs.base.gf_local.GfReTime
+  :members: density, setFromInverseFourierOf, transpose, conjugate
  
-
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GFBloc_ReFreq (TRIQS_HDF5_data_scheme = "GFBloc_ReFreq") is decomposed in the following objects : 
+The GfReTime (TRIQS_HDF5_data_scheme = "GfReTime") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-Mesh                        MeshGF                       The mesh
-Tail                        TailGF                       The tail
+Mesh                        MeshGf                       The mesh
+Tail                        TailGf                       The tail
 Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
                                                           * i1, i2 are the indices
-                                                          * n is the frequency index 
+                                                          * n is the index of the time slice
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
                                                          repr(this_string) reproduces the indices 
 Name                        string                       Name of the Green function block
@@ -43,21 +40,10 @@ Note                        string                       Note
 =========================   ===========================  ===========================================================================
 
 
-Examples 
+Example 
 ---------------
 
-.. plot:: green/block/green_refreq.py
+.. plot:: green/block/green_retime.py
    :include-source:
    :scale: 70
-
-Note that `g` is a **retarded** Green's function.
-
-
-The next example demonstrates how a real frequency Green's function can be
-reconstructed from an imaginary frequency counterpart using setFromPadeOf()
-method. Note that in order to use this method you need to activate the
-``Use_Pade`` option when you run cmake (``cmake -DUse_Pade=ON``).
-
-.. plot:: green/block/green_pade.py
-   :include-source:
-   :scale: 70
+  

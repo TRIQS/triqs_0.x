@@ -26,7 +26,7 @@ class GfImFreq ( GfImFreq_cython, GfGeneric ) :
         GfImFreq(Indices, Mesh, Data, Tail, Name)
             
               * ``Indices``:  a list of indices names of the block
-              * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Imaginary_Frequency 
+              * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF== GF_Type.Imaginary_Frequency 
               * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
               * ``Tail``:  the tail 
               * ``Name``:  a name of the GF

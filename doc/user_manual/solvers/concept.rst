@@ -17,13 +17,13 @@ Here's the concept explicitly:
   .. attribute:: G
 
     The interacting Green's function. This is a :ref:`full Green's function
-    <fullgreen>` with each block being a :ref:`GFBloc_ImFreq`. G is set after
+    <fullgreen>` with each block being a :ref:`GfImFreq`. G is set after
     the Solve() method has been called.
 
   .. attribute:: G0
 
     The non-interacting Green's function. This is a :ref:`full Green's function
-    <fullgreen>` with each block being a :ref:`GFBloc_ImFreq`. G0 is needed
+    <fullgreen>` with each block being a :ref:`GfImFreq`. G0 is needed
     by the solver and should be set before Solve() is called.
 
   .. function:: Solve()

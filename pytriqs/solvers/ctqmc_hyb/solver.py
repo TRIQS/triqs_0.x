@@ -95,17 +95,17 @@ class Solver(SolverBase):
 
         parameters.check_no_parameters_not_in_union_of_dicts(param, self.Required, self.Optional)
         SolverBase.__init__(self,GFstruct,param)
-        self.Beta = float(Beta)
+        self.beta = float(Beta)
         self.Verbosity = 2 if mpi.rank ==0 else 0
 
         # Green function in frequencies
         a_list = [a for a,al in self.GFStruct]
-        glist = [ GFBloc_ImFreq(Indices = al, Beta = self.Beta, NFreqMatsubara=N_Matsubara_Frequencies) for a,al in self.GFStruct]
-        self.G0 = GF(NameList = a_list, BlockList = glist, Copy=False, Name="G0")
-        self.G = GF(Name_Block_Generator = self.G0, Copy=True, Name="G")
-        self.F = GF(Name_Block_Generator = self.G0, Copy=True, Name="F")
-        self.Sigma = GF(Name_Block_Generator = self.G0, Copy=True, Name="Sigma")
-        self.Sigma_Old = GF(Name_Block_Generator = self.G0, Copy=True, Name="Sigma_Old")
+        glist = [ GfImFreq(indices = al, beta = self.beta, n_matsubara =N_Matsubara_Frequencies) for a,al in self.GFStruct]
+        self.G0 = BlockGf(name_list = a_list, block_list = glist, make_copies=False, name="G0")
+        self.G = BlockGf(name_block_generator = self.G0, make_copies=True, name="G")
+        self.F = BlockGf(name_block_generator = self.G0, make_copies=True, name="F")
+        self.Sigma = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma")
+        self.Sigma_Old = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma_Old")
         self.Name = 'Hybridization Expansion'
 
          # first check that all indices of the Green Function do correspond to a C operator.
@@ -195,11 +195,11 @@ class Solver(SolverBase):
               if opn not in self.OpCorr_To_Average_List: self.OpCorr_To_Average_List.append(opn)
         # Create storage for data:
         Nops = len(self.OpCorr_To_Average_List)
-        f = lambda L : GFBloc_ImTime(Indices= [0], Beta = self.Beta, NTimeSlices=L )
+        f = lambda L : GfImTime(indices = [0], beta = self.beta, n_time_slices =L )
         if (Nops>0):
-            self.Measured_Time_Correlators_Results = GF(Name_Block_Generator = [ ( n,f(self.Measured_Time_Correlators[n][1]) ) for n in self.Measured_Time_Correlators], Copy=False)
+            self.Measured_Time_Correlators_Results = BlockGf(name_block_generator = [ ( n,f(self.Measured_Time_Correlators[n][1]) ) for n in self.Measured_Time_Correlators], make_copies=False)
         else:
-            self.Measured_Time_Correlators_Results = GF(Name_Block_Generator = [ ( 'OpCorr',f(2) ) ], Copy=False)
+            self.Measured_Time_Correlators_Results = BlockGf(name_block_generator = [ ( 'OpCorr',f(2) ) ], make_copies=False)
 
         # Take care of the global moves
 
@@ -268,7 +268,7 @@ class Solver(SolverBase):
 
         # Define G0_inv and correct it to have G0 to have perfect 1/omega behavior
         self.G0_inv = inverse(self.G0)
-        Delta = self.G0_inv.Delta()
+        Delta = self.G0_inv.delta()
         for n,g in self.G0_inv:
           assert(g.N1==g.N2)
           identity=numpy.identity(g.N1)
@@ -279,17 +279,17 @@ class Solver(SolverBase):
         self.G0.invert()
 
         # Construct the function in tau
-        f = lambda g,L : GFBloc_ImTime(Indices= g.Indices, Beta = g.Beta, NTimeSlices=L )
-        self.Delta_tau = GF(Name_Block_Generator = [ (n,f(g,self.N_Time_Slices_Delta) )   for n,g in self.G], Copy=False, Name='D')
-        self.G_tau = GF(Name_Block_Generator = [ (n,f(g,self.N_Time_Slices_Gtau) )    for n,g in self.G], Copy=False, Name='G')
-        self.F_tau = GF(Name_Block_Generator = self.G_tau, Copy=True, Name='F')
+        f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_slices =L )
+        self.Delta_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Delta) )   for n,g in self.G], make_copies=False, name='D')
+        self.G_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Gtau) )    for n,g in self.G], make_copies=False, name='G')
+        self.F_tau = BlockGf(name_block_generator = self.G_tau, make_copies=True, name='F')
         
         for (i,gt) in self.Delta_tau : gt.setFromInverseFourierOf(Delta[i])
         mpi.report("Inv Fourier done")
         if (self.Legendre_Accumulation):
-            self.G_Legendre = GF(Name_Block_Generator = [ (n,GFBloc_ImLegendre(Indices=g.Indices, Beta=g.Beta, NLegendreCoeffs=self.N_Legendre_Coeffs) )   for n,g in self.G], Copy=False, Name='Gl')
+            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =g.indices, beta =g.beta, n_legendre_coeffs =self.N_Legendre_Coeffs) )   for n,g in self.G], make_copies=False, name='Gl')
         else:
-            self.G_Legendre = GF(Name_Block_Generator = [ (n,GFBloc_ImLegendre(Indices=[1], Beta=g.Beta, NLegendreCoeffs=1) ) for n,g in self.G], Copy=False, Name='Gl') # G_Legendre must not be empty but is not needed in this case. So I make it as small as possible.
+            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =[1], beta =g.beta, n_legendre_coeffs =1) ) for n,g in self.G], make_copies=False, name='Gl') # G_Legendre must not be empty but is not needed in this case. So I make it as small as possible.
         
         # Starting the C++ code
         self.Sigma_Old <<= self.Sigma

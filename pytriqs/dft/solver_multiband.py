@@ -123,8 +123,8 @@ class Solver_MultiBand (Solver):
                 if (strbl!=''): strbl += ','
                 bl1 = orbsorted[ii]
                 bl2 = orbsorted[(ii+1)%ln]
-                ind1 = [ll for ll in self.Sigma[bl1].Indices ]
-                ind2 = [ll for ll in self.Sigma[bl2].Indices ]
+                ind1 = [ll for ll in self.Sigma[bl1].indices ]
+                ind2 = [ll for ll in self.Sigma[bl2].indices ]
 
                 strbl += "'" + bl1 + "':'" + bl2 + "'"
                 for kk, ind in enumerate(ind1):

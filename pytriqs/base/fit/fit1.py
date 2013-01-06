@@ -48,7 +48,7 @@ if __name__ == "__main__" :
 
     from pytriqs.base.gf_local import *
     from pytriqs.base.gf_local.descriptors import Omega
-    g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "g")
+    g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "g")
     g <<= inverse( Omega + 0.5 )
 
     X,Y = g.x_data_view (x_window = (0,0.2), flatten_y = True ) 

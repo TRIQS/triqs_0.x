@@ -18,11 +18,11 @@ They are available in various flavours:
 .. toctree::
   :maxdepth: 1
 
-  block/GFBloc_ImTime
-  block/GFBloc_ImFreq
-  block/GFBloc_ReTime
-  block/GFBloc_ReFreq
-  block/GFBloc_ImLegendre
+  block/GfImTime
+  block/GfImFreq
+  block/GfReTime
+  block/GfReFreq
+  block/GfLegendre
 
 They have many common properties, which we now present.
 
@@ -53,15 +53,15 @@ Just like numpy arrays, the Green's function can be sliced, *when the indices ar
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
   >>> from pytriqs.base.gf_local import *
-  >>> g = GFBloc_ImFreq(Indices = [1,2,3], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
+  >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 1000, name = "imp")
   >>> g[1:3:,1:3]
-  GFBloc_ImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
+  GfImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
 
   >>> g[1,1]
-  GFBloc_ImFreq imp :  Beta = 50.000; IndicesL = [1], IndicesR = [1] 
+  GfImFreq imp :  Beta = 50.000; IndicesL = [1], IndicesR = [1] 
 
   >>> g[2:3,2:3]
-  GFBloc_ImFreq imp :  Beta = 50.000; IndicesL = [2], IndicesR = [2] 
+  GfImFreq imp :  Beta = 50.000; IndicesL = [2], IndicesR = [2] 
 
 
 Assignment: <<= or = operator
@@ -89,7 +89,7 @@ the = sign is possible and equivalent to the `<<=` operator.
   
     from pytriqs.base.gf_local import *
     # Create the Matsubara-frequency Green's function 
-    g = GFBloc_ImFreq(Indices = [1], Beta = 50, NFreqMatsubara = 1000, Name = "imp")
+    g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "imp")
     
     g    <<= inverse( Omega + 0.5 )   # correct 
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
@@ -195,7 +195,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
 * Tails can be accessed with the _tail property. Moreover, in order
   to have access to :math:`M_i`, one uses the bracket. For example::
 
-   >>> g = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 1000, Name = "egBlock") 
+   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
    >>> g <<= 2.0
    >>> print g._tail[0]
 
@@ -216,7 +216,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
   So you have to set the tail properly yourself (or be sure that you will not need it later).
   For example::
 
-   g = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 1000, Name = "egBlock") 
+   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
    g <<= gf_init.Function(lambda x: 3/x)
    g._tail.zero()
    g._tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )

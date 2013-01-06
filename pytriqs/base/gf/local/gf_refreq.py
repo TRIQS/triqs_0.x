@@ -20,13 +20,13 @@
 #
 ################################################################################
 
-__all__ = ['GFBloc_ReFreq']
+__all__ = ['GfReFreq']
 import numpy
 from math import pi
-from gf import GFBloc_ReFreq_cython, MeshReFreq  
+from gf import GfReFreq_cython, MeshReFreq  
 from GFBloc_general import _GFBloc_general 
 
-class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
+class GfReFreq (GfReFreq_cython, _GFBloc_general):
     """ 
     A matrix-valued block Green's function in real frequencies.
     """
@@ -36,7 +36,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
      real frequencies yourself, or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GFBloc_ReFreq(Indices, Beta, Statistic, MeshArray, Data, Tail, Name,Note)
+     GfReFreq(Indices, Beta, Statistic, MeshArray, Data, Tail, Name,Note)
 
            * ``Indices``:  a list of indices names of the block
            * ``Beta``:  Inverse Temperature 
@@ -49,10 +49,10 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
 
      If you already have the mesh, you can use a simpler version :
 
-     GFBloc_ReFreq(Indices, Mesh, Data, Tail, Name,Note)
+     GfReFreq(Indices, Mesh, Data, Tail, Name,Note)
         
            * ``Indices``:  a list of indices names of the block
-           * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Real_Frequency 
+           * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF== GF_Type.Real_Frequency 
            * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),len(MeshArray)) representing the value of the Green function on the mesh.            * ``Tail``:  the tail 
            * ``Name``:  a name of the GF
            * ``Note``:  any string you like...
@@ -70,9 +70,9 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
             sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
             d['Mesh'] = MeshRealFrequency(Beta,Nmax)
             #if 'MeshArray' not in d : raise ValueError, "MeshArray not provided"
-            #d['Mesh'] = MeshGF( GF_Type.Real_Frequency,stat,Beta,d['MeshArray'])
+            #d['Mesh'] = MeshGf( GF_Type.Real_Frequency,stat,Beta,d['MeshArray'])
 
-        GFBloc_ReFreq_cython.__init__(self,*self._prepare_init(d))
+        GfReFreq_cython.__init__(self,*self._prepare_init(d))
   
     #-----------------------------------------------------
 
@@ -89,7 +89,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
 
     def InverseFourier(self, TimeMin =None) : 
         """
-           Returns a GFBloc_ReTime containing the Inverse Fourier transform of self
+           Returns a GfReTime containing the Inverse Fourier transform of self
            TimeMin is the minimal time. By default the time window is centered around 0
         """
         import gf_retime
@@ -100,7 +100,7 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
         else :
             TimeMax = pi/om0
             TimeMin = -TimeMax
-        gt = gf_retime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
+        gt = gf_retime.GfReTime( indices = self.indices,beta = self.beta,
                                           Statistic = self.Statistic,
                                           TimeMin = TimeMin, TimeMax = TimeMax,NTimeSlices = N )
         gt.setFromInverseFourierOf(self)
@@ -112,6 +112,6 @@ class GFBloc_ReFreq (GFBloc_ReFreq_cython, _GFBloc_general):
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
-register_class (GFBloc_ReFreq)
+register_class (GfReFreq)
  
  

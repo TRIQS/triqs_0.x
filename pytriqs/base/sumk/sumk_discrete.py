@@ -85,7 +85,7 @@ class SumkDiscrete:
 	      containing the k vector in the basis of the RBZ  (i.e.  -0.5< k_i <0.5)
             - eps is t(k)
 	    - X is anything such that X[BlockName] can be added/subtracted to a GFBloc for BlockName in selected_blocks.
-	      e.g. X can be a GF (with at least the selected_blocks), or a dictionnary BlockName -> array
+	      e.g. X can be a BlockGf(with at least the selected_blocks), or a dictionnary Blockname -> array
 	      if the array has the same dimension as the GF blocks (for example to add a static Sigma).
 
         - field : Any k independant object to be added to the GF 
@@ -100,13 +100,13 @@ class SumkDiscrete:
 
 
         """
-        S = Sigma.View_SelectedBlocks(selected_blocks) if selected_blocks else Sigma
+        S = Sigma.view_selected_blocks(selected_blocks) if selected_blocks else Sigma
         Gres = result if result else Sigma.copy() 
-        G = Gres.View_SelectedBlocks(selected_blocks) if selected_blocks else Gres
+        G = Gres.view_selected_blocks(selected_blocks) if selected_blocks else Gres
 
         # check input
         assert self.orthogonal_basis, "Local_G : must be orthogonal. non ortho cases not checked."
-        assert isinstance(G,GF), "G must be a GF"
+        assert isinstance(G,BlockGf), "G must be a BlockGf"
         assert len(list(set([g.N1 for i,g in G]))) == 1
         assert self.BZ_weights.shape[0] == self.n_kpts(), "Internal Error"
         no = list(set([g.N1 for i,g in G]))[0]
@@ -126,7 +126,7 @@ class SumkDiscrete:
 
             eps_hat = epsilon_hat(eps_k) if epsilon_hat else eps_k
             tmp2 <<= tmp
-            tmp2 -= tmp2.NBlocks * [eps_hat - mupat]
+            tmp2 -= tmp2.n_blocks * [eps_hat - mupat]
 
             if Sigma_Nargs == 1: tmp2 -= Sigma (k)
             elif Sigma_Nargs ==2: tmp2 -= Sigma (k,eps_k)

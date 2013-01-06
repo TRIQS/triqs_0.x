@@ -4,8 +4,8 @@
 
 .. _fullgreen:
 
-The complete Green's function (GF) 
-====================================
+The complete Green's function (BlockGf) 
+=======================================
 
 As mentioned in the introduction, due to the symmetry, a local Green's function usually
 has a block structure.
@@ -30,9 +30,9 @@ corresponding block Green's functions (in Matsubara frequencies for example)
 and group these blocks into a full Green's function `G` with::
 
   from pytriqs.base.gf_local import *
-  g1 = GFBloc_ImFreq(Indices = ['eg1','eg2'], Beta = 50, NFreqMatsubara = 1000, Name = "egBlock") 
-  g2 = GFBloc_ImFreq(Indices = ['t2g1','t2g2','t2g3'], Beta = 50, NFreqMatsubara = 1000, Name = "t2gBlock") 
-  G = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = False)
+  g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
+  g2 = GfImFreq(indices = ['t2g1','t2g2','t2g3'], beta = 50, n_matsubara = 1000, name = "t2gBlock") 
+  G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
 where:
 
@@ -45,17 +45,17 @@ These names will be used when we try to access a particular block, for example :
 
   >>> G
   Green's Function  composed of 2 blocks at inverse temperature Beta = 50.0: 
-  GFBloc_ImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2']  
-  GFBloc_ImFreq t2g :  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
+  GfImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2']  
+  GfImFreq t2g :  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
   
   >>> G['eg']
-  GFBloc_ImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
+  GfImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
 
 
 Reference 
 ----------------
 
-.. autoclass:: pytriqs.base.gf_local.GF
+.. autoclass:: pytriqs.base.gf_local.BlockGf
   :members: copy, copyFrom,blockArrayWithIndices
  
 
@@ -104,18 +104,18 @@ In the example above ::
   >>> for name, g in G:
   ...  print name, g
   
-  eg GFBloc_ImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
-  t2g GFBloc_ImFreq t2g :  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
+  eg GfImFreq eg :  Beta = 50.000; IndicesL = ['eg1', 'eg2'], IndicesR = ['eg1', 'eg2'] 
+  t2g GfImFreq t2g :  Beta = 50.000; IndicesL = ['t2g1', 't2g2', 't2g3'], IndicesR = ['t2g1', 't2g2', 't2g3'] 
 
 
 As a result ::
         
-    GF( Name_Block_Generator= G, copy=False) 
+    BlockGf( name_block_generator= G, copy=False) 
     
 generates a new Green's function `G`, viewing the same blocks.
 More interestingly ::
       
-    GF( Name_Block_Generator= [ (index,g) for (index,g) in G if Test(index), copy=False)]
+    BlockGf( name_block_generator= [ (index,g) for (index,g) in G if Test(index), copy=False)]
 
 
 makes a partial view of some of the blocks selected by the `Test` condition.
@@ -129,7 +129,7 @@ View or copies ?
 .. _fullgreencopypolicy:
 
 The Green's function is to be thought like a dict, hence accessing the 
-block returns references. When constructing the Green's function GF, 
+block returns references. When constructing the Green's function BlockGf, 
 the parameter `Copy` tells whether a copy of the block must be made before 
 putting them in the Green function or not.
 
@@ -140,7 +140,7 @@ Example:
 
 * If you define a Green's function with::
 
-   G = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = False)
+   G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
   .. note:: 
  
@@ -151,30 +151,30 @@ Example:
   first block of G will also be put to zero. Similarly, imagine you define two
   Green's functions like this::
 
-   G1 = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = False)
-   G2 = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = False)
+   G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
+   G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
   Here G1 and G2 are exactly the same object, because they both have blocks
   which are views of ``g1`` and ``g2``. 
 
 * Instead, if you write::
 
-   G = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = True)
+   G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = True)
 
   The ``Copy = True`` ensures that the blocks of G are new copies of ``g1``
   and ``g2``. If you then modify ``g1`` it will not have any effect on G.
   Clearly if you define::
 
-   G1 = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = True)
-   G2 = GF(NameList = ('eg','t2g'), BlockList = (g1,g2), Copy = True)
+   G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = True)
+   G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = True)
 
   Here ``G1`` and ``G2`` are different objects, both having made copies
   of ``g1`` and ``g2`` for their blocks.
 
   An equivalent writing is ::
 
-    G1 = GF(NameList = ('eg','t2g'), BlockList = (g1.copy(),g2.copy()))
-    G2 = GF(NameList = ('eg','t2g'), BlockList = (g1.copy(),g2.copy()))
+    G1 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
+    G2 = BlockGf(name_list = ('eg','t2g'), block_list = (g1.copy(),g2.copy()))
 
 shelve / pickle 
 ---------------------
@@ -200,9 +200,9 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 HDF5
 --------
 
-GF are hdf-compatible with the following HDF5 data scheme
+BlockGf are hdf-compatible with the following HDF5 data scheme
 
-The GF (TRIQS_HDF5_data_scheme = "GF") is decomposed in the following objects : 
+The BlockGf(TRIQS_HDF5_data_scheme = "BlockGf") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning

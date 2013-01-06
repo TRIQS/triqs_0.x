@@ -23,10 +23,10 @@
 from types import *
 import numpy
 import pytriqs.base.utility.dichotomy as dichotomy
-from pytriqs.base.gf_local.block_gf import GF
-from pytriqs.base.gf_local.gf_imfreq import GFBloc_ImFreq
-from pytriqs.base.gf_local.gf_refreq import GFBloc_ReFreq
-from pytriqs.base.gf_local.gf_imtime import GFBloc_ImTime
+from pytriqs.base.gf_local.block_gf import BlockGf
+from pytriqs.base.gf_local.gf_imfreq import GfImFreq
+from pytriqs.base.gf_local.gf_refreq import GfReFreq
+from pytriqs.base.gf_local.gf_imtime import GfImTime
 from pytriqs.base.gf_local import gf_init
 from pytriqs.solvers.operators import *
 from pytriqs.base.utility.my_utils import sum_list
@@ -114,7 +114,7 @@ class SumK_LDA_tools(SumK_LDA):
         if (not hasattr(self,"Sigmaimp")): withSigma=False
         if (withSigma): 
             assert self.Sigmaimp[0].Note=='ReFreq',"Real frequency Sigma needed for latticeGF_realfreq!"
-            Beta = self.Sigmaimp[0].Beta
+            Beta = self.Sigmaimp[0].beta
             stmp = self.add_DC()
         else:
             assert (not (Mesh is None)),"Without Sigma, give the mesh for latticeGF_realfreq!"
@@ -125,10 +125,10 @@ class SumK_LDA_tools(SumK_LDA):
             GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
             a_list = [a for a,al in GFStruct]
             if (withSigma):
-                glist = lambda : [ GFBloc_ReFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]
+                glist = lambda : [ GfReFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]
             else:
-                glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in GFStruct] 
-            self.Gupf_refreq = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in GFStruct] 
+            self.Gupf_refreq = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
             self.Gupf_refreq.zero()
 
         GFsize = [ gf.N1 for sig,gf in self.Gupf_refreq]
@@ -140,10 +140,10 @@ class SumK_LDA_tools(SumK_LDA):
             GFStruct = [ (bln[ib], BS[ib]) for ib in range(self.NspinblocsGF[self.SO]) ]
             a_list = [a for a,al in GFStruct]
             if (withSigma):
-                glist = lambda : [ GFBloc_ReFreq(Indices = al, Mesh=self.Sigmaimp[0].mesh) for a,al in GFStruct]
+                glist = lambda : [ GfReFreq(indices = al, mesh =self.Sigmaimp[0].mesh) for a,al in GFStruct]
             else:
-                glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in GFStruct]
-            self.Gupf_refreq = GF(NameList = a_list, BlockList = glist(),Copy=False)
+                glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in GFStruct]
+            self.Gupf_refreq = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
             self.Gupf_refreq.zero()
         
         idmat = [numpy.identity(self.N_Orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]
@@ -192,8 +192,8 @@ class SumK_LDA_tools(SumK_LDA):
         Gloc = []
         for icrsh in range(self.N_corr_shells):
             b_list = [a for a,al in self.GFStruct_corr[icrsh]]
-            glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = Mesh) for a,al in self.GFStruct_corr[icrsh]]   
-            Gloc.append(GF(NameList = b_list, BlockList = glist(),Copy=False))
+            glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = Mesh) for a,al in self.GFStruct_corr[icrsh]]   
+            Gloc.append(BlockGf(name_list = b_list, block_list = glist(),make_copies=False))
         for icrsh in xrange(self.N_corr_shells): Gloc[icrsh].zero()                        # initialize to zero
             
         for ik in xrange(self.Nk):
@@ -274,7 +274,7 @@ class SumK_LDA_tools(SumK_LDA):
         mu = self.Chemical_Potential
 
         GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in self.blocnames[self.SO] ]  for i in xrange(self.N_shells) ]
-        Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ReFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], Copy = False ) 
+        Gproj = [BlockGf(name_block_generator = [ (a,GfReFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False ) 
                  for ish in xrange(self.N_shells)]
         for ish in range(self.N_shells): Gproj[ish].zero()
 
@@ -420,7 +420,7 @@ class SumK_LDA_tools(SumK_LDA):
 
         if not (ishell is None):
             GFStruct_proj =  [ (al, range(self.shells[ishell][3])) for al in bln ]
-            Gproj = GF(Name_Block_Generator = [ (a,GFBloc_ReFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj ], Copy = False)
+            Gproj = BlockGf(name_block_generator = [ (a,GfReFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj ], make_copies = False)
             Gproj.zero()
 
         for ik in xrange(self.Nk):
@@ -543,8 +543,8 @@ class SumK_LDA_tools(SumK_LDA):
 
         # now initialize the GF with the mesh
         a_list = [a for a,al in self.GFStruct_Solver[orb]]
-        glist = lambda : [ GFBloc_ReFreq(Indices = al, Beta = Beta, MeshArray = mesh) for a,al in self.GFStruct_Solver[orb] ] 
-        SigmaME = GF(NameList = a_list, BlockList = glist(),Copy=False)
+        glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = mesh) for a,al in self.GFStruct_Solver[orb] ] 
+        SigmaME = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         SigmaME.load(Filename)
         SigmaME.Note='ReFreq'          # This is important for the put_Sigma routine!!!
 
@@ -573,10 +573,10 @@ class SumK_LDA_tools(SumK_LDA):
         mu = self.Chemical_Potential
         GFStruct_proj = [ [ (al, range(self.shells[i][3])) for al in bln ]  for i in xrange(self.N_shells) ]
         if hasattr(self,"Sigmaimp"):
-            Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ImFreq(Indices = al, Mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], Copy = False)
+            Gproj = [BlockGf(name_block_generator = [ (a,GfImFreq(indices = al, mesh = self.Sigmaimp[0].mesh)) for a,al in GFStruct_proj[ish] ], make_copies = False)
                      for ish in xrange(self.N_shells)]
         else:
-            Gproj = [GF(Name_Block_Generator = [ (a,GFBloc_ImFreq(Indices = al, Beta = 40)) for a,al in GFStruct_proj[ish] ], Copy = False)
+            Gproj = [BlockGf(name_block_generator = [ (a,GfImFreq(indices = al, beta = 40)) for a,al in GFStruct_proj[ish] ], make_copies = False)
                      for ish in xrange(self.N_shells)]
 
         for ish in xrange(self.N_shells): Gproj[ish].zero()

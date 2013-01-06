@@ -17,8 +17,8 @@ Given a density of states `d` (here for a tight-binding model), the Hilbert tran
 
 To construct a Green's function::
 
-    G = GFBloc_ImFreq(Indices = ['up','down'], Beta = 20)
-    Sigma0 = GFBloc_ImFreq(Indices = ['up','down'], Beta = 20); Sigma0.zero()
+    G = GfImFreq(indices = ['up','down'], beta = 20)
+    Sigma0 = GfImFreq(indices = ['up','down'], beta = 20); Sigma0.zero()
     G <<= H(Sigma = Sigma0, mu=0.)
 
 

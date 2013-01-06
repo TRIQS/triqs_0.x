@@ -1,38 +1,44 @@
 .. index::
   single: Green's functions; block Green's function
-  module: gf_retime
+  module: gf_imfreq
 
-.. _GFBloc_ReTime:
+.. _GfImFreq:
 
-Retarded Green's function in real time (GFBloc_ReTime)
+Matsubara Green's function in imaginary frequencies (GfImFreq)
 =====================================================================================
 
-This object stores a retarded matrix valued Green function in real time : 
+This object stores a matrix valued Green function in imaginary frequencies
+in the Matsubara formalism : 
 
 .. math::
-  G_{\alpha \beta} (t) \equiv - \theta(t) <\{c_{\alpha}(t) c^{\dagger}_{\beta} (0)\}> 
+  G_{\alpha \beta} (i \omega_n) \equiv \int_0^\beta G_{\alpha \beta} ( \tau) e^{-i \omega_n \tau}
+
+where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <GfImTime>`.
 
 
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GFBloc_ReTime
-  :members: density, setFromInverseFourierOf, transpose, conjugate
+.. autoclass:: pytriqs.base.gf_local.GfImFreq
+  :members: density, setFromFourierOf, setFromLegendre
  
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GFBloc_ReTime (TRIQS_HDF5_data_scheme = "GFBloc_ReTime") is decomposed in the following objects : 
+The GfImFreq (TRIQS_HDF5_data_scheme= "GfImFreq") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-Mesh                        MeshGF                       The mesh
-Tail                        TailGF                       The tail
+Mesh                        MeshGf                       The mesh
+Tail                        TailGf                       The tail
 Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
                                                           * i1, i2 are the indices
-                                                          * n is the index of the time slice
+                                                          * n is the Matsubara index 
+                                                         
+                                                         For real GF in time, we store only starting from n=0 and the
+                                                         rest is deduced by symmetry
 IndicesL,IndicesR           string                       The Python repr of the indices, e.g. (1,2), or (1,)
                                                          repr(this_string) reproduces the indices 
 Name                        string                       Name of the Green function block
@@ -41,9 +47,8 @@ Note                        string                       Note
 
 
 Example 
----------------
+--------------- 
 
-.. plot:: green/block/green_retime.py
+.. plot:: green/block/green_imfreq.py
    :include-source:
-   :scale: 70
-  
+   :scale: 70 

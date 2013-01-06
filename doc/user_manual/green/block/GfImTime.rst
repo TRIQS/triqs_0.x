@@ -2,9 +2,9 @@
   single: Green's functions; block Green's function
   module: gf_imtime
 
-.. _GFBloc_ImTime:
+.. _GfImTime:
 
-Matsubara Green's function in imaginary time (GFBloc_ImTime)
+Matsubara Green's function in imaginary time (GfImTime)
 ==============================================================================
 
 This object stores a matrix valued Green function in imaginary time
@@ -18,20 +18,20 @@ in the Matsubara formalism :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GFBloc_ImTime
+.. autoclass:: pytriqs.base.gf_local.GfImTime
   :members: setFromInverseFourierOf, setFromLegendre, transpose, conjugate
 
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^^^^^
 
-The GFBloc_ImTime (TRIQS_HDF5_data_scheme = "GFBloc_ImTime") is decomposed in the following objects : 
+The GfImTime (TRIQS_HDF5_data_scheme = "GfImTime") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-Mesh                        MeshGF                       The mesh
-Tail                        TailGF                       The tail
+Mesh                        MeshGf                       The mesh
+Tail                        TailGf                       The tail
 Data                        3d numpy of double           Data[i1,i2,n] is the element of the Green function where :
                                                           * i1, i2 are the indices
                                                           * n is the index of the time slice, starting at tau =0

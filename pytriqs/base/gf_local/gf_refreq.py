@@ -20,10 +20,9 @@
 #
 ################################################################################
 
-__all__ = ['GFBloc_ReFreq']
-from pytriqs_GF import GF_Statistic,GF_Type,TailGF,MeshGF
-from gf_base import gf_base
-from gf_concept import gf_concept
+__all__ = ['GfReFreq']
+from pytriqs_GF import GF_Statistic,GF_Type,TailGf,MeshGf
+from gf_base import GfBase
 import numpy
 from math import pi
 
@@ -32,9 +31,9 @@ from math import pi
 #-----------------------------------------------------
 
 from pytriqs.base.utility.injector import make_injector        # inject new code in the SAME class
-from pytriqs_GF import GFBloc_ReFreq     # the wrapped C++ class.
+from pytriqs_GF import GfReFreq     # the wrapped C++ class.
 
-class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq):
+class __inject (make_injector(GfReFreq), GfBase, GfReFreq):
     """ 
     A matrix-valued block Green's function in real frequencies.
     """
@@ -44,43 +43,43 @@ class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq)
      real frequencies yourself, or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GFBloc_ReFreq(Indices, Beta, Statistic, MeshArray, Data, Tail, Name,Note)
+     GfReFreq(indices, beta, statistic, mesh_array, data, tail, name, note)
 
-           * ``Indices``:  a list of indices names of the block
-           * ``Beta``:  Inverse Temperature 
-           * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-           * ``MeshArray``: Grid of frequencies, as a numpy array.
-           * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),len(MeshArray)) representing the value of the Green function on the mesh. 
-           * ``Tail``:  the tail 
-           * ``Name``:  a name of the GF
-           * ``Note``:  any string you like...
+           * ``indices``:  a list of indices names of the block
+           * ``beta``:  Inverse Temperature 
+           * ``statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
+           * ``mesh_array``: Grid of frequencies, as a numpy array.
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),len(mesh_array)) representing the value of the Green function on the mesh. 
+           * ``tail``:  the tail 
+           * ``name``:  a name of the Green's function
+           * ``note``:  any string you like...
 
      If you already have the mesh, you can use a simpler version :
 
-     GFBloc_ReFreq(Indices, Mesh, Data, Tail, Name,Note)
+     GfReFreq(indices, mesh, data, tail, name, note)
         
-           * ``Indices``:  a list of indices names of the block
-           * ``Mesh``:  a MeshGF object, such that Mesh.TypeGF== GF_Type.Real_Frequency 
-           * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),len(MeshArray)) representing the value of the Green function on the mesh.            * ``Tail``:  the tail 
-           * ``Name``:  a name of the GF
-           * ``Note``:  any string you like...
+           * ``indices``:  a list of indices names of the block
+           * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Real_Frequency 
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),len(mesh_array)) representing the value of the Green function on the mesh.            * ``tail``:  the tail 
+           * ``name``:  a name of the Green's function
+           * ``note``:  any string you like...
 
 .. warning::
-    The Green function take a **view** of the array Data, and a **reference** to the Tail.
+    The Green function take a **view** of the array data, and a **reference** to the tail.
 
         """
         # construct the mesh if needed
-        if 'Mesh' not in d : 
-            if 'Beta' not in d : raise ValueError, "Beta not provided"
-            if 'MeshArray' not in d : raise ValueError, "MeshArray not provided"
-            Beta = float(d['Beta'])
-            stat = d['Statistic'] if 'Statistic' in d else GF_Statistic.Fermion
+        if 'mesh' not in d : 
+            if 'beta' not in d : raise ValueError, "beta not provided"
+            if 'mesh_array' not in d : raise ValueError, "mesh_array not provided"
+            beta = float(d['beta'])
+            stat = d['statistic'] if 'statistic' in d else GF_Statistic.Fermion
             sh = 1 if stat== GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshGF( GF_Type.Real_Frequency,stat,Beta,d['MeshArray'])
-            for a in [ 'Beta', 'Statistic', 'MeshArray'] : 
+            d['mesh'] = MeshGf( GF_Type.Real_Frequency,stat,beta,d['mesh_array'])
+            for a in [ 'beta', 'statistic', 'mesh_array'] : 
                 if a in d : del d[a]
         else : 
-            assert d['Mesh'].TypeGF== GF_Type.Real_Frequency, "You provided a wrong type of mesh !!"
+            assert d['mesh'].TypeGF== GF_Type.Real_Frequency, "You provided a wrong type of mesh !!"
 
         self._init_base__(d)
         self._init_before_injection__(*self._param_for_cons)
@@ -92,29 +91,29 @@ class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq)
         """ Plot protocol. OptionsDict can contain : 
              * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]
-             * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
+             * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
         M = [x for x in self.mesh]
         return self._plot_base( OptionsDict,  r'$\omega$', lambda name : r'%s$(\omega)$'%name, True, M)
  
     #-----------------------------------------------------
 
-    def InverseFourier(self, TimeMin =None) : 
+    def InverseFourier(self, time_min =None) : 
         """
-           Returns a GFBloc_ReTime containing the Inverse Fourier transform of self
-           TimeMin is the minimal time. By default the time window is centered around 0
+           Returns a GfReTime containing the Inverse Fourier transform of self
+           time_min is the minimal time. By default the time window is centered around 0
         """
         import gf_retime
         (a,b),N = list(self.mesh)[0:2], len(self.mesh)
         om0 = b-a
-        if TimeMin !=None :
-            TimeMax = TimeMin + 2* pi/om0
+        if time_min !=None :
+            time_max = time_min + 2* pi/om0
         else :
-            TimeMax = pi/om0
-            TimeMin = -TimeMax
-        gt = gf_retime.GFBloc_ReTime( Indices = self.Indices,Beta = self.Beta,
-                                          Statistic = self.Statistic,
-                                          TimeMin = TimeMin, TimeMax = TimeMax,NTimeSlices = N )
+            time_max = pi/om0
+            time_min = -time_max
+        gt = gf_retime.GfReTime( indices = self.indices, beta = self.beta,
+                                           statistic = self.statistic,
+                                           time_min = time_min, time_max = time_max, n_time_slices = N )
         gt.setFromInverseFourierOf(self)
         return gt
 
@@ -124,6 +123,6 @@ class __inject (make_injector(GFBloc_ReFreq) ,gf_concept,gf_base, GFBloc_ReFreq)
 #-----------------------------------------------------
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
-register_class (GFBloc_ReFreq)
+register_class (GfReFreq)
  
  

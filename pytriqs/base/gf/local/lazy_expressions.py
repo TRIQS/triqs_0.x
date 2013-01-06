@@ -20,31 +20,31 @@
 ################################################################################
 import descriptors
 
-__all__ = ['lazy_expr','lazy_expr_terminal','eval_expr_with_context', 'lazy','lazy_function', 'transform', 'eval_expr']
+__all__ = ['LazyExpr','LazyExprTerminal','eval_expr_with_context', 'lazy','lazy_function', 'transform', 'eval_expr']
 
 class __aux(object) : 
 
-    def __add__(self,y): return lazy_expr("+", lazy_expr(self), lazy_expr(y))
-    def __sub__(self,y): return lazy_expr("-", lazy_expr(self), lazy_expr(y))
-    def __mul__(self,y): return lazy_expr("*", lazy_expr(self), lazy_expr(y))
-    def __div__(self,y): return lazy_expr("/", lazy_expr(self), lazy_expr(y))
+    def __add__(self,y): return LazyExpr("+", LazyExpr(self), LazyExpr(y))
+    def __sub__(self,y): return LazyExpr("-", LazyExpr(self), LazyExpr(y))
+    def __mul__(self,y): return LazyExpr("*", LazyExpr(self), LazyExpr(y))
+    def __div__(self,y): return LazyExpr("/", LazyExpr(self), LazyExpr(y))
 
-    def __radd__(self,y): return lazy_expr("+", lazy_expr(y), lazy_expr(self))
-    def __rsub__(self,y): return lazy_expr("-", lazy_expr(y), lazy_expr(self))
-    def __rmul__(self,y): return lazy_expr("*", lazy_expr(y), lazy_expr(self))
-    def __rdiv__(self,y): return lazy_expr("/", lazy_expr(y), lazy_expr(self))
+    def __radd__(self,y): return LazyExpr("+", LazyExpr(y), LazyExpr(self))
+    def __rsub__(self,y): return LazyExpr("-", LazyExpr(y), LazyExpr(self))
+    def __rmul__(self,y): return LazyExpr("*", LazyExpr(y), LazyExpr(self))
+    def __rdiv__(self,y): return LazyExpr("/", LazyExpr(y), LazyExpr(self))
 
     def __iadd__(self,y): return self.set_from(self+y)
     def __isub__(self,y): return self.set_from(self-y)
     def __imul__(self,y): return self.set_from(self*y)
     def __idiv__(self,y): return self.set_from(self/y)
 
-    def __call__(self, *args) : return lazy_expr("F", make_lazy(self), *map( make_lazy, args))
+    def __call__(self, *args) : return LazyExpr("F", make_lazy(self), *map( make_lazy, args))
 
-class lazy_expr_terminal (__aux) :
+class LazyExprTerminal (__aux) :
     pass 
 
-class lazy_expr (__aux) : 
+class LazyExpr (__aux) : 
     """
     """
 
@@ -58,7 +58,7 @@ class lazy_expr (__aux) :
     
     def copy(self) : 
         """ Deep copy"""
-        return lazy_expr(self.tag, self.childs)
+        return LazyExpr(self.tag, self.childs)
 
     def set_from(self,y) :
         """ self := y """
@@ -103,12 +103,12 @@ def eval_expr_with_context( eval_term, expr ) :
 
 #-----------------------------------------------------
 
-def make_lazy( x) : return lazy_expr(x)
+def make_lazy( x) : return LazyExpr(x)
 
 #-----------------------------------------------------
 
 def lazy_function( name, F) : 
-    return lazy_expr("T", (name,F))  
+    return LazyExpr("T", (name,F))  
  
 #-----------------------------------------------------
 
@@ -118,10 +118,10 @@ def transform (expr, Fnode, Fterm = lambda x : x ) :
            Fterm(x) -> x'
            it transforms the expression recursively
     """
-    if expr.tag == "T" : return lazy_expr("T", Fterm(expr.childs[0]))
+    if expr.tag == "T" : return LazyExpr("T", Fterm(expr.childs[0]))
     tag, ch = Fnode (expr.tag, map(lambda e : transform (e,Fnode), expr.childs))
-    ch = map( lambda x : lazy_expr(x), ch)
-    return lazy_expr (tag, *ch)
+    ch = map( lambda x : LazyExpr(x), ch)
+    return LazyExpr (tag, *ch)
 
 #-----------------------------------------------------
 
@@ -137,10 +137,10 @@ def all_terminals (expr) :
 def eval_expr (expr) :
 #def eval_expr_or_pass (expr) :
     """ 
-    If expr is not a lazy_expr : returns expr unchanged.
+    If expr is not a LazyExpr : returns expr unchanged.
     Otherwise, tries to eval it by looking for some element in the tree that can create the evaluation context and is not purely abstract
     """
-    if not isinstance ( expr, lazy_expr) : return expr # do nothing 
+    if not isinstance ( expr, LazyExpr) : return expr # do nothing 
     # first take all terminals
     C = [ t.__lazy_expr_eval_context__() for t in all_terminals(expr) if hasattr(t, "__lazy_expr_eval_context__") ]
     if C == [] : raise ValueError, "Evaluation impossible : expression is purely abstract"
@@ -153,7 +153,7 @@ def eval_expr (expr) :
 
 if __name__ == "__main__":
 
-    class T ( lazy_expr_terminal) : 
+    class T ( LazyExprTerminal) : 
         def __init__(self,n): self.name = n
         def __repr__(self) : return self.name
 

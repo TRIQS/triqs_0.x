@@ -24,7 +24,7 @@
 import copy,numpy
 import string
 from types import *
-from pytriqs.base.gf_local.block_gf import GF
+from pytriqs.base.gf_local.block_gf import BlockGf
 from math import cos, sin
 
 
@@ -111,11 +111,11 @@ class Symmetry:
     def symmetrise_noSO(self,obj):
         """ symmetrisation without SO coupling"""
         
-        if (isinstance(obj[0],GF)):
-            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a GF!
+        if (isinstance(obj[0],BlockGf)):
+            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a BlockGf!
             for iorb in range(self.N_orbits): symm_obj[iorb].zero()      # set to zero
         else:
-            # if not a GF, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
+            # if not a BlockGf, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
             #symm_obj = [ numpy.zeros([self.orbits[iorb][3],self.orbits[iorb][3]],numpy.complex_) for iorb in range(self.N_orbits) ]
             symm_obj = [ copy.deepcopy(obj[i]) for i in range(len(obj)) ]
          
@@ -135,7 +135,7 @@ class Symmetry:
                 jorb = self.map[iNs][iorb]
 
              
-                if (isinstance(obj[0],GF)):
+                if (isinstance(obj[0],BlockGf)):
 
                     if l==0:
                         tmp = obj[iorb].copy()
@@ -176,11 +176,11 @@ class Symmetry:
     def symmetrise_SO(self,obj):
         """ symmetrisation with SO coupling"""
 
-        if (isinstance(obj[0],GF)):
-            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a GF!
+        if (isinstance(obj[0],BlockGf)):
+            symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a BlockGf!
             for iorb in range(self.N_orbits): symm_obj[iorb].zero()      # set to zero
         else:
-            # if not a GF, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
+            # if not a BlockGf, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
             # first index: orbital
             #symm_obj = [ numpy.zeros([self.orbits[iorb][3],self.orbits[iorb][3]],numpy.complex_) for iorb in range(self.N_orbits) ]
             symm_obj = [ copy.deepcopy(obj[i]) for i in range(len(obj)) ]
@@ -201,7 +201,7 @@ class Symmetry:
                 dim = self.orbits[iorb][3]
                 jorb = self.map[iNs][iorb]
              
-                if (isinstance(obj[0],GF)):
+                if (isinstance(obj[0],BlockGf)):
 
                     tmp = obj[iorb].copy()
                     #if self.timeinv[iNs]: tmp <<= tmp.conjugate()

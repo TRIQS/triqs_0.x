@@ -22,7 +22,7 @@
 
 from math import *
 import numpy
-from pytriqs.base.gf_local import GF
+from pytriqs.base.gf_local import BlockGf
 from pytriqs.base.utility.my_utils import sum_list
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
@@ -75,7 +75,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
 
    def Transform_RealSpace_to_SymmetryBasis(self,IN, OUT = None):
       """ IN[i,j] in real space --> OUT into the symmetry basis"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in IN:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
             OUT[ind+sig] = sum_list ( [ sum_list ( [ B[i+1,j+1]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
@@ -83,7 +83,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
 
    def Transform_SymmetryBasis_toRealSpace(self,IN, OUT = None):
       """  IN : in symmetry cluster indices. Returns OUT to real space"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
@@ -391,7 +391,7 @@ class Solver_Anderson_4sites (Solver) :
 
    def Transform_RealSpace_to_SymmetryBasis(self,IN, OUT = None):
       """ IN[i,j] in real space --> OUT into the symmetry basis"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in IN:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
             OUT[ind+sig] = sum_list ( [ sum_list ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
@@ -399,7 +399,7 @@ class Solver_Anderson_4sites (Solver) :
 
    def Transform_SymmetryBasis_to_RealSpace(self,IN, OUT = None):
       """  IN : in symmetry cluster indices. Returns OUT to real space"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
@@ -469,7 +469,7 @@ class Solver_Anderson_4sites_Momentum (Solver) :
 
    def Transform_RealSpace_to_SymmetryBasis(self,IN, OUT = None):
       """ IN[i,j] in real space --> OUT into the symmetry basis"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in IN:
          for k,ind in enumerate(['00-', '10-','01-', '11-']) : 
             OUT[ind+sig] = sum_list ( [ sum_list ( [ B[(i+1,1),(j+1,1)]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
@@ -477,7 +477,7 @@ class Solver_Anderson_4sites_Momentum (Solver) :
 
    def Transform_SymmetryBasis_to_RealSpace(self,IN, OUT = None):
       """  IN : in symmetry cluster indices. Returns OUT to real space"""
-      OUT = OUT if OUT else GF(G)
+      OUT = OUT if OUT else BlockGf(G)
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):

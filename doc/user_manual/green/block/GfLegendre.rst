@@ -2,9 +2,9 @@
   single: Green's functions; block Green's function
   module: gf_legendre
 
-.. _GFBloc_ImLegendre:
+.. _GfLegendre:
 
-Matsubara Green's function with Legendre polynomials (GFBloc_ImLegendre)
+Matsubara Green's function with Legendre polynomials (GfLegendre)
 =====================================================================================
 
 This object stores a matrix-valued Matsubara Green's function in imaginary time using
@@ -17,26 +17,26 @@ function through:
 
 where :math:`x(\tau) = 2\tau/\beta -1` and the :math:`P_l` are the Legendre
 polynomials.  :math:`G_{\alpha \beta}(\tau)` is the :ref:`Matsubara Green's
-function in imaginary time <GFBloc_ImTime>`.
+function in imaginary time <GfImTime>`.
 
 
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GFBloc_ImLegendre
+.. autoclass:: pytriqs.base.gf_local.GfLegendre
   :members: density, determine_tail, enforce_discontinuity, copy_and_truncate
  
 
 HDF5 data scheme
 ^^^^^^^^^^^^^^^^^^
 
-The GFBloc_ImLegendre (TRIQS_HDF5_data_scheme= "GFBloc_ImLegendre") is decomposed in the following objects : 
+The GfLegendre (TRIQS_HDF5_data_scheme= "GfLegendre") is decomposed in the following objects : 
 
 =========================   ===========================  ===========================================================================
 Name                        Type                         Meaning
 =========================   ===========================  ===========================================================================
-Mesh                        MeshGF                       The mesh
-Tail                        TailGF                       The tail
+Mesh                        MeshGf                       The mesh
+Tail                        TailGf                       The tail
 Data                        3d numpy of complex          Data[i1,i2,n] is the element of the Green function where :
                                                           * i1, i2 are the indices
                                                           * n is the Legendre coefficient index 
