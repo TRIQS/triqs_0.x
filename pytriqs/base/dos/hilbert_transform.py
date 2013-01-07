@@ -26,7 +26,7 @@ from operator import isSequenceType
 from pytriqs.base.dos import DOS
 import pytriqs.base.utility.mpi as mpi
 
-class Hilbert_Transform : 
+class HilbertTransform : 
     r"""
     Computes the Hilbert Transform from a DOS object 
 
@@ -37,18 +37,18 @@ class Hilbert_Transform :
        \Bigr)^{-1}
 
     """
-    def __init__(self, Rho):
+    def __init__(self, rho):
         """
-        :param Rho: a DOS object.
+        :param rho: a DOS object.
         """
-        self.dos  = Rho
-        assert isinstance(Rho, DOS),  "See Doc. Rho must be a DOS"
+        self.dos  = rho
+        assert isinstance(rho, DOS),  "See Doc. rho must be a DOS"
         self.__normalize()
 
     #-------------------------------------------------------------
 
     def __reduce__(self) : 
-        return self.__class__, (self.Rho)
+        return self.__class__, (self.rho)
 
     #-------------------------------------------------------------
    
@@ -65,8 +65,8 @@ class Hilbert_Transform :
      
     #-------------------------------------------------------------
 
-    def __call__ (self, Sigma, mu=0, eta = 0, field = None, epsilon_hat=None, result = None,
-                  Number_Points_in_integral=None, Test_Convergence = None):
+    def __call__ (self, Sigma, mu=0, eta=0, field=None, epsilon_hat=None, result=None,
+                  n_points_integral=None, test_convergence=None):
         r""" 
         Compute the Hilbert Transform 
                
@@ -82,9 +82,9 @@ class Hilbert_Transform :
         epsilon_hat : a function that takes a 1d array eps[i] and returns 3d-array   eps[i, :, :]
                             where the :, : has the matrix structure of Sigma. Default : eps[i] * Identity_Matrix
                             Used only when DOS is a DOSFromFunction : 
-        Number_Points_in_integral : How many points to use. If None, use the Npts of construction
-        Test_Convergence : If defined, it will refine the grid until CV is reached
-                          starting from Number_Points_in_integral and multiplying by 2
+        n_points_integral : How many points to use. If None, use the Npts of construction
+        test_convergence : If defined, it will refine the grid until CV is reached
+                          starting from n_points_integral and multiplying by 2
         
         Returns
         --------
@@ -103,7 +103,7 @@ class Hilbert_Transform :
             result = Sigma.copy()
 
         if not( isinstance (self.dos, DOSFromFunction)):
-            assert Number_Points_in_integral==None and Test_Convergence == None, " Those parameters can only be used with an dos_from_function"
+            assert n_points_integral==None and test_convergence == None, " Those parameters can only be used with an dos_from_function"
         if field !=None : 
             try : 
                 result += field
@@ -153,24 +153,24 @@ class Hilbert_Transform :
 
         if isinstance (self.dos, DOSFromFunction): 
             
-            if not(Number_Points_in_integral) : # if not defined, use the defaults given at construction of the dos
-                Number_Points_in_integral=  len(self.dos.eps)
+            if not(n_points_integral) : # if not defined, use the defaults given at construction of the dos
+                n_points_integral=  len(self.dos.eps)
             else:
-                self.dos._DOS__f(Number_Points_in_integral)
+                self.dos._DOS__f(n_points_integral)
                 self.__normalize()
 
             HT(result)
 
             nloop, test = 1, 0
-            while Test_Convergence and nloop < 10 and (nloop == 1 or test > Test_Convergence):
+            while test_convergence and nloop < 10 and (nloop == 1 or test > test_convergence):
                 if nloop>1 :
-                    self.dos._DOS__f(Number_Points_in_integral)
+                    self.dos._DOS__f(n_points_integral)
                     self.__normalize()
 
                 result_old = result.copy()
-                result = DOS.Hilbert_Transform(self, Sigma, mu, eta, epsilon_hat, result)
-                test = test_distance(result, result_old, Test_Convergence)
-                Number_Points_in_integral *=2
+                result = DOS.HilbertTransform(self, Sigma, mu, eta, epsilon_hat, result)
+                test = test_distance(result, result_old, test_convergence)
+                n_points_integral *=2
                 
         else :  # Ordinary DOS
             HT(result)

@@ -1,5 +1,5 @@
 from pytriqs.base.lattice.tight_binding import *
-from pytriqs.base.dos import Hilbert_Transform
+from pytriqs.base.dos import HilbertTransform
 from pytriqs.base.gf_local import GfImFreq
 
 # Define a DOS (here on a square lattice)
@@ -18,7 +18,7 @@ TB = tight_binding ( BL, hop)
 d = dos (TB, nkpts= 500, neps = 101, name = 'dos')[0]
 
 #define a Hilbert transform
-H = Hilbert_Transform(d)
+H = HilbertTransform(d)
 
 #fill a Green function
 G = GfImFreq(indices = ['up','down'], beta = 20)

@@ -34,7 +34,7 @@ Reference manual
   bravais
   tightbinding
   dos
-  Hilbert_Transform
+  hilbert
   sumk
 
 
