@@ -20,10 +20,10 @@ The interface to Wien2k
 As explained above, this interface produces an hdf5 arxive out of the files that
 were written by the band structure package :program:`Wien2k/dmftproj`. 
 For this purpose we
-use the python module :class:`SumK_LDA_Wien2k_input`. It is initialised as::
+use the python module :class:`Wien2kConverter`. It is initialised as::
 
   from pytriqs.dft.converters.wien2k_converter import *
-  Converter = SumK_LDA_Wien2k_input(Filename = material_of_interest)
+  Converter = Wien2kConverter(filename = material_of_interest)
 
 The only necessary parameter to this construction is the parameter `Filename`.
 It has to be the root of the files produces by dmftproj. For example, if you did a 
@@ -35,7 +35,7 @@ There are three optional parameters to the Constructor:
 
   * `LDASubGrp`: We store all data in sub groups of the hdf5 arxive. For the main data
     that is needed for the DMFT loop, we use the sub group specified by this optional parameter.
-    If it is not given, the standard value `SumK_LDA` is used as sub group name.
+    If it is not given, the standard value `SumkLDA` is used as sub group name.
   * `SymmSubGrp`: In this sub group we store all the data for applying the symmetry 
     operations in the DMFT loop. Standard value is `SymmCorr`.
   * `repacking`: If true, and the hdf5 file already exists, the system command :program:`h5repack` 
@@ -79,7 +79,7 @@ spectral function. It is done by::
   
   Converter.convert_bands_input()
 
-The optional parameter, which tells the routine where to store the data is here `BandsSubGrp`, 
+The optional parameter, which tells the routine where to store the data is here `bands_subgrp`, 
 and its standard value is `SumK_LDA_Bands`.
 
 After having converted this input, you can further proceed with the :ref:`analysis`.
@@ -88,7 +88,7 @@ MPI issues
 ----------
 
 The interface package is written such that all the operations are done only on the master node.
-The broadcasting to the nodes has to be done by hand. The :class:`SumK_LDA`, described in the
+The broadcasting to the nodes has to be done by hand. The :class:`SumkLDA`, described in the
 following section, takes care of this automatically.
 
 Interfaces to other packages

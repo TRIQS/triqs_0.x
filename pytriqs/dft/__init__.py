@@ -20,12 +20,12 @@
 #
 ################################################################################
 
-from sumk_lda import SumK_LDA
+from sumk_lda import SumkLDA
 from symmetry import Symmetry
-from sumk_lda_tools import SumK_LDA_tools
+from sumk_lda_tools import SumkLDATools
 from U_matrix import Umatrix
 from converters import *
 
-__all__ =['SumK_LDA','Symmetry','SumK_LDA_tools','Umatrix','Wien2kConverter']
+__all__ =['SumkLDA','Symmetry','SumkLDATools','Umatrix','Wien2kConverter']
 
 

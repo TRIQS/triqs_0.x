@@ -34,7 +34,7 @@ class Symmetry:
        It contains the permutations of the atoms in the unti cell, and the corresponding
        rotational matrices for each symmetry operation."""
 
-    def __init__(self, HDFfile, subgroup = None):
+    def __init__(self, hdf_file, subgroup = None):
         """Initialises the class.
            Reads the permutations and rotation matrizes from the file, and constructs the mapping for
            the given orbitals. For each orbit a matrix is read!!!
@@ -42,13 +42,13 @@ class Symmetry:
            SP: Spin polarisation yes/no
            """
 
-        assert type(HDFfile)==StringType,"HDFfile must be a filename"; self.HDFfile = HDFfile
+        assert type(hdf_file)==StringType,"hdf_file must be a filename"; self.hdf_file = hdf_file
         thingstoread = ['Ns','Natoms','perm','orbits','SO','SP','timeinv','mat','mat_tinv']
         for it in thingstoread: exec "self.%s = 0"%it
 
         if (mpi.is_master_node()):
             #Read the stuff on master:
-            ar = HDFArchive(HDFfile,'a')
+            ar = HDFArchive(hdf_file,'a')
             if (subgroup is None):
                 ar2 = ar
             else:
@@ -76,7 +76,7 @@ class Symmetry:
                     
        
 
-    def symmetrise(self,obj):
+    def symmetrize(self,obj):
         
         assert isinstance(obj,list),"obj has to be a list of objects!"
         assert len(obj)==self.N_orbits,"obj has to be a list of the same length as defined in the init"

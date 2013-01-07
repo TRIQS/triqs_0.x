@@ -21,9 +21,9 @@ HDFfilename = LDAFilename+'.h5'
 
 # Convert DMFT input:
 # Can be commented after the first run
-Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
-Converter.convert_DMFT_input()
-Converter.convert_Parproj_input()
+Converter = Wien2kConverter(filename=LDAFilename,repacking=True)
+Converter.convert_dmft_input()
+Converter.convert_par_proj_input()
 
 #check if there are previous runs:
 previous_runs = 0
@@ -48,7 +48,7 @@ previous_present = mpi.bcast(previous_present)
 # from a converted h5 archive.
 
 # Init the SumK class
-SK=SumK_LDA_tools(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
+SK = SumkLDATools(hdf_file=LDAFilename+'.h5',use_lda_blocks=False)
 
 
 if (mpi.is_master_node()):
@@ -67,4 +67,4 @@ S.set_atomic_levels( eal = eal )
 S.GF_realomega(ommin=ommin, ommax = ommax, N_om=N_om)
 S.Sigma.save('S.Sigma')
 SK.put_Sigma(Sigmaimp = [S.Sigma])
-SK.dospartial(broadening=broadening)
+SK.dos_partial(broadening=broadening)

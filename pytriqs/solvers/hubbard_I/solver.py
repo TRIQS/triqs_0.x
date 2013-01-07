@@ -47,9 +47,9 @@ class Solver(SolverBaseHub):
         
         # U matrix:
         #l = (Nlm-1)/2
-        Umat = Umatrix(U_interact=Uint, J_Hund=JHund, l=l)  
+        Umat = Umatrix(U_interact=Uint, J_hund=JHund, l=l)  
         Umat(T=T)
-        Umat.ReduceMatrix()
+        Umat.reduce_matrix()
         assert (Umat.N==Umat.Nmat),"Transformation that mixes spins is not implemented in hubbard_I Solver!!"
         # now we have the reduced matrices U and Up
 

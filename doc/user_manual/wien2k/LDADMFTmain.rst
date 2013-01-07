@@ -14,11 +14,11 @@ Initialisation of the calculation
 ---------------------------------
 
 Before doing the calculation, we have to intialize all the objects that we will need. The first thing is the 
-:class:`SumK_LDA` class. It contains all basic routines that are necessary to perform a summation in k-space 
+:class:`SumkLDA` class. It contains all basic routines that are necessary to perform a summation in k-space 
 to get the local quantities used in DMFT. It is initialized by::
 
   from pytriqs.dft.sumk_lda import *
-  SK = SumK_LDA(HDFfile = filename)
+  SK = SumkLDA(HDFfile = filename)
 
 The only necessary parameter is the filename of the hdf5 archive. In addition, there are some optional parameters:
 
@@ -47,7 +47,7 @@ The necessary parameters are the inverse temperature `Beta`, the Coulomb interac
 and the number of orbitals `Norb`. There are again several optional parameters that allow to modify the local Hamiltonian to
 specific needs. They are:
 
-  * `GFStruct`: Contains the block structure of the local density matrix. Has to be given in the format as calculated by :class:`SumK_LDA`.
+  * `GFStruct`: Contains the block structure of the local density matrix. Has to be given in the format as calculated by :class:`SumkLDA`.
   * `map`: If `GFStruct` is given as parameter, also `map` has to be given. This is the mapping from the block structure to a general 
     up/down structure.
   * `useMatrix`: If `True`, the interaction matrix is calculated from Slater integrals, which are calculated from `U_interact` and 
@@ -64,7 +64,7 @@ specific needs. They are:
     of the d-shell, i.e. t2g and eg. Only effective for Slater parametrisation.
   * `irep`: The index in the list `dimreps` of the subset that is used. Only effective for Slater parametrisation.
 
-Most of above parameters can be taken directly from the :class:`SumK_LDA` class, without defining them by hand. We will see a specific example 
+Most of above parameters can be taken directly from the :class:`SumkLDA` class, without defining them by hand. We will see a specific example 
 at the end of this tutorial.
 
 After initialisation, several other CTQMC parameters can be set (see CTQMC doc). The most important are:
@@ -97,7 +97,7 @@ set up the loop over DMFT iterations and the self-consistency condition::
           SK.SetDoubleCounting( dm, U_interact = U, J_Hund = J, useDCformula = DC_type)     # Set the double counting term
           SK.save()                                  # save everything to the hdf5 arxive
 
-These basic steps are enough to set up the basic DMFT Loop. For a detailed description of the :class:`SumK_LDA` routines,
+These basic steps are enough to set up the basic DMFT Loop. For a detailed description of the :class:`SumkLDA` routines,
 see the reference manual. After the self-consistency steps, the solution of the Anderson impurity problem is calculation by CTQMC. 
 Different to model calculations, we have to do a few more steps after this, because of the double-counting correction. We first 
 calculate the density of the impurity problem. Then, the routine `SetDoubleCounting` takes as parameters this density matrix, the 

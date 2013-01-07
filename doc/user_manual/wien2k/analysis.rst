@@ -11,12 +11,12 @@ This section explains how to use some tools of the package in order to analyse t
   There are methods included e.g. in the ALPS package, which can be used for these purposes. But
   be careful: All these methods have to be used very carefully!!
 
-The analysing tools can be found in an extension of the :class:`SumK_LDA` class, they are
+The analysing tools can be found in an extension of the :class:`SumkLDA` class, they are
 loaded by::
 
   from pytriqs.dft.sumk_lda_tools import *
 
-This import the module ``SumK_LDA_tools``. There are two practical tools, for which you don't
+This import the module ``SumkLDATools``. There are two practical tools, for which you don't
 need a self energy on the real axis:
 
   * The density of states of the Wannier orbitals.
@@ -28,12 +28,12 @@ calculate
   * the momentum-integrated spectral function including self-energy effects.
   * the momentum-resolved spectral function (i.e. ARPES)
 
-The initialisation of the class is completely equivalent to the initialisation of the :class:`SumK_LDA` 
+The initialisation of the class is completely equivalent to the initialisation of the :class:`SumkLDA` 
 class::
 
-  SK = SumK_LDA_tools(HDFfile = filename)
+  SK = SumkLDATools(hdf_file = filename)
 
-By the way, all routines available in :class:`SumK_LDA` are also available here. 
+By the way, all routines available in :class:`SumkLDA` are also available here. 
 
 Routines without real-frequency self energy
 -------------------------------------------
@@ -41,7 +41,7 @@ Routines without real-frequency self energy
 For plotting the 
 density of states of the Wannier orbitals, you simply type::
 
-  SK.check_inputDOS(ommin, ommax, N_om)
+  SK.check_input_dos(om_min, om_max, n_om)
 
 which produces plots between real frequencies `ommin` and `ommax`, using a mesh of `N_om` points. There
 is an optional parameter, `broadening`, which defines an additional Lorentzian broadening, and is set to `0.01` 
@@ -50,7 +50,7 @@ by default.
 Since we can calculate the partial charges directly from the Matsubara Green's functions, we also don't need a
 real frequency self energy for this purpose. The calculation is done by::
 
-  ar=HDFArchive(SK.HDFfile)
+  ar = HDFArchive(SK.hdf_file)
   SK.put_Sigma([ ar['SigmaF'] ])
   del ar
   dm = SK.partial_charges()
@@ -71,19 +71,19 @@ keep in mind. The real frequency self energy has to carry the note `ReFreq`::
 
   SigmaReFreq.note = 'ReFreq'
 
-This tells the SumK_LDA routines, that it is indeed a real frequency Greens function. Supposed you have your self energy now
+This tells the SumkLDA routines, that it is indeed a real frequency Greens function. Supposed you have your self energy now
 in the archive, you can type::
 
-  ar=HDFArchive(SK.HDFfile)
+  ar=HDFArchive(SK.hdf_file)
   SK.put_Sigma([ ar['SigmaReFreq'] ])
   del ar
 
-This loads the self energy and puts it into the :class:`SumK_LDA` class. The chemical potential as well as the double
+This loads the self energy and puts it into the :class:`SumkLDA` class. The chemical potential as well as the double
 counting correction was already read in the initialisation process.
 
 With this self energy, we can do now::
 
-  SK.dospartial()
+  SK.dos_partial()
 
 This produces the momentum-integrated spectral functions (density of states, DOS), also orbitally resolved. 
 The output is printed into the files

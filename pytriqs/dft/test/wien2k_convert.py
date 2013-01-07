@@ -766,8 +766,8 @@ f.write("   0.0000000000000000        0.0000000000000000        0.00000000000000
 f.close()
 
 
-Converter = Wien2kConverter(Filename='data')
-Converter.HDFfile = 'wien2k_convert.output.h5'
-Converter.convert_DMFT_input()
+Converter = Wien2kConverter(filename='data')
+Converter.hdf_file = 'wien2k_convert.output.h5'
+Converter.convert_dmft_input()
 
 

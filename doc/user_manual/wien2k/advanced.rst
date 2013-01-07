@@ -18,7 +18,7 @@ Then we define some parameters::
   LDAFilename='srvo3'
   U = 2.7
   J = 0.65
-  Beta = 40
+  beta = 40
   Loops =  10                      # Number of DMFT sc-loops
   Mix = 1.0                        # Mixing factor of Sigma after solution of the AIM
   DeltaMix = 1.0                   # Mixing factor of Delta as input for the AIM
@@ -34,8 +34,8 @@ Then we define some parameters::
 Most of these parameters are self-explaining. The first, `LDAFilename`, gives the filename of the input files. 
 The next step, as described in the previous section, is to convert the input files::
 
-  Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
-  Converter.convert_DMFT_input()
+  Converter = Wien2kConverter(filename=LDAFilename, repacking=True)
+  Converter.convert_dmft_input()
   mpi.barrier()
 
 The command ``mpi.barrier()`` ensures that all nodes wait until the conversion of the input is finished on the master
@@ -55,20 +55,20 @@ from scratch::
   # if previous runs are present, no need for recalculating the bloc structure:
   calc_blocs = useBlocs and (not previous_present)
 
-Now we can use all this information to initialise the :class:`SumK_LDA` class::
+Now we can use all this information to initialise the :class:`SumkLDA` class::
 
-  SK=SumK_LDA(HDFfile=LDAFilename+'.h5',UseLDABlocs=calc_blocs)
+  SK=SumkLDA(hdf_file=LDAFilename+'.h5',use_lda_blocks=calc_blocs)
 
 If there was a previous run, we know already about the block structure, and therefore `UseLDABlocs` is set to `False`.
 The next step is to initialise the Solver::
 
   Norb = SK.corr_shells[0][3]
   l = SK.corr_shells[0][2]
-  S=Solver_MultiBand(Beta=Beta,U_interact=U,J_Hund=J,Norb=Norb,useMatrix=useMatrix, 
-                     T=SK.T[0] ,GFStruct=SK.GFStruct_Solver[0],map=SK.map[0], 
+  S = SolverMultiBand(beta=beta,U_interact=U,J_hund=J,n_orb=Norb,use_matrix=useMatrix, 
+                     T=SK.T[0], gf_struct=SK.gf_struct_solver[0],map=SK.map[0], 
                      l=l, deg_orbs=SK.deg_shells[0], use_spinflip=use_spinflip)
 
-As we can see, many options of the solver are set by properties of the :class:`SumK_LDA` class, so we don't have
+As we can see, many options of the solver are set by properties of the :class:`SumkLDA` class, so we don't have
 to set them manually. We now set the basic parameters of the QMC solver::
 
   S.N_Cycles  = QMCcycles

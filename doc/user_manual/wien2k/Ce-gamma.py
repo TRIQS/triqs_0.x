@@ -17,8 +17,8 @@ HDFfilename = LDAFilename+'.h5'
 
 # Convert DMFT input:
 # Can be commented after the first run
-Converter = SumK_LDA_Wien2k_input(Filename=LDAFilename,repacking=True)
-Converter.convert_DMFT_input()
+Converter = Wien2kConverter(filename=LDAFilename,repacking=True)
+Converter.convert_dmft_input()
 
 #check if there are previous runs:
 previous_runs = 0
@@ -39,7 +39,7 @@ previous_runs    = mpi.bcast(previous_runs)
 previous_present = mpi.bcast(previous_present)
 
 # Init the SumK class
-SK=SumK_LDA(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
+SK=SumkLDA(hdf_file=LDAFilename+'.h5',use_lda_blocks=False)
 
 Norb = SK.corr_shells[0][3]
 l    = SK.corr_shells[0][2]

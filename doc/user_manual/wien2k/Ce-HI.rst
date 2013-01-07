@@ -84,7 +84,7 @@ The Hubbard-I solver is very fast and we do not need to take into account the LD
    useBlocs = False                 # use bloc structure from LDA input
    useMatrix = True                 # use the U matrix calculated from Slater coefficients instead of (U+2J, U, U-J)
 
-We load and convert the :program:`dmftproj` output and initialize the *SumK_LDA* class as described in :ref:`LDADMFTmain` and :ref:`advanced` and then set up the Hubbard-I solver ::
+We load and convert the :program:`dmftproj` output and initialize the *SumkLDA* class as described in :ref:`LDADMFTmain` and :ref:`advanced` and then set up the Hubbard-I solver ::
 
  
    S = Solver(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
@@ -170,9 +170,9 @@ The corresponding script :ref:`Ce-gamma_DOS-script` contains several new paramet
    N_om=2001     # number of points on the real-energy axis mesh
    broadening = 0.02 # broadening (the imaginary shift of the real-energy mesh)
 
-Then one needs to load projectors needed for calculations of corresponding projected densities of states, as well as corresponding symmetries. To get access to analysing tools we initialize the `SumK_LDA_tools` class ::
+Then one needs to load projectors needed for calculations of corresponding projected densities of states, as well as corresponding symmetries. To get access to analysing tools we initialize the `SumkLDATools` class ::
 
-   SK=SumK_LDA_tools(HDFfile=LDAFilename+'.h5',UseLDABlocs=False)
+   SK = SumkLDATools(hdf_file=LDAFilename+'.h5', use_lda_blocks=False)
 
 Then after the solver initialization and setting up atomic levels we compute atomic Green's function and self-energy on the real axis::
 
@@ -181,7 +181,7 @@ Then after the solver initialization and setting up atomic levels we compute ato
 
 put it into SK class and then calculated the actual DOS::
 
-   SK.dospartial(broadening=broadening)
+   SK.dos_partial(broadening=broadening)
 
 We may first increase the number of **k**-points in BZ to 10000 by executing :program:`Wien2k` program :program:`kgen` ::
   

@@ -31,11 +31,11 @@ from pytriqs.dft.vertex import u4ind
 class Umatrix:
     """calculates, stores, and manipulates the four index U matrix"""
 
-    def __init__(self, l, U_interact=0, J_Hund=0):
+    def __init__(self, l, U_interact=0, J_hund=0):
 
         self.l = l
         self.U_av = U_interact
-        self.J = J_Hund
+        self.J = J_hund
 
         self.N = 2*l+1         # multiplicity
 
@@ -43,12 +43,12 @@ class Umatrix:
         #self.Ucubic = numpy.zeros([self.N,self.N,self.N,self.N],numpy.float_)
 
 
-    def __call__(self, T = None, Rcl = None):
-        """calculates the four index matrix. Slater parameters can be provided in Rcl, 
+    def __call__(self, T = None, rcl = None):
+        """calculates the four index matrix. Slater parameters can be provided in rcl, 
            and a transformation matrix from complex harmonics to a specified other representation (e.g. cubic). 
            If T is not given, use standard complex harmonics."""
 
-        if Rcl is None: Rcl = self.getRcl(self.U_av,self.J,self.l)
+        if rcl is None: rcl = self.get_rcl(self.U_av,self.J,self.l)
 
         if (T is None): 
             TM = numpy.identity(self.N,numpy.complex_)
@@ -56,11 +56,11 @@ class Umatrix:
             TM = T
         self.Nmat = len(TM)
 
-        self.Ufull = u4ind(Rcl,TM)
+        self.Ufull = u4ind(rcl,TM)
         
                     
         
-    def ReduceMatrix(self):
+    def reduce_matrix(self):
         """Reduces the four-index matrix to two-index matrices."""
 
         if (self.N==self.Nmat):
@@ -81,19 +81,19 @@ class Umatrix:
            
 
 
-    def getRcl(self,Uint,JH,l):
+    def get_rcl(self, U_int, J_hund, l):
 
-        #Rcl = numpy.array([0.0, 0.0, 0.0, 0.0],numpy.float_)
+        #rcl = numpy.array([0.0, 0.0, 0.0, 0.0],numpy.float_)
         xx = l+1
-        Rcl = numpy.zeros([xx],numpy.float_)
+        rcl = numpy.zeros([xx],numpy.float_)
         if(l==2):
-            Rcl[0] = Uint
-            Rcl[1] = JH * 14.0 / (1.0 + 0.63)
-            Rcl[2] = 0.630 * Rcl[1]
+            rcl[0] = U_int
+            rcl[1] = J_hund * 14.0 / (1.0 + 0.63)
+            rcl[2] = 0.630 * rcl[1]
         elif(l==3):
-            Rcl[0] = Uint
-            Rcl[1] = 6435.0 * JH / (286.0 + 195.0 * 451.0 / 675.0 + 250.0 * 1001.0 / 2025.0)
-            Rcl[2] = 451.0 * Rcl[1] / 675.0
-            Rcl[3] = 1001.0 * Rcl[1] / 2025.0
+            rcl[0] = U_int
+            rcl[1] = 6435.0 * J_hund / (286.0 + 195.0 * 451.0 / 675.0 + 250.0 * 1001.0 / 2025.0)
+            rcl[2] = 451.0 * rcl[1] / 675.0
+            rcl[3] = 1001.0 * rcl[1] / 2025.0
 
-        return Rcl
+        return rcl

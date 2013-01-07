@@ -24,7 +24,7 @@ from pytriqs.base.archive import *
 import numpy
 from pytriqs.dft.U_matrix import Umatrix
 
-U = Umatrix(U_interact = 2.0, J_Hund = 0.5, l=2)
+U = Umatrix(U_interact = 2.0, J_hund = 0.5, l=2)
 
 T = numpy.zeros([5,5],numpy.complex_)
 sqtwo = 1.0/numpy.sqrt(2.0)
@@ -40,9 +40,9 @@ T[4,4] = sqtwo
 
 U(T=T)
 
-U.ReduceMatrix()
+U.reduce_matrix()
 
-ar=HDFArchive('U_mat.output.h5')
+ar = HDFArchive('U_mat.output.h5')
 ar['U'] = U.U
 ar['Up'] = U.Up
 ar['Ufull'] = U.Ufull
