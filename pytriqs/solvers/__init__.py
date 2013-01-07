@@ -46,7 +46,7 @@ class SolverBase(object, PrettyPrint):
           self.GF_Names   = [ (cle, ["%s"%s for s in val])  for cle,val in self.GFStruct]
         else: raise TypeError,"Solver indices must be a tuple, int, or string"
         self.Converged = False
-        self.Name =''
+        self.name =''
 
     def need_special_last_iter(self) : return False
 

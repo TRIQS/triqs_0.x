@@ -10,7 +10,7 @@ cdef class GfImFreq_cython ( GfGeneric_cython ) :
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)
 
-    def set_from_fourier_of(self,GfImTime_cython gt) :
+    def set_from_fourier(self,GfImTime_cython gt) :
         """Fills self with the Fourier transform of gt"""
         self._c = lazy_fourier( gt._c )
 
@@ -31,11 +31,11 @@ cdef gf_imfreq  as_gf_imfreq (g) except +:
 # C -> Python. Do NOT add except +
 cdef make_GfImFreq ( gf_imfreq  x) :
     return GfImFreq( 
-            Mesh = make_MeshImFreq (x.mesh()), 
-            Data = x.data_view().to_python(),
-            Tail = make_TailGf (x.singularity_view()),
-            IndicesPack = x.indices()(),
-            Name = "")
+            mesh = make_MeshImFreq (x.mesh()), 
+            data = x.data_view().to_python(),
+            tail = make_TailGf (x.singularity_view()),
+            indices_pack = x.indices()(),
+            name = "")
 
 # Python -> C for blocks
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:

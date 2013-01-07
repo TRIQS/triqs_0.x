@@ -23,7 +23,7 @@
 from itertools import izip
 import operator
 from pytriqs.base.utility.my_utils import call_factory_from_dict
-from impl_plot import _Plot_Wrapper_Partial_Reduce
+from impl_plot import PlotWrapperPartialReduce
 
 class BlockGf(object):
     """
@@ -171,13 +171,13 @@ class BlockGf(object):
         for i,g in self : 
             g.save( "%s_%s"%(filename, self.__mymakestring(i)), accumulate)
  
-    def load(self, filename, adjust_temperature = False, no_exception = False):
+    def load(self, filename, no_exception = False):
         """ 
         adjust_temperature : if true, 
         """
         for i,g in self : 
             try : 
-                g.load( "%s_%s"%(filename,self.__mymakestring(i))) #,adjust_temperature)
+                g.load( "%s_%s"%(filename,self.__mymakestring(i)))
             except : 
                 if not(no_exception) : raise  
     
@@ -315,12 +315,12 @@ class BlockGf(object):
     @property
     def real(self) : 
         """Use self.real in a plot to plot only the real part"""
-        return _Plot_Wrapper_Partial_Reduce(self,RI='R')
+        return PlotWrapperPartialReduce(self, RI='R')
 
     @property
     def imag(self) :
         """Use self.imag in a plot to plot only the imag part"""
-        return _Plot_Wrapper_Partial_Reduce(self,RI='I')
+        return PlotWrapperPartialReduce(self, RI='I')
 
     def _plot_(self, *l, **kw) : 
         """ Implement the plot protocol"""

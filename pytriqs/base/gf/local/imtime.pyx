@@ -10,7 +10,7 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)
 
-    def set_from_inverse_fourier_of(self,GfImFreq_cython gw) :
+    def set_from_inverse_fourier(self,GfImFreq_cython gw) :
         """Fills self with the Inverse Fourier transform of gw"""        
         self._c = lazy_inverse_fourier( gw._c)
 
@@ -31,11 +31,11 @@ cdef gf_imtime  as_gf_imtime (g) except +:
 # C -> Python. Do NOT add except +
 cdef make_GfImTime ( gf_imtime  x) :
     return GfImTime( 
-            Mesh = make_MeshImTime (x.mesh()), 
-            Data = x.data_view().to_python(),
-            Tail = make_TailGf (x.singularity_view()),
-            IndicesPack = x.indices()(),
-            Name = "")
+            mesh = make_MeshImTime (x.mesh()), 
+            data = x.data_view().to_python(),
+            tail = make_TailGf (x.singularity_view()),
+            indices_pack = x.indices()(),
+            name = "")
 
 # Python -> C for blocks
 cdef gf_block_imtime  as_gf_block_imtime (G) except +:

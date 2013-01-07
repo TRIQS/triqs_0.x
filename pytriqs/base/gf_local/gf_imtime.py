@@ -44,12 +44,12 @@ class __inject (make_injector(GfImTime), GfBase, GfImTime):
      Matsubara frequencies yourself, or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GfImTime(indices, beta, statistic, n_time_slices,  data, tail, name, note)
+     GfImTime(indices, beta, statistic, n_time_points,  data, tail, name, note)
            * ``indices``:  a list of indices names of the block
            * ``beta``:  Inverse Temperature 
            * ``statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-           * ``n_time_slices``  : Number of time slices in the mesh
-           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_slices) representing the value of the Green function on the mesh. 
+           * ``n_time_points``  : Number of time slices in the mesh
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
            * ``tail``:  the tail 
            * ``name``:  a name of the Green's function
            * ``note``:  any string you like...
@@ -60,7 +60,7 @@ class __inject (make_injector(GfImTime), GfBase, GfImTime):
         
            * ``indices``:  a list of indices names of the block
            * ``mesh``:  a MeshGf object, such that Mesh.TypeGF== GF_Type.Imaginary_Time 
-           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_slices) representing the value of the Green function on the mesh. 
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
            * ``tail``:  the tail 
            * ``name``:  a name of the Green's function
            * ``note``:  any string you like...
@@ -73,12 +73,12 @@ class __inject (make_injector(GfImTime), GfBase, GfImTime):
         if 'mesh' not in d : 
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d['beta'])
-            Nmax = d['n_time_slices'] if 'n_time_slices' in d else 10000
+            Nmax = d['n_time_points'] if 'n_time_points' in d else 10000
             stat = d['statistic'] if 'statistic' in d else GF_Statistic.Fermion
             sh = 1 if stat== GF_Statistic.Fermion else 0
             d['mesh'] = MeshGf( GF_Type.Imaginary_Time,stat,beta,
                                        numpy.array([ (n+0.5)*beta/Nmax for n in range(Nmax)]))
-            for a in [ 'beta', 'statistic', 'n_time_slices'] : 
+            for a in [ 'beta', 'statistic', 'n_time_points'] : 
                 if a in d : del d[a]
         else : 
             assert d['mesh'].TypeGF==GF_Type.Imaginary_Time, "You provided a wrong type of mesh !!"

@@ -36,40 +36,40 @@ class GfLegendre (GfLegendre_cython, _GFBloc_general):
      yourself (see below), or give the parameters to build it.
      All parameters must be given with keyword arguments.
 
-     GfLegendre(Indices, Beta, Statistic, NLegendreCoeffs, Data, Tail, Name, Note)
+     GfLegendre(indices, beta, statistic, n_legendre_coeffs, data, tail, name, note)
 
-           * ``Indices``: a list of indices names of the block
-           * ``Beta``: the inverse Temperature 
-           * ``Statistic``: GF_Statistic.Fermion [default] or GF_Statistic.Boson
-           * ``NLegendreCoeffs``:  the number of Legendre coefficients to be used
-           * ``Data``:  a numpy array of dimensions (len(Indices),len(Indices),NLegendreCoeffs) representing the values of the coefficients.
-           * ``Tail``:  the tail 
-           * ``Name``:  a name for the Green's function
-           * ``Note``:  any string you like...
+           * ``indices``: a list of indices names of the block
+           * ``beta``: the inverse Temperature 
+           * ``statistic``: 'F' or 'B'
+           * ``n_legendre_coeffs``:  the number of Legendre coefficients to be used
+           * ``data``:  a numpy array of dimensions (len(indices),len(indices),n_legendre_coeffs) representing the values of the coefficients.
+           * ``tail``:  the tail 
+           * ``name``:  a name for the Green's function
+           * ``note``:  any string you like...
 
      If you already have the mesh, you can use a simpler version:
 
-     GfLegendre(Indices, Mesh, Data, Tail, Name,Note)
+     GfLegendre(indices, mesh, data, tail, name, note)
         
-           * ``Indices``:  a list of indices names of the block
-           * ``Mesh``:  a MeshGf object, such that Mesh.TypeGF == GF_Type.Imaginary_Legendre
-           * ``Data``:  a numpy array of dimensions (len(Indices),len(Indices),NLegendreCoeffs) representing the value of the coefficients.
-           * ``Tail``:  the tail 
-           * ``Name``:  a name for the Green's function
-           * ``Note``:  any string you like...
+           * ``indices``:  a list of indices names of the block
+           * ``mesh``:  a MeshGf object, such that mesh.TypeGF == GF_Type.Imaginary_Legendre
+           * ``data``:  a numpy array of dimensions (len(indices),len(indices),n_legendre_coeffs) representing the value of the coefficients.
+           * ``tail``:  the tail 
+           * ``name``:  a name for the Green's function
+           * ``note``:  any string you like...
 
 .. warning::
-    The Green function take a **view** of the array Data, and a **reference** to the Tail.
+    The Green function take a **view** of the array data, and a **reference** to the tail.
     """
        # construct the mesh if needed
-        if 'Mesh' not in d : 
-            if 'Beta' not in d : raise ValueError, "Beta not provided"
-            Beta = float(d.pop('Beta'))
-            Nmax = d.pop('NLegendreCoeffs',30)
-            stat = d.pop('Statistic','F') # GF_Statistic.Fermion
-            sh = 1 if stat== 'F' else 0 # GF_Statistic.Fermion else 0
-            d['Mesh'] = MeshLegendre(Beta,'F',Nmax)
-            #d['Mesh'] = MeshGf( GF_Type.Imaginary_Legendre, stat, Beta, numpy.array(range(Nmax)) )
+        if 'mesh' not in d : 
+            if 'beta' not in d : raise ValueError, "beta not provided"
+            beta = float(d.pop('beta'))
+            n_max = d.pop('n_legendre_coeffs',30)
+            stat = d.pop('statistic','F') # GF_statistic.Fermion
+            sh = 1 if stat== 'F' else 0 # GF_statistic.Fermion else 0
+            d['mesh'] = MeshLegendre(beta,'F',n_max)
+            #d['mesh'] = MeshGf( GF_Type.Imaginary_Legendre, stat, beta, numpy.array(range(n_max)) )
 
         GfLegendre_cython.__init__(self,*self._prepare_init(d))
                 
@@ -79,7 +79,7 @@ class GfLegendre (GfLegendre_cython, _GFBloc_general):
         """ Plot protocol. OptionsDict can contain : 
              * :param RIS: 'R', 'I', 'S', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]
-             * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
+             * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
         M = [x for x in self.mesh]
         if "RI" not in OptionsDict: OptionsDict["RI"] = "R"
@@ -95,12 +95,12 @@ class GfLegendre (GfLegendre_cython, _GFBloc_general):
         Nleg : int
           remaining number of Legendre coefficients after truncation
         """
-        new_g = self.__class__(IndicesL = self._IndicesL,
-                               IndicesR = self._IndicesR,
-                               Beta = self.beta,
-                               Statistic = self.Statistic,
-                               NLegendreCoeffs = Nleg,
-                               Name = self.Name, Note = self.Note)
+        new_g = self.__class__(indicesL = self._indicesL,
+                               indicesR = self._indicesR,
+                               beta = self.beta,
+                               statistic = self.statistic,
+                               n_legendre_coeffs = Nleg,
+                               name = self.name, note = self.note)
         new_g._data.array[:,:,:] = self._data.array[:,:,0:Nleg]
         new_g.determine_tail()
         return new_g

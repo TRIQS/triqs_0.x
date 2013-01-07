@@ -2,7 +2,7 @@
  
 cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" : 
     cdef enum statistic_enum "triqs::gf::statistic_enum" :
-        Boson,Fermion 
+        Boson, Fermion 
     
     cdef cppclass nothing : 
         nothing ()

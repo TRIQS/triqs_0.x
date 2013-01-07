@@ -106,7 +106,7 @@ class Solver(SolverBase):
         self.F = BlockGf(name_block_generator = self.G0, make_copies=True, name="F")
         self.Sigma = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma")
         self.Sigma_Old = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma_Old")
-        self.Name = 'Hybridization Expansion'
+        self.name = 'Hybridization Expansion'
 
          # first check that all indices of the Green Function do correspond to a C operator.
         for a,alpha_list in self.GFStruct :
@@ -195,7 +195,7 @@ class Solver(SolverBase):
               if opn not in self.OpCorr_To_Average_List: self.OpCorr_To_Average_List.append(opn)
         # Create storage for data:
         Nops = len(self.OpCorr_To_Average_List)
-        f = lambda L : GfImTime(indices = [0], beta = self.beta, n_time_slices =L )
+        f = lambda L : GfImTime(indices = [0], beta = self.beta, n_time_points =L )
         if (Nops>0):
             self.Measured_Time_Correlators_Results = BlockGf(name_block_generator = [ ( n,f(self.Measured_Time_Correlators[n][1]) ) for n in self.Measured_Time_Correlators], make_copies=False)
         else:
@@ -279,12 +279,12 @@ class Solver(SolverBase):
         self.G0.invert()
 
         # Construct the function in tau
-        f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_slices =L )
+        f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_points =L )
         self.Delta_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Delta) )   for n,g in self.G], make_copies=False, name='D')
         self.G_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Gtau) )    for n,g in self.G], make_copies=False, name='G')
         self.F_tau = BlockGf(name_block_generator = self.G_tau, make_copies=True, name='F')
         
-        for (i,gt) in self.Delta_tau : gt.setFromInverseFourierOf(Delta[i])
+        for (i,gt) in self.Delta_tau : gt.set_from_inverse_fourier(Delta[i])
         mpi.report("Inv Fourier done")
         if (self.Legendre_Accumulation):
             self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =g.indices, beta =g.beta, n_legendre_coeffs =self.N_Legendre_Coeffs) )   for n,g in self.G], make_copies=False, name='Gl')
@@ -313,7 +313,7 @@ class Solver(SolverBase):
                   if m==n: identity[i,j]=1
               g._tail.zero()
               g._tail[1] = identity
-              self.G[name].setFromFourierOf(g)
+              self.G[name].set_from_fourier(g)
 
           # This is very sick... but what can we do???
           self.Sigma <<= self.G0_inv - inverse(self.G)
@@ -323,7 +323,7 @@ class Solver(SolverBase):
         # Now find the self-energy
         self.Sigma <<= self.G0_inv - inverse(self.G)
 
-        mpi.report("Solver %(Name)s has ended."%self.__dict__)
+        mpi.report("Solver %(name)s has ended."%self.__dict__)
 
         # for operator averages: if twice defined operator, rename output:
         for op1,op2 in self.twice_defined_Ops.items():
@@ -332,7 +332,7 @@ class Solver(SolverBase):
             if op2 in self.Measured_Operators_Results.keys(): del self.Measured_Operators_Results[op2]
 
         if self.Use_F :
-            for (n,f) in self.F: f.setFromFourierOf(self.F_tau[n])
+            for (n,f) in self.F: f.set_from_fourier(self.F_tau[n])
             self.G2 = self.G0 + self.G0 * self.F
             self.Sigma2 = self.F * inverse(self.G2)
             

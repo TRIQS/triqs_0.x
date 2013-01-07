@@ -44,14 +44,14 @@ class __inject (make_injector(GfReTime), GfBase, GfReTime):
     real time yourself, or give the parameters to build it.
     All parameters must be given with keyword arguments.
 
-    GfReTime (indices, beta, statistic, n_time_slices, time_min, time_max, data, tail, name, note)
+    GfReTime (indices, beta, statistic, n_time_points, time_min, time_max, data, tail, name, note)
 
            * ``indices``:  a list of indices names of the block
            * ``beta``:  Inverse Temperature 
            * ``statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-           * ``n_time_slices``  : Number of time slices
+           * ``n_time_points``  : Number of time slices
            * ``time_min,time_max``  : The time window
-           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_slices) representing the value of the Green function on the mesh. 
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
            * ``tail``:  the tail 
            * ``name``:  a name of the Green's function
            * ``note``:  any string you like...
@@ -62,7 +62,7 @@ class __inject (make_injector(GfReTime), GfBase, GfReTime):
         
            * ``indices``:  a list of indices names of the block
            * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Real_Time 
-           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_slices) representing the value of the Green function on the mesh. 
+           * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
            * ``tail``:  the tail 
            * ``name``:  a name of the Green's function
            * ``note``:  any string you like...
@@ -75,7 +75,7 @@ class __inject (make_injector(GfReTime), GfBase, GfReTime):
         if 'mesh' not in d : 
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d['beta'])
-            Nmax = d['n_time_slices'] if 'n_time_slices' in d else 1024
+            Nmax = d['n_time_points'] if 'n_time_points' in d else 1024
             assert Nmax%2 ==0, "Better to use an even number of slices"
             stat = d['statistic'] if 'statistic' in d else GF_Statistic.Fermion
             timeMin = d['time_min'] if 'time_min' in d else -10
@@ -84,7 +84,7 @@ class __inject (make_injector(GfReTime), GfBase, GfReTime):
             sh = 1 if stat== GF_Statistic.Fermion else 0
             d['mesh'] = MeshGf( GF_Type.Real_Time,stat,beta,
                                 numpy.array([ timeMin + (n+0.5)*dt for n in range(Nmax)]))
-            for a in [ 'beta', 'statistic', 'n_time_slices', 'time_min', 'time_max'] : 
+            for a in [ 'beta', 'statistic', 'n_time_points', 'time_min', 'time_max'] : 
                 if a in d : del d[a]
         else : 
             assert d['mesh'].TypeGF==GF_Type.Real_Time, "You provided a wrong type of mesh !!"
@@ -107,7 +107,7 @@ class __inject (make_injector(GfReTime), GfBase, GfReTime):
         gw = gf_refreq.GfReFreq(indices = self.indices,beta = self.beta,
                                          statistic = self.statistic,
                                          MeshArray = numpy.array([ om0*i for i in range (- (N/2),N/2)]))
-        gw.setFromFourierOf(self)
+        gw.set_from_fourier(self)
         return gw
                 
     #-----------------------------------------------------

@@ -12,7 +12,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         long size()
         bint operator ==( mesh_imfreq &)
 
-    cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t Nmax)
+    cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imfreq "triqs::gf::gf_view<triqs::gf::imfreq>" :
         gf_imfreq()

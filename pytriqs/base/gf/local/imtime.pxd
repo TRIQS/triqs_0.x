@@ -12,7 +12,7 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         long size()
         bint operator ==( mesh_imtime &)
 
-    cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t Nmax)
+    cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imtime "triqs::gf::gf_view<triqs::gf::imtime>" :
         gf_imtime()

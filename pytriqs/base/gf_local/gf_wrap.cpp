@@ -145,8 +145,8 @@ Sets to the Fourier transform of Gt.\n\
 
   class_<GF_Bloc_ImFreq, bases<GF_Bloc_Base<COMPLEX> > >("GfImFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ImFreq::density, imfreq_doc_density)
-    .def("setFromFourierOf",&GF_Bloc_ImFreq::setFromFourierOf,F_overloads(imfreq_doc_fourier))
-    .def("setFromLegendre",&GF_Bloc_ImFreq::setFromLegendre,imfreq_doc_legendre)
+    .def("set_from_fourier",&GF_Bloc_ImFreq::setFromFourierOf,F_overloads(imfreq_doc_fourier))
+    .def("set_from_legendre",&GF_Bloc_ImFreq::setFromLegendre,imfreq_doc_legendre)
     ;
 
   // **********   ReFreq ******************
@@ -155,16 +155,16 @@ Sets to the Fourier transform of Gt.\n\
 
   class_<GF_Bloc_ReFreq, bases<GF_Bloc_Base<COMPLEX> > >("GfReFreq", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReFreq::density, "Computes the density :math:`G(\\tau = 0^-)`")
-    .def("setFromFourierOf",&GF_Bloc_ReFreq::setFromFourierOf,"Sets to the Fourier transform of Gt")
-    .def("setFromPadeOf",&GF_Bloc_ReFreq::setFromPadeOf,
+    .def("set_from_fourier",&GF_Bloc_ReFreq::setFromFourierOf,"Sets to the Fourier transform of Gt")
+    .def("set_from_pade",&GF_Bloc_ReFreq::setFromPadeOf,
          (python::arg("Gw"), python::arg("N_Matsubara_Frequencies") = 100, python::arg("Freq_Offset") = .0),refreq_doc_pade)
     ;
 
   // **********   ImTime ******************
 
   class_<GF_Bloc_ImTime, bases<GF_Bloc_Base<double> > >("GfImTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
-    .def("setFromLegendre",&GF_Bloc_ImTime::setFromLegendre,"Transforms from Legendre and set it's tail")
-    .def("setFromInverseFourierOf",&GF_Bloc_ImTime::setFromInverseFourierOf,Finv_overloads("Sets to the inverse Fourier transform of Gw"))
+    .def("set_from_legendre",&GF_Bloc_ImTime::setFromLegendre,"Transforms from Legendre and set it's tail")
+    .def("set_from_inverse_fourier",&GF_Bloc_ImTime::setFromInverseFourierOf,Finv_overloads("Sets to the inverse Fourier transform of Gw"))
     ;
 
  // **********   ReTime ******************
@@ -172,7 +172,7 @@ Sets to the Fourier transform of Gt.\n\
   class_<GF_Bloc_ReTime, bases<GF_Bloc_Base<COMPLEX> > >("GfReTime", init<object,object,PyObject *,boost::shared_ptr<MeshGF>, boost::shared_ptr<TailGF> >()) 
     .def("density",&GF_Bloc_ReTime::density, "Computes the density :math:`G(\\tau = 0^-)`")
     .def("__call__",&GF_Bloc_ReTime::operator(), "Evaluate the function by linear interpolation $ ")
-    .def("setFromInverseFourierOf",&GF_Bloc_ReTime::setFromInverseFourierOf,"Sets to the inverse Fourier transform of Gw")
+    .def("set_from_inverse_fourier",&GF_Bloc_ReTime::setFromInverseFourierOf,"Sets to the inverse Fourier transform of Gw")
     ;
 
   // **********   ImLegendre ******************
@@ -190,8 +190,8 @@ A : numpy array\n\
     .def("density",&GF_Bloc_ImLegendre::density,"Computes the density :math:`G(\\tau = 0^-)`")
     .def("determine_tail",&GF_Bloc_ImLegendre::determine_tail,"Set the tail from the Legendre coefficients")
     .def("enforce_discontinuity",&GF_Bloc_ImLegendre::enforce_discontinuity_py,imleg_doc_enforce)
-    .def("setFromMatsubara",&GF_Bloc_ImLegendre::setFromImTime,"Sets from a Matsubara Green's function")
-    .def("setFromMatsubara",&GF_Bloc_ImLegendre::setFromImFreq,"Sets from a Matsubara Green's function")
+    .def("set_from_matsubara",&GF_Bloc_ImLegendre::setFromImTime,"Sets from a Matsubara Green's function")
+    .def("set_from_matsubara",&GF_Bloc_ImLegendre::setFromImFreq,"Sets from a Matsubara Green's function")
     ;
 
   //*************  GF_C converter ****************

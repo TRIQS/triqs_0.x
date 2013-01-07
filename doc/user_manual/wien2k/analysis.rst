@@ -69,7 +69,7 @@ In order to plot data including correlation effects on the real axis, one has to
 Most conveniently, it is stored as a real frequency :class:`BlockGf` object in the hdf5 file. There is one important thing to
 keep in mind. The real frequency self energy has to carry the note `ReFreq`::
 
-  SigmaReFreq.Note = 'ReFreq'
+  SigmaReFreq.note = 'ReFreq'
 
 This tells the SumK_LDA routines, that it is indeed a real frequency Greens function. Supposed you have your self energy now
 in the archive, you can type::

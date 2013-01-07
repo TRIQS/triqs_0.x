@@ -19,7 +19,7 @@ Reference
 ---------------
 
 .. autoclass:: pytriqs.base.gf_local.GfImTime
-  :members: setFromInverseFourierOf, setFromLegendre, transpose, conjugate
+  :members: set_from_inverse_fourier, set_from_legendre, transpose, conjugate
 
 
 HDF5 data scheme

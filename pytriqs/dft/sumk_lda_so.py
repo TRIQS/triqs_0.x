@@ -1176,7 +1176,7 @@ class SumK_LDA_SO:
 
        
         # init self.Sigmaimp:
-        if (Sigmaimp[0].Note=='ReFreq'):
+        if (Sigmaimp[0].note=='ReFreq'):
             # Real frequency Sigma:
             self.Sigmaimp = [ BlockGf( name_block_generator = [ (a,GfReFreq(indices = al, mesh = Sigmaimp[0].mesh)) for a,al in self.GFStruct_corr[i] ],
                                   Copy = False) for i in xrange(self.N_corr_shells) ]

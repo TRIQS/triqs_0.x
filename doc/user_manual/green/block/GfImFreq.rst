@@ -20,7 +20,7 @@ Reference
 ---------------
 
 .. autoclass:: pytriqs.base.gf_local.GfImFreq
-  :members: density, setFromFourierOf, setFromLegendre
+  :members: density, set_from_fourier, set_from_legendre
  
 
 HDF5 data scheme

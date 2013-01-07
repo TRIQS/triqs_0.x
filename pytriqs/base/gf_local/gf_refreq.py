@@ -113,8 +113,8 @@ class __inject (make_injector(GfReFreq), GfBase, GfReFreq):
             time_min = -time_max
         gt = gf_retime.GfReTime( indices = self.indices, beta = self.beta,
                                            statistic = self.statistic,
-                                           time_min = time_min, time_max = time_max, n_time_slices = N )
-        gt.setFromInverseFourierOf(self)
+                                           time_min = time_min, time_max = time_max, n_time_points = N )
+        gt.set_from_inverse_fourier(self)
         return gt
 
 

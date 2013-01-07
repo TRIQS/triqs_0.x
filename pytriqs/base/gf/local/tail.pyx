@@ -6,15 +6,6 @@ cdef class TailGf:
         """
         TailGf ( data, order_min)
         TailGf ( N1, N2, size, order_min) 
-
-              * ``Indices``:  a list of indices names of the block
-              * ``Beta``:  Inverse Temperature 
-              * ``Statistic``:  GF_Statistic.Fermion [default] or GF_Statistic.Boson
-              * ``NFreqMatsubara``:  Number of Matsubara frequencies
-              * ``Data``:   A numpy array of dimensions (len(Indices),len(Indices),NFreqMatsubara) representing the value of the Green function on the mesh. 
-              * ``Tail``:  the tail 
-              * ``Name``:  a name of the GF
-
         """
         c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
@@ -194,11 +185,13 @@ cdef class TailGf:
 
     def transpose (self) : 
         """Transpose the array : new view as in numpy"""
-        assert(0)
+        #assert(0)
+        return TailGf(data=self.data.transpose(), order_min=self.order_min)
 
     def conjugate(self) : 
         """Transpose the array : new view as in numpy"""
-        assert(0)
+        return TailGf(data=self.data.conjugate(), order_min=self.order_min)
+        #assert(0)
         # Hum, a pb here : shall we return a new object (view) or do it one site
         # ? (BAD !!).
         

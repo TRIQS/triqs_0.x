@@ -113,7 +113,7 @@ class SumK_LDA_tools(SumK_LDA):
 
         if (not hasattr(self,"Sigmaimp")): withSigma=False
         if (withSigma): 
-            assert self.Sigmaimp[0].Note=='ReFreq',"Real frequency Sigma needed for latticeGF_realfreq!"
+            assert self.Sigmaimp[0].note=='ReFreq',"Real frequency Sigma needed for latticeGF_realfreq!"
             Beta = self.Sigmaimp[0].beta
             stmp = self.add_DC()
         else:
@@ -546,7 +546,7 @@ class SumK_LDA_tools(SumK_LDA):
         glist = lambda : [ GfReFreq(indices = al, beta = Beta, mesh_array = mesh) for a,al in self.GFStruct_Solver[orb] ] 
         SigmaME = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
         SigmaME.load(Filename)
-        SigmaME.Note='ReFreq'          # This is important for the put_Sigma routine!!!
+        SigmaME.note='ReFreq'          # This is important for the put_Sigma routine!!!
 
         return SigmaME
 

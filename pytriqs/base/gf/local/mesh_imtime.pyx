@@ -1,8 +1,8 @@
 cdef class MeshImTime: 
     cdef mesh_imtime  _c
 
-    def __init__(self, Beta, stat, int Nmax): 
-        self._c =  make_mesh_imtime(Beta,{'F' :Fermion, 'B' : Boson}[stat] ,Nmax) 
+    def __init__(self, Beta, stat, int n_max): 
+        self._c =  make_mesh_imtime(Beta,{'F' :Fermion, 'B' : Boson}[stat] ,n_max) 
     
     def __len__ (self) : return self._c.size()
     

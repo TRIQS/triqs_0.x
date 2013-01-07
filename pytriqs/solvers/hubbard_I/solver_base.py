@@ -84,7 +84,7 @@ class SolverBaseHub(SolverBase):
             self.tailtempl[sig] = copy.deepcopy(g._tail)
             for i in range(11): self.tailtempl[sig][i].array[:] *= 0.0
     
-        self.Name=''
+        self.name=''
 
         # effective atomic levels:
         if self.UseSpinOrbit: self.NSpin=2
@@ -101,12 +101,12 @@ class SolverBaseHub(SolverBase):
        	#SolverBase.Solve(self,is_last_iteration,Iteration_Number,Test_Convergence)
        
         if self.Converged :
-            mpi.report("Solver %(Name)s has already converted: SKIPPING"%self.__dict__)
+            mpi.report("Solver %(name)s has already converted: SKIPPING"%self.__dict__)
             return
 
         self.__save_eal('eal.dat',Iteration_Number)
 
-        mpi.report( "Starting Fortran solver %(Name)s"%self.__dict__)
+        mpi.report( "Starting Fortran solver %(name)s"%self.__dict__)
 
         self.Sigma_Old <<= self.Sigma
         self.G_Old <<= self.G
@@ -216,7 +216,7 @@ class SolverBaseHub(SolverBase):
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M
         self.Sigma <<= self.G0 - inverse(self.G)
-        self.Sigma.Note='ReFreq'          # This is important for the put_Sigma routine!!!
+        self.Sigma.note='ReFreq'          # This is important for the put_Sigma routine!!!
 
         #sigmamat = sigma_atomic_fullu(gf=gf,e0f=self.ealmat,zmsb=omega,nlm=self.Nlm,ns=self.Nspin)
 

@@ -5,7 +5,7 @@ cimport cython
 import numpy
 import string
 import warnings
-from BlockGf import BlockGf
+from block_gf import BlockGf
 from math import pi
 from h5 cimport *
 

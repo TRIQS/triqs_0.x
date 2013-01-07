@@ -19,7 +19,7 @@ Reference
 ---------------
 
 .. autoclass:: pytriqs.base.gf_local.GfReFreq
-  :members: density, setFromFourierOf, transpose, conjugate, setFromPadeOf
+  :members: density, set_from_fourier, transpose, conjugate, setFromPadeOf
  
 
 

@@ -43,8 +43,8 @@ class GfBase:
         if 'indices' in d: 
             indL = list(d.pop('indices') )
             indR = indL
-        elif 'indices_l' in d and 'indices_r' in d :
-            indL,indR = list(d.pop('indices_l')) , list(d.pop('indices_r'))
+        elif 'indicesL' in d and 'indicesR' in d :
+            indL,indR = list(d.pop('indicesL')) , list(d.pop('indicesR'))
         else: 
             raise ValueError, "No Indices !!"
         
@@ -72,8 +72,8 @@ class GfBase:
     #---------------------------------------------------------------------------------
     
     def _make_slice(self,sl1, sl2): 
-        return self.__class__(indices_l = self._IndicesL[sl1],
-                              indices_r = self._IndicesR[sl2],
+        return self.__class__(indicesL = self._IndicesL[sl1],
+                              indicesR = self._IndicesR[sl2],
                               name = self.name,
                               mesh = self.mesh,
                               data = self._data.array[sl1,sl2,:],
@@ -82,8 +82,8 @@ class GfBase:
     #-----------------------------------------------------
 
     def copy (self) : 
-        new_g = self.__class__(indices_l = self._IndicesL,
-                               indices_r = self._IndicesR,
+        new_g = self.__class__(indicesL = self._IndicesL,
+                               indicesR = self._IndicesR,
                                mesh = self.mesh,
                                name = self.name, note = self.note)
         new_g._tail.copy_from(self._tail)
@@ -93,8 +93,8 @@ class GfBase:
     #-----------------------------------------------------
         
     def copy_with_new_stat(self,stat) :
-        new_g = self.__class__(indices_l = self._IndicesL,
-                               indices_r = self._IndicesR,
+        new_g = self.__class__(indicesL = self._IndicesL,
+                               indicesR = self._IndicesR,
                                mesh = MeshGf(self.mesh,stat),
                                name = self.name, note = self.note)
         new_g._tail.copy_from(self._tail)
@@ -110,10 +110,10 @@ class GfBase:
     #-----------------------------------------------------
 
     def __reduce_to_dict__(self):
-        indL = repr(tuple(self.indices_l))
-        indR = repr(tuple(self.indices_r))
-        assert(eval(indL)==tuple(self.indices_l))
-        assert(eval(indR)==tuple(self.indices_r))
+        indL = repr(tuple(self.indicesL))
+        indR = repr(tuple(self.indicesR))
+        assert(eval(indL)==tuple(self.indicesL))
+        assert(eval(indR)==tuple(self.indicesR))
         return {'IndicesL' : indL,
                 'IndicesR' : indR,
                 'Data' : self._data.array,
@@ -128,8 +128,8 @@ class GfBase:
         # a little treatment for backward compatibility
         for s in [ 'Indices' ,'IndicesR' ,'IndicesL' ] : 
             if s in value and  type(value[s]) == type(''):  value[s] = eval(value[s])
-        return CLS(indices_l = value['IndicesL'],
-                   indices_r = value['IndicesR'],
+        return CLS(indicesL = value['IndicesL'],
+                   indicesR = value['IndicesR'],
                    data = value['Data'],
                    mesh = value['Mesh'],
                    name = value['Name'],
@@ -408,8 +408,8 @@ class GfBase:
             yield ind
     
     indices = property(__get_Indices)
-    indices_l = property(__get_IndicesL)
-    indices_r = property(__get_IndicesR)
+    indicesL = property(__get_IndicesL)
+    indicesR = property(__get_IndicesR)
             
     def array_with_indices(self) :
         """ 
@@ -462,7 +462,7 @@ class GfBase:
 
     def __repr__(self) : 
 	return """%s %s :  Beta = %.3f; IndicesL = %s, IndicesR = %s """%(self.__class__.__name__, self.name,
-          self.beta, [x for x in self.indices_l], [x for x in self.indices_r])
+          self.beta, [x for x in self.indicesL], [x for x in self.indicesR])
 
     #-------------------------------------------------
 
