@@ -21,15 +21,14 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.dft.converters import Wien2kConverter
+from pytriqs.dft.sumk_lda_tools import SumkLDATools
 
 
+SK = SumkLDATools(hdf_file = 'SrVO3.h5')
 
-Converter = Wien2kConverter(filename='SrVO3')
-Converter.hdf_file = 'wien2k_convert.output.h5'
-Converter.convert_dmft_input()
-
-Converter.convert_parproj_input()
+dm = SK.density_gf()
 
 
-
+ar = HDFArchive('sumklda_basic.output.h5','w')
+ar['dm'] = dm
+del ar

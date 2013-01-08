@@ -43,7 +43,7 @@ class Symmetry:
            """
 
         assert type(hdf_file)==StringType,"hdf_file must be a filename"; self.hdf_file = hdf_file
-        thingstoread = ['Ns','Natoms','perm','orbits','SO','SP','timeinv','mat','mat_tinv']
+        thingstoread = ['n_s','n_atoms','perm','orbits','SO','SP','time_inv','mat','mat_tinv']
         for it in thingstoread: exec "self.%s = 0"%it
 
         if (mpi.is_master_node()):
@@ -64,45 +64,45 @@ class Symmetry:
         # now define the mapping of orbitals:
         # self.map[iorb]=jorb gives the permutation of the orbitals as given in the list, when the 
         # permutation of the atoms is done:
-        self.N_orbits = len(self.orbits)
+        self.n_orbits = len(self.orbits)
 
-        self.map = [ [0 for iorb in range(self.N_orbits)] for iNs in range(self.Ns) ]
-        for iNs in range(self.Ns):
-            for iorb in range(self.N_orbits):
+        self.map = [ [0 for iorb in range(self.n_orbits)] for in_s in range(self.n_s) ]
+        for in_s in range(self.n_s):
+            for iorb in range(self.n_orbits):
              
                 srch = copy.deepcopy(self.orbits[iorb])
-                srch[0] = self.perm[iNs][self.orbits[iorb][0]-1]
-                self.map[iNs][iorb] = self.orbits.index(srch)
+                srch[0] = self.perm[in_s][self.orbits[iorb][0]-1]
+                self.map[in_s][iorb] = self.orbits.index(srch)
                     
        
 
     def symmetrize(self,obj):
         
         assert isinstance(obj,list),"obj has to be a list of objects!"
-        assert len(obj)==self.N_orbits,"obj has to be a list of the same length as defined in the init"
+        assert len(obj)==self.n_orbits,"obj has to be a list of the same length as defined in the init"
 
         if (isinstance(obj[0],BlockGf)):
             symm_obj = [ obj[i].copy() for i in range(len(obj)) ]        # here the result is stored, it is a BlockGf!
-            for iorb in range(self.N_orbits): symm_obj[iorb].zero()      # set to zero
+            for iorb in range(self.n_orbits): symm_obj[iorb].zero()      # set to zero
         else:
             # if not a BlockGf, we assume it is a matrix (density matrix), has to be complex since self.mat is complex!
-            #symm_obj = [ numpy.zeros([self.orbits[iorb][3],self.orbits[iorb][3]],numpy.complex_) for iorb in range(self.N_orbits) ]
+            #symm_obj = [ numpy.zeros([self.orbits[iorb][3],self.orbits[iorb][3]],numpy.complex_) for iorb in range(self.n_orbits) ]
             symm_obj = [ copy.deepcopy(obj[i]) for i in range(len(obj)) ]
          
-            for iorb in range(self.N_orbits):
+            for iorb in range(self.n_orbits):
                 if (type(symm_obj[iorb])==DictType):
                     for ii in symm_obj[iorb]: symm_obj[iorb][ii] *= 0.0
                 else:
                     symm_obj[iorb] *= 0.0
         
                 
-        for iNs in range(self.Ns):
+        for in_s in range(self.n_s):
 
-            for iorb in range(self.N_orbits):
+            for iorb in range(self.n_orbits):
 
                 l = self.orbits[iorb][2]         # s, p, d, or f
                 dim = self.orbits[iorb][3]
-                jorb = self.map[iNs][iorb]
+                jorb = self.map[in_s][iorb]
 
              
                 if (isinstance(obj[0],BlockGf)):
@@ -112,9 +112,9 @@ class Symmetry:
                     #else:
                     
                     tmp = obj[iorb].copy()
-                    if (self.timeinv[iNs]): tmp <<= tmp.transpose()
-                    for sig,gf in tmp: tmp[sig].from_L_G_R(self.mat[iNs][iorb],tmp[sig],self.mat[iNs][iorb].conjugate().transpose())
-                    tmp *= 1.0/self.Ns
+                    if (self.time_inv[in_s]): tmp <<= tmp.transpose()
+                    for sig,gf in tmp: tmp[sig].from_L_G_R(self.mat[in_s][iorb],tmp[sig],self.mat[in_s][iorb].conjugate().transpose())
+                    tmp *= 1.0/self.n_s
                     symm_obj[jorb] += tmp
 
                 else:
@@ -123,33 +123,33 @@ class Symmetry:
 
                         for ii in obj[iorb]:
                             #if (l==0):
-                            #    symm_obj[jorb][ii] += obj[iorb][ii]/self.Ns
+                            #    symm_obj[jorb][ii] += obj[iorb][ii]/self.n_s
                             #else:
-                            if (self.timeinv[iNs]==0):
-                                symm_obj[jorb][ii] += numpy.dot(numpy.dot(self.mat[iNs][iorb],obj[iorb][ii]),
-                                                                self.mat[iNs][iorb].conjugate().transpose()) / self.Ns
+                            if (self.time_inv[in_s]==0):
+                                symm_obj[jorb][ii] += numpy.dot(numpy.dot(self.mat[in_s][iorb],obj[iorb][ii]),
+                                                                self.mat[in_s][iorb].conjugate().transpose()) / self.n_s
                             else:
-                                symm_obj[jorb][ii] += numpy.dot(numpy.dot(self.mat[iNs][iorb],obj[iorb][ii].conjugate()),
-                                                                self.mat[iNs][iorb].conjugate().transpose()) / self.Ns
+                                symm_obj[jorb][ii] += numpy.dot(numpy.dot(self.mat[in_s][iorb],obj[iorb][ii].conjugate()),
+                                                                self.mat[in_s][iorb].conjugate().transpose()) / self.n_s
 
                             
 
                     else:
                         #if (l==0):
-                        #    symm_obj[jorb] += obj[iorb]/self.Ns
+                        #    symm_obj[jorb] += obj[iorb]/self.n_s
                         #else:
-                        if (self.timeinv[iNs]==0):
-                            symm_obj[jorb] += numpy.dot(numpy.dot(self.mat[iNs][iorb],obj[iorb]),self.mat[iNs][iorb].conjugate().transpose()) / self.Ns
+                        if (self.time_inv[in_s]==0):
+                            symm_obj[jorb] += numpy.dot(numpy.dot(self.mat[in_s][iorb],obj[iorb]),self.mat[in_s][iorb].conjugate().transpose()) / self.n_s
                         else:
-                            symm_obj[jorb] += numpy.dot(numpy.dot(self.mat[iNs][iorb],obj[iorb].conjugate()),
-                                                        self.mat[iNs][iorb].conjugate().transpose()) / self.Ns
+                            symm_obj[jorb] += numpy.dot(numpy.dot(self.mat[in_s][iorb],obj[iorb].conjugate()),
+                                                        self.mat[in_s][iorb].conjugate().transpose()) / self.n_s
                         
      
 # This does not what it is supposed to do, check how this should work:       
 #        if ((self.SO==0) and (self.SP==0)):
 #            # add time inv:
             #mpi.report("Add time inversion")
-#            for iorb in range(self.N_orbits):
+#            for iorb in range(self.n_orbits):
 #                if (isinstance(symm_obj[0],BlockGf)):
 #                    tmp = symm_obj[iorb].copy()
 #                    tmp <<= tmp.transpose()
