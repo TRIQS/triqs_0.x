@@ -23,8 +23,9 @@
 from pytriqs.base.gf_local import gf_init
 import types, string, inspect, itertools
 from operator import isSequenceType
-from pytriqs.base.dos import DOS
+from pytriqs.base.dos import DOS, DOSFromFunction
 import pytriqs.base.utility.mpi as mpi
+import numpy
 
 class HilbertTransform : 
     r"""

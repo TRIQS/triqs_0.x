@@ -3,7 +3,7 @@ from pytriqs.base.dos import HilbertTransform
 from pytriqs.base.gf_local import GfImFreq
 
 # Define a DOS (here on a square lattice)
-BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 
+BL = BravaisLattice(Units = [(1,0,0) , (0,1,0) ], orbital_positions= {"" :  (0,0,0)} ) 
 t   = -1.00                # First neighbour Hopping
 tp  =  0.0*t               # Second neighbour Hopping
 hop= {  (1,0)  :  [[ t]],       
@@ -14,8 +14,9 @@ hop= {  (1,0)  :  [[ t]],
         (-1,-1):  [[ tp]],
         (1,-1) :  [[ tp]],
         (-1,1) :  [[ tp]]}
-TB = tight_binding ( BL, hop)
-d = dos (TB, nkpts= 500, neps = 101, name = 'dos')[0]
+
+TB = TightBinding (BL, hop)
+d = dos(TB, n_kpts= 500, n_eps = 101, name = 'dos')[0]
 
 #define a Hilbert transform
 H = HilbertTransform(d)

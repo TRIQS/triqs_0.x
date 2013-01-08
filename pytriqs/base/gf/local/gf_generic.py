@@ -292,7 +292,7 @@ class GfGeneric:
     def transpose(self):
         """Transposes the GF Bloc: return a new transposed view"""
         ### WARNING: this depends on the C++ layering ....
-        temp = self.tail.conjugate()
+        temp = self.tail.transpose()
         return self.__class__(
                 indices = list(self.indices),
                 mesh = self.mesh,

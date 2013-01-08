@@ -1,7 +1,7 @@
 from pytriqs.base.lattice.tight_binding import *
 
 # Define the Bravais Lattice : a square lattice in 2d
-BL = bravais_lattice(Units = [(1,0,0) , (0,1,0) ], Orbital_Positions= {"" :  (0,0,0)} ) 
+BL = BravaisLattice(Units = [(1,0,0) , (0,1,0) ], orbital_positions= {"" :  (0,0,0)} ) 
 
 # Prepare a nearest neighbour hopping on BL
 t   = -1.00                # First neighbour Hopping
@@ -18,10 +18,10 @@ hop= {  (1,0)  :  [[ t]],
         (1,-1) :  [[ tp]],
         (-1,1) :  [[ tp]]}
 
-TB = tight_binding ( BL, hop)
+TB = TightBinding ( BL, hop)
 
 # Compute the density of states
-d = dos (TB, nkpts= 500, neps = 101, name = 'dos')[0]
+d = dos (TB, n_kpts= 500, n_eps = 101, name = 'dos')[0]
 
 # Plot the dos it with matplotlib
 from pytriqs.base.plot.mpl_interface import oplot

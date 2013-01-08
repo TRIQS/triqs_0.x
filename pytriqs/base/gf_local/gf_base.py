@@ -283,7 +283,7 @@ class GfBase:
 
     def __mul__(self,y):
         if hasattr(y,"_data") :
-            c = self.copy_with_new_stat(GF_Statistic.Boson if self.mesh.Statistic == y.mesh.Statistic else GF_Statistic.Fermion)
+            c = self.copy_with_new_stat(GF_Statistic.Boson if self.mesh.statistic == y.mesh.statistic else GF_Statistic.Fermion)
         else:
             c = self.copy()
         try: 
