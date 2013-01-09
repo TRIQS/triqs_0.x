@@ -132,6 +132,7 @@ class GfBase:
                    indicesR = value['IndicesR'],
                    data = value['Data'],
                    mesh = value['Mesh'],
+                   tail = value['Tail'],
                    name = value['Name'],
                    note = value['Note'])
  

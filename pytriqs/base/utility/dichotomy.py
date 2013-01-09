@@ -24,15 +24,15 @@ import pytriqs.base.utility.mpi as mpi
 
 def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 1000, x_name="", y_name="", verbosity=1):
     """
-    Solver Function(x) = yvalue.
+    Solver function(x) = y_value.
     
     Arguments :
-      - Function : function (real valued) to be solved by dichotomy
-      - xinit : Init value for x. On success, returns the new value of x
-      - yvalue : 
-      - precision : calculation stops for abs(f(x) - yvalue)<precision
-      - MaxNbreLoop : maximum number of loops before failure. Default is 1000
-      - xname, yname : name of the variable x, y for the report
+      - function : function (real valued) to be solved by dichotomy
+      - x_init : Init value for x. On success, returns the new value of x
+      - y_value : 
+      - precision_on_y : calculation stops for abs(f(x) - y_value)<precision
+      - max_loops : maximum number of loops before failure. Default is 1000
+      - x_name, y_name : name of the variable x, y for the report
       - verbosity : verbosity level.
 
     Returns :
@@ -45,55 +45,55 @@ def dichotomy(function, x_init, y_value, precision_on_y, delta_x, max_loops = 10
         if x<0.0 : return -1
         return 0
     
-    mpi.report("Dichotomy adjustment of %(xname)s to obtain %(yname)s = %(yvalue)f +/- %(Precision_on_y)f"%locals() )
+    mpi.report("Dichotomy adjustment of %(x_name)s to obtain %(y_name)s = %(y_value)f +/- %(precision_on_y)f"%locals() )
     PR = "    "
-    if xname=="" or yname==""  : verbosity = max(verbosity,1)
-    x=xinit;Delta_x= abs(Delta_x)
+    if x_name=="" or y_name==""  : verbosity = max(verbosity,1)
+    x=x_init;delta_x= abs(delta_x)
 
     # First find the bounds
-    y1 = Function(x)
-    eps = sign(y1-yvalue)
+    y1 = function(x)
+    eps = sign(y1-y_value)
     x1=x;y2=y1;x2=x1
     nbre_loop=0
-    while (nbre_loop<= MaxNbreLoop) and (y2-yvalue)*eps>0 and abs(y2-yvalue)>Precision_on_y :
+    while (nbre_loop<= max_loops) and (y2-y_value)*eps>0 and abs(y2-y_value)>precision_on_y :
         nbre_loop +=1
-        x2 -=  eps*Delta_x
-        y2 = Function(x2)
-        if xname!="" and verbosity>2:
-            mpi.report("%(PR)s%(xname)s = %(x2)f  \n%(PR)s%(yname)s = %(y2)f"%locals())
+        x2 -=  eps*delta_x
+        y2 = function(x2)
+        if x_name!="" and verbosity>2:
+            mpi.report("%(PR)s%(x_name)s = %(x2)f  \n%(PR)s%(y_name)s = %(y2)f"%locals())
 
-    mpi.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
-    mpi.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
+    mpi.report("%(PR)s%(x1)f < %(x_name)s < %(x2)f"%locals())
+    mpi.report("%(PR)s%(y1)f < %(y_name)s < %(y2)f"%locals())
 
     # Now mu is between mu1 and mu2
     yfound = y2
     # We found bounds. What if the next loop is never run ?
     # i.e. x1 or x2 are close to the solution
     # we have to know which one is the best .... 
-    if abs(y1-yvalue)< abs(y2-yvalue) :
+    if abs(y1-y_value)< abs(y2-y_value) :
         x=x1
     else:
         x=x2
         
     #Now let's refine our mu....
-    while (nbre_loop<= MaxNbreLoop) and (abs(yfound-yvalue)>Precision_on_y) :
+    while (nbre_loop<= max_loops) and (abs(yfound-y_value)>precision_on_y) :
         nbre_loop +=1
-        x = x1  + (x2 - x1) * (yvalue - y1)/(y2-y1)
-        yfound = Function(x)
-        if (y1-yvalue)*(yfound - yvalue)>0 : 
+        x = x1  + (x2 - x1) * (y_value - y1)/(y2-y1)
+        yfound = function(x)
+        if (y1-y_value)*(yfound - y_value)>0 : 
             x1 = x; y1=yfound
         else :
             x2= x;y2=yfound;
         if verbosity>2 :
-            mpi.report("%(PR)s%(x1)f < %(xname)s < %(x2)f"%locals())
-            mpi.report("%(PR)s%(y1)f < %(yname)s < %(y2)f"%locals())
-    if abs(yfound - yvalue) < Precision_on_y :
+            mpi.report("%(PR)s%(x1)f < %(x_name)s < %(x2)f"%locals())
+            mpi.report("%(PR)s%(y1)f < %(y_name)s < %(y2)f"%locals())
+    if abs(yfound - y_value) < precision_on_y :
         if verbosity>0:
-            mpi.report("%(PR)s%(xname)s found in %(nbre_loop)d iterations : "%locals())
-            mpi.report("%(PR)s%(yname)s = %(yfound)f;%(xname)s = %(x)f"%locals())
+            mpi.report("%(PR)s%(x_name)s found in %(nbre_loop)d iterations : "%locals())
+            mpi.report("%(PR)s%(y_name)s = %(yfound)f;%(x_name)s = %(x)f"%locals())
         return (x,yfound)
     else : 
         if verbosity>0:
-            mpi.report("%(PR)sFAILURE to adjust %(xname)s  to the value %(yvalue)f after %(nbre_loop)d iterations."%locals())
+            mpi.report("%(PR)sFAILURE to adjust %(x_name)s  to the value %(y_value)f after %(nbre_loop)d iterations."%locals())
         return (None,None)
     
