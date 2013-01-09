@@ -61,16 +61,9 @@ PyArray<COMPLEX,2> GF_Bloc_ReFreq::density() const
   return(dens);
 }
  
-#ifdef USE_PADE
 void GF_Bloc_ReFreq::setFromPadeOf(const GF_Bloc_ImFreq & Gw, int N_Matsubara_Frequencies, double Freq_Offset)
 {
     if(Freq_Offset < 0) TRIQS_RUNTIME_ERROR << "Frequency offset must be non-negative (Freq_Offset = " << Freq_Offset << ")";
 
     pade(Gw,*this,N_Matsubara_Frequencies,Freq_Offset);
 }
-#else
-void GF_Bloc_ReFreq::setFromPadeOf(const GF_Bloc_ImFreq & Gw, int N_Matsubara_Frequencies, double Freq_Offset)
-{
-  TRIQS_RUNTIME_ERROR << "Pade has not been compiled. Please run cmake with -DUse_Pade=ON.";
-}
-#endif

@@ -52,7 +52,7 @@ gm._tail[1] = array([[1.0]])
 
 # Analytic continuation of gm
 g_pade = GfReFreq(indices = [0], beta = beta, mesh_array = arange(-6,6,0.01), name = "g_pade")
-g_pade.setFromPadeOf(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
+g_pade.set_from_pade(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 from pytriqs.base.archive import HDFArchive
 R = HDFArchive('pade.output.h5','w')

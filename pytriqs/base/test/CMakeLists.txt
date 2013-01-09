@@ -22,7 +22,4 @@ add_triqs_test_hdf(gf_base_op " -p 1.e-6" ) #" -p 1.e-6" ) # quick fix for pb on
 add_triqs_test_hdf(dos " -d 1.e-6" )
 
 # Pade approximation
-if (Use_Pade)
-  add_triqs_test_hdf(pade " -d 1.e-6" )
-endif (Use_Pade)
-
+add_triqs_test_hdf(pade " -d 1.e-6" )

@@ -49,7 +49,7 @@ for u in U:
     G_real = BlockGf(name_list = ('0',), block_list = (g_real,), make_copies = True)
     
     # Analytic continuation with Pade
-    G_real['0'].setFromPadeOf(ipt.S.G['0'], N_Matsubara_Frequencies=Pade_L, Freq_Offset=eta)
+    G_real['0'].set_from_pade(ipt.S.G['0'], N_Matsubara_Frequencies=Pade_L, Freq_Offset=eta)
 
     # Save data to the archive
     ar['U' + str(u)] = {'G0': ipt.S.G0, 'G': ipt.S.G, 'Sigma': ipt.S.Sigma, 'G_real':G_real}

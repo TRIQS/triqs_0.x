@@ -19,7 +19,7 @@ Reference
 ---------------
 
 .. autoclass:: pytriqs.base.gf_local.GfReFreq
-  :members: density, set_from_fourier, transpose, conjugate, setFromPadeOf
+  :members: density, set_from_fourier, transpose, conjugate, set_from_pade
  
 
 
@@ -54,9 +54,8 @@ Note that `g` is a **retarded** Green's function.
 
 
 The next example demonstrates how a real frequency Green's function can be
-reconstructed from an imaginary frequency counterpart using setFromPadeOf()
-method. Note that in order to use this method you need to activate the
-``Use_Pade`` option when you run cmake (``cmake -DUse_Pade=ON``).
+reconstructed from an imaginary frequency counterpart using set_from_pade()
+method.
 
 .. plot:: green/block/green_pade.py
    :include-source:
