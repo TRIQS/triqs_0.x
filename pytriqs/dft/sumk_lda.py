@@ -1033,7 +1033,7 @@ class SumkLDA:
         """ Calculates the density correction in order to feed it back to the DFT calculations."""
 
         
-        assert (type(Filename)==StringType), "Filename has to be a string!"
+        assert (type(filename)==StringType), "filename has to be a string!"
 
         ntoi = self.names_to_ind[self.SO]
         bln = self.block_names[self.SO]
@@ -1069,10 +1069,10 @@ class SumkLDA:
         # now save to file:
         if (mpi.is_master_node()):
             if (self.SP==0):
-                f=open(Filename,'w')
+                f=open(filename,'w')
             else:
-                f=open(Filename+'up','w')
-                f1=open(Filename+'dn','w')
+                f=open(filename+'up','w')
+                f1=open(filename+'dn','w')
             # write chemical potential (in Rydberg):
             f.write("%.14f\n"%(self.chemical_potential/self.energy_unit))
             if (self.SP!=0): f1.write("%.14f\n"%(self.chemical_potential/self.energy_unit))
