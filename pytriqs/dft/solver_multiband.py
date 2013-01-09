@@ -21,6 +21,7 @@
 ################################################################################
 
 
+from pytriqs.dft.U_matrix import *
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver
 from pytriqs.base.utility.my_utils import sum_list
@@ -324,8 +325,6 @@ class SolverMultiBand (Solver):
 	
 def set_U_matrix(U_interact,J_hund,n_orb,l,use_matrix=True,T=None,sl_int=None,use_spinflip=False,dim_reps=None,irep=None):
     """ Set up the interaction vertex""" 
-
-    from pytriqs.dft.umatrix import *
 
     offset = 0
     U4ind = None
