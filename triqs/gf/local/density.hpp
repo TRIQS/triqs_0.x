@@ -36,7 +36,7 @@ namespace triqs {
   // Here I choose to create G and call the function to avoid creating one code for each expression...
   template<typename GfType>
    TYPE_ENABLE_IF (tqa::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
-   density( GfType const & G) { return density( gf<imfreq>(G));} 
+   density( GfType const & G) { return density( gf_view<imfreq>(G));} 
 
  }
 

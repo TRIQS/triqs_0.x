@@ -2,6 +2,7 @@
 
 #include <triqs/gf/imfreq.hpp> 
 #include <triqs/gf/imtime.hpp> 
+#include <triqs/gf/local/density.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;
@@ -80,6 +81,11 @@ int main() {
 
  // operations on gf
  G3 = G + Gc;
+
+ std::cout  <<"-----------------   4 --------------------"<<std::endl;
+
+ // test for density
+ TEST( density(G3) );
 
  // should not compile
  //G3 = G + Gt;

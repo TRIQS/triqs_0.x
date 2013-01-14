@@ -38,10 +38,10 @@ class GfImTime ( GfImTime_cython, GfGeneric ) :
         if mesh is None : 
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d.pop('beta'))
-            n_max = d.pop('n_time_points',10000)
             stat = d.pop('statistic','F') 
-            sh = 1 if stat== 'F' else 0 
-            mesh = MeshImTime(beta,'F',n_max)
+            n_max = d.pop('n_time_points',10000)
+            kind = d.pop('kind','H') 
+            mesh = MeshImTime(beta,stat,n_max,kind)
 
         self.dtype = numpy.float64
         indicesL, indicesR = get_indices_in_dict(d)

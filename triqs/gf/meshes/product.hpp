@@ -113,7 +113,7 @@ namespace triqs { namespace gf {
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_product const & m) {
     tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
-    h5_write(gr,"Domain",m.domain());
+    h5_write(gr,"domain",m.domain());
     m.h5_write_impl(gr,cint<0>());
    }
 
@@ -128,7 +128,7 @@ namespace triqs { namespace gf {
    /// Read from HDF5
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_product & m){
     tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
-    h5_read(gr,"Domain",m._dom);
+    h5_read(gr,"domain",m._dom);
     m.h5_read_impl(gr,cint<0>());
    }
 
@@ -144,7 +144,7 @@ namespace triqs { namespace gf {
    friend class boost::serialization::access;
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
-     ar & boost::serialization::make_nvp("Domain",_dom);
+     ar & boost::serialization::make_nvp("domain",_dom);
     ser_impl(ar,version,cint<0>());
     }
 

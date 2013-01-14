@@ -14,6 +14,9 @@ cdef class GfImFreq_cython ( GfGeneric_cython ) :
         """Fills self with the Fourier transform of gt"""
         self._c = lazy_fourier( gt._c )
 
+    def density(self):
+        return density(self._c).to_python()
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImFreq ( gr, std_string key) : 

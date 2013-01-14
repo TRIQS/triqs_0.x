@@ -34,5 +34,3 @@ namespace triqs { namespace gf { namespace details {
 #endif
 
 
-
-

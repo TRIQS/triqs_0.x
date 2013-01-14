@@ -38,6 +38,15 @@ namespace triqs { namespace gf {
  //--------------------------------------------------------------------------------------
 
  void fourier_impl  (gf_view<imfreq> &gw , gf_view<imtime> const & gt){
+
+  // set behavior according to mesh kind
+  double shift;
+  switch(gt.mesh().kind()) {
+    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; break;
+    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; break;
+    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; break;
+  }
+
   auto ta = gt(freq_infty());
   long numberTimeSlices = gt.mesh().size();
   double Beta = gt.domain().beta, Pi = std::acos(-1);
@@ -67,7 +76,7 @@ namespace triqs { namespace gf {
     details::fourier_base(g_in, g_out, true);
 
     for (auto & w : gw.mesh()) {
-     gw(w)(n1,n2) = g_out(w.index)*exp(I*2*w.index*Pi/Beta*gt.mesh().delta()) + a1/(w - b1) + a2 / (w-b2) + a3/(w-b3); 
+     gw(w)(n1,n2) = g_out(w.index)*exp(2*I*w.index*shift*Pi/Beta*gt.mesh().delta()) + a1/(w - b1) + a2 / (w-b2) + a3/(w-b3); 
     }
    }
  }
@@ -79,6 +88,15 @@ namespace triqs { namespace gf {
  //---------------------------------------------------------------------------
 
  void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw) { 
+
+  // set behavior according to mesh kind
+  double shift;
+  switch(gt.mesh().kind()) {
+    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; break;
+    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; break;
+    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; break;
+  }
+
   static bool Green_Function_Are_Complex_in_time = false;
   auto ta = gw(freq_infty());
 
@@ -98,8 +116,7 @@ namespace triqs { namespace gf {
     g_in() = 0;
 
     for (auto & w: gw.mesh()) {
-     g_in(w.index) =  exp(-w.index*I*2*Pi/Beta* gt.mesh().delta()) *( gw(w)(n1,n2) - ( a1/(w - b1) + a2 / (w-b2) + a3/(w-b3) ) );
-     // you need an extra factor if the time mesh starts at 0.5*Beta/L
+     g_in(w.index) =  exp(-I*2*w.index*shift*Pi/Beta*gt.mesh().delta()) * ( gw(w)(n1,n2) - ( a1/(w - b1) + a2 / (w-b2) + a3/(w-b3) ) );
     }
     // for bosons GF(w=0) is divided by 2 to avoid counting it twice
     if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time ) g_in(0) *= 0.5; 

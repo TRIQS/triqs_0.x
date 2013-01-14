@@ -36,16 +36,16 @@ namespace triqs { namespace gf {
   /// Write into HDF5
   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain const & d) {
    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
-   h5_write(gr,"Beta",d.beta);
-   h5_write(gr,"Statistic",(d.statistic==Fermion ? 'F' : 'B'));
+   h5_write(gr,"beta",d.beta);
+   h5_write(gr,"statistic",(d.statistic==Fermion ? 'F' : 'B'));
   }
 
   /// Read from HDF5
   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain & d){
    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
    double beta; char statistic;
-   h5_read(gr,"Beta",beta);
-   h5_read(gr,"Statistic",statistic);
+   h5_read(gr,"beta",beta);
+   h5_read(gr,"statistic",statistic);
    d = matsubara_domain(beta,(statistic=='F' ? Fermion : Boson));
   }
  
@@ -53,8 +53,8 @@ namespace triqs { namespace gf {
   friend class boost::serialization::access;
   template<class Archive>
    void serialize(Archive & ar, const unsigned int version) {
-    ar & boost::serialization::make_nvp("Beta",beta);
-    ar & boost::serialization::make_nvp("Statistic",statistic);
+    ar & boost::serialization::make_nvp("beta",beta);
+    ar & boost::serialization::make_nvp("statistic",statistic);
    }
 
  };

@@ -1,3 +1,8 @@
+cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf::imtime::mesh_t" : 
+
+    cdef enum mesh_enum "triqs::gf::imtime::mesh_t::mesh_kind":
+        half_bins, full_bins, without_last
+
 cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" : 
   
     cdef cppclass imtime_domain :
@@ -10,10 +15,12 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         mesh_imtime (mesh_imtime &)
         imtime_domain & domain()
         long size()
+        double x_min()
+        double delta()
         bint operator ==( mesh_imtime &)
 
-    cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_max)
-    
+    cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
+
     cdef cppclass gf_imtime "triqs::gf::gf_view<triqs::gf::imtime>" :
         gf_imtime()
         gf_imtime(gf_imtime &)

@@ -30,18 +30,40 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
-   linear_mesh (domain_t const & dom, double x_min, double x_max, size_t n_pts) : _dom(dom),L(n_pts), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(L-1)) {}
-   linear_mesh (domain_t && dom,      double x_min, double x_max, size_t n_pts) : _dom(dom),L(n_pts), xmin(x_min), xmax(x_max), _step( (x_max - x_min) /(L-1)) {}
-   linear_mesh () : _dom(),L(0),_step(0){}
+   // Three possible meshes
+   enum mesh_kind { half_bins, full_bins, without_last };
+
+   linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
+     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     switch(mk) {
+       case half_bins: del = (b-a)/L; xmin = 0.5*del; break;
+       case full_bins: del = (b-a)/(L-1); xmin = a; break;
+       case without_last: del = (b-a)/L; xmin = a; break;
+     }
+     xmax = xmin + del*(L-1);
+   }
+
+   linear_mesh (domain_t && dom, double a, double b, size_t n_pts, mesh_kind mk) :
+     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     switch(mk) {
+       case half_bins: del = (b-a)/L; xmin = 0.5*del; break;
+       case full_bins: del = (b-a)/(L-1); xmin = a; break;
+       case without_last: del = (b-a)/L; xmin = a; break;
+     }
+     xmax = xmin + del*(L-1);
+   }
+
+   linear_mesh () : _dom(), a_pt(0), b_pt(0), L(0), xmin(0), del(0), xmax(0), meshk(half_bins) {}
 
    domain_t const & domain() const { return _dom;}
-   size_t size() const {return L;}
-   double delta() const { return _step;}
-   double x_max() const { return xmax;}
-   double x_min() const { return xmin;}
+   size_t size() const { return L; }
+   double delta() const { return del; }
+   double x_max() const { return xmax; }
+   double x_min() const { return xmin; }
+   mesh_kind kind() const { return meshk; }
 
    /// Conversions point <-> index <-> linear_index
-   domain_pt_t  index_to_point (index_t ind) const {return embed( xmin + ind * _step, mpl::bool_<boost::is_base_of<std::complex<double>, domain_pt_t>::value >()) ;}
+   domain_pt_t  index_to_point (index_t ind) const {return embed(xmin + ind * del, mpl::bool_<boost::is_base_of<std::complex<double>, domain_pt_t>::value >()) ;}
    private : // multiply by I is the type is a complex ....
    domain_pt_t embed( double x, mpl::bool_<false> ) const { return x;}
    domain_pt_t embed( double x, mpl::bool_<true> ) const { return std::complex<double>(0,x);}
@@ -72,40 +94,56 @@ namespace triqs { namespace gf {
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
     tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
-    h5_write(gr,"Domain",m.domain());
-    h5_write(gr,"min",m.xmin);
-    h5_write(gr,"max",m.xmax);
+    h5_write(gr,"domain",m.domain());
+    h5_write(gr,"min",m.a_pt);
+    h5_write(gr,"max",m.b_pt);
     h5_write(gr,"size",m.size());
+    switch(m.meshk) {
+       case half_bins: h5_write(gr,"kind",0); break;
+       case full_bins: h5_write(gr,"kind",1); break;
+       case without_last: h5_write(gr,"kind",2); break;
+    }
    }
 
    /// Read from HDF5
    friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh & m){
     tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
     typename linear_mesh::domain_t dom;
-    double xmin,xmax;
+    double a,b;
     size_t L; 
-    h5_read(gr,"Domain",dom);
-    h5_read(gr,"min",xmin);
-    h5_read(gr,"max",xmax);
+    int k;
+    mesh_kind mk;
+    h5_read(gr,"domain",dom);
+    h5_read(gr,"min",a);
+    h5_read(gr,"max",b);
     h5_read(gr,"size",L);
-    m = linear_mesh(std::move(dom), xmin,xmax,L);
+    h5_read(gr,"kind",k);
+    switch(k) {
+       case 0: mk = half_bins; break;
+       case 1: mk = full_bins; break;
+       case 2: mk = without_last; break;
+    }
+    m = linear_mesh(std::move(dom), a, b, L, mk);
    }
 
    //  BOOST Serialization
    friend class boost::serialization::access;
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
-     ar & boost::serialization::make_nvp("Domain",_dom);
-     ar & boost::serialization::make_nvp("min",xmin);
-     ar & boost::serialization::make_nvp("max",xmax);
+     ar & boost::serialization::make_nvp("domain",_dom);
+     ar & boost::serialization::make_nvp("min",a_pt);
+     ar & boost::serialization::make_nvp("max",b_pt);
      ar & boost::serialization::make_nvp("size",L);
+     ar & boost::serialization::make_nvp("kind",meshk);
     }
 
    private:
    domain_t _dom;
    size_t L; 
+   double a_pt, b_pt;
    double xmin, xmax;
-   double _step;
+   double del;
+   mesh_kind meshk;
   };
 
  /// Approximation of a point of the domain by a mesh point  

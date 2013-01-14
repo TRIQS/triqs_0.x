@@ -10,6 +10,7 @@ from math import pi
 from h5 cimport *
 
 include "fourier.pxd"
+include "density.pxd"
 include "tail.pyx"
 include "gf_generic.pyx"
 include "mesh_imfreq.pyx"

@@ -24,10 +24,11 @@ int main() {
  auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
  auto Gt = imtime::make_gf (beta, Fermion, make_shape(2,2));
 
- auto gt = inverse_fourier(G);
- auto gw = fourier(gt);
+ //auto gt = inverse_fourier(G);
+ //auto gw = fourier(gt);
 
- gw() = lazy_fourier(gt);
+ //gw() = lazy_fourier(gt);
+ G() = lazy_fourier(Gt);
 }
 
 

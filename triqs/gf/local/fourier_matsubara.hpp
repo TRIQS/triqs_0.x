@@ -31,6 +31,7 @@ namespace triqs { namespace gf {
  void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw);
 
  // Then a good old function make a new gf 
+ /*
  gf<imfreq> fourier (gf_view<imtime> const & gt) { 
   auto gw = imfreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
   auto V = gw();
@@ -44,6 +45,7 @@ namespace triqs { namespace gf {
   inverse_fourier_impl(V,gw);
   return gt;
  }
+ */
 
  // Finally the lazy system for the = operator for views....
  namespace tags { struct fourier{}; }

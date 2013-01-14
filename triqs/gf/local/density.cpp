@@ -18,7 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./density.hpp"
+
+#include "density.hpp"
 
 namespace triqs { namespace gf { 
 
@@ -42,8 +43,8 @@ namespace triqs { namespace gf {
    for (size_t n2=0; n2<N2;n2++) {
     dcomplex d= t(1)(n1,n2) , A=t(2)(n1,n2),B = t(3)(n1,n2) ;
     double b1 = 0,b2 =1, b3 =-1;
-    dcomplex a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2,om1;
-    for (auto & w : G.mesh())  dens_part(n1,n2)+= G(w)(n1,n2)  -  (a1/(om1 - b1) + a2 / (om1-b2) + a3/(om1-b3)); 
+    dcomplex a1 = d-B, a2 = (A+B)/2, a3 = (B-A)/2;
+    for (auto & w : G.mesh())  dens_part(n1,n2)+= G(w)(n1,n2)  -  (a1/(w - b1) + a2 / (w-b2) + a3/(w-b3)); 
     dens_part(n1,n2) = dens_part(n1,n2)/Beta;
     dens_tail(n1,n2) = d + F(a1,b1,Beta) + F(a2,b2,Beta)+ F(a3,b3,Beta);
     // If  the Green function are NOT complex, then one use the symmetry property

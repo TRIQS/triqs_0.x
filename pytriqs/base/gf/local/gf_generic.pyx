@@ -59,7 +59,7 @@ cdef class GfGeneric_cython :
     property tail : 
         def __get__(self): return self._singularity
         def __set__(self,TailGf t): 
-            assert (self.N1, self.N2, self._singularity.size) == (t.N1, t.N2, t.size)
+            assert (self.N1, self.N2, self._singularity.size, self._singularity.order_min) == (t.N1, t.N2, t.size, t.order_min)
             self._singularity.copy_from (t)
 
     property data : 
