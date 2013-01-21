@@ -19,8 +19,8 @@
  *
  ******************************************************************************/
 
-#include "bravais_lattice_and_brillouin_zone.hpp"
-#include "tight_binding.hpp"
+#include <triqs/lattice/bravais_lattice_and_brillouin_zone.hpp>
+#include <triqs/lattice/tight_binding.hpp>
 #include <boost/python.hpp>
 #include <boost/python/docstring_options.hpp>
 #include <triqs/utility/compiler_details.hpp>

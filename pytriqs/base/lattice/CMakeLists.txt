@@ -11,19 +11,6 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/latti
 # THE C++ code
 SET(CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/C++)
 
-SET(SOURCES_HPP 
- ${CPP_DIR}/bravais_lattice_and_brillouin_zone.hpp
- ${CPP_DIR}/functors.hpp
- ${CPP_DIR}/tight_binding.hpp
- )
-
-SET(SOURCES_CPP
- ${CPP_DIR}/bravais_lattice_and_brillouin_zone.cpp
- ${CPP_DIR}/tight_binding.cpp
- ${CPP_DIR}/wrap.cpp
- )
-
-python_build_module(LatticeTools _pytriqs_LatticeTools base/lattice ${SOURCES_CPP})
-
-
+python_build_module(LatticeTools _pytriqs_LatticeTools base/lattice lattice_wrap.cpp)
+target_link_libraries(_pytriqs_LatticeTools triqs ${TRIQS_LINK_LIBS})
 
