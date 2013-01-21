@@ -3,11 +3,12 @@ from arrays cimport *
 cdef extern from "triqs/gf/local/tail.hpp" : 
     cdef cppclass tail "triqs::gf::local::tail_view"  :
         tail()
-        tail(array_view[dcomplex,THREE,COrder] , int) except +
+        tail(array_view[dcomplex,THREE,COrder], int, array_view[long,TWO,COrder]) except +
         matrix_view[dcomplex,COrder] operator()(int) except +
         array_view[dcomplex,THREE,COrder] data_view()
-        int order_min()
-        int order_max()
+        array_view[long,TWO,COrder] mask_view()
+        long order_min()
+        long order_max()
         size_t size() 
         size_t shape(int) 
 

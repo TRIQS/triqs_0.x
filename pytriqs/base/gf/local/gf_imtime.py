@@ -47,7 +47,7 @@ class GfImTime ( GfImTime_cython, GfGeneric ) :
         indicesL, indicesR = get_indices_in_dict(d)
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((N1,N2,len(mesh)), self.dtype )
-        tail= d.pop('tail') if 'tail' in d else TailGf( shape = (N1,N2), order_min=-1, size=10)
+        tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10,  order_min=-1)
         symmetry = d.pop('symmetry',None)
         name =  d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 

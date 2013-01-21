@@ -292,12 +292,11 @@ class GfGeneric:
     def transpose(self):
         """Transposes the GF Bloc: return a new transposed view"""
         ### WARNING: this depends on the C++ layering ....
-        temp = self.tail.transpose()
         return self.__class__(
                 indices = list(self.indices),
                 mesh = self.mesh,
                 data = self.data.transpose( (1, 0, 2) ),
-                tail = temp,
+                tail = self.tail.transpose(),
                 name = self.name+'(t)')
 
     #---------------------------------------------------
@@ -306,12 +305,11 @@ class GfGeneric:
         """Complex conjugate of the GF Bloc. It follow the policy of numpy and
         make a copy only if the Green function is complex valued"""
 
-        temp = self.tail.conjugate()
         return self.__class__(
                 indices = list(self.indices),
                 mesh = self.mesh,
                 data = self.data.conjugate(),
-                tail = temp,
+                tail = self.tail.conjugate(),
                 name = self.name+'*')
 
     #------------------  Density -----------------------------------

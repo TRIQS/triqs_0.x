@@ -71,7 +71,7 @@ int main() {
  TEST(t.order_min()); 
  TEST( t( 2) ) ;
 
- TEST( Gv2(inf)( 0) ) ;
+ TEST( Gv2(inf)( 2) ) ;
 
  // copy 
  Gc = G;

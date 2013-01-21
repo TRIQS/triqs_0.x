@@ -4,8 +4,8 @@ cdef class TailGf:
     cdef tail _c
     def __init__(self, **d):
         """
-        TailGf ( data, order_min)
-        TailGf ( N1, N2, size, order_min) 
+        TailGf ( shape, size, order_min )
+        TailGf ( data, order_min )
         """
         c_obj = d.pop('encapsulated_c_object', None)
         if c_obj :
@@ -19,13 +19,17 @@ cdef class TailGf:
             boost_unserialize_into(<std_string>bss,self._c) 
             return 
 
-        a = d.pop('data',None)
-        if a==None : 
-            (N1, N2), s = d.pop('shape'), d.pop('size')
-            a = numpy.zeros((N1,N2,s) ,numpy.complex) 
         omin = d.pop('order_min')
-        assert len(d) ==0, "Unknown parameters in TailGf constructions %s"%d.keys() 
-        self._c =  tail( array_view[dcomplex,THREE,COrder](a), omin)
+        a = d.pop('data',None)
+        if a==None :
+            (N1, N2), s = d.pop('shape'), d.pop('size')
+            a = numpy.zeros((N1,N2,s) ,numpy.complex)
+        m = d.pop('mask',None)
+        if m==None :
+            m = numpy.zeros(a.shape[0:2], int)
+            m.fill(omin+a.shape[2]-1)
+        assert len(d) == 0, "Unknown parameters in TailGf constructions %s"%d.keys()
+        self._c = tail(array_view[dcomplex,THREE,COrder](a), omin, array_view[long,TWO,COrder](m))
     
     #-------------- Reduction -------------------------------
 
@@ -36,7 +40,7 @@ cdef class TailGf:
 
     property data : 
         """Access to the data array"""
-        def __get__(self) : 
+        def __get__(self) :
             return self._c.data_view().to_python()
 
         def __set__ (self, value) :
@@ -51,8 +55,13 @@ cdef class TailGf:
             else : 
                 a[...] = value
 
+    property mask:
+        """Access to the data array"""
+        def __get__(self) :
+            return self._c.mask_view().to_python()
+
     property shape : 
-        def __get__(self) : return self.data.shape[:2] 
+        def __get__(self) : return self.data.shape[:2]
 
     property order_min : 
         """Min order of the expansion"""
@@ -73,14 +82,14 @@ cdef class TailGf:
         def __get__(self) : return self._c.size()
     
     def copy(self) : 
-        return self.__class__(data = self.data.copy(), order_min = self.order_min)
+        return self.__class__(data = self.data.copy(), order_min = self.order_min, mask = self.mask.copy())
 
     # Should I do more compatibility checks?
     def copy_from(self, TailGf T) :
         self._c = T._c
 
     def _make_slice(self, sl1, sl2):
-        return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min)
+        return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min, mask = self.mask[sl1,sl2])
 
     def __repr__ (self) :
         return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
@@ -185,15 +194,11 @@ cdef class TailGf:
 
     def transpose (self) : 
         """Transpose the array : new view as in numpy"""
-        #assert(0)
-        return TailGf(data=self.data.transpose(), order_min=self.order_min)
+        return TailGf(data=self.data.transpose(), order_min=self.order_min, mask=self.mask.transpose())
 
     def conjugate(self) : 
         """Transpose the array : new view as in numpy"""
-        return TailGf(data=self.data.conjugate(), order_min=self.order_min)
-        #assert(0)
-        # Hum, a pb here : shall we return a new object (view) or do it one site
-        # ? (BAD !!).
+        return TailGf(data=self.data.conjugate(), order_min=self.order_min, mask=self.mask)
         
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)

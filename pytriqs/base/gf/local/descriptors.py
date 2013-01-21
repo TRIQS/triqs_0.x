@@ -161,7 +161,7 @@ class OneFermionInTime(Base):
             raise TypeError, "This initializer is only correct in frequency"
 
         t,Id  = G.tail, numpy.identity(G.N1)
-        G.tail = TailGf(shape = t.shape, size = t.size, order_min=1)
+        G.tail = TailGf(shape = t.shape, size = 3, order_min=1)
         t[1][:,:] = 1
         t[2][:,:] = L
         t[3][:,:] = L*L
@@ -221,8 +221,8 @@ class SemiCircular (Base):
         else:
             raise TypeError, "This initializer is only correct in frequency"
 
-        # Let's put the tail
-        G.tail.zero()
+        # Let's create a new tail
+        G.tail = TailGf(shape = G.tail.shape, size=5, order_min=1)
         for i in range(G.N1):
             G.tail[1][i,i] = 1.0
             G.tail[3][i,i] = D**2/4.0

@@ -15,9 +15,7 @@ cdef inline dcomplex as_dcomplex (a) :
 cdef inline make_dcomplex (dcomplex z) :
     return complex(z.real(), z.imag())
 
-
 # Python -> C
 cdef inline float as_float (a) : 
     return float (a) 
-
 
