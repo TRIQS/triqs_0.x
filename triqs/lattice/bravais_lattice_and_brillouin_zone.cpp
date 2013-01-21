@@ -19,42 +19,29 @@
  *
  ******************************************************************************/
 #include "bravais_lattice_and_brillouin_zone.hpp"
-
 #include <triqs/arrays/proto/matrix_algebra.hpp>
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
-#include <triqs/python_tools/converters/unordered_map.hpp> 
-#include <triqs/arrays/python/converters.hpp>
-namespace triqs { namespace lattice_tools { 
+namespace triqs { namespace lattice{
 
  using namespace tqa;
  using namespace std;
  using boost::numeric::bindings::blas::dot;
  const double almost_zero(1E-10);
 
- bravais_lattice::bravais_lattice( units_type const & units__, orbital_type const & orbitals__) : 
+ bravais_lattice::bravais_lattice( units_t const & units__, orbital_t const & orbitals__) :
   units_(3,3), dim_(units__.len(0)), orbitals_(orbitals__) { cons_deleg(units__);}
-
- //bravais_lattice::bravais_lattice( tqa::array_view<double,2> const & units__, boost::python::object orbitals__) : 
- bravais_lattice::bravais_lattice( boost::python::object units__, boost::python::object orbitals__) : 
-  units_(3,3), dim_(boost::python::len(units__)), orbitals_() { 
-  //units_(3,3), dim_(units__.len(0)), orbitals_() { 
-   cons_deleg(array<double,2>(units__.ptr()));
-   //if (orbitals__) 
-    orbitals_ = python_tools::converter<orbital_type>::Py2C(orbitals__);
-   //else { R_type z(3); z()=0; orbitals_.insert(std::make_pair("",z));}
-  }
 
  void bravais_lattice::cons_deleg(tqa::array<double,2> const & units__) {
 
   units_(range(0,dim_),range()) = units__();
   units_(range(dim_,3),range()) = 0;
   // First complete the basis. Add some tests for safety
-  tqa::vector<double> ux(3),uy(3),uz(3); 
+  tqa::vector<double> ux(3),uy(3),uz(3);
   assert(dim_==2);
   switch (dim_) {
-   case 1:      
+   case 1:
     ux = units_(0,range());
     uz() = 0; uz(1) = 1 ;
     uz = uz - dot(uz,ux)* ux;
@@ -76,12 +63,12 @@ namespace triqs { namespace lattice_tools {
     if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 2 vectors of unit are not independent";
     units_(2,range()) = uy /delta;
   }
- //cerr<<" Units = "<< units_<<endl; 
+ //cerr<<" Units = "<< units_<<endl;
  }
 
- R_view_type bravais_lattice::lattice_to_real_coordinates(R_view_type const & x) const {
+ bravais_lattice::point_t bravais_lattice::lattice_to_real_coordinates(bravais_lattice::point_t const & x) const {
   assert(x.size()==dim());
-  R_type res(3); res() =0;
+  point_t res(3); res() =0;
   for (size_t i =0; i< dim();i++) res += x (i) * units_(i,range());
   return(res);
  }
@@ -89,7 +76,7 @@ namespace triqs { namespace lattice_tools {
  //------------------------------------------------------------------------------------
 
  brillouin_zone::brillouin_zone( bravais_lattice const & bl_) : lattice_(bl_), K_reciprocal(3,3) {
-  bravais_lattice::units_type Units(lattice().units());
+  bravais_lattice::units_t Units(lattice().units());
   double delta = dot(Units(0,range()), cross_product(Units(1,range()),Units(2,range())));
   if (abs(delta)<almost_zero) TRIQS_RUNTIME_ERROR<<"Tiling : the 3 vectors of Units are not independant";
   K_reciprocal(0,range()) = cross_product(Units(1,range()),Units(2,range())) / delta;
@@ -101,16 +88,16 @@ namespace triqs { namespace lattice_tools {
   K_reciprocal_inv =  inverse(K_reciprocal);
  }
 
- K_view_type brillouin_zone::lattice_to_real_coordinates (K_view_type const & k) const { 
+ brillouin_zone::point_t brillouin_zone::lattice_to_real_coordinates (brillouin_zone::point_t const & k) const {
   if (k.size()!=lattice().dim()) TRIQS_RUNTIME_ERROR<<"latt_to_real_k : dimension of k must be "<<lattice().dim();
-  K_type res(3); res()=0; int dim = lattice().dim();
+  point_t res(3); res()=0; int dim = lattice().dim();
   for (int i =0; i< dim;i++) res += k (i) * K_reciprocal(i,range());
   return(res);
  }
 
- K_view_type brillouin_zone::real_to_lattice_coordinates (K_view_type const & k) const {
+ brillouin_zone::point_t brillouin_zone::real_to_lattice_coordinates (brillouin_zone::point_t const & k) const {
   if (k.size()!=lattice().dim()) TRIQS_RUNTIME_ERROR<<"latt_to_real_k : dimension of k must be "<<lattice().dim();
-  K_type res(3);res()=0; int dim = lattice().dim();
+  point_t res(3);res()=0; int dim = lattice().dim();
   for (int i =0; i< dim;i++) res += k (i) * K_reciprocal_inv(i,range());
   return(res);
  }
