@@ -36,7 +36,7 @@ namespace triqs { namespace gf {
    linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
      _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
      switch(mk) {
-       case half_bins: del = (b-a)/L; xmin = 0.5*del; break;
+       case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
        case without_last: del = (b-a)/L; xmin = a; break;
      }
@@ -46,7 +46,7 @@ namespace triqs { namespace gf {
    linear_mesh (domain_t && dom, double a, double b, size_t n_pts, mesh_kind mk) :
      _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
      switch(mk) {
-       case half_bins: del = (b-a)/L; xmin = 0.5*del; break;
+       case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
        case without_last: del = (b-a)/L; xmin = a; break;
      }
@@ -94,15 +94,17 @@ namespace triqs { namespace gf {
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
     tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+    int k;
+    switch(m.meshk) {
+       case half_bins: k=0; break;
+       case full_bins: k=1; break;
+       case without_last: k=2; break;
+    }
     h5_write(gr,"domain",m.domain());
     h5_write(gr,"min",m.a_pt);
     h5_write(gr,"max",m.b_pt);
     h5_write(gr,"size",m.size());
-    switch(m.meshk) {
-       case half_bins: h5_write(gr,"kind",0); break;
-       case full_bins: h5_write(gr,"kind",1); break;
-       case without_last: h5_write(gr,"kind",2); break;
-    }
+    h5_write(gr,"kind",k);
    }
 
    /// Read from HDF5

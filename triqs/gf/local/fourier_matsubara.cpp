@@ -41,10 +41,11 @@ namespace triqs { namespace gf {
 
   // set behavior according to mesh kind
   double shift;
+  size_t L;
   switch(gt.mesh().kind()) {
-    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; break;
-    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; break;
-    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; break;
+    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; L = gt.mesh().size(); break;
+    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
+    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; L = gt.mesh().size(); break;
   }
 
   auto ta = gt(freq_infty());
@@ -69,15 +70,20 @@ namespace triqs { namespace gf {
     }
     else { 
      for (auto & t : gt.mesh()) 
-      g_in(t.index) =  gt(t)(n1,n2) -  ( oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta)+ oneBoson(a3,b3,t,Beta) );  
+      g_in(t.index) =  gt(t)(n1,n2) -  ( oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );  
     }
+
     g_in *= Beta/numberTimeSlices;
 
-    details::fourier_base(g_in, g_out, true);
+    details::fourier_base(g_in, g_out, L, true);
 
     for (auto & w : gw.mesh()) {
-     gw(w)(n1,n2) = g_out(w.index)*exp(2*I*w.index*shift*Pi/Beta*gt.mesh().delta()) + a1/(w - b1) + a2 / (w-b2) + a3/(w-b3); 
+     gw(w)(n1,n2) = g_out(w.index)*exp(2*I*w.index*shift*Pi/Beta*gt.mesh().delta()) + a1/(w-b1) + a2/(w-b2) + a3/(w-b3); 
     }
+
+    // set tail
+    gw.singularity_view() = gt.singularity_view();
+
    }
  }
  //---------------------------------------------------------------------------
@@ -91,10 +97,11 @@ namespace triqs { namespace gf {
 
   // set behavior according to mesh kind
   double shift;
+  size_t L;
   switch(gt.mesh().kind()) {
-    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; break;
-    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; break;
-    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; break;
+    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; L = gt.mesh().size(); break;
+    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
+    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; L = gt.mesh().size(); break;
   }
 
   static bool Green_Function_Are_Complex_in_time = false;
@@ -102,7 +109,7 @@ namespace triqs { namespace gf {
 
   double Beta = gt.domain().beta, Pi = std::acos(-1);
   dcomplex I(0,1);
-  tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out (gt.mesh().size()); 
+  tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out (gt.mesh().size());
 
   using namespace impl_local_matsubara;
   for (size_t n1=0; n1<gt.data_view().shape()[0];n1++)
@@ -116,12 +123,12 @@ namespace triqs { namespace gf {
     g_in() = 0;
 
     for (auto & w: gw.mesh()) {
-     g_in(w.index) =  exp(-I*2*w.index*shift*Pi/Beta*gt.mesh().delta()) * ( gw(w)(n1,n2) - ( a1/(w - b1) + a2 / (w-b2) + a3/(w-b3) ) );
+     g_in(w.index) =  exp(-I*2*w.index*shift*Pi/Beta*gt.mesh().delta()) * ( gw(w)(n1,n2) - (a1/(w-b1) + a2/(w-b2) + a3/(w-b3)) );
     }
     // for bosons GF(w=0) is divided by 2 to avoid counting it twice
     if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time ) g_in(0) *= 0.5; 
 
-    details::fourier_base(g_in, g_out, false);
+    details::fourier_base(g_in, g_out, L, false);
 
     // If the Green function are NOT complex, then one use the symmetry property
     // fold the sum and get a factor 2
@@ -132,14 +139,24 @@ namespace triqs { namespace gf {
     typedef double gt_result_type;
     //typedef boost::mpl::if_<gt_result_type;
     //typedef typename gf<imtime>::mesh_type::gf_result_type gt_result_type;
+
     if (gw.domain().statistic == Fermion){
      for (auto & t : gt.mesh()) 
-      gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)*exp(-I*Pi*t/Beta) + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
+       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)*exp(-I*Pi*t/Beta)
+                         + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
     }
     else {
      for (auto & t : gt.mesh()) 
-      gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index) + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta)+ oneBoson(a3,b3,t,Beta) );
+       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)
+                         + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );
     }
+
+    if (gt.mesh().kind() == gf_view<imtime>::mesh_t::full_bins)
+      gt.on_mesh(L)(n1,n2) = -gt.on_mesh(0)(n1,n2)-convert_green<gt_result_type>(ta(1)(n1,n2));
+
+    // set tail
+    gt.singularity_view() = gw.singularity_view();
+
    }
  }
 

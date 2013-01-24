@@ -24,10 +24,10 @@
 
 namespace triqs { namespace gf { namespace details { 
 
- void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, bool direct) {
+ void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct) {
 
   // !!!! L must always be the number of time bins !!!!
-  const size_t L( (direct ? in.size() : out.size()) );
+  //const size_t L( (direct ? in.size() : out.size()) );
   //const int L(max(in.size(),out.size()));  <-- bug
 
   fftw_complex *inFFT, *outFFT;
