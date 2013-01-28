@@ -42,7 +42,7 @@ The move
 ********
 
 The 
-The move class should have a `mc_weight_type`, and three methods: `Try()`, `Accept()` and `Reject()`::
+The move class should have three methods: `Try()`, `Accept()` and `Reject()`::
 
     #ifndef moves_hpp
     #define moves_hpp
@@ -54,7 +54,6 @@ The move class should have a `mc_weight_type`, and three methods: `Try()`, `Acce
     // A move flipping a random spin
     struct flip {
 
-      typedef double mc_weight_type;
       configuration * config;
       triqs::mc_tools::random_generator &RNG;
 

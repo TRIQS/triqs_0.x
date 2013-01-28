@@ -197,7 +197,7 @@ The move concept
 Let's go back to the beginning of the code and have a look at the ``flip``
 class which proposed a flip of the spin. The class is very short.  It has a
 constructor which might define some class variables. But more importantly, it
-has three member functions that any move **must** have: ``Tyr``, ``Accept`` and
+has three member functions that any move **must** have: ``Try``, ``Accept`` and
 ``Reject``::
 
   struct flip {
@@ -229,11 +229,14 @@ In our example this ratio is
   T = \frac{e^{\beta h -\sigma }}{e^{\beta h \sigma}} = e^{ - 2 \beta h \sigma }
 
 With this ratio, the Monte Carlo loop decides wether this proposed move should
-be rejected, or accepted. In the move is accepted, the Monte Carlo calls the
-``Accept`` method of the move. Note that this method returns 1. This is almost
-always what you want to put there (see full reference below).  Otherwise it
-calls the ``Reject`` method. In our example, nothing has to be done if the move
-is rejected. If it is accepted, the spin should be flipped.
+be rejected, or accepted. If the move is accepted, the Monte Carlo calls the
+``Accept`` method of the move, otherwise it calls the ``Reject`` method.  The
+``Accept`` method should always return 1.0 unless you want to correct the sign
+only when moves are accepted for performance reasons (this rather special case
+is described in the :ref:`full reference <montecarloref>`).  Note that the
+return type of ``Try`` and ``Accept`` has to be the same as the template of the
+Monte Carlo class.  In our example, nothing has to be done if the move is
+rejected. If it is accepted, the spin should be flipped.
 
 The measure concept
 *******************

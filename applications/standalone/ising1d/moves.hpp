@@ -25,7 +25,6 @@ struct configuration {
 // flip a random spin
 struct flip {
 
-  typedef double mc_weight_type;
   configuration * config;
   triqs::mc_tools::random_generator &RNG;
 
