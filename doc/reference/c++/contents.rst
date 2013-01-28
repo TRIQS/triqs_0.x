@@ -8,7 +8,9 @@ Reference: C++ librairies
    arrays/contents
    mctools/intro
    det_manip/det_manip
+   gf/contents
    parameters/parameters
+   gf/intro
    clef/contents
    lectures/contents
-   utility.rst
+   utilities/intro.rst

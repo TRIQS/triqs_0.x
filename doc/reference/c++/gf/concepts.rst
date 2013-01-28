@@ -1,7 +1,7 @@
 .. highlight:: c
 
 Green functions  
-###########################
+#################
 
 Here are the concepts and techniques related to the Green functions.
 
@@ -278,7 +278,7 @@ Descriptor concept
   
 
 The gf/gf_view class
-=======================================
+====================
 
 The gf/gf_view classes are generic Green function, templated on Descriptor.
 
@@ -305,4 +305,10 @@ so we can dispath the make_gf. Example of use ::
 
    auto G = make_gf (matsubara_freq(), beta, Fermion, make_shape(2,2));
   
+
+
+Doxygen documentation
+======================
+
+The :doxy:`full C++ documentation<triqs::gf::gf>` is available here.
 
