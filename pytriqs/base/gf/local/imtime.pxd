@@ -14,9 +14,9 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         mesh_imtime ()
         mesh_imtime (mesh_imtime &)
         imtime_domain & domain()
-        long size()
         double x_min()
-        double delta()
+        long size()
+        double kind()
         bint operator ==( mesh_imtime &)
 
     cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)

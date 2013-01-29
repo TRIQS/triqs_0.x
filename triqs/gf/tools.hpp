@@ -82,14 +82,19 @@ namespace triqs { namespace gf {
 
   /// Write into HDF5
   friend void h5_write (tqa::h5::group_or_file fg, std::string key, indices_2_t const & g) {
-   h5_write(fg,key,g.data[0]);
+    tqa::h5::group_or_file gr = fg.create_group(key);
+    h5_write(gr,"left",g.data[0]);
+    h5_write(gr,"right",g.data[1]);
   }
 
   /// Read from HDF5
   friend void h5_read  (tqa::h5::group_or_file fg, std::string key, indices_2_t & g){
-   std::vector<std::string> V;
-   h5_read(fg,key,V);
-   g.data.push_back(V); g.data.push_back(V);
+    tqa::h5::group_or_file gr = fg.open_group(key);
+    std::vector<std::string> V;
+    h5_read(gr,"left",V);
+    g.data.push_back(V);
+    h5_read(gr,"right",V);
+    g.data.push_back(V);
   }
 
   //  BOOST Serialization

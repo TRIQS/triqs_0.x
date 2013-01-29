@@ -199,7 +199,13 @@ namespace triqs { namespace gf { namespace local {
   }
   inline tail_view & operator=(const tail & rhs);
 
-  //tail_view & operator=(std::complex<double> const & x) { this->data = x; return *this;}
+  tail_view & operator=(std::complex<double> const & x) {
+    if (omin > 0) TRIQS_RUNTIME_ERROR<<"lhs has too large omin";
+    for (size_t n=0; n<size(); ++n) data(tqa::range(), tqa::range(), n) = 0.0;
+    data(tqa::range(), tqa::range(), -omin) = x;
+    mask() = omin+size()-1;
+    return *this;
+  }
 
   using B::operator(); // import all previously defined operator() for overloading
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
@@ -215,8 +221,8 @@ namespace triqs { namespace gf { namespace local {
   public :
   tail():B() {}
   typedef tqa::mini_vector<size_t,2> shape_type;
-  tail(size_t N1, size_t N2, size_t size_ = 5, long order_min=-1): B(N1,N2,size_,order_min) {}
-  tail(shape_type const & sh, size_t size_ = 5, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
+  tail(size_t N1, size_t N2, size_t size_ = 10, long order_min=-1): B(N1,N2,size_,order_min) {}
+  tail(shape_type const & sh, size_t size_ = 10, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){}
 

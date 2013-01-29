@@ -87,7 +87,7 @@ namespace triqs { namespace gf {
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t Nmax = 1025) {
    double m1 = std::acos(-1)/beta;
-   return mesh_t( domain_t(beta,S), m1, Nmax*2*m1, Nmax, mesh_t::without_last);
+   return mesh_t( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, mesh_t::without_last);
   }
 
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) { 

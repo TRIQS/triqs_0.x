@@ -29,5 +29,5 @@ cdef class MeshImTime:
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :
     return MeshImTime( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B',
-                       x.x_min(), x.delta(), x.size() )
+                       x.size(), {half_bins: 'H', full_bins: 'F', without_last: 'W'}[x.kind()] )
 
