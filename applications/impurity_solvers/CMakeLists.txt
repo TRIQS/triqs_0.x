@@ -1,3 +1,3 @@
-add_subdirectory(ctqmc_hyb)
-add_subdirectory(hubbard_I)
+
+add_all_subdirectories_with_cmakelist()
 
