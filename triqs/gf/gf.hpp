@@ -67,8 +67,11 @@ namespace triqs { namespace gf {
   template< bool _is_view = IsView>
    ENABLE_IFC(_is_view) operator = (typename T::value_type const & y) { for (auto & x : data ) x=y; }
 
-  T_view_t operator()(tqa::ellipsis, size_t i) const {  assert(i<data.size()); return data[i];} // ellipsis just here to make later code simpler below...
-  T_view_t operator[](size_t i) const { assert(i<data.size()); return data[i];} 
+  T_t const & operator()(tqa::ellipsis, size_t i) const {  assert(i<data.size()); return data[i];} // ellipsis just here to make later code simpler below...
+  //T_view_t operator()(tqa::ellipsis, size_t i) const {  assert(i<data.size()); return data[i];} // ellipsis just here to make later code simpler below...
+  T_t const & operator[](size_t i) const { assert(i<data.size()); return data[i];}
+  T_t & operator[](size_t i) { assert(i<data.size()); return data[i];}
+  //T_view_t operator[](size_t i) const { assert(i<data.size()); return data[i];}
 
   typedef typename std::vector<T_t>::const_iterator const_iterator;
   const_iterator begin() const { return data.begin();}
@@ -147,8 +150,10 @@ namespace triqs { namespace gf {
 
    mesh_t const & mesh() const                 { return _mesh;}
    domain_t const & domain() const             { return _mesh.domain();}
-   data_view_t data_view()                     { return data;} 
-   const data_view_t data_view() const         { return data;}
+   data_t &  data_view()                     { return data;}
+   data_t const & data_view() const         { return data;}
+   //data_view_t data_view()                     { return data;}
+   //const data_view_t data_view() const         { return data;}
    singularity_view_t singularity_view()             { return singularity;} 
    const singularity_view_t singularity_view() const { return singularity;}
 
@@ -251,7 +256,7 @@ namespace triqs { namespace gf {
    template<typename Arg >   
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
     clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
-    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t &, singularity_t&, Arg)> // what is the result type of call
+    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t const &, singularity_t&, Arg)> // what is the result type of call
      >::type     // end of lazy_disable_if 
      operator[] (Arg&& arg) const {return _bracket_evaluator(_mesh, data, singularity, std::forward<Arg>( arg));}
 

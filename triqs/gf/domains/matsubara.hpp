@@ -37,16 +37,16 @@ namespace triqs { namespace gf {
   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain const & d) {
    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
    h5_write(gr,"beta",d.beta);
-   h5_write(gr,"statistic",(d.statistic==Fermion ? 'F' : 'B'));
+   h5_write(gr,"statistic",(d.statistic==Fermion ? "F" : "B"));
   }
 
   /// Read from HDF5
   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain & d){
    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
-   double beta; char statistic;
+   double beta; std::string statistic;
    h5_read(gr,"beta",beta);
    h5_read(gr,"statistic",statistic);
-   d = matsubara_domain(beta,(statistic=='F' ? Fermion : Boson));
+   d = matsubara_domain(beta,(statistic=="F" ? Fermion : Boson));
   }
  
   //  BOOST Serialization

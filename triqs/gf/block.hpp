@@ -61,8 +61,15 @@ namespace triqs { namespace gf {
   };
 
   struct bracket_evaluator {
-   template<typename D, typename T>
-    target_view_t  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
+   template<typename Td, bool v,  typename T>
+    typename vector_storage<Td,v>::T_t  &  operator() (mesh_t const & mesh, vector_storage<Td,v> & data, T & t, long  n)  const {return data[n]; }
+   template<typename Td, bool v,  typename T>
+    typename vector_storage<Td,v>::T_t const &  operator() (mesh_t const & mesh, const vector_storage<Td,v> & data, T & t, long  n)  const {return data[n]; }
+   //template<typename D, typename T>
+   // target_t &  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
+   //template<typename D, typename T>
+   // target_t const &  operator() (mesh_t const & mesh, const D & data, T & t, long  n)  const {return data[n]; }
+    //target_view_t  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
   };
 
   /// How to fill a gf from an expression (RHS)
