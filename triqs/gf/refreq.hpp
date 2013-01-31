@@ -90,7 +90,7 @@ namespace triqs { namespace gf {
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
 
-  static std::string h5_name() { return "real_freq";}
+  static std::string h5_name() { return "refreq_gf";}
 
   // -------------------------------   Factories  --------------------------------------------------
 

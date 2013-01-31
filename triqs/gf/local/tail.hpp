@@ -194,8 +194,8 @@ namespace triqs { namespace gf { namespace local {
       for (size_t n=0; n<std::min(size(), size_t(rhs.size()-omin+rhs.omin)); ++n)
         if (n < rhs.omin-omin) data(tqa::range(),tqa::range(),n) = 0.0;
         else data(tqa::range(),tqa::range(),n) = rhs.data(tqa::range(),tqa::range(),n-rhs.omin+omin);
-      return *this;
     }
+    return *this;
   }
   inline tail_view & operator=(const tail & rhs);
 
@@ -271,8 +271,8 @@ namespace triqs { namespace gf { namespace local {
       for (size_t n=0; n<std::min(size(),size_t(rhs.size()-omin+rhs.omin)); ++n)
         if (n < rhs.omin-omin) data(tqa::range(),tqa::range(),n) = 0.0;
         else data(tqa::range(),tqa::range(),n) = rhs.data(tqa::range(),tqa::range(),n-rhs.omin+omin);
-      return *this;
     }
+    return *this;
   }
 
  /// Slice in orbital space

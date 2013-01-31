@@ -79,7 +79,7 @@ namespace triqs { namespace gf {
     // it uses the fact that tail_non_view_t can be casted into freq_infty 
    }
 
-  static std::string h5_name() { return "matsubara_frequency";}
+  static std::string h5_name() { return "imfreq_gf";}
 
   // -------------------------------   Factories  --------------------------------------------------
 

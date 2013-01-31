@@ -76,7 +76,7 @@ namespace triqs { namespace gf {
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { for (auto w: mesh) {data[w.index] = rhs(w); } }
 
-  static std::string h5_name() { return "GFBlock";}
+  static std::string h5_name() { return "block_gf";}
  
   // -------------------------------   Factories  --------------------------------------------------
 
