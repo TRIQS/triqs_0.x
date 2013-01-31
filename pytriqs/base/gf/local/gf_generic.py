@@ -31,7 +31,8 @@ from impl_plot import PlotWrapperPartialReduce
 class GfGeneric:
 
     def copy(self):
-        return self._derived(indices = self.indices, mesh = self.mesh, data = self.data.copy(), tail = self.tail.copy(), name = self.name)
+        return self._derived(indices_pack = (list(self.indicesL),list(self.indicesR)), mesh = self.mesh,
+                             data = self.data.copy(), tail = self.tail.copy(), name = self.name)
 
     def copy_from(self, X):
         assert self._derived is X._derived

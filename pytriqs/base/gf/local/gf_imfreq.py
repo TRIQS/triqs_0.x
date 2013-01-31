@@ -52,7 +52,7 @@ class GfImFreq ( GfImFreq_cython, GfGeneric ) :
         name =  d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
         
-        GfImFreq_cython.__init__(self, mesh, data, tail, symmetry,(indicesL,indicesR), name )
+        GfImFreq_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
     
     #--------------   PLOT   ---------------------------------------
    

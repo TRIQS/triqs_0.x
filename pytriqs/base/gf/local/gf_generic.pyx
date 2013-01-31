@@ -41,8 +41,8 @@ cdef class GfGeneric_cython :
     cdef object _name, dtype, _mesh, _data, _singularity, _symmetry, _indices
     cdef readonly  _derived
 
-    def __init__(self, mesh, data, singularity, symmetry, indices, name, derived ) : 
-        self._mesh, self._data, self._singularity, self._symmetry, self._indices= mesh, data, singularity, symmetry, indices
+    def __init__(self, mesh, data, singularity, symmetry, indicesLR, name, derived ) :
+        self._mesh, self._data, self._singularity, self._symmetry, self._indices = mesh, data, singularity, symmetry, indicesLR
         self._name = name
         self._derived = derived
         copy_reg.pickle(self._derived, reductor, builder_cls_with_dict_arg )
@@ -50,7 +50,8 @@ cdef class GfGeneric_cython :
     def __reduce_to_dict__(self):
         return {'mesh' : self._mesh, 'data' : self._data, 
                 'tail' : self._singularity, 'symmetry' : self._symmetry,
-                'indices' : self._indices, 'name' : self._name } 
+                'indices_pack' : self._indices,
+                'name' : self._name }
 
     property mesh : 
         """Mesh"""
@@ -99,8 +100,3 @@ cdef class GfGeneric_cython :
         """Name of the Green function (for plots, etc...) """
         def __get__(self) : return self._name
         def __set__(self,val) : self._name = str(val)
-
-    property Name : 
-        """Name of the Green function (for plots, etc...) """
-        # DEPRECATED
-        def __get__(self) : return self._name
