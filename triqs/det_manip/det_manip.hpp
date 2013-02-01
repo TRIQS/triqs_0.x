@@ -27,6 +27,7 @@
 #include <triqs/arrays/mapped_functions.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
+#include <triqs/arrays/linalg/determinant.hpp>
 #include <triqs/arrays/linalg/a_x_ty.hpp>
 #include <triqs/arrays/linalg/matmul.hpp>
 #include <triqs/arrays/linalg/mat_vec_mul.hpp>
@@ -144,10 +145,11 @@ namespace triqs { namespace det_manip {
       for (size_t i=0; i<N; ++i) { 
        row_num.push_back(i);col_num.push_back(i); 
        for (size_t j=0; j<N; ++j)
-	mat_inv(i,j) = f(x_values[i],y_values[j]);
+        mat_inv(i,j) = f(x_values[i],y_values[j]);
       }
-      mat_inv = inverse(mat_inv);
-      det = determinant(mat_inv);
+      range R(0,N);
+      det = triqs::arrays::determinant(mat_inv(R,R));
+      mat_inv(R,R) = inverse(mat_inv(R,R));
      }
 
     /// Put to size 0 : like a vector 
@@ -317,7 +319,7 @@ namespace triqs { namespace det_manip {
      w2.i[0]=i0;w2.i[1]=i1; w2.j[0]=j0;w2.j[1]=j1;
      w2.x[0] = x0;w2.y[0] = y0; w2.x[1] = x1;w2.y[1] = y1;
 
-     // w1.ksi = Delta(tau,tauP) - Cw.MB using BLAS
+     // w1.ksi = Delta(x_values,y_values) - Cw.MB using BLAS
      w2.ksi(0,0) = f(x0,y0);
      w2.ksi(0,1) = f(x0,y1);
      w2.ksi(1,0) = f(x1,y0);
@@ -536,6 +538,7 @@ namespace triqs { namespace det_manip {
      for (int u=0; u<2; ++u) { row_num.pop_back(); col_num.pop_back(); x_values.pop_back(); y_values.pop_back(); } 
     }
     //------------------------------------------------------------------------------------------
+   public:
 
     /**
      * Consider the change the column j and the corresponding y.
