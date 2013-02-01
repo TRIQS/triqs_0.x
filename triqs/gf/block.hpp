@@ -37,7 +37,7 @@ namespace triqs { namespace gf {
   struct tag : block_tag {};
 
   /// The Mesh
-  typedef discrete_mesh mesh_t;
+  typedef discrete_mesh<discrete_domain> mesh_t;
 
   /// The target
   typedef gf<Target> target_t;

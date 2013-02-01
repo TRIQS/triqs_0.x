@@ -50,4 +50,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
 include "tail.pxd"
 include "imfreq.pxd"
 include "imtime.pxd"
+include "legendre.pxd"
 

@@ -25,9 +25,10 @@
 
 namespace triqs { namespace gf { 
 
+  template<typename Domain>
   struct discrete_mesh {
 
-   typedef discrete_domain domain_t;
+   typedef Domain domain_t;
    typedef size_t index_t; 
 
    discrete_mesh (domain_t && dom) : _dom(dom){}

@@ -15,6 +15,8 @@ include "tail.pyx"
 include "gf_generic.pyx"
 include "mesh_imfreq.pyx"
 include "mesh_imtime.pyx"
+include "mesh_legendre.pyx"
 include "imfreq.pyx"
 include "imtime.pyx"
+include "legendre.pyx"
 
