@@ -11,12 +11,7 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base)
 add_subdirectory(archive)
 add_subdirectory(dmft)
 add_subdirectory(dos)
-
-option(BUILD_NEW_GF " Build the new GF (require the github version of cython ...)" OFF)
-if (BUILD_NEW_GF) 
- add_subdirectory(gf)
-endif(BUILD_NEW_GF)
-
+add_subdirectory(gf)
 add_subdirectory(gf_local)
 add_subdirectory(plot)
 add_subdirectory(fit)
