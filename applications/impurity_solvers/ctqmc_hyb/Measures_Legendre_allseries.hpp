@@ -22,6 +22,7 @@
 
 #ifndef TRIQS_CTHYB1_MEASURES_LEGENDRE_ALL_H
 #define TRIQS_CTHYB1_MEASURES_LEGENDRE_ALL_H
+#include <triqs/clef/core.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/h5/array_stack.hpp>
 #include <triqs/gf_local/GF_Bloc_ImLegendre.hpp>

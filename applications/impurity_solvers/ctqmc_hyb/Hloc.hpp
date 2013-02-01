@@ -21,13 +21,17 @@
 #ifndef HLOC_H
 #define HLOC_H
 
-#include <triqs/gf_local/GF_Bloc_ImFreq.hpp>
 #include <map>
 #include <set>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
+#include <triqs/clef/core.hpp>
+#include <triqs/arrays.hpp>
+#include <triqs/arrays/linalg/det_and_inverse.hpp>
+#include <triqs/arrays/linalg/eigenelements.hpp>
 #include "SmallMatrix.hpp"
 #include "myConstIteratorVector.hpp"
+#include <triqs/gf_local/GF_Bloc_ImFreq.hpp>
 
 // internal class for construction. See cpp file
 namespace Hloc_construction {class mydata;}; 

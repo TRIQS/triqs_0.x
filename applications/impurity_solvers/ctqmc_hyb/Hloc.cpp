@@ -128,9 +128,11 @@ ostream & operator<< (ostream & out, const Operator & Op) {
     if (Bp)  {
       out<<Bp->num;
       int n1 = Op.BlocMatrixElements[num].size()/Bp->dim;// what a mess !
+      /*
       out <<"  with matrix element :  "<<endl
 	  <<BlocMatrixElement(n1,Op.BlocCorrespondance[num], 
 			      &Op.BlocMatrixElements[num][0]).M<<endl;
+      */
 
 
     }
@@ -331,7 +333,7 @@ namespace Hloc_construction {
     double E_GS; int dimtot,MaxDimBlock;
     
     // temporary data 
-    vector < Array<REAL_OR_COMPLEX,2> *> Pinv,P; // Pinv[B->num] is the Pinv matrix of change of basis for the bloc B->num
+    vector < triqs::arrays::matrix<REAL_OR_COMPLEX> *> Pinv, P;
     map<string,FullOperator> FullOperatorMap;
 
     //---------------------------
@@ -412,7 +414,7 @@ namespace Hloc_construction {
     
       // Now diagonalize the H
       for (vector<Bloc>::iterator B = BlocList.begin(); B!=BlocList.end(); ++B) {
-	Array<REAL_OR_COMPLEX,2> Hmat(B->dim,B->dim); Hmat =0;
+        triqs::arrays::matrix<REAL_OR_COMPLEX> Hmat(B->dim,B->dim); Hmat() =0;
 	const vector<PureState> & BContent (BlocContents[B->num]);  // A basis of the blocs as pure states.
 	FullOperator & Hop(myfind(FullOperatorMap,string("Hamiltonian")));    // the operator
 	for (uint j=0;j<BContent.size(); ++j) {  // for all vector of the basis
@@ -425,13 +427,14 @@ namespace Hloc_construction {
 	  }
 	}
 	// call lapack to diagonalize
-	Array <double,1> ev(B->dim,fortranArray);
-	Diagonalise_with_lapack(Hmat, ev, true); 
+	triqs::arrays::vector<double> ev(B->dim);
+        triqs::arrays::matrix<REAL_OR_COMPLEX> temp(Hmat);
+        std::tie(ev,Hmat) = triqs::arrays::linalg::eigenelements(temp());
 	// ev is the list of eigenvalues.
 	// prepare to sort them
 	vector< std::pair<double,int> > tmp(B->dim);
 	for (int i =0; i<B->dim; ++i)  { 
-	  tmp[i] = std::make_pair(ev(i+1),i);
+	  tmp[i] = std::make_pair(ev(i),i);
 	  // cout<<" PERM"<<i <<"  "<< tmp[i].first<< "  "<<tmp[i].second<<endl;
 	}
 
@@ -439,8 +442,8 @@ namespace Hloc_construction {
 	for (int i=0; i<B->dim; i++) { B->H_[i]= tmp[i].first; B->deltaH_[i]=B->H[i] - B->H[0];}
       
 	// I need to modify the P matrix
-	Hmat.transposeSelf(1,0);
-	Array<REAL_OR_COMPLEX,2> Mtmp(Hmat.copy());
+	//Hmat = Hmat.transpose();
+	triqs::arrays::matrix<REAL_OR_COMPLEX> Mtmp(Hmat);
 	for (int i=0; i<B->dim; i++)
 	  for (int j=0; j<B->dim; j++)
 	    {
@@ -448,9 +451,9 @@ namespace Hloc_construction {
 	      Mtmp ( tmp[i].second, tmp[j].second) = Hmat(i,j);
 	    }
 
-	Pinv[B->num] = new Array<REAL_OR_COMPLEX,2>(Mtmp.copy());
-	P[B->num]    = new Array<REAL_OR_COMPLEX,2>(Mtmp.copy());
-	Inverse_Matrix_with_lapack(*(P[B->num]));
+	Pinv[B->num] = new triqs::arrays::matrix<REAL_OR_COMPLEX>(Mtmp);
+	P[B->num]    = new triqs::arrays::matrix<REAL_OR_COMPLEX>(Mtmp);
+	*(P[B->num]) = inverse(*(P[B->num]));
 
       }
       // end diagonalization of Hamiltonian
@@ -477,8 +480,8 @@ namespace Hloc_construction {
 	    if (!IsStateInBloc(S2,Bp))  TRIQS_RUNTIME_ERROR<<"Operator "<<OP->first<<" does not connect one bloc to one bloc";
 	    
 	    for (State::const_iterator p=S2.begin(); p != S2.end(); ++p)  {
-	      SmallMatrix<REAL_OR_COMPLEX,ByLines> SM  (Bp->dim, B->dim,AllMatrixElements.back());
-	      SM  (MapStateBlocs[p->first].second, int(j) ) = p->second;
+	      SmallMatrix<REAL_OR_COMPLEX,ByLines> SM(Bp->dim, B->dim,AllMatrixElements.back());
+	      SM(MapStateBlocs[p->first].second, int(j) ) = p->second;
 	    }
 	  }
 	  if (Bp==NULL)  { 
@@ -488,8 +491,14 @@ namespace Hloc_construction {
 	  else { 
 	    OP->second.BlocCorrespondance.push_back(Bp->num);
 	    SmallMatrix<REAL_OR_COMPLEX,ByLines> SM  (Bp->dim, B->dim,AllMatrixElements .back());
-	    Array<REAL_OR_COMPLEX,2> M1(SM  .BlitzView());
-	    Blitz_OP::matmul_A_M_B(*(Pinv[Bp->num]), M1,*(P[B->num]));
+            triqs::arrays::matrix<REAL_OR_COMPLEX> res(Bp->dim, B->dim); res() = 0.0;
+            for (int i=0; i<Bp->dim; i++)
+              for (int j=0; j<B->dim; j++)
+                for (int k=0; k<Bp->dim; k++)
+                  for (int l=0; l<B->dim; l++)
+                    res(i,j) += (*(Pinv[Bp->num]))(i,k) * SM(k,l) * (*(P[B->num]))(l,j);
+            for (int i=0; i<Bp->dim; i++)
+              for (int j=0; j<B->dim; j++) SM(i,j) = res(i,j);
 	  }
 	}
 	OperatorMap.insert(make_pair(OP->first,Operator(OP->first,OP->second.Statistic,AllMatrixElements )));
@@ -508,7 +517,8 @@ namespace Hloc_construction {
 	    AllMatrixElementsT[Bp->num].resize(B->dim *Bp->dim,0);
             SmallMatrix<REAL_OR_COMPLEX,ByLines> SM (B->dim, Bp->dim, AllMatrixElementsT[Bp->num]);
             SmallMatrix<REAL_OR_COMPLEX,ByLines> SM1 (Bp->dim, B->dim, OP->second.BlocMatrixElements[B->num]);
-            SM.BlitzView() = SM1.BlitzView().transpose(1,0);
+            for (int i=0; i<B->dim; i++)
+              for (int j=0; j<Bp->dim; j++) SM(i,j) = SM1(j,i);
           }
         }
 	OperatorMapTranspose.insert(make_pair(OP->first,Operator(OP->first,OP->second.Statistic,AllMatrixElementsT)));

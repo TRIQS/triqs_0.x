@@ -47,7 +47,7 @@ public :
     // build auxiliary determinants (empty)
     for (int a= 0; a<Config.Na; ++a) {
       Configuration::DET_TYPE * d = Config.dets[a];
-      dets_save[a] = new Configuration::DET_TYPE(d->delta, d->Nmax_current(), d->Eta);
+      dets_save[a] = new Configuration::DET_TYPE(*(Config_.Delta_tau_proxy[a]), d->size());
     }
   }
 

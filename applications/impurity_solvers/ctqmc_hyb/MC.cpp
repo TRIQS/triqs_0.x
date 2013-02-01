@@ -21,8 +21,8 @@
  ******************************************************************************/
 
 // include first because of a namespace clash.. to be fixed...
-#include <triqs/arrays/h5/array_stack.hpp>
 #include "MC.hpp"
+#include <triqs/arrays/h5/array_stack.hpp>
 #include <triqs/python_tools/IteratorOnPythonSequences.hpp>
 #include <triqs/utility/callbacks.hpp>
  

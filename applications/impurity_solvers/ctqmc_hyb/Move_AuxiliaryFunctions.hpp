@@ -31,8 +31,8 @@ const double EPSILON = 1.e-13;
 
 inline void print_det(Configuration::DET_TYPE * det){
    cout<<"*****************"<<endl;
-   cout<<"Det: NumC = "<<det->NumberOfC()<<endl;
-   if (det->NumberOfC()==0) {cout<<"VIDE\n*****************"<<endl; return;}
+   cout<<"Det: NumC = "<<det->size()<<endl;
+   if (det->size()==0) {cout<<"VIDE\n*****************"<<endl; return;}
    for (Configuration::DET_TYPE::Cdagger_iterator p= det->Cdagger_begin(); (p != det->Cdagger_end()) ; ++p) 
      cout<<" C_dag "<< p->tau<<"  "<<p->Op->name<< endl;
    for (Configuration::DET_TYPE::C_iterator p= det->C_begin(); (p != det->C_end())  ; ++p) 
@@ -42,8 +42,8 @@ inline void print_det(Configuration::DET_TYPE * det){
 
 inline void print_det_reverse(Configuration::DET_TYPE * det){
    cout<<"*****************"<<endl;
-   cout<<"Det: NumC = "<<det->NumberOfC()<<endl;
-   if (det->NumberOfC()==0) {cout<<"VIDE\n*****************"<<endl; return;}
+   cout<<"Det: NumC = "<<det->size()<<endl;
+   if (det->size()==0) {cout<<"VIDE\n*****************"<<endl; return;}
    for (Configuration::DET_TYPE::Cdagger_reverse_iterator p= det->Cdagger_rbegin(); (p != det->Cdagger_rend()) ; ++p) 
      cout<<" C_dag "<< p->tau<<"  "<<p->Op->name<< endl;
    for (Configuration::DET_TYPE::C_reverse_iterator p= det->C_rbegin(); (p != det->C_rend())  ; ++p) 

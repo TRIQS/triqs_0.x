@@ -28,9 +28,9 @@ namespace OP_Tools {
   /// 
   template< typename T>
   class myConstIteratorVector {
-    typename vector<T>::const_iterator p,end;
+    typename std::vector<T>::const_iterator p,end;
   public:
-    myConstIteratorVector(const vector<T> & V ,bool atend=false){ 
+    myConstIteratorVector(const std::vector<T> & V ,bool atend=false){ 
       end= V.end(); p=(!atend ? V.begin():end); }
     myConstIteratorVector(const myConstIteratorVector& IT):p(IT.p),end(IT.end){}
     myConstIteratorVector& operator=(const myConstIteratorVector& IT2) { p = IT2.p; end = IT2.end; return *this;}

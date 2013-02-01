@@ -81,7 +81,7 @@ public :
    // Now find the operator A on the same a level at later time, with cyclicity
    // and compute the maximal *oriented* length between the 2 operators (with cyclicity)
    Configuration::OP_REF A;
-   if (det->NumberOfC()>0) { // non empty
+   if (det->size()>0) { // non empty
     Configuration::DET_TYPE::Cdagger_iterator itCdag = det->Cdagger_begin();
     Configuration::DET_TYPE::C_iterator       itC    = det->C_begin(); 
     while ( (itCdag != det->Cdagger_end()) && (itCdag->tau > tau1) ) {++itCdag;}
@@ -146,9 +146,9 @@ public :
      (p != det->C_end()) &&  (p->tau > tauC) ; ++p, ++numC) {}
 
    // acceptance probability
-   mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_insert(numCdag,numC,O1,O2);
-   int Na(det->NumberOfC()+1); 
-   // !!! det not modified until det->accept_move is called, so I need to compensate by +1
+   mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_insert(numCdag-1,numC-1,O1,O2);
+   int Na(det->size()+1); 
+   // !!! det not modified until det->complete_operation is called, so I need to compensate by +1
    double Tratio = Config.Beta * try_insert_length_max / (Na ==1 ? 1 : 2*Na);
    // (Na... term : cf remove move...
 #ifdef DEBUG
@@ -165,7 +165,7 @@ public :
 
   mc_weight_type Accept() { 
    Config.DT.confirm_insertTwoOperators();
-   det->accept_move(); 
+   det->complete_operation(); 
    if (Config.RecordStatisticConfigurations) {
     HISTO_Length_Kinks_Accepted << deltaTau;
    }
@@ -230,7 +230,7 @@ class Remove_Cdag_C_Delta_SegmentPicture  {
   det = Config.dets[a_level]; 
 
   // Pick up a couple of C, Cdagger to remove at random
-  const int Na(det->NumberOfC());
+  const int Na(det->size());
   if (Na==0) return 0;
 
   // I am selecting the n th C or Cdag operator, starting from small time.
@@ -288,7 +288,7 @@ class Remove_Cdag_C_Delta_SegmentPicture  {
     Config.CyclicOrientedTimeDistance(next_point->tau- first_point->tau) );
 
   // Acceptance probability
-  mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_remove(Na + 1- numCdag,Na + 1- numC);
+  mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_remove(Na-numCdag, Na-numC);
   double Tratio  =  (Na ==1 ? 1 : 2*Na) / (Config.Beta * length_max);      
   // (Na term : because if we have only 1 couple of C Cdagger, n = 0 and 1 will lead to the same couple
   // and this is the only case like this.
@@ -304,7 +304,7 @@ class Remove_Cdag_C_Delta_SegmentPicture  {
 
 mc_weight_type Accept() { 
  Config.DT.confirm_removeTwoOperators(); 
- det->accept_move(); 
+ det->complete_operation(); 
 #ifdef DEBUG
  std::cout << "CONFIG ACCEPT: " << Config.DT << std::endl;
  for (int a = 0; a<Config.Na; ++a) print_det(Config.dets[a]);

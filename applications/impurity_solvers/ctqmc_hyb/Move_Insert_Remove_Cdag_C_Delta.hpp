@@ -25,7 +25,7 @@
 
 #include "Configuration.hpp"
 #include "triqs/mc_tools/random_generator.hpp"
-#include "Move_AuxiliaryFunctions.hpp"
+//#include "Move_AuxiliaryFunctions.hpp"
 #include "triqs/mc_tools/histograms.hpp"
 #include "util.hpp"
 using OP_Tools::map_insert_check;
@@ -104,8 +104,8 @@ public :
      (p != det->C_end()) &&  (p->tau > tau2) ; ++p, ++numC) {}
 
    // acceptance probability
-   mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_insert(numCdag,numC,O1,O2);
-   double Tratio =power(2*Nalpha* Config.Beta / double(2*(det->NumberOfC()+1)), 2);
+   mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_insert(numCdag-1,numC-1,O1,O2);
+   double Tratio =power(2*Nalpha* Config.Beta / double(2*(det->size()+1)), 2);
 
 #ifdef DEBUG
    std::cout << "Trace Ratio: " << Config.DT.ratioNewTrace_OldTrace() << std::endl;
@@ -120,7 +120,7 @@ public :
 
   mc_weight_type Accept() { 
    Config.DT.confirm_insertTwoOperators();
-   det->accept_move(); 
+   det->complete_operation(); 
    if (Config.RecordStatisticConfigurations) {
     HISTO_Length_Kinks_Accepted << deltaTau;
    }
@@ -178,7 +178,7 @@ class Remove_Cdag_C_Delta {
   det = Config.dets[a_level]; 
 
   // Pick up a couple of C, Cdagger to remove at random
-  const int Na(det->NumberOfC());
+  const int Na(det->size());
   if (Na==0) return 0;
   int numCdag = 1 + Random(Na);
   int numC = 1 + Random(Na);
@@ -192,7 +192,7 @@ class Remove_Cdag_C_Delta {
     *det->select_C( numC ));
 
   // Acceptance probability
-  mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_remove(numCdag,numC);
+  mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * det->try_remove(numCdag-1,numC-1);
   double Tratio = power(2*Nalpha* Config.Beta / double(2*Na) ,2);
 
 #ifdef DEBUG
@@ -208,7 +208,7 @@ class Remove_Cdag_C_Delta {
 
  mc_weight_type Accept() { 
   Config.DT.confirm_removeTwoOperators(); 
-  det->accept_move(); 
+  det->complete_operation(); 
   Config.update_Sign();
   return Config.ratioNewSign_OldSign();
  }   

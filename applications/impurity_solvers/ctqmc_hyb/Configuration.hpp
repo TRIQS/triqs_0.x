@@ -23,14 +23,15 @@
 #ifndef CONFIGURATION_H_37j3hrf
 #define CONFIGURATION_H_37j3hrf
 
+#include <triqs/clef/core.hpp>
 #include <triqs/python_tools/improved_python_dict.hpp>
 #include <triqs/gf_local/GF_C.hpp>
-#include "detManip.hpp"
 #include "DynamicTrace.hpp"
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <map>
 #include "gf_binner_and_eval.hpp"
 #include <triqs/gf_local/GF_Bloc_ImTime.hpp>
+#include "detManip.hpp"
 
 /**
   The configuration of the Monte Carlo
@@ -54,6 +55,8 @@ struct Configuration {
 
  /// Proxy to call Delta with 2 OP_REF
  struct Delta_Proxy { 
+  typedef double result_type;
+  typedef OP_REF argument_type;
   const GF_Bloc_ImTime & Delta;
   gf_grid_evaluator<GF_Bloc_ImTime> Delta_eval; 
   const vector<BlockInfo> & info;
@@ -65,7 +68,7 @@ struct Configuration {
      info[B->Op->Number].alpha,B->tau);}
  };
 
- typedef detManip<Delta_Proxy,double,OP_REF> DET_TYPE;
+ typedef detManip<Delta_Proxy> DET_TYPE;
 
  /// Object for storing the multiple expansion 
  struct O_Odag_Insertions_type { 

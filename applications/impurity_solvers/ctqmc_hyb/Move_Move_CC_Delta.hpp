@@ -82,7 +82,7 @@ public:
     Configuration::DET_TYPE::Cdagger_iterator itCdag = det->Cdagger_begin();
     Configuration::DET_TYPE::C_iterator       itC    = det->C_begin();
 
-    if (det->NumberOfC() > 1) {
+    if (det->size() > 1) {
 
       // find the C and Cdag operators at the right of oldOpref (at smaller times)
       // it might be Cdagger_end() or C_end()
@@ -131,7 +131,7 @@ public:
     if (oldtau - newtau > tR) roll_matrix = (isdagger ? Configuration::DET_TYPE::Up : Configuration::DET_TYPE::Left);
 
     // acceptance probability
-    mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * (isdagger ? det->try_change_row(num,Op) : det->try_change_col(num,Op));
+    mc_weight_type p = Config.DT.ratioNewTrace_OldTrace() * (isdagger ? det->try_change_row(num-1,Op) : det->try_change_col(num-1,Op));
 
 #ifdef DEBUG
     std::cout << "oldtau, tR, tL, newtau: " << oldtau << " " << tR << " " << tL << " " << newtau << endl;
@@ -149,7 +149,7 @@ public:
   
   mc_weight_type Accept() { 
     Config.DT.confirm_insert_and_remove_One_Operator();
-    det->accept_move(); 
+    det->complete_operation(); 
 
 #ifdef DEBUG
     std::cout << "CONFIG ACCEPT: " << Config.DT << std::endl;

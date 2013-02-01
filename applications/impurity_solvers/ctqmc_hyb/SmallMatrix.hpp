@@ -23,7 +23,7 @@
 #ifndef SMALL_MATRIX_H_jkj
 #define SMALL_MATRIX_H_jkj
  
-#include "triqs/utility/blas_headers.hpp"
+#define TRIQS_FORTRAN( id ) id##_
 
 
 /** 
@@ -59,7 +59,7 @@ public:
   // Constructors
   SmallMatrix(int n1_, int n2_, VAL * restrict data_) : n1(n1_), n2(n2_), data(data_), is11((n1==1) && (n2==1)) {};
 
-  SmallMatrix(int n1_, int n2_, vector<VAL> & data_) : n1(n1_), n2(n2_), data(&data_[0]), is11((n1==1) && (n2==1)) {};
+  SmallMatrix(int n1_, int n2_, std::vector<VAL> & data_) : n1(n1_), n2(n2_), data(&data_[0]), is11((n1==1) && (n2==1)) {};
 
   SmallMatrix(const SmallMatrix & M) : n1(M.n1), n2(M.n2), data(M.data), is11(M.is11) {}
 
@@ -67,9 +67,6 @@ public:
   inline VAL operator() (int i, int j) const { return data[i*n2 + j]; }
   inline VAL & operator() (int i, int j) { return data[i*n2 + j]; } 
   inline const VAL * restrict data_() const {return data;}
-
-  // View the data via a Blitz++ array
-  blitz::Array<VAL,2> BlitzView() const { return blitz::Array<VAL,2>(data,blitz::shape(n1,n2),blitz::neverDeleteData); }
 
   // The = operator (makes a copy of M in *this)
   SmallMatrix<VAL,ByLines> & operator = (const SmallMatrix<VAL,ByLines> & M) {
@@ -81,14 +78,14 @@ public:
   // Set to the product of two small matrices
   void setTo_AB(const SmallMatrix<VAL,ByLines> &, const SmallMatrix<VAL,ByColumns> &);
 
-  void setTo_ADB(const SmallMatrix<VAL,ByLines> &, const vector<VAL> &, const SmallMatrix<VAL,ByColumns> &);
+  void setTo_ADB(const SmallMatrix<VAL,ByLines> &, const std::vector<VAL> &, const SmallMatrix<VAL,ByColumns> &);
 
   void setFrom_A(const SmallMatrix<VAL,ByLines> & A) {
     assert(n1==A.n1); assert(n2==A.n2);
     for (int i = 0; i < n1*n2; ++i) data[i] = A.data[i];
   }
 
-  void setFrom_DA(const SmallMatrix<VAL,ByLines> & A, const vector<VAL> & D) {
+  void setFrom_DA(const SmallMatrix<VAL,ByLines> & A, const std::vector<VAL> & D) {
     assert(n1==A.n1); assert(n2==A.n2);
     for (int i = 0; i < n1; ++i)
       for (int j = 0; j < n2; ++j)
@@ -96,8 +93,6 @@ public:
   }
 
   void setTo_AB_blas(const SmallMatrix<VAL,ByLines> &, const SmallMatrix<VAL,ByColumns> &);
-
-  friend std::ostream & operator<< (std::ostream & out, const SmallMatrix & M) { out << M.BlitzView(); return out; } 
 
 };
 
@@ -127,7 +122,7 @@ void SmallMatrix<VAL, ByLines>::setTo_AB(const SmallMatrix<VAL,ByLines> & A, con
 
 // multiplication with a loop A \times D \times B
 template<typename VAL>
-void SmallMatrix<VAL, ByLines>::setTo_ADB(const SmallMatrix<VAL,ByLines> & A, const vector<VAL> & D, const SmallMatrix<VAL,ByColumns> & B) {
+void SmallMatrix<VAL, ByLines>::setTo_ADB(const SmallMatrix<VAL,ByLines> & A, const std::vector<VAL> & D, const SmallMatrix<VAL,ByColumns> & B) {
 
   const VAL * restrict pD(&D[0]);
 
@@ -159,7 +154,7 @@ void SmallMatrix<VAL, ByLines>::setTo_AB_blas(const SmallMatrix<VAL,ByLines> & A
   char c='N', ct='T';
   int m1 = n1, m2 = n2;
   int m3 = A.n2;
-  MYFORTRAN(dgemm)(&ct,&c,m2,m1,m3,alpha,(VAL *)B.data,m3,(VAL *)A.data,m3,beta,data,m2);
+  TRIQS_FORTRAN(dgemm)(&ct,&c,m2,m1,m3,alpha,(VAL *)B.data,m3,(VAL *)A.data,m3,beta,data,m2);
 }
 
 
@@ -183,16 +178,13 @@ public:
   // Constructors
   SmallMatrix(int n1_, int n2_, VAL * restrict data_) : n1(n1_), n2(n2_), data(data_), is11((n1==1) && (n2==1)) {};
 
-  SmallMatrix(int n1_, int n2_, vector<VAL> & data_) : n1(n1_), n2(n2_), data(&data_[0]), is11((n1==1) && (n2==1)) {};
+  SmallMatrix(int n1_, int n2_, std::vector<VAL> & data_) : n1(n1_), n2(n2_), data(&data_[0]), is11((n1==1) && (n2==1)) {};
 
   SmallMatrix(const SmallMatrix & M) : n1(M.n1), n2(M.n2), data(M.data), is11(M.is11) {}
 
   // Access to the i,j element
   inline VAL operator() (int i, int j) const { return data[j*n1 + i]; }
   inline VAL & operator() (int i, int j) { return data[j*n1 + i]; }
-
-  // View the data via a Blitz++ array
-  blitz::Array<VAL,2> BlitzView() const { return blitz::Array<VAL,2>(data,blitz::shape(n1,n2),blitz::neverDeleteData,blitz::fortranArray); }
 
   // The = operator (makes a copy of M in *this)
   SmallMatrix<VAL,ByColumns> & operator = (const SmallMatrix<VAL,ByColumns> & M) {
@@ -204,14 +196,14 @@ public:
   // Set to the product of two small matrices
   void setTo_AB(const SmallMatrix<VAL,ByLines> &, const SmallMatrix<VAL,ByColumns> &);
 
-  void setTo_ADB(const SmallMatrix<VAL,ByLines> &, const vector<VAL> &, const SmallMatrix<VAL,ByColumns> &);
+  void setTo_ADB(const SmallMatrix<VAL,ByLines> &, const std::vector<VAL> &, const SmallMatrix<VAL,ByColumns> &);
 
   void setFrom_A(const SmallMatrix<VAL,ByColumns> & A) {
     assert(n1==A.n1); assert(n2==A.n2);
     for (int i = 0; i < n1*n2; ++i) data[i] = A.data[i];
   }
 
-  void setFrom_DA(const SmallMatrix<VAL,ByColumns> & A, const vector<VAL> & D) {
+  void setFrom_DA(const SmallMatrix<VAL,ByColumns> & A, const std::vector<VAL> & D) {
     assert(n1==A.n1); assert(n2==A.n2);
     for (int j = 0; j < n2; ++j)
       for (int i = 0; i < n1; ++i)
@@ -219,8 +211,6 @@ public:
   }
 
   void setTo_AB_blas(const SmallMatrix<VAL,ByLines> &, const SmallMatrix<VAL,ByColumns> &);
-
-  friend std::ostream & operator<< (std::ostream & out, const SmallMatrix & M) { out << M.BlitzView(); return out; } 
 
 };
 
@@ -252,7 +242,7 @@ void SmallMatrix<VAL, ByColumns>::setTo_AB(const SmallMatrix<VAL,ByLines> & A, c
 
 // multiplication with a loop A \times D \times B
 template<typename VAL>
-void SmallMatrix<VAL, ByColumns>::setTo_ADB(const SmallMatrix<VAL,ByLines> & A, const vector<VAL> & D, const SmallMatrix<VAL,ByColumns> & B) {
+void SmallMatrix<VAL, ByColumns>::setTo_ADB(const SmallMatrix<VAL,ByLines> & A, const std::vector<VAL> & D, const SmallMatrix<VAL,ByColumns> & B) {
 
   const VAL * restrict pD(&D[0]);
 
@@ -284,7 +274,7 @@ void SmallMatrix<VAL, ByColumns>::setTo_AB_blas(const SmallMatrix<VAL,ByLines> &
   char c='N', ct='T';
   int m1 = n1, m2 = n2;
   int m3 = A.n2;
-  MYFORTRAN(dgemm)(&ct,&c,m1,m2,m3,alpha,(VAL *)A.data,m3,(VAL *)B.data,m3,beta,data,m1);
+  TRIQS_FORTRAN(dgemm)(&ct,&c,m1,m2,m3,alpha,(VAL *)A.data,m3,(VAL *)B.data,m3,beta,data,m1);
 }
 
 #endif

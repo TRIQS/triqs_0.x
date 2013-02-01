@@ -64,7 +64,7 @@ Configuration::Configuration(triqs::python_tools::improved_python_dict params):
   double Eta = params["Eta"];
   for (int a =0; a<Na;++a) { 
     Delta_tau_proxy[a] = new Delta_Proxy(Delta_tau[a],info);
-    dets[a] = new DET_TYPE(*Delta_tau_proxy[a],Nmax,Eta);
+    dets[a] = new DET_TYPE(*Delta_tau_proxy[a],Nmax);
   }
   
 }
@@ -130,7 +130,7 @@ void Configuration::update_Sign() {
   // d_1 d^_1 d_1 d^_1 ... d_1 d^_1   ...   d_n d^_n ... d_n d^_n
 
   for (int a = 0; a < Na; a++) {
-    int n = dets[a]->NumberOfC();
+    int n = dets[a]->size();
     s +=  n*(n+1)/2;
   }
 
