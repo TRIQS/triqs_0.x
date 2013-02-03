@@ -19,7 +19,8 @@
  *
  ******************************************************************************/
 
-#include "density.hpp"
+#include "functions.hpp"
+#include <triqs/utility/legendre.hpp>
 
 namespace triqs { namespace gf { 
 
@@ -68,4 +69,58 @@ namespace triqs { namespace gf {
 
   return res;
  }
+
+
+ tqa::matrix<double> density( gf_view<legendre> const & gl) { 
+
+   auto sh = gl.data_view().shape().pop();
+   tqa::matrix<double> res(sh);
+   res() = 0.0;
+
+   for (auto l : gl.mesh()) {
+     res -= sqrt(2*l.index+1) * gl(l);
+   }
+   res /= gl.domain().beta;
+
+   return res;
+
+ }
+
+ // compute a tail from the Legendre GF
+ // this is Eq. 8 of our paper
+ local::tail_view get_tail(gf_view<legendre> const & gl, int size = 10, int omin = -1) {
+
+   auto sh = gl.data_view().shape().pop();
+   local::tail t(sh, size, omin);
+   t.data_view() = 0.0;
+
+   for (int p=1; p<=t.order_max(); p++)
+     for (auto l : gl.mesh())
+       t(p) += (triqs::utility::legendre_t(l.index,p)/pow(gl.domain().beta,p)) * gl(l);
+
+   return t;
+
+ }
+
+ // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
+/*
+ void enforce_discontinuity(gf_view<legendre> & gl, tqa::array_view<double,2> disc) {
+
+   disc.reindexSelf(TinyVector<int,2>(1,1));
+
+   Array<double,1> A (Range(0,data.ubound(thirdDim)));
+   for (int i=0; i<=data.ubound(thirdDim); i++)
+     A(i) = legendre_t(i,1) / Beta;
+   double c=sum(A*A);
+   Array<double,2> step=disc.copy();
+
+   step=disc(tensor::i,tensor::j)-sum(data(tensor::i,tensor::j,tensor::k)*A(tensor::k),tensor::k);
+   data+=step(tensor::i,tensor::j)*A(tensor::k)/c;
+
+   gl.data(i,j,k) = 
+ 
+ }
+*/
+
+
 }}

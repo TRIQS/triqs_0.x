@@ -14,6 +14,10 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
         """Fills self with the Inverse Fourier transform of gw"""        
         self._c = lazy_inverse_fourier( gw._c)
 
+    def set_from_legendre(self, GfLegendre_cython gl) :
+        """Fills self with the Legendre transform of gl"""
+        self._c = lazy_legendre_imtime(gl._c)
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImTime ( gr, std_string key) : 

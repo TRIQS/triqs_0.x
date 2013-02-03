@@ -18,10 +18,12 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_DENSITY_H
-#define TRIQS_GF_LOCAL_DENSITY_H 
+#ifndef TRIQS_GF_LOCAL_FUNCTIONS_H
+#define TRIQS_GF_LOCAL_FUNCTIONS_H
+
 #include "../gf.hpp"
 #include "../imfreq.hpp"
+#include "../legendre.hpp"
 
 namespace triqs { 
  namespace gf { 
@@ -30,13 +32,17 @@ namespace triqs {
   // For Imaginary Matsubara Frequency functions
   // ------------------------------------------------------
 
-  tqa::matrix<double> density( gf_view<imfreq> const & G);
+  tqa::matrix<double> density(gf_view<imfreq> const & g);
+
+  tqa::matrix<double> density(gf_view<legendre> const & g);
+
+  local::tail_view get_tail(gf_view<legendre> const & gl, int size, int omin);
 
   // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
   // Here I choose to create G and call the function to avoid creating one code for each expression...
-  template<typename GfType>
-   TYPE_ENABLE_IF (tqa::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
-   density( GfType const & G) { return density( gf_view<imfreq>(G));} 
+  //template<typename GfType>
+   //TYPE_ENABLE_IF (tqa::matrix<double>, ImmutableGfMatsubaraFreq<GfType>) 
+   //density( GfType const & G) { return density( gf_view<imfreq>(G));} 
 
  }
 

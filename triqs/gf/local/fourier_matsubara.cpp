@@ -160,5 +160,12 @@ namespace triqs { namespace gf {
    }
  }
 
+
+ gf_keeper<tags::fourier,imtime> lazy_fourier         (gf_view<imtime> const & g) { return g;}
+ gf_keeper<tags::fourier,imfreq> lazy_inverse_fourier (gf_view<imfreq> const & g) { return g;}
+
+ void triqs_gf_view_assign_delegation( gf_view<imfreq> &g, gf_keeper<tags::fourier,imtime> const & L) { fourier_impl (g,L.g);}
+ void triqs_gf_view_assign_delegation( gf_view<imtime> &g, gf_keeper<tags::fourier,imfreq> const & L) { inverse_fourier_impl(g,L.g);}
+
 }}
 

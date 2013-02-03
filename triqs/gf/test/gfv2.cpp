@@ -2,7 +2,7 @@
 
 #include <triqs/gf/imfreq.hpp> 
 #include <triqs/gf/imtime.hpp> 
-#include <triqs/gf/local/density.hpp> 
+#include <triqs/gf/local/functions.hpp> 
 
 namespace tql= triqs::clef;
 namespace tqa= triqs::arrays;

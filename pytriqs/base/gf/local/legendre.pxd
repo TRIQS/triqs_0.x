@@ -18,9 +18,9 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
     cdef cppclass gf_legendre "triqs::gf::gf_view<triqs::gf::legendre>" :
         gf_legendre()
         gf_legendre(gf_legendre &)
-        gf_legendre(mesh_legendre, array_view[dcomplex, THREE,COrder], nothing, nothing, indices_2_t) #except +
+        gf_legendre(mesh_legendre, array_view[double, THREE,COrder], nothing, nothing, indices_2_t) #except +
         mesh_legendre mesh() 
-        array_view[dcomplex, THREE,COrder] data_view()
+        array_view[double, THREE,COrder] data_view()
         indices_2_t indices()
 
 cdef extern from "triqs/gf/legendre.hpp"  :

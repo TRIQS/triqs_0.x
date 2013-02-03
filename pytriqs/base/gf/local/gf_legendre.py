@@ -43,7 +43,7 @@ class GfLegendre ( GfLegendre_cython, GfGeneric ) :
             n_max = d.pop('n_legendre_points',30)
             mesh = MeshLegendre(beta,stat,n_max)
 
-        self.dtype = numpy.complex
+        self.dtype = numpy.float64
         indicesL, indicesR = get_indices_in_dict(d)
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((N1,N2,len(mesh)), self.dtype )
@@ -62,4 +62,4 @@ class GfLegendre ( GfLegendre_cython, GfGeneric ) :
              * :param x_window: (xmin,xmax) or None [default]
              * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        return impl_plot.plot_base( self, opt_dict,  r'$l_n$', lambda name : r'%s$(l_n)$'%name, True,  list(self.mesh) )
+        return impl_plot.plot_base( self, opt_dict,  r'$l_n$', lambda name : r'%s$(l_n)$'%name, False, list(self.mesh) )

@@ -32,6 +32,7 @@ namespace triqs {
 namespace utility {
 
 const std::complex<double> i_c(0.0,1.0);
+const double pi = boost::math::constants::pi<double>();
 
 // This is T_{nl} following Eq.(E2) of our paper
 inline std::complex<double> legendre_T(int n, int l) {
@@ -66,6 +67,9 @@ inline double legendre_t(int l, int p) {
 
 /*
   Generates the Legendre polynomials
+    P_0(x) = 1.0
+    P_1(x) = x
+    n P_{n} = (2n-1) x P_{n-1}(x) - (n-1) P_{n-2}(x)
 */
 class legendre_generator {
 

@@ -42,8 +42,8 @@ namespace triqs { namespace gf {
   typedef discrete_mesh<domain_t> mesh_t;
 
   /// The target
-  typedef arrays::matrix<std::complex<double>>  target_t;
-  typedef typename target_t::view_type          target_view_t;
+  typedef arrays::matrix<double>         target_t;
+  typedef typename target_t::view_type   target_view_t;
 
   /// The tail
   typedef nothing singularity_t;

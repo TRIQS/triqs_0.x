@@ -5,10 +5,21 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
     def __init__(self, MeshLegendre mesh, data, tail, symmetry, indices, name):
 
         GfGeneric_cython.__init__(self, mesh, data, tail, symmetry, indices, name, GfLegendre) 
-        self._c =  gf_legendre ( mesh._c, array_view[dcomplex,THREE,COrder](data), nothing(), nothing(), make_c_indices(indices[0],indices[1]) ) 
+        self._c =  gf_legendre ( mesh._c, array_view[double,THREE,COrder](data), nothing(), nothing(), make_c_indices(indices[0],indices[1]) ) 
     
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)
+
+    def set_from_imtime(self, GfImTime_cython gt) :
+        """Fills self with the Legendre transform of gt"""
+        self._c = lazy_imtime_legendre(gt._c)
+
+    def set_from_imfreq(self, GfImFreq_cython gw) :
+        """Fills self with the Legendre transform of gw"""
+        self._c = lazy_imfreq_legendre(gw._c)
+
+    def density(self):
+        return density(self._c).to_python()
 
 #----------------  Reading from h5 ---------------------------------------
 
