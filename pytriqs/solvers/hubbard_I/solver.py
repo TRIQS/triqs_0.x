@@ -34,11 +34,11 @@ class Solver(SolverBaseHub):
    
    
     # initialisation:
-    def __init__(self,Beta,Uint,JHund,l,Nmsb=1025,T=None, UseSpinOrbit=False, Verbosity=0):
+    def __init__(self,beta,U_int,J_hund,l,n_msb=1025,T=None, use_spin_orbit=False, verbosity=0):
         #If T is specified, it is used to transform the Basis set
 
         Nlm=2*l+1
-        if (UseSpinOrbit):
+        if (use_spin_orbit):
             # no blocks!
             GFstruct = [ ('ud', range(2*Nlm)) ]
         else:
@@ -47,13 +47,13 @@ class Solver(SolverBaseHub):
         
         # U matrix:
         #l = (Nlm-1)/2
-        Umat = Umatrix(U_interact=Uint, J_hund=JHund, l=l)  
+        Umat = Umatrix(U_interact=U_int, J_hund=J_hund, l=l)  
         Umat(T=T)
         Umat.reduce_matrix()
         assert (Umat.N==Umat.Nmat),"Transformation that mixes spins is not implemented in hubbard_I Solver!!"
         # now we have the reduced matrices U and Up
 
-        SolverBaseHub.__init__(self, Beta=Beta, GFstruct=GFstruct, Nlm=Nlm, Nmsb = Nmsb, UseSpinOrbit = UseSpinOrbit, Verbosity=Verbosity)
+        SolverBaseHub.__init__(self, Beta=beta, GFstruct=GFstruct, Nlm=Nlm, Nmsb = n_msb, UseSpinOrbit = use_spin_orbit, Verbosity=verbosity)
         
         self.ur = Umat.Ufull
         self.umn  = Umat.Up             # reduced matrix, opposite spins

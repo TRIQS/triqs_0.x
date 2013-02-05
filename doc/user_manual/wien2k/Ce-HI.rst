@@ -81,25 +81,25 @@ however there are also some differences. First, instead of *pytriqs.dft.solver_m
 
 The Hubbard-I solver is very fast and we do not need to take into account the LDA blocking structure or use any approximation for the *U*-matrix ::
 
-   useBlocs = False                 # use bloc structure from LDA input
-   useMatrix = True                 # use the U matrix calculated from Slater coefficients instead of (U+2J, U, U-J)
+   use_blocks = False                 # use bloc structure from LDA input
+   use_matrix = True                  # use the U matrix calculated from Slater coefficients instead of (U+2J, U, U-J)
 
 We load and convert the :program:`dmftproj` output and initialize the *SumkLDA* class as described in :ref:`LDADMFTmain` and :ref:`advanced` and then set up the Hubbard-I solver ::
 
  
-   S = Solver(Beta = Beta, Uint = Uint, JHund = JHund, l = l)
+   S = Solver(beta = beta, U_int = U_int, J_hund = J_hund, l = l)
    S.Nmoments=10
 
-where the solver is initialized with the value of `Beta` as well  as the `U` parameter (`Uint`) and Hund's rule coupling `JHund`. Notice that `Solver_Hubbard-I` constructs the full 4-index `U`-matrix by default, and the `U` parameter is in fact the Slatter `F0` integral. 
+where the solver is initialized with the value of `beta` as well  as the `U` parameter (`U_int`) and Hund's rule coupling `J_hund`. Notice that `Solver_Hubbard-I` constructs the full 4-index `U`-matrix by default, and the `U` parameter is in fact the Slatter `F0` integral. 
 The last necessary parameter is the orbital quantum number `l` (equal to 3 in our case). 
 The next line gives the number of self-energy momenta used to compute contribution from the high-frequency tails.
 
 The Hubbard-I solver initialization `Solver` has also several optional parameters one may use:
 
-  * `Nmsb`: is the number of Matsubara frequencies used (default is `Nmsb=1025`)
+  * `n_msb`: is the number of Matsubara frequencies used (default is `n_msb=1025`)
   * `T`: A matrix that transforms the interaction matrix from complex spherical harmonics to a symmetry adapted basis. By default complex spherical harmonics basis is used and `T=None`
-  * `UseSpinOrbit`: if set 'True' the solver is run with spin-orbit coupling included. To perform actual LDA+DMFT calculations with spin-orbit one should also run   :program:`Wien2k` and :program:`dmftproj` in spin-polarized mode and with spin-orbit included. By default `UseSpinOrbit=False`
-  * `Verbosity` tunes output from the solver. If `Verbosity=0` only basic information is printed, if `Verbosity=1` the ground state atomic occupancy and its energy are printed, if `Verbosity=2` additional information is printed for all occupancies that were diagonalized. By default `Verbosity=0`
+  * `use_spin_orbit`: if set 'True' the solver is run with spin-orbit coupling included. To perform actual LDA+DMFT calculations with spin-orbit one should also run   :program:`Wien2k` and :program:`dmftproj` in spin-polarized mode and with spin-orbit included. By default `use_spin_orbit=False`
+  * `verbosity` tunes output from the solver. If `verbosity=0` only basic information is printed, if `verbosity=1` the ground state atomic occupancy and its energy are printed, if `verbosity=2` additional information is printed for all occupancies that were diagonalized. By default `verbosity=0`
 
 We need also to introduce some changes in the DMFT loop with respect to the ones used for CT-QMC calculations in :ref:`advanced`. 
 The hybridization function is neglected in the Hubbard-I approximation, and only non-interacting level 
@@ -172,7 +172,7 @@ The corresponding script :ref:`Ce-gamma_DOS-script` contains several new paramet
 
 Then one needs to load projectors needed for calculations of corresponding projected densities of states, as well as corresponding symmetries. To get access to analysing tools we initialize the `SumkLDATools` class ::
 
-   SK = SumkLDATools(hdf_file=LDAFilename+'.h5', use_lda_blocks=False)
+   SK = SumkLDATools(hdf_file=lda_filename+'.h5', use_lda_blocks=False)
 
 Then after the solver initialization and setting up atomic levels we compute atomic Green's function and self-energy on the real axis::
 

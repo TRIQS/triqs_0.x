@@ -25,18 +25,18 @@ use the python module :class:`Wien2kConverter`. It is initialised as::
   from pytriqs.dft.converters.wien2k_converter import *
   Converter = Wien2kConverter(filename = material_of_interest)
 
-The only necessary parameter to this construction is the parameter `Filename`.
+The only necessary parameter to this construction is the parameter `filename`.
 It has to be the root of the files produces by dmftproj. For example, if you did a 
 calculation for TiO, the :program:`Wien2k` naming convention is that all files are called 
-:file:`TiO.*`, so you would give `Filename = TiO`. The constructor opens
+:file:`TiO.*`, so you would give `filename = "TiO"`. The constructor opens
 an hdf5 arxive, named :file:`material_of_interest.h5`, where all the data is stored.
 
 There are three optional parameters to the Constructor:
 
-  * `LDASubGrp`: We store all data in sub groups of the hdf5 arxive. For the main data
+  * `lda_subgrp`: We store all data in sub groups of the hdf5 arxive. For the main data
     that is needed for the DMFT loop, we use the sub group specified by this optional parameter.
-    If it is not given, the standard value `SumkLDA` is used as sub group name.
-  * `SymmSubGrp`: In this sub group we store all the data for applying the symmetry 
+    If it is not given, the standard value `SumK_LDA` is used as sub group name.
+  * `symm_subgrp`: In this sub group we store all the data for applying the symmetry 
     operations in the DMFT loop. Standard value is `SymmCorr`.
   * `repacking`: If true, and the hdf5 file already exists, the system command :program:`h5repack` 
     is invoked. This command ensures a minimal file size of the hdf5
@@ -46,14 +46,14 @@ There are three optional parameters to the Constructor:
 After initialising the interface module, we can now convert the input text files into the
 hdf5 arxive by::
 
-  Converter.convert_DMFT_input()
+  Converter.convert_dmft_input()
 
-This reads all the data, and stores it in the sub group `LDASubGrp`, as discussed above. 
+This reads all the data, and stores it in the sub group `lda_subgrp`, as discussed above. 
 In this step, the files :file:`material_of_interest.ctqmcout` and :file:`material_of_interest.symqmc`
 have to be present in the working directory.
 
 After this step, all the necessary information for the DMFT loop is stored in the hdf5 arxive, where
-the string variable `Converter.HDFfile` gives the file name of the arxive.
+the string variable `Converter.hdf_file` gives the file name of the arxive.
 You can now proceed with :ref:`LDADMFTmain`.
 
 
@@ -65,14 +65,14 @@ used in order to convert the necessary input from :program:`Wien2k/dmftproj`. Fo
 calculating the partial density of states or partial charges consistent with the definition
 of :program:`Wien2k`, you have to use::
 
-  Converter.convert_Parproj_input()
+  Converter.convert_parproj_input()
 
 This reads the files :file:`material_of_interest.parproj` and :file:`material_of_interest.sympar`.
 Again, there are two optional parameters
 
-  * `ParProjSubGrp`: The sub group, where the data for the partial projectors is stored. Standard
+  * `par_proj_subgrp`: The sub group, where the data for the partial projectors is stored. Standard
     is `SumK_LDA_ParProj`.
-  * `SymmParSubGrp`: Sub group for the symmetry operations, standard value is `SymmPar`.
+  * `symm_par_subgrp`: Sub group for the symmetry operations, standard value is `SymmPar`.
 
 Another routine of the class allows to read the input for plotting the momentum-resolved
 spectral function. It is done by::

@@ -24,7 +24,7 @@ from pytriqs.base.archive import *
 from pytriqs.solvers.hubbard_I.solver import Solver
 import numpy
 
-S = Solver(Beta = 200, Uint = 6.0, JHund=0.6, l=2, UseSpinOrbit=False)
+S = Solver(beta = 200, U_int = 6.0, J_hund=0.6, l=2, use_spin_orbit=False)
 eal={}
 eal['up'] = -1*numpy.identity(5)
 eal['down'] = -1*numpy.identity(5)
