@@ -277,7 +277,7 @@ class SumkLDA:
         unchangedsize = all( [ self.n_orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
                                for ib in range(self.n_spin_blocks_gf[self.SO]) ] )
 
-        if (not unchangedsize):
+        if ((not unchangedsize)or(self.Gupf.beta!=beta)):
             BS = [ range(self.n_orbitals[ik][ntoi[ib]]) for ib in bln ]
             gf_struct = [ (bln[ib], BS[ib]) for ib in range(self.n_spin_blocks_gf[self.SO]) ]
             a_list = [a for a,al in gf_struct]                                 
@@ -394,7 +394,7 @@ class SumkLDA:
         return dens_mat
 
 
-    def density_gf(self,beta = 40):
+    def density_gf(self,beta):
         """Calculates the density without setting up Gloc. It is useful for Hubbard I, and very fast.""" 
 
         dens_mat = [ {} for icrsh in xrange(self.n_corr_shells)]
@@ -406,7 +406,7 @@ class SumkLDA:
 
         for ik in mpi.slice_array(ikarray):
             
-            Gupf = self.lattice_gf_matsubara(ik=ik,mu=self.chemical_potential)
+            Gupf = self.lattice_gf_matsubara(ik=ik, beta=beta, mu=self.chemical_potential)
             Gupf *= self.bz_weights[ik]
             dm = Gupf.density()
             MMat = [dm[bl] for bl in self.block_names[self.SO]]
