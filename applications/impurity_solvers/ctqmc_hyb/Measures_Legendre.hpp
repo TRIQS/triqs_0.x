@@ -22,36 +22,39 @@
 
 #ifndef TRIQS_CTHYB1_MEASURES_LEGENDRE_H
 #define TRIQS_CTHYB1_MEASURES_LEGENDRE_H
-#include <triqs/gf_local/GF_Bloc_ImLegendre.hpp>
+
+#include <triqs/gf/legendre.hpp>
 #include "Measures_Z.hpp"
 
 /* Measure in Legendre Polynoms.  */
-class Measure_G_Legendre : public Measure_acc_sign<COMPLEX> { 
+class Measure_G_Legendre : public Measure_acc_sign<std::complex<double>> { 
 
  const Configuration & conf;
  const int a_level;
- GF_Bloc_ImLegendre & Gl;
- typedef Measure_acc_sign<COMPLEX> BaseType;  
+ triqs::gf::gf_view<triqs::gf::legendre> & Gl;
+ typedef Measure_acc_sign<std::complex<double>> BaseType;  
 
  public:
  const std::string name;  
 
- Measure_G_Legendre (Configuration const & conf_, int a, GF_Bloc_ImLegendre & Gl_):
-  BaseType(), conf(conf_), a_level(a), Gl(Gl_), name(to_string("G(legendre)",a)){Gl.data=0;}
+ Measure_G_Legendre (Configuration const & conf_, int a, triqs::gf::gf_view<triqs::gf::legendre> & Gl_):
+  BaseType(), conf(conf_), a_level(a), Gl(Gl_), name(to_string("G(legendre)",a)){Gl()=0;}
 
- void accumulate(COMPLEX signe);
+ void accumulate(std::complex<double> signe);
 
  void collect_results( boost::mpi::communicator const & c){
    BaseType::collect_results(c);
    double Z_qmc ( real(this->acc_sign));
 
-   for (int n1=1; n1<=Gl.N1;n1++)
-     for (int n2=1; n2<=Gl.N2;n2++)
-       for (int l = Gl.mesh.index_min; l <= Gl.mesh.index_max; l++)
-         Gl.data(n1,n2,l) = -(sqrt(2.0*l+1.0)/(Z_qmc*conf.Beta)) * Gl.data(n1,n2,l);
-   Gl.MPI_reduce_sum_onsite();
-   Gl.MPI_bcast();
-   Gl.determine_tail();
+   for (auto l : Gl.mesh()) {
+     Gl(l) = -(sqrt(2.0*l+1.0)/(Z_qmc*conf.Beta)) * Gl(l);
+   }
+
+   auto res = triqs::make_clone(Gl);
+   auto g_loc = triqs::make_clone(Gl);
+   boost::mpi::reduce(c, g_loc, res, std::plus<triqs::gf::gf<triqs::gf::legendre>>(),0);
+   boost::mpi::broadcast(c,res,0);
+   Gl = res;
 
  }
 

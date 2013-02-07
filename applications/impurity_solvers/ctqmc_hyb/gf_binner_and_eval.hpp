@@ -28,17 +28,16 @@ class gf_binner {
  GFType & G;
  const double L_over_Beta;
  public : 
- gf_binner ( GFType & G_): G(G_), L_over_Beta(G.mesh.len()/G.Beta) {}
+ gf_binner ( GFType & G_): G(G_), L_over_Beta(1.0/G.mesh().delta()) {}
+
  // Binning operation
- void operator() (int alpha1, double t1, int alpha2, double t2,  typename GFType::element_value_type val)  { 
-#ifdef TRIQS_DEBUG_BINNER
-  cout<<"BINNING : "<< (t1 - t2)<< "   "<<val<<"  "<<alpha1 +1<<"  "<< alpha2 + 1 <<endl;
-#endif
+ void operator() (int alpha1, double t1, int alpha2, double t2,  typename GFType::value_t val)  { 
   if (t1>=t2) 
-   G.data(alpha1 +1, alpha2 + 1,int(floor((t1 - t2)* L_over_Beta))) += val;
+   G.data_view()(alpha1, alpha2,int(floor((t1 - t2)*L_over_Beta))) += val;
   else
-   G.data(alpha1 +1, alpha2 + 1,int(floor((t1 - t2 + G.Beta)*L_over_Beta))) -=val;
+   G.data_view()(alpha1, alpha2,int(floor((t1 - t2 + G.domain().beta)*L_over_Beta))) -=val;
  }
+
 }; 
 
 
@@ -47,15 +46,15 @@ class gf_grid_evaluator {
  GFType const & G;
  const double L_over_Beta;
  public : 
- gf_grid_evaluator ( GFType const  & G_): G(G_), L_over_Beta(G.mesh.len()/G.Beta) {}
+ gf_grid_evaluator ( GFType const  & G_): G(G_), L_over_Beta(1.0/G.mesh().delta()) {}
 
  // For speed, it is better to make no interpolation and use a very fine grid.
  // otherwise the function is not really inlined.... and it is evaluated a lot !
  // alpha starts at ZERO
- typename GFType::element_value_type operator() (int alpha1, double tau1, int alpha2, double tau2 ) const 
+ typename GFType::value_t operator() (int alpha1, double tau1, int alpha2, double tau2 ) const 
  { 
-  return ( (tau1>=tau2) ? G.data(alpha1+1, alpha2+1,int(floor((tau1 - tau2)* L_over_Beta))) : 
-    - G.data(alpha1+1, alpha2+1,int(floor((tau1 - tau2 + G.Beta)*L_over_Beta)) ) );
+  return ( (tau1>=tau2) ? G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2)*L_over_Beta))) : 
+    - G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2 + G.domain().beta)*L_over_Beta)) ) );
  }
 
 }; 

@@ -21,12 +21,14 @@
  ******************************************************************************/
 
 #include "Hloc.hpp"
-#include <triqs/python_tools/IteratorOnPythonSequences.hpp>
+#include <triqs/python_tools/iterator_python_sequence.hpp>
 #include <algorithm>
 #include <functional>
 #include <numeric>
 
 using namespace triqs::python_tools;
+using namespace std;
+using namespace boost;
 
 // I define a more tolerant comparison between vectors for the AllBlocs map.
 // This is really not so nice, using a key which is a vector<double> is
@@ -45,7 +47,6 @@ struct lt {
   }
 };
 
-using boost::tuples::tie;
 typedef Hloc::Bloc Bloc;
 typedef Hloc::Operator Operator;
 typedef Hloc::REAL_OR_COMPLEX REAL_OR_COMPLEX;
@@ -195,9 +196,9 @@ namespace Hloc_construction {
     }
 
     /// Given a symmetry defined by : number of the Cdagger -> character
-    COMPLEX ActWithSymmetry(const map<int,COMPLEX> & S) const { 
-      COMPLEX res=1;
-      for (map<int,COMPLEX>::const_iterator p=S.begin(); p!=S.end(); ++p) { 
+    std::complex<double> ActWithSymmetry(const map<int,std::complex<double>> & S) const { 
+      std::complex<double> res=1;
+      for (map<int,std::complex<double>>::const_iterator p=S.begin(); p!=S.end(); ++p) { 
 	int NC = 1<<p->first;
 	// F & NC : bit number C.number is at 1
 	if (F & NC) res *= p->second;
@@ -365,10 +366,10 @@ namespace Hloc_construction {
       map<vector<double> , vector<PureState>, lt > AllBlocs; 
       
       // transcribe the symmetries into C++
-      vector< map<int,COMPLEX> > SymChar;
+      vector< map<int,std::complex<double>> > SymChar;
       for (IteratorOnPythonList<python::dict> p(Symmetries); !p.atEnd(); ++p) {
-	SymChar.push_back(map<int,COMPLEX>());
-	for (IteratorOnPythonDict<int,COMPLEX> it(*p); !it.atEnd(); ++it) 
+	SymChar.push_back(map<int,std::complex<double>>());
+	for (IteratorOnPythonDict<int,std::complex<double>> it(*p); !it.atEnd(); ++it) 
 	  SymChar.back()[it->key] = it->val;
       }
 
@@ -381,13 +382,13 @@ namespace Hloc_construction {
 	for (IteratorOnPythonDict<string,python::object> p(QuantumNumbersList); !p.atEnd(); ++p) {
 	  myfind(FullOperatorMap,p->key)(*PS,s2);
 	  if (s2.size()>1) TRIQS_RUNTIME_ERROR<<"Hloc : "<<p->key<<" is not a quantum number or  it does not leave pure state pure";
-	  COMPLEX val = (s2.size()==0 ? 0 : s2.begin()->second);
+	  std::complex<double> val = (s2.size()==0 ? 0 : s2.begin()->second);
 	  allqns_py.append(val);
 	  allqns.push_back(real(val));allqns.push_back(imag(val));
 	}
 	// iterate on QN given by .Symmetry action
 	for (uint u =0; u<SymChar.size(); ++u) { 
-	  COMPLEX val = PS->ActWithSymmetry(SymChar[u]);
+	  std::complex<double> val = PS->ActWithSymmetry(SymChar[u]);
 	  allqns_py.append(val);
 	  allqns.push_back(real(val));allqns.push_back(imag(val));
 	}
@@ -690,9 +691,9 @@ double Hloc::PartitionFunction(double Beta) const {
 // ********************************************************************
 
 
-void Hloc::LocalGreenFunction(const Operator & Op1, const Operator & Op2, GF_Bloc_ImFreq  & G) const {
+void Hloc::LocalGreenFunction(const Operator & Op1, const Operator & Op2, triqs::gf::gf_view<triqs::gf::imfreq> & G) const {
   
-  const double Beta(G.Beta);
+  const double Beta(G.domain().beta);
 
   // Compute the partition function 
   double Z = PartitionFunction(Beta);

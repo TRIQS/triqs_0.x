@@ -33,7 +33,7 @@ class Matsubara_Expo_Generator
 public:
   /**
    */
-  Matsubara_Expo_Generator(double Beta, double t,COMPLEX coef=1) : 
+  Matsubara_Expo_Generator(double Beta, double t,std::complex<double> coef=1) : 
     Start(exp( I * Pi/Beta * t)),Step(Start*Start),Coef(coef){reset();}
   
   /**
@@ -42,7 +42,7 @@ public:
   
   /**
    */
-  inline COMPLEX operator()(){return om;}
+  inline std::complex<double> operator()(){return om;}
   
   /**
      Prefix notation
@@ -50,8 +50,8 @@ public:
   inline void operator++() { om *= Step;}
     
 protected : 
-  const COMPLEX Start,Step,Coef;
-  COMPLEX om;
+  const std::complex<double> Start,Step,Coef;
+  std::complex<double> om;
 };
 
 
@@ -63,7 +63,7 @@ class Matsubara_Omega_Generator
 public:
   /**
    */
-  Matsubara_Omega_Generator(double Beta, COMPLEX shift=0) : 
+  Matsubara_Omega_Generator(double Beta, std::complex<double> shift=0) : 
     Start( I * Pi/Beta + shift),Step(2*(Start-shift)){reset();}
   
   /**
@@ -72,15 +72,15 @@ public:
   
   /**
    */
-  inline COMPLEX operator()(){return om;}
+  inline std::complex<double> operator()(){return om;}
   
   /**
    */
   inline void operator++() { om += Step;}
   
 protected : 
-  COMPLEX Start;
-  COMPLEX Step,om;
+  std::complex<double> Start;
+  std::complex<double> Step,om;
 };
 
 #endif

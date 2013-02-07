@@ -22,6 +22,7 @@
 
 #ifndef DYNAMIC_TRACE_H
 #define DYNAMIC_TRACE_H
+
 #include "Hloc.hpp"
 #include "TraceSliceStack.hpp"
 #include "Time_Ordered_Operator_List.hpp"
@@ -146,7 +147,7 @@ public:
   const std::set<const Hloc::Operator *> & InsertableOperatorAtTime(double tau) {
     // find the trace slice before time tau
     const myTraceSlice * sliL; TAUTYPE tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (OpList->first_operator_after(tau));
+    std::tie(tL,sliL) = L2R_slice_at_left_of (OpList->first_operator_after(tau));
     return const_cast< myTraceSlice *>(sliL)->nonVanishingOperators();
   }
 
@@ -159,7 +160,7 @@ public:
   /** 
       DOC TO BE WRITTEN 
   */
-  tuples::tuple<bool,OP_REF,OP_REF> insertOperator (TAUTYPE tau, const Hloc::Operator & Op) {
+  std::tuple<bool,OP_REF,OP_REF> insertOperator (TAUTYPE tau, const Hloc::Operator & Op) {
     assert(lastop==None);
     // THIS ROUTINE ONLY MAKE SENSE FOR TAUTYPE is double. PUT A CHECK
     // insert the 2 operators in the list
@@ -170,14 +171,14 @@ public:
 
     // Insert the operator
     bool ok; OP_REF it;
-    tie(ok,it) = OpList->insert(tau,Op);
-    if (!ok)  return tuples::make_tuple(false,OpRef_end(),OpRef_end()); 
+    std::tie(ok,it) = OpList->insert(tau,Op);
+    if (!ok)  return std::make_tuple(false,OpRef_end(),OpRef_end()); 
     insertedOperators.push_back(it);
 
     // Compute the tmp slice of it
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it);
-    tie(tR,sliR) = (firstcall ? R2L_slice_at_right_of(it) : tmp_slice_at_right_of(it) ); // !! this is TMP not, R2L !!
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it);
+    std::tie(tR,sliR) = (firstcall ? R2L_slice_at_right_of(it) : tmp_slice_at_right_of(it) ); // !! this is TMP not, R2L !!
     if (it->data->tmp_slice==NULL) it->data->tmp_slice = SliceStack.pop(); // new slice tmp for it
     TimeEvolution.Op_U_Slice( it->Op, it->tau, tR, sliR, it->data->tmp_slice);
 
@@ -191,7 +192,7 @@ public:
     }
     else {
     // We recompute the trace from the left starting after it
-      tuples::tie(ok,maxit_forward) = recomputeTrace_R2L_on_tmp_slices(it1->data->tmp_slice,it1->tau,it,OpList->end());
+      std::tie(ok,maxit_forward) = recomputeTrace_R2L_on_tmp_slices(it1->data->tmp_slice,it1->tau,it,OpList->end());
       --maxit_forward;
       assert (!ok); // or the trace would have closed already
     }
@@ -199,10 +200,10 @@ public:
     // Now I compute maxit_backward
     OP_REF maxit_backward=OpRef_end();
     if (it1!=OpRef_begin()) { // if Op is the first operator, maxit_backward
-      tuples::tie(ok,maxit_forward) = recomputeTrace_L2R_on_tmp2_slices(it->data->L2R_slice,it->tau,--it1);
+      std::tie(ok,maxit_forward) = recomputeTrace_L2R_on_tmp2_slices(it->data->L2R_slice,it->tau,--it1);
       assert (!ok); // or the trace would have closed already
     }
-    return tuples::make_tuple(true,maxit_forward,maxit_backward);
+    return std::make_tuple(true,maxit_forward,maxit_backward);
   }
   
   //---------------------------
@@ -247,13 +248,13 @@ public:
   std::pair<bool,OP_REF> insertOneOperator (TAUTYPE tau1, const Hloc::Operator & OP1) {
     assert(lastop==None);
     // insert the operator in the list
-    bool ok; tie(ok,it1) = OpList->insert(tau1,OP1);
+    bool ok; std::tie(ok,it1) = OpList->insert(tau1,OP1);
     if (!ok)  return std::make_pair (false,it1);
 
     // get the slices around the operator (maybe )
     const myTraceSlice * sliL, * sliR; TAUTYPE tr, tl;
-    tie(tl,sliL) = L2R_slice_at_left_of  (it1);
-    tie(tr,sliR) = R2L_slice_at_right_of (it1);
+    std::tie(tl,sliL) = L2R_slice_at_left_of  (it1);
+    std::tie(tr,sliR) = R2L_slice_at_right_of (it1);
     
     if (it1->data->R2L_slice==NULL) it1->data->R2L_slice = SliceStack.pop(); // new slice
     TimeEvolution.Op_U_Slice( it1->Op, it1->tau, tr,sliR, it1->data->R2L_slice);
@@ -291,20 +292,20 @@ public:
   *****************************************************/
   
 protected:
-  vector <OP_REF> vector_work_removeTwoOperators_In2steps;
+  std::vector <OP_REF> vector_work_removeTwoOperators_In2steps;
 
 public:
   /// First call.
-   vector<OP_REF> & removeTwoOperators_In2steps_1 (OP_REF OP1, const Hloc::Operator & Op2) {
+   std::vector<OP_REF> & removeTwoOperators_In2steps_1 (OP_REF OP1, const Hloc::Operator & Op2) {
     assert(lastop==None); 
     it1 = OP1;
 
     // Compute maxit2
     const myTraceSlice * sliR; TAUTYPE tR;
-    tie(tR,sliR) = R2L_slice_at_right_of(it1);
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it1);
     it1_bis = it1; ++it1_bis;  // I keep it1,it2 to the ops to be removed
     bool ok; OP_REF max_it2;
-    tuples::tie(ok,max_it2) = recomputeTrace_R2L_on_tmp_slices(sliR,tR,it1_bis,OpRef_end());
+    std::tie(ok,max_it2) = recomputeTrace_R2L_on_tmp_slices(sliR,tR,it1_bis,OpRef_end());
     assert(!ok); // trace MUST vanish with just O1 !
 
     // Find the operators of type Op2 between OP1 and max_it2
@@ -324,20 +325,20 @@ public:
     assert(lastop==None); 
 
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it2);
-    tie(tR,sliR) = tmp_slice_at_right_of(it2); // here is tmp, not R2L
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it2);
+    std::tie(tR,sliR) = tmp_slice_at_right_of(it2); // here is tmp, not R2L
     setNewTraceTo(TimeEvolution.Slice_U_Slice(sliL,tL,tR, sliR));
 
 #ifdef DEBUG
-    cout << "it1: " << it1->tau << " it2: " << it2->tau << endl;
-    cout << "TL: " << tL << " TR: " << tR << endl;
+    std::cout << "it1: " << it1->tau << " it2: " << it2->tau << std::endl;
+    std::cout << "TL: " << tL << " TR: " << tR << std::endl;
 #endif
     
     // Now compute Delta_tau_max for the reverse insert move.
     // first get max_it
-    tie(tR,sliR) = R2L_slice_at_right_of(it2); // this time it is the R slice !
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it2); // this time it is the R slice !
     bool ok; OP_REF max_it;
-    tuples::tie(ok,max_it) = recomputeTrace_R2L_on_tmp_slices(sliR,tR,OP2,OpRef_end());
+    std::tie(ok,max_it) = recomputeTrace_R2L_on_tmp_slices(sliR,tR,OP2,OpRef_end());
     assert(!ok); // trace MUST vanish without O1 !
     
     double Delta_tau_max = (--max_it)->tau - it1->tau;
@@ -359,24 +360,24 @@ public:
       - ok : true iif the insertion was successfull. cf Time_Ordered_Operator_List
       - ref1, ref2 are OP_REF to the newly inserted operators
   */
-  tuples::tuple<bool,OP_REF,OP_REF> insertTwoOperators (TAUTYPE tau1, const Hloc::Operator & OP1, TAUTYPE tau2, const Hloc::Operator & OP2) {
+  std::tuple<bool,OP_REF,OP_REF> insertTwoOperators (TAUTYPE tau1, const Hloc::Operator & OP1, TAUTYPE tau2, const Hloc::Operator & OP2) {
     assert(lastop==None);
     // insert the 2 operators in the list
     // if insert 1 or 2 has a pb, the move will be rejected at the end.
     // no treatement is necessary for Reject 
     bool ok;
-    tie(ok,it1) = OpList->insert(tau1,OP1);
-    if (!ok)  return tuples::make_tuple (false,it1,it1);
-    tie(ok,it2) = OpList->insert(tau2,OP2);
-    if (!ok) { OpList->remove(it1); return tuples::make_tuple (false,it1,it2);}
+    std::tie(ok,it1) = OpList->insert(tau1,OP1);
+    if (!ok)  return std::make_tuple (false,it1,it1);
+    std::tie(ok,it2) = OpList->insert(tau2,OP2);
+    if (!ok) { OpList->remove(it1); return std::make_tuple (false,it1,it2);}
     
     has_swapped = (it1->tau > it2->tau);
     if (has_swapped) std::swap(it1,it2); // make sure it2 > it1
     
     // recompute the trace from the left between it1 and it2
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it2);
-    tie(tR,sliR) = R2L_slice_at_right_of(it1);
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it2);
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it1);
     
     if (recomputeTrace_R2L_on_tmp_slices(sliR,tR,it1,it2).first) 
       setNewTraceTo(TimeEvolution.Slice_U_Slice(sliL,tL,it2->tau,it2->data->tmp_slice));
@@ -384,14 +385,14 @@ public:
       setNewTraceTo(0);
 
 #ifdef DEBUG
-    cout<< it1->tau<< " " << it2->tau<<" "<<has_swapped<<endl;
-    //if ((it1->data->tmp_slice)) cout<<"SLI1 "<<(myTraceSlice *)(it1->data->tmp_slice)<<endl;
-    //if ((it2->data->tmp_slice)) cout<<"SLIC2 "<<(myTraceSlice *)(it2->data->tmp_slice)<<endl;
-    //if (sliL) cout<<"SliL"<< (myTraceSlice *)(sliL)<<endl;
+    std::cout<< it1->tau<< " " << it2->tau<<" "<<has_swapped<<std::endl;
+    //if ((it1->data->tmp_slice)) std::cout<<"SLI1 "<<(myTraceSlice *)(it1->data->tmp_slice)<<std::endl;
+    //if ((it2->data->tmp_slice)) std::cout<<"SLIC2 "<<(myTraceSlice *)(it2->data->tmp_slice)<<std::endl;
+    //if (sliL) std::cout<<"SliL"<< (myTraceSlice *)(sliL)<<std::endl;
 #endif
 
     lastop = Insert2;
-    return (has_swapped ? tuples::make_tuple (true,it2,it1) : tuples::make_tuple (true,it1,it2));
+    return (has_swapped ? std::make_tuple (true,it2,it1) : std::make_tuple (true,it1,it2));
   }
    
   //---------------------------
@@ -428,8 +429,8 @@ public:
     assert(lastop==None); assert(OP != OpRef_end());
     it1 = OP;
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it1);
-    tie(tR,sliR) = R2L_slice_at_right_of(it1);
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it1);
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it1);
     setNewTraceTo(TimeEvolution.Slice_U_Slice(sliL,tL,tR,sliR));
     lastop = Remove1;
   }
@@ -463,16 +464,16 @@ public:
     assert(lastop==None); assert (OP1!=OP2);
     it1 = OP1; it2 = OP2;
 #ifdef DEBUG
-    cout << "GNA1 " << it1->tau << endl;
-    cout << "GNA2 " << it2->tau << endl;
+    std::cout << "GNA1 " << it1->tau << std::endl;
+    std::cout << "GNA2 " << it2->tau << std::endl;
 #endif
     if (it1->tau > it2->tau) std::swap(it1,it2); // make sure it2 > it1
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it2);
-    tie(tR,sliR) = R2L_slice_at_right_of(it1);
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it2);
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it1);
 #ifdef DEBUG
-    cout << "it1: " << it1->tau << " it2: " << it2->tau << endl;
-    cout << "TL: " << tL << " TR: " << tR << endl;
+    std::cout << "it1: " << it1->tau << " it2: " << it2->tau << std::endl;
+    std::cout << "TL: " << tL << " TR: " << tR << std::endl;
 #endif
     it1_bis = it1;  it2_bis = it2; // I keep it1,it2 to the ops to be removed
     ++it1_bis; --it2_bis;
@@ -539,15 +540,15 @@ public:
     assert(lastop==None);
     it1 = OP_to_remove; 
     bool ok;
-    tie(ok,it2) = OpList->insert(tau,OP_to_insert);
+    std::tie(ok,it2) = OpList->insert(tau,OP_to_insert);
     if (!ok)  return std::make_pair (false,it1);
 
     has_swapped = (it1->tau > it2->tau);
     if (has_swapped) std::swap(it1,it2); // make sure it1 <= it2
 
     const myTraceSlice * sliL, * sliR; TAUTYPE tR, tL;
-    tie(tL,sliL) = L2R_slice_at_left_of (it2);
-    tie(tR,sliR) = R2L_slice_at_right_of(it1);
+    std::tie(tL,sliL) = L2R_slice_at_left_of (it2);
+    std::tie(tR,sliR) = R2L_slice_at_right_of(it1);
     
     it1_bis = it1;  it2_bis = it2;
     if (has_swapped) --it2_bis; else ++it1_bis; // no possible crossing
@@ -595,7 +596,7 @@ public:
       Removes 2 operators in the OperatorList and recompute the new trace.
       F is a function : operator_number -> operator 
    */
-  void applyGlobalFunction (vector<const Hloc::Operator*> const & F){
+  void applyGlobalFunction (std::vector<const Hloc::Operator*> const & F){
     lastop = ApplyGlobalFunction;
     if (OpList->size()==0) {OldTrace = CurrentTrace; return;}
     assert (OpList_save->size()==0); // cleaned by accept and reject
@@ -662,8 +663,8 @@ public:
     myTraceSlice * tmp = TSS->pop(); 
     // get the slices around the operator
     const myTraceSlice * sliL, * sliR; TAUTYPE tr, tl;
-    tie(tl,sliL) = L2R_slice_at_left_of  (OP);
-    tie(tr,sliR) = R2L_slice_at_right_of (OP);
+    std::tie(tl,sliL) = L2R_slice_at_left_of  (OP);
+    std::tie(tr,sliR) = R2L_slice_at_right_of (OP);
     // Compute sliL Replacement sliR, via tmp
     TimeEvolution.Op_U_Slice( &Replacement, OP->tau, tr,sliR, tmp);
     REAL_OR_COMPLEX res = TimeEvolution.Slice_U_Slice(sliL, tl, OP->tau, tmp);
@@ -676,21 +677,21 @@ public:
 
   ///
   friend std::ostream & operator<< (std::ostream & out, const DynamicTrace & DT) {
-    out<<"-------------------------"<<endl;
-    out<<"Time Ordered List of Operators"<<endl;
+    out<<"-------------------------"<<std::endl;
+    out<<"Time Ordered List of Operators"<<std::endl;
     for (OP_REF p= DT.OpList->begin(); p!=DT.OpList->end(); ++p) 
-      out<<" time = "<<p->tau<<"  Operator "<<p->Op->name<<endl; // add aux data if needed...
-    out << "Current trace: " << REAL_OR_COMPLEX(DT.CurrentTrace) << endl;
-    out << "Old trace: " << REAL_OR_COMPLEX(DT.OldTrace) << endl;
-    out<<"-------------------------"<<endl;
+      out<<" time = "<<p->tau<<"  Operator "<<p->Op->name<<std::endl; // add aux data if needed...
+    out << "Current trace: " << REAL_OR_COMPLEX(DT.CurrentTrace) << std::endl;
+    out << "Old trace: " << REAL_OR_COMPLEX(DT.OldTrace) << std::endl;
+    out<<"-------------------------"<<std::endl;
     return out;
   }
 
-  inline ostream & operator<<(ostream & out) {
-    out<<"Time Ordered List of Operator"<<endl;
+  inline std::ostream & operator<<(std::ostream & out) {
+    out<<"Time Ordered List of Operator"<<std::endl;
     for (OP_REF p= OpList->begin(); p!=OpList->end(); ++p) 
-      out<<" time = "<<p->tau<<"  Operator "<<p->Op->name<<endl; // add aux data if needed...
-    out<<"-------------------------"<<endl;
+      out<<" time = "<<p->tau<<"  Operator "<<p->Op->name<<std::endl; // add aux data if needed...
+    out<<"-------------------------"<<std::endl;
     return out;
   }
  
@@ -700,7 +701,7 @@ protected:
   LastOperation lastop;
   bool has_swapped;
   OP_REF it1,it2, it1_bis, it2_bis;
-  vector<OP_REF> insertedOperators;
+  std::vector<OP_REF> insertedOperators;
 
   inline void setNewTraceTo(REAL_OR_COMPLEX NT) { 
     OldTrace = CurrentTrace;CurrentTrace = NT;
@@ -731,16 +732,16 @@ protected:
 
   // returns the R_slice of the operator at the right of it or TraceSliceBoundary_ptr if it is at the boundary
   inline std::pair<TAUTYPE, const myTraceSlice *> R2L_slice_at_right_of (OP_REF it) const { 
-    if (it==OpList->begin()) return make_pair(OpList->tmin,TraceSliceBoundary_ptr);
-    --it; return make_pair(it->tau,it->data->R2L_slice); 
+    if (it==OpList->begin()) return std::make_pair(OpList->tmin,TraceSliceBoundary_ptr);
+    --it; return std::make_pair(it->tau,it->data->R2L_slice); 
   }
   
   //---------------------------------------
   
   // returns the tmp_slice of the operator at the right of it or TraceSliceBoundary_ptr if it is at the boundary
   inline std::pair<TAUTYPE, const myTraceSlice *> tmp_slice_at_right_of (OP_REF it) const { 
-    if (it==OpList->begin()) return make_pair(OpList->tmin,TraceSliceBoundary_ptr);
-    --it; return make_pair(it->tau,it->data->tmp_slice); 
+    if (it==OpList->begin()) return std::make_pair(OpList->tmin,TraceSliceBoundary_ptr);
+    --it; return std::make_pair(it->tau,it->data->tmp_slice); 
   }
   
   //---------------------------------------
@@ -765,7 +766,7 @@ protected:
   void recomputeTrace_R2L(OP_REF it) { 
     if (it == OpList->end()) return;
     const myTraceSlice * sli; TAUTYPE t_r;
-    tie(t_r,sli) = R2L_slice_at_right_of(it);
+    std::tie(t_r,sli) = R2L_slice_at_right_of(it);
     for (; it != OpList->end(); ++it) {
       if (it->data->R2L_slice==NULL) it->data->R2L_slice = SliceStack.pop();
       TimeEvolution.Op_U_Slice(it->Op, it->tau, t_r, sli ,it->data->R2L_slice);
@@ -803,7 +804,7 @@ protected:
     const myTraceSlice * sli; TAUTYPE t_l;
     if (it==OpList->end()) { --it;}
     bool fini= false;
-    tie(t_l,sli) = L2R_slice_at_left_of(it);
+    std::tie(t_l,sli) = L2R_slice_at_left_of(it);
     do {
       if (it->data->L2R_slice==NULL) it->data->L2R_slice = SliceStack.pop();
       TimeEvolution.Op_U_Slice( &it->Op->Transpose(), t_l, it->tau, sli, it->data->L2R_slice);

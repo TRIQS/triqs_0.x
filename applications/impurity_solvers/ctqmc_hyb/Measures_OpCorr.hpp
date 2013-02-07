@@ -23,6 +23,7 @@
 #ifndef TRIQS_CTHYB1_MEASURES_OpCorr_H
 #define TRIQS_CTHYB1_MEASURES_OpCorr_H
 
+#include <triqs/gf/imtime.hpp>
 #include "Measures_Z.hpp"
 #include "Configuration.hpp"
 #include "gf_binner_and_eval.hpp"
@@ -31,28 +32,32 @@
    Measure the time correlator of an operator: <O(tau)O>
 */
 class Measure_OpCorr : public Measure_acc_sign<double> {
-  const string opName;
+  const std::string opName;
   Configuration & Config;
   const int N_timeslices;
   const double deltatau;
-  GF_Bloc_ImTime Op_res;
-  gf_binner<GF_Bloc_ImTime> Op_res_bin;
+  triqs::gf::gf_view<triqs::gf::imtime> Op_res;
+  gf_binner<triqs::gf::gf_view<triqs::gf::imtime>> Op_res_bin;
   typedef Measure_acc_sign<double> BaseType;
 public :   
-  Measure_OpCorr(string MeasureName_, string opName_, Configuration & Config_, GF_Bloc_ImTime &Op_res_, int N_timeslices_):
+  Measure_OpCorr(std::string MeasureName_, std::string opName_, Configuration & Config_, triqs::gf::gf_view<triqs::gf::imtime> &Op_res_, int N_timeslices_):
     BaseType(),  opName(opName_), Config(Config_),  N_timeslices(N_timeslices_),deltatau(Config.Beta/N_timeslices_),Op_res(Op_res_),Op_res_bin(Op_res), 
      name(opName)  {}
  
-  const string name;
+  const std::string name;
   
-  void accumulate(COMPLEX signe);  
+  void accumulate(std::complex<double> signe);  
 
   void collect_results( boost::mpi::communicator const & c){
   BaseType::collect_results(c);
    mc_weight_type Z_qmc ( this->acc_sign);
-   Op_res.MPI_reduce_sum_onsite();
-   Op_res.MPI_bcast();
-   Op_res /= Z_qmc * deltatau;
+
+   auto res = triqs::make_clone(Op_res);
+   auto g_loc = triqs::make_clone(Op_res);
+   boost::mpi::reduce(c, g_loc, res, std::plus<triqs::gf::gf<triqs::gf::imtime>>(),0);
+   boost::mpi::broadcast(c,res,0);
+   Op_res = res / (Z_qmc * deltatau);
+
   }
   
 };

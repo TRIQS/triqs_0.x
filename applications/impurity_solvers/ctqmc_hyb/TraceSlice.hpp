@@ -23,10 +23,7 @@
 #ifndef TRACESLICE_H
 #define TRACESLICE_H
 
-#include <map>
 #include <vector>
-#include <stack>
-
 #include "Hloc.hpp"
 #include "SmallMatrix.hpp"
 
@@ -37,9 +34,9 @@ template<typename VALTYPE>
 class TraceSlice { 
   const Hloc & H;
   Hloc::DiagonalOperator & mydiagop; // for temporary calculations
-  vector<VALTYPE> memChunk;
-  vector<const Hloc::Bloc *> BlocsOut;
-  vector<double> Exp_H_tau_acc;
+  std::vector<VALTYPE> memChunk;
+  std::vector<const Hloc::Bloc *> BlocsOut;
+  std::vector<double> Exp_H_tau_acc;
   bool is_nul_;
   std::vector< std::vector < const Hloc::Operator * > >  & NonVanishingOpsOnBlock;
   std::set<const Hloc::Operator *> _nonVanishingOperators;
@@ -112,7 +109,7 @@ public:
    * If D is NULL, it is interpreted as if D =1 and skipped in the computation 
    */
   static VALTYPE Slice_U_Slice (const TraceSlice * S1, double dt, const TraceSlice * S2)  {
-    vector<double> Exp_H_tau_acc_bis(S1->Exp_H_tau_acc.size());
+    std::vector<double> Exp_H_tau_acc_bis(S1->Exp_H_tau_acc.size());
 
     // Update the Exp_H_tau_acc from the previous slice (or NULL) if Block is non NULL
     for (int u =0; u<S1->H.NBlocks; ++u)
@@ -142,7 +139,7 @@ public:
 private: 
 
   static VALTYPE Slice_D_Slice_internal (const TraceSlice * S1, const Hloc::DiagonalOperator * D, const TraceSlice * S2,
-					 const vector<double> & Exp_H_tau_acc_S1);
+					 const std::vector<double> & Exp_H_tau_acc_S1);
 
 };
 
@@ -258,7 +255,7 @@ template<typename VALTYPE>
 VALTYPE TraceSlice<VALTYPE>::Slice_D_Slice_internal (const TraceSlice * S1,
 						     const Hloc::DiagonalOperator * DiagOp,
 						     const TraceSlice * S2,
-						     const vector<double> & Exp_H_tau_acc_S1)  {
+						     const std::vector<double> & Exp_H_tau_acc_S1)  {
   assert(S1); assert(S2); // S1 and S2 have column-ordered matrices
   VALTYPE sum(0);//, sum2(0);
   const VALTYPE * restrict pS1(&S1->memChunk[0]);
@@ -297,11 +294,11 @@ std::ostream & operator<< (std::ostream & out, const TraceSlice<TT> * S) {
   if (S == (TraceSlice<TT> *)NULL) return out << "NULL";
     out << "Matrices: " << S->memChunk;
     out << "Connect: " << std::endl;
-    for (vector<const Hloc::Bloc *>::const_iterator p = S->BlocsOut.begin(); p != S->BlocsOut.end(); ++p) {
+    for (std::vector<const Hloc::Bloc *>::const_iterator p = S->BlocsOut.begin(); p != S->BlocsOut.end(); ++p) {
       (*p ? out << (*p)->num << " " : out << "NULL ");
     }
-    out<<endl<<" Exp_H_tau_acc = ";
-    std::copy(S->Exp_H_tau_acc.begin(), S->Exp_H_tau_acc.end(),ostream_iterator<double>(out,", "));
+    out<<std::endl<<" Exp_H_tau_acc = ";
+    std::copy(S->Exp_H_tau_acc.begin(), S->Exp_H_tau_acc.end(), std::ostream_iterator<double>(out,", "));
     out << std::endl;
     return out;
 }

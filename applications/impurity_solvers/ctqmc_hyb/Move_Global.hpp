@@ -30,17 +30,17 @@
 class Global_Move { 
   const std::string name;
   Configuration & Config;
-  mc_tools::random_generator & Random;  
-  const vector<const Hloc::Operator*> mapping;
-  vector<Configuration::DET_TYPE*> dets_save;
+  triqs::mc_tools::random_generator & Random;  
+  const std::vector<const Hloc::Operator*> mapping;
+  std::vector<Configuration::DET_TYPE*> dets_save;
 public :  
   
   typedef std::complex<double> mc_weight_type;
 
   
-  Global_Move(string name_, Configuration & Config_, mc_tools::random_generator & RNG, 
-	      const vector<const Hloc::Operator*> & mapping_ ):
-    name(string("Global_Move_") + name_),
+  Global_Move(std::string name_, Configuration & Config_, triqs::mc_tools::random_generator & RNG, 
+	      const std::vector<const Hloc::Operator*> & mapping_ ):
+    name(std::string("Global_Move_") + name_),
     Config(Config_), Random(RNG),
     mapping(mapping_),
     dets_save(Config.Na,(Configuration::DET_TYPE*)NULL)  {
@@ -71,7 +71,7 @@ public :
     // the other structure of the configuration, like the determinants, Insertions list etc....
 
     // reserve space to gather the OP_REF on the new operators C, Cdagger.
-    vector< vector<Configuration::OP_REF> > C1(Config.Na),Cdag1(Config.Na),C(Config.Na),Cdag(Config.Na);
+    std::vector< std::vector<Configuration::OP_REF> > C1(Config.Na),Cdag1(Config.Na),C(Config.Na),Cdag(Config.Na);
     for (int a= 0; a<Config.Na; ++a) {
       C1[a].reserve(100); Cdag1[a].reserve(100);
       C[a].reserve(100); Cdag[a].reserve(100);
@@ -101,7 +101,7 @@ public :
     // recompute the determinants
     double r1=1, r2=1;
     for (int a= 0; a<Config.Na; ++a) {
-      swap(dets_save[a],Config.dets[a]);
+      std::swap(dets_save[a],Config.dets[a]);
       Config.dets[a]->recomputeFrom(Cdag[a],C[a]);
       r1 *= Config.dets[a]->determinant();
       r2 *= dets_save[a]->determinant();

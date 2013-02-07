@@ -25,14 +25,12 @@
 #include "Measures_Legendre.hpp"
 #include <triqs/utility/legendre.hpp>
 
-using namespace triqs::utility;
-
-void Measure_G_Legendre::accumulate(COMPLEX signe) {
+void Measure_G_Legendre::accumulate(std::complex<double> signe) {
 
   const double s(real(signe)); // not elegant !
   BaseType::accumulate(s);
 
-  legendre_generator Tn = legendre_generator();
+  triqs::utility::legendre_generator Tn = triqs::utility::legendre_generator();
   double delta_tau;
   short st;
 
@@ -48,8 +46,8 @@ void Measure_G_Legendre::accumulate(COMPLEX signe) {
       const double x=2*delta_tau/conf.Beta-1;
       Tn.reset(x);
       const double temp=s*st*p.M();
-      for (int n=0; n<Gl.numberLegendreCoeffs; n++) {
-        Gl.data(conf.info[p.C()->Op->Number].alpha+1, conf.info[p.Cdagger()->Op->Number].alpha+1, n) += temp*Tn.next();
+      for (int n=0; n<Gl.data_view().shape()[2]; n++) {
+        Gl.data_view()(conf.info[p.C()->Op->Number].alpha, conf.info[p.Cdagger()->Op->Number].alpha, n) += temp*Tn.next();
       }
 
   }

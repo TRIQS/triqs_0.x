@@ -21,15 +21,19 @@
  ******************************************************************************/
 
 #include "MC.hpp"
-#include <triqs/python_tools/IteratorOnPythonSequences.hpp>
+#include <triqs/python_tools/iterator_python_sequence.hpp>
 
-using python::extract;
+using namespace std;
+using namespace boost;
 using namespace OP_Tools;
+using triqs::gf::gf_view;
+using triqs::gf::block;
+using triqs::gf::imtime;
 
-Configuration::Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc):
-  Delta_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["Delta_tau"]) ),
+Configuration::Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, gf_view<block<imtime>> & dt):
+  Delta_tau(dt),
   H(*hloc),
-  Beta(Delta_tau.Beta()),
+  Beta(dt[0].domain().beta),
   DT(H,Beta), 
   Na(python::len(params.dict()["C_Cdag_Ops"])),
   dets(Na,(DET_TYPE *) NULL),
@@ -79,7 +83,7 @@ Configuration::~Configuration() {
 
 Configuration::O_Odag_Insertions_type & Configuration::create_O_Odag_Insertion (const Hloc::Operator & Op1, const Hloc::Operator & Op2) { 
   map<std::pair<string,string>, O_Odag_Insertions_type >::iterator ret; bool ok;
-  tuples::tie(ret,ok) = O_Odag_Insertions.insert(std::make_pair( std::make_pair(Op1.name,Op2.name), Configuration::O_Odag_Insertions_type()));
+  std::tie(ret,ok) = O_Odag_Insertions.insert(std::make_pair( std::make_pair(Op1.name,Op2.name), Configuration::O_Odag_Insertions_type()));
   if (!ok) TRIQS_RUNTIME_ERROR<<"Double insert of O_Odag_insertion !!!!";
   O_Odag_Insertions_type & RES((*ret).second);
   RES.clear();

@@ -23,13 +23,9 @@
 // include first because of a namespace clash.. to be fixed...
 #include "MC.hpp"
 #include <triqs/arrays/h5/array_stack.hpp>
-#include <triqs/python_tools/IteratorOnPythonSequences.hpp>
+#include <triqs/python_tools/iterator_python_sequence.hpp>
 #include <triqs/utility/callbacks.hpp>
  
-using triqs::mc_tools::move_set;
-using python::extract;
-using namespace triqs;
-
 // The moves to insert and remove C, Cdagger operators
 #include "Move_Insert_Remove_Cdag_C_Delta.hpp"
 #include "Move_Insert_Remove_Cdag_C_Delta_SegmentPicture.hpp"
@@ -45,8 +41,16 @@ using namespace triqs;
 #include "Measures_F.hpp"
 #include "Measures_OpAv.hpp"
 #include "Measures_Legendre.hpp"
-#include "Measures_Legendre_allseries.hpp"
 #include "Measures_OpCorr.hpp"
+
+using triqs::gf::gf_view;
+using triqs::gf::block;
+using triqs::gf::imtime;
+using triqs::gf::legendre;
+
+using namespace std;
+using namespace boost;
+
 
 template<typename T1> 
 std::string make_string( T1 const & x1) { 
@@ -62,13 +66,13 @@ namespace triqs { namespace app { namespace impurity_solvers {
 
 //-----------------------------------------------------
 
-ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc) :
+ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
+                     gf_view<block<imtime>> gt, gf_view<block<imtime>> ft,
+                     gf_view<block<imtime>> dt, gf_view<block<imtime>> opcorr,
+                     gf_view<block<legendre>> gl) :
  params(p),
- Config(params, hloc),
- G_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["G_tau"])),
- F_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["F_tau"])),
- G_legendre (extract<GF_C<GF_Bloc_ImLegendre> > (params.dict()["G_Legendre"])),
- Gc_w (extract<GF_C<GF_Bloc_ImFreq> > (params.dict()["G"])),
+ G_tau(gt), F_tau(ft), Delta_tau(dt), OpCorrToAverage(opcorr), G_legendre(gl),
+ Config(params, hloc, Delta_tau),
  TimeAccumulation (params["Time_Accumulation"]),
  LegendreAccumulation (params["Legendre_Accumulation"]),
  N_Frequencies_Accu (params["N_Frequencies_Accumulated"]),
@@ -82,7 +86,7 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc) :
  double p_ir = params["Proba_Insert_Remove"];
  double p_mv = params["Proba_Move"];
 
- typedef move_set<SignType> move_set_type;
+ typedef triqs::mc_tools::move_set<SignType> move_set_type;
  boost::shared_ptr<move_set_type> AllInserts(new move_set_type(QMC.RandomGenerator));
  boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(QMC.RandomGenerator));
  for (int a =0; a<Config.Na;++a) { 
@@ -124,8 +128,8 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc) :
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
      QMC.add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
-     if (bool(params["Keep_Full_MC_Series"])) 
-      QMC.add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
+     //if (bool(params["Keep_Full_MC_Series"])) 
+      //QMC.add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
    } else if (TimeAccumulation) {
      QMC.add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
@@ -148,12 +152,11 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc) :
 
  // register the measures for the time correlators:
  python::list opCorr_List = python::extract<python::list>(params.dict()["OpCorr_To_Average_List"]);
- GF_C<GF_Bloc_ImTime> OpCorrToAverage(extract<GF_C<GF_Bloc_ImTime> > (params.dict()["Measured_Time_Correlators_Results"]));
  int a = 0;
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
   str1+= "OpCorr";
-  QMC.add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()), str1);
+  QMC.add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh().size()), str1);
  }
 
 }

@@ -23,7 +23,7 @@
 #include "Measures_Z.hpp"
 #include "Measures_OpCorr.hpp"
 
-void Measure_OpCorr::accumulate(COMPLEX signe) { 
+void Measure_OpCorr::accumulate(std::complex<double> signe) { 
 
    const double s(real(signe)); // not elegant !
    BaseType::accumulate(s);

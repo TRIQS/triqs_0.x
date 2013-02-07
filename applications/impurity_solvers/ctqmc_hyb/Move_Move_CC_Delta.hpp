@@ -34,7 +34,7 @@
 class Move_C_Delta { 
   const std::string name;
   Configuration & Config;
-  mc_tools::random_generator & Random;
+  triqs::mc_tools::random_generator & Random;
   Configuration::DET_TYPE * det;
   Configuration::DET_TYPE::RollDirection roll_matrix;
 
@@ -45,7 +45,7 @@ public:
   typedef std::complex<double> mc_weight_type;
 
 
-  Move_C_Delta(Configuration & Config_, mc_tools::random_generator & RNG ): name("Move_C_Delta"), 
+  Move_C_Delta(Configuration & Config_, triqs::mc_tools::random_generator & RNG ): name("Move_C_Delta"), 
     Config(Config_), Random(RNG) {}
 
   //----------------
@@ -95,14 +95,14 @@ public:
       // then deduce the closest one and put its distance to oldOpref in tR
       double tRdag = (itCdag != det->Cdagger_end() ? (*itCdag)->tau : det->Cdagger_begin()->tau);
       double tRnodag = (itC != det->C_end() ? (*itC)->tau : det->C_begin()->tau);
-      tR = min(Config.CyclicOrientedTimeDistance(oldtau - tRdag), Config.CyclicOrientedTimeDistance(oldtau - tRnodag));
+      tR = std::min(Config.CyclicOrientedTimeDistance(oldtau - tRdag), Config.CyclicOrientedTimeDistance(oldtau - tRnodag));
 
       // move itCdag and itC to the operators on the left with cyclicity
       // find their times and deduce the closest one with distance tL
       if (isdagger) --itCdag; else --itC;
       if (itCdag != det->Cdagger_begin()) --itCdag; else itCdag = --det->Cdagger_end();
       if (itC != det->C_begin()) --itC; else itC = --det->C_end();
-      tL = min(Config.CyclicOrientedTimeDistance((*itCdag)->tau - oldtau), Config.CyclicOrientedTimeDistance((*itC)->tau - oldtau));
+      tL = std::min(Config.CyclicOrientedTimeDistance((*itCdag)->tau - oldtau), Config.CyclicOrientedTimeDistance((*itC)->tau - oldtau));
 
     } else {
 
@@ -120,7 +120,7 @@ public:
     // remove oldOpref and insert newOp in the Trace
     bool ok;
     Configuration::OP_REF Op;
-    tie(ok,Op) = Config.DT.insert_and_remove_One_Operator(oldOpref, newtau, *newOp);
+    std::tie(ok,Op) = Config.DT.insert_and_remove_One_Operator(oldOpref, newtau, *newOp);
     if (!ok) return 0;
 
     // in the following we want to see if we need to roll the det

@@ -24,6 +24,7 @@
 #define TRACESLICESTACK_H
 
 #include "TraceSlice.hpp"
+#include <stack>
 
 /**
    

@@ -23,14 +23,17 @@
 #ifndef MC_H_hewjfhwke
 #define MC_H_hewjfhwke
 
-#include "Python.h"
+#include <Python.h>
+#include <triqs/gf/block.hpp>
+#include <triqs/gf/imtime.hpp>
+#include <triqs/gf/legendre.hpp>
+#include <triqs/gf/imfreq.hpp>
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/mc_tools/histograms.hpp>
-#include "Configuration.hpp"
 #include <map>
+#include "Configuration.hpp"
 
 namespace triqs { namespace app { namespace impurity_solvers {
-
 
 /**
    
@@ -42,11 +45,10 @@ class ctqmc_hyb {
 protected:
 
   triqs::python_tools::improved_python_dict params;
-  Configuration Config;
   triqs::mc_tools::HistogramBinnedMap Histograms; 
-  GF_C<GF_Bloc_ImTime> G_tau, F_tau;
-  GF_C<GF_Bloc_ImLegendre> G_legendre;
-  GF_C<GF_Bloc_ImFreq> Gc_w;
+  triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> G_tau, F_tau, Delta_tau, OpCorrToAverage;
+  triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre>> G_legendre;
+  Configuration Config;
   const bool TimeAccumulation;
   const bool LegendreAccumulation;
   const int N_Frequencies_Accu,Freq_Fit_Start;
@@ -54,7 +56,12 @@ protected:
 
 public : 
 
-  ctqmc_hyb(boost::python::object, Hloc *);
+  ctqmc_hyb(boost::python::object, Hloc *,
+            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre>>);
   void solve();
 
 };

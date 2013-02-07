@@ -1,4 +1,6 @@
 from boost cimport *
+from pytriqs.base.gf.local.gf cimport *
+import pytriqs.base.gf.local
 from types import *
 from pytriqs.base.gf_local import *
 from pytriqs.solvers import SolverBase
@@ -15,7 +17,7 @@ cdef extern from "applications/impurity_solvers/ctqmc_hyb/Hloc.hpp":
 cdef extern from "applications/impurity_solvers/ctqmc_hyb/MC.hpp" namespace "triqs::app::impurity_solvers":
 
     cdef cppclass solver_c "triqs::app::impurity_solvers::ctqmc_hyb":
-      solver_c(boost_object, Hloc_c *)
+      solver_c(boost_object, Hloc_c *, gf_block_imtime, gf_block_imtime, gf_block_imtime, gf_block_imtime, gf_block_legendre)
       void solve()
 
 
@@ -272,10 +274,35 @@ class Solver(SolverBase):
         self.Sigma_Old <<= self.Sigma
 
         # C++ solver
+        f = lambda g, L: pytriqs.base.gf.local.GfImTime(indices=g.indices, beta=g.beta, n_time_points=L)
+        DD = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Delta)) for n,g in self.Delta_tau], make_copies=False)
+        GG = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Gtau)) for n,g in self.G_tau], make_copies=False)
+        FF = pytriqs.base.gf.local.BlockGf(name_block_generator = GG, make_copies=True, name='F')
+
+        f = lambda L : pytriqs.base.gf.local.GfImTime(indices = [0], beta = self.beta, n_time_points =L )
+        if (Nops>0):
+          MM = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(self.Measured_Time_Correlators[n][1]) ) for n in self.Measured_Time_Correlators], make_copies=False)
+        else:
+          MM = pytriqs.base.gf.local.BlockGf(name_block_generator = [ ('OpCorr',f(2)) ], make_copies=False)
+
+        f = lambda g, L: pytriqs.base.gf.local.GfLegendre(indices=g.indices, beta=g.beta, n_legendre_points=L)
+        LL = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Legendre_Coeffs)) for n,g in self.G_Legendre], make_copies=False)
+
+        for n,d in DD: d.data[:,:,:] = self.Delta_tau[n]._data.array[:,:,:]
+
         solver_c(boost_object(self.__dict__),
                  new Hloc_c(nf, nb, boost_object(Oplist2), boost_object(QuantumNumberOperators), boost_object(SymList),
-                            boost_object(self.Quantum_Numbers_Selection), 0)).solve()
+                            boost_object(self.Quantum_Numbers_Selection), 0),
+                 as_gf_block_imtime(GG),
+                 as_gf_block_imtime(FF),
+                 as_gf_block_imtime(DD),
+                 as_gf_block_imtime(MM),
+                 as_gf_block_legendre(LL)).solve()
 
+        for n,g in self.G_Legendre: g._data.array[:,:,:] = LL[n].data[:,:,:]
+        for n,g in self.G_tau: g._data.array[:,:,:] = GG[n].data[:,:,:]
+        for n,g in self.F_tau: g._data.array[:,:,:] = FF[n].data[:,:,:]
+        for n,g in self.Measured_Time_Correlators_Results: g._data.array[:,:,:] = MM[n].data[:,:,:]
         
         # Compute G on Matsubara axis possibly fitting the tail
         if self.Legendre_Accumulation:

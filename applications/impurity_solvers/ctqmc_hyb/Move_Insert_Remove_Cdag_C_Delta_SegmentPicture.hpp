@@ -27,7 +27,6 @@
 #include "triqs/mc_tools/random_generator.hpp"
 #include "Move_AuxiliaryFunctions.hpp"
 #include "util.hpp"
-using OP_Tools::map_insert_check;
 
 /*
   Implementation of the Segment Picture version of the Insert/remove Moves.
@@ -43,10 +42,10 @@ class Insert_Cdag_C_Delta_SegmentPicture {
   double deltaTau;
   bool no_trivial_reject;
   Configuration & Config;
-  mc_tools::random_generator & Random;
+  triqs::mc_tools::random_generator & Random;
   const int a_level, Nalpha;
   const std::string name;
-  mc_tools::histogram_binned & HISTO_Length_Kinks_Proposed, & HISTO_Length_Kinks_Accepted;
+  triqs::mc_tools::histogram_binned & HISTO_Length_Kinks_Proposed, & HISTO_Length_Kinks_Accepted;
   Configuration::DET_TYPE * det;
   double try_insert_length_max;
 public :  
@@ -55,12 +54,12 @@ public :
 
   //-----------------------------------------------
 
-  Insert_Cdag_C_Delta_SegmentPicture(int a, Configuration & Config_, mc_tools::HistogramBinnedMap & HistoMap, mc_tools::random_generator & RNG  ):
+  Insert_Cdag_C_Delta_SegmentPicture(int a, Configuration & Config_, triqs::mc_tools::HistogramBinnedMap & HistoMap, triqs::mc_tools::random_generator & RNG  ):
    Config(Config_), Random(RNG),
    a_level(a), Nalpha(Config.COps[a].size()), 
    name( to_string("Insert_Cdagger_C_SegmentPicture_",a)),
-   HISTO_Length_Kinks_Proposed (map_insert_check(HistoMap, this->name + "_histo_proposed",mc_tools::histogram_binned(0,Config.Beta))),
-   HISTO_Length_Kinks_Accepted (map_insert_check(HistoMap, this->name + "_histo_accepted",mc_tools::histogram_binned(0,Config.Beta)))
+   HISTO_Length_Kinks_Proposed (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_proposed",triqs::mc_tools::histogram_binned(0,Config.Beta))),
+   HISTO_Length_Kinks_Accepted (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_accepted",triqs::mc_tools::histogram_binned(0,Config.Beta)))
  {assert(Nalpha==1);}
 
   //---------------------
@@ -91,7 +90,7 @@ public :
     double rC = Config.CyclicOrientedTimeDistance((*itC)->tau - tau1);
     double rCdag = Config.CyclicOrientedTimeDistance((*itCdag)->tau - tau1);
     A = ( rC > rCdag ? *itCdag : * itC);
-    try_insert_length_max  = min(rC,rCdag);
+    try_insert_length_max  = std::min(rC,rCdag);
    }
    else { // empty case.
     try_insert_length_max  = Config.Beta;
@@ -128,7 +127,7 @@ public :
    // O1 will always be the dagger : 
    // Cf doc of insertTwoOperators, order of output OPREF is the same as input operators 
    Configuration::OP_REF O1, O2;
-   tie (no_trivial_reject,O1,O2) = (Op1_is_dagger ? 
+   std::tie (no_trivial_reject,O1,O2) = (Op1_is_dagger ? 
      Config.DT.insertTwoOperators(tau1,OpCdag,tau2,OpC) : 
      Config.DT.insertTwoOperators(tau2,OpCdag,tau1,OpC));
    if (!no_trivial_reject) return 0;
@@ -199,7 +198,7 @@ public :
 
 class Remove_Cdag_C_Delta_SegmentPicture  { 
  Configuration & Config;
- mc_tools::random_generator & Random;
+ triqs::mc_tools::random_generator & Random;
  const int a_level, Nalpha;
  Configuration::DET_TYPE * det;
  public :  
@@ -210,7 +209,7 @@ class Remove_Cdag_C_Delta_SegmentPicture  {
 
  //----------------------------------
 
- Remove_Cdag_C_Delta_SegmentPicture(int a, Configuration & Config_, mc_tools::random_generator & RNG ):
+ Remove_Cdag_C_Delta_SegmentPicture(int a, Configuration & Config_, triqs::mc_tools::random_generator & RNG ):
   Config(Config_), Random(RNG),
   a_level(a), Nalpha(Config.COps[a].size()),
   name( to_string("Remove_Cdagger_C_SegmentPicture_",a))

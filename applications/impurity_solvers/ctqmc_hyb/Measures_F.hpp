@@ -23,6 +23,7 @@
 #ifndef TRIQS_CTHYB1_MEASURES_F_H
 #define TRIQS_CTHYB1_MEASURES_F_H
 
+#include <triqs/gf/imtime.hpp>
 #include "Configuration.hpp"
 #include "Measures_Z.hpp"
 #include "gf_binner_and_eval.hpp"
@@ -30,19 +31,19 @@
 /**
    Measure the F function (one bloc only) in time.
 */
-class Measure_F_tau : public Measure_acc_sign<COMPLEX> {
-  typedef Measure_acc_sign<COMPLEX> BaseType;
+class Measure_F_tau : public Measure_acc_sign<std::complex<double>> {
+  typedef Measure_acc_sign<std::complex<double>> BaseType;
   const std::string name;
   const Configuration & Config;
-  GF_Bloc_ImTime F_tau;
-  gf_binner<GF_Bloc_ImTime> F_tau_bin;
+  triqs::gf::gf_view<triqs::gf::imtime> F_tau;
+  gf_binner<triqs::gf::gf_view<triqs::gf::imtime>> F_tau_bin;
   const int a_level;
 public :   
 
-  Measure_F_tau(const Configuration & Config_,int a, GF_Bloc_ImTime & Ftau_):
-    BaseType(), name(to_string("G(tau)",a)), Config(Config_), F_tau(Ftau_), F_tau_bin(F_tau), a_level(a) { }
+  Measure_F_tau(const Configuration & Config_,int a, triqs::gf::gf_view<triqs::gf::imtime> & Ftau_):
+    BaseType(), name(to_string("F(tau)",a)), Config(Config_), F_tau(Ftau_), F_tau_bin(F_tau), a_level(a) { }
 
-  void accumulate(COMPLEX signe) {
+  void accumulate(std::complex<double> signe) {
     BaseType::accumulate(signe);
     const double s(real(signe)); // not elegant !
     for (Configuration::DET_TYPE::C_Cdagger_M_iterator p(*Config.dets[a_level]); !p.atEnd(); ++p) {
@@ -56,9 +57,13 @@ public :
   void collect_results(boost::mpi::communicator const & c){
     BaseType::collect_results(c);
     mc_weight_type Z_qmc ( this->acc_sign);
-    F_tau.MPI_reduce_sum_onsite();
-    F_tau.MPI_bcast();
-    F_tau /= + real(Z_qmc) * Config.Beta* (Config.Beta/F_tau.numberTimeSlices);
+
+    auto res = triqs::make_clone(F_tau);
+    auto g_loc = triqs::make_clone(F_tau);
+    boost::mpi::reduce(c, g_loc, res, std::plus<triqs::gf::gf<triqs::gf::imtime>>(),0);
+    boost::mpi::broadcast(c,res,0);
+    F_tau = res / real(Z_qmc) * Config.Beta * F_tau.mesh().delta();
+
   }
 
 };

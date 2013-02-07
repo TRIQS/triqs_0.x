@@ -24,7 +24,6 @@
 #define TIME_ORDERED_OPERATOR_LIST_H
 
 #include <map>
-#include <boost/tuple/tuple.hpp>
 
 /// Type of the time
 enum TimeTypeName { MatsubaraContour, KeldyshContour, TripleContour};
@@ -69,7 +68,7 @@ public:
 
 protected:
   /// The list of (tau,Op). 
-  typedef map<TAUTYPE, std::pair<const OPERATORTYPE *,AUXILIARY_INFO> > THELIST_TYPE;
+  typedef std::map<TAUTYPE, std::pair<const OPERATORTYPE *,AUXILIARY_INFO> > THELIST_TYPE;
   typedef typename THELIST_TYPE::iterator THELIST_ITERATOR;
   THELIST_TYPE thelist;  
 public:

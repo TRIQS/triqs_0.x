@@ -24,14 +24,14 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <boost/tuple/tuple.hpp>
+#include <boost/python.hpp>
 #include <triqs/clef/core.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
+#include <triqs/gf/imfreq.hpp>
 #include "SmallMatrix.hpp"
 #include "myConstIteratorVector.hpp"
-#include <triqs/gf_local/GF_Bloc_ImFreq.hpp>
 
 // internal class for construction. See cpp file
 namespace Hloc_construction {class mydata;}; 
@@ -59,10 +59,10 @@ public :
      @param SelectQN : truncation of the local Hilbert space. Default is None, i.e. lambda qn : true
   */
   Hloc(int NF, int NB, 
-       python::dict AllOperatorDict, 
-       python::dict QuantumNumbersList, 
-       python::list Symmetries, 
-       python::object SelectQN,
+       boost::python::dict AllOperatorDict, 
+       boost::python::dict QuantumNumbersList, 
+       boost::python::list Symmetries, 
+       boost::python::object SelectQN,
        int Nmaxbosons);
 
   /** Copy construction
@@ -82,8 +82,8 @@ public :
     Bloc(const Bloc & B);
     Bloc& operator=(const Bloc&);
   protected:
-    vector<double> H_;
-    vector<double> deltaH_;
+    std::vector<double> H_;
+    std::vector<double> deltaH_;
     friend class Hloc;
     friend class Hloc_construction::mydata;
   public:
@@ -91,7 +91,7 @@ public :
     const double * restrict H;
     /// Eigenvalues of the Hamiltonian in the bloc shifted by the minimum of H
     const double * restrict deltaH;
-    friend ostream & operator<< (ostream & out, const Bloc & B);
+    friend std::ostream & operator<< (std::ostream & out, const Bloc & B);
   };
 
  //****************************************************************
@@ -135,12 +135,12 @@ public :
 
 
     // BlocCorrespondance constructed as a vector of NULL. Filled later by Hloc.
-    Operator(string name_, StatisticType stat, const vector<vector<REAL_OR_COMPLEX> > & MatrixElements);
+    Operator(std::string name_, StatisticType stat, const std::vector<std::vector<REAL_OR_COMPLEX> > & MatrixElements);
 
     Operator(const Operator & Op);
 
     /// name of the Operator
-    const string name;
+    const std::string name;
 
     /// A unique number for each operator
     const int Number; 
@@ -160,13 +160,13 @@ public :
 	      :BlocMatrixElement() );
     }
 
-    friend ostream & operator<< (ostream & out, const Operator & Op);
+    friend std::ostream & operator<< (std::ostream & out, const Operator & Op);
  
     const Operator & Transpose() const {return *transpose; }
  
   protected:
-    vector<vector<REAL_OR_COMPLEX> > BlocMatrixElements; 
-    vector<const Bloc *> BlocCorrespondance;
+    std::vector<std::vector<REAL_OR_COMPLEX> > BlocMatrixElements; 
+    std::vector<const Bloc *> BlocCorrespondance;
     friend class Hloc;
     friend class Hloc_construction::mydata;
     friend class BlocMatrixElement;
@@ -188,24 +188,24 @@ public :
     // We need this ref to Hloc in the inner product of TraceSlice
     const Hloc & H;
   private:
-    typedef vector<vector<REAL_OR_COMPLEX> > VV;
+    typedef std::vector<std::vector<REAL_OR_COMPLEX> > VV;
     VV data;
     static inline VV construct_data(const Hloc & h) { 
       VV res;
       for (BlocIterator B = h.BlocBegin(); B != h.BlocEnd(); ++B)
-	res.push_back(vector<REAL_OR_COMPLEX>(B->dim,0));
+	res.push_back(std::vector<REAL_OR_COMPLEX>(B->dim,0));
       return res;
     }
   public:
     DiagonalOperator(const Hloc & h_):H(h_),data(construct_data(h_)) {}
     ///
-    inline vector<REAL_OR_COMPLEX> & operator[] (const Bloc * B) { return data[B->num]; }
-    inline const vector<REAL_OR_COMPLEX> & operator[] (const Bloc * B) const { return data[B->num]; }
+    inline std::vector<REAL_OR_COMPLEX> & operator[] (const Bloc * B) { return data[B->num]; }
+    inline const std::vector<REAL_OR_COMPLEX> & operator[] (const Bloc * B) const { return data[B->num]; }
   };
 
   //****************************************************************
 
-  typedef map<string,Operator>::const_iterator OperatorIterator;
+  typedef std::map<std::string,Operator>::const_iterator OperatorIterator;
   inline OperatorIterator OperatorIteratorBegin() const { return OperatorMap.begin();}
   inline OperatorIterator OperatorIteratorEnd() const { return OperatorMap.end();}
  
@@ -214,8 +214,8 @@ public :
 private:
   Hloc_construction::mydata * datatmp;
 protected: 
-  vector<Bloc> BlocList;
-  map<string,Operator> OperatorMap,OperatorMapTranspose;
+  std::vector<Bloc> BlocList;
+  std::map<std::string,Operator> OperatorMap,OperatorMapTranspose;
 public:
 
   // do we guarantee that the Bloc will come in order of their ->num ?? ok ?
@@ -223,7 +223,7 @@ public:
   inline BlocIterator BlocEnd() const { return BlocIterator(this->BlocList,true);}
 
   /// Returns the Operator of name s
-  const Operator & operator[] (const string & s) const;
+  const Operator & operator[] (const std::string & s) const;
   
   /// Ground state energy
   const double E_GS;
@@ -247,13 +247,13 @@ public:
   int MaxOp_DimAllMatrixElements() const;
   
   /// Returns the local Green function
-  void LocalGreenFunction(const Operator & OP1, const Operator & Op2, GF_Bloc_ImFreq  & G) const;
+  void LocalGreenFunction(const Operator & OP1, const Operator & Op2, triqs::gf::gf_view<triqs::gf::imfreq> & G) const;
 
   /// Compute the paritition function at inverse temperature beta
   double PartitionFunction(double Beta) const; 
 
-  friend ostream & operator<< (ostream & out, const Hloc &hloc);
-  inline string print(){stringstream fs; fs<<*this<<endl;return fs.str();}
+  friend std::ostream & operator<< (std::ostream & out, const Hloc &hloc);
+  inline std::string print(){std::stringstream fs; fs<<*this<<std::endl;return fs.str();}
 };
 
 #endif

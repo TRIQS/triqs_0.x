@@ -29,18 +29,18 @@
 /**
    Measure the average of an operator
 */
-class Measure_OpAv : public Measure_acc_sign<COMPLEX> {
+class Measure_OpAv : public Measure_acc_sign<std::complex<double>> {
   Configuration & Config;
   double opAv;
-  python::dict opAv_res;
-  typedef Measure_acc_sign<COMPLEX> BaseType;  
+  boost::python::dict opAv_res;
+  typedef Measure_acc_sign<std::complex<double>> BaseType;  
 public :   
-  Measure_OpAv(string opName, Configuration & Config_, python::dict opAv_results):
+  Measure_OpAv(std::string opName, Configuration & Config_, boost::python::dict opAv_results):
    BaseType(), Config(Config_), opAv(0.0), opAv_res(opAv_results) , name(opName){}
 
-  const string name;
+  const std::string name;
 
-  void accumulate(COMPLEX signe) {
+  void accumulate(std::complex<double> signe) {
    BaseType::accumulate(signe);
    const double s(real(signe)); // not elegant !
    double tau = Config.Beta/2.0;
@@ -56,7 +56,7 @@ public :
    double op_average;
    boost::mpi::reduce(c, opAv, op_average, std::plus<double>(), 0);
    op_average /= Z_qmc;
-   if (c.rank()==0) std::cout << "< " << name << " > = " << op_average << endl;
+   if (c.rank()==0) std::cout << "< " << name << " > = " << op_average << std::endl;
    opAv_res[name] = op_average; // master only
   }
 };

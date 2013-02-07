@@ -25,12 +25,12 @@
 
 #include <triqs/clef/core.hpp>
 #include <triqs/python_tools/improved_python_dict.hpp>
-#include <triqs/gf_local/GF_C.hpp>
+#include <triqs/gf/block.hpp>
+#include <triqs/gf/imtime.hpp>
 #include "DynamicTrace.hpp"
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <map>
 #include "gf_binner_and_eval.hpp"
-#include <triqs/gf_local/GF_Bloc_ImTime.hpp>
 #include "detManip.hpp"
 
 /**
@@ -47,7 +47,7 @@ struct Configuration {
    */
  struct BlockInfo { 
   int a, alpha; bool dagger; 
-  vector<OP_REF> * InsertionTablePtr; // for the O_Odag_insertion
+  std::vector<OP_REF> * InsertionTablePtr; // for the O_Odag_insertion
   BlockInfo():a(-1), alpha(-1), dagger(false),InsertionTablePtr(NULL){} 
   BlockInfo(const BlockInfo & BI):a(BI.a), alpha(BI.alpha), dagger(BI.dagger),InsertionTablePtr(BI.InsertionTablePtr){} 
   bool isFundamental() const { return (a>=0); }
@@ -57,10 +57,10 @@ struct Configuration {
  struct Delta_Proxy { 
   typedef double result_type;
   typedef OP_REF argument_type;
-  const GF_Bloc_ImTime & Delta;
-  gf_grid_evaluator<GF_Bloc_ImTime> Delta_eval; 
-  const vector<BlockInfo> & info;
-  Delta_Proxy (const GF_Bloc_ImTime & Delta_, const vector<BlockInfo> & info_ ):
+  const triqs::gf::gf_view<triqs::gf::imtime> & Delta;
+  gf_grid_evaluator<triqs::gf::gf_view<triqs::gf::imtime>> Delta_eval; 
+  const std::vector<BlockInfo> & info;
+  Delta_Proxy (const triqs::gf::gf_view<triqs::gf::imtime> & Delta_, const std::vector<BlockInfo> & info_ ):
    Delta(Delta_),Delta_eval(Delta_), 
    info(info_) { }
   double operator()(OP_REF A, OP_REF B) const { 
@@ -72,24 +72,24 @@ struct Configuration {
 
  /// Object for storing the multiple expansion 
  struct O_Odag_Insertions_type { 
-  vector<OP_REF> Insertions1, Insertions2;
+  std::vector<OP_REF> Insertions1, Insertions2;
   void clear(){Insertions1.clear();Insertions2.clear(); Insertions1.reserve(100);  Insertions2.reserve(100);}
  };
  // Stores the relation between a pair of operator and Insertions tables. MUST be initialized by bext routine.
- typedef map<std::pair<string,string>, O_Odag_Insertions_type > O_Odag_Insertions_map_type; 
+ typedef std::map<std::pair<std::string,std::string>, O_Odag_Insertions_type > O_Odag_Insertions_map_type; 
  O_Odag_Insertions_map_type O_Odag_Insertions; 
  // Creates an entry in this map and updates the InsertionTablePtr in info.
  O_Odag_Insertions_type & create_O_Odag_Insertion (const Hloc::Operator & Op1, const Hloc::Operator & Op2);
 
  /// Storing the O1(tau) K(tau,tau') O2(tau') insertion
  struct O1_K_O2_Insertions_type { 
-  vector<std::pair<OP_REF,OP_REF> > Insertions;
+  std::vector<std::pair<OP_REF,OP_REF> > Insertions;
  };
  // map will be initialized by the constructor of the moves.
- map<string, O_Odag_Insertions_type > O1_K_O2_Insertions; 
+ std::map<std::string, O_Odag_Insertions_type > O1_K_O2_Insertions; 
 
  ///
- Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc);
+ Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> &);
 
  /// 
  // Configuration (const Configuration & C);
@@ -103,15 +103,15 @@ struct Configuration {
  /// puts back the time in [0,Beta]
  inline double CyclicOrientedTimeDistance(double x){ double r= fmod(x,Beta); return (r >=0 ? r : r+ Beta);}
 
- GF_C<GF_Bloc_ImTime> Delta_tau;
+ triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> Delta_tau;
  const Hloc & H;
  const double Beta;
  DYNAMIC_TRACE DT;
  const int Na;
- vector< DET_TYPE *> dets;  
- vector< vector<const Hloc::Operator *> > COps, CdagOps; // the operators to be inserted grouped in "a" blocks
- vector<Delta_Proxy *> Delta_tau_proxy;
- vector<BlockInfo> info; // info[number_of_an_op] gives access to its a, alpha, dagger 
+ std::vector< DET_TYPE *> dets;  
+ std::vector< std::vector<const Hloc::Operator *> > COps, CdagOps; // the operators to be inserted grouped in "a" blocks
+ std::vector<Delta_Proxy *> Delta_tau_proxy;
+ std::vector<BlockInfo> info; // info[number_of_an_op] gives access to its a, alpha, dagger 
  const bool RecordStatisticConfigurations;
 
  int ratioNewSign_OldSign() const { return CurrentSign/OldSign; }
@@ -127,8 +127,8 @@ struct Configuration {
 
 // little technical routine for move and measure construction
 template <typename T1, typename T2>
-inline string to_string (const T1 & x1, const T2 & x2) { 
- stringstream out;
+inline std::string to_string (const T1 & x1, const T2 & x2) { 
+ std::stringstream out;
  out<<x1<<"_"<<x2;
  return out.str();
 }
