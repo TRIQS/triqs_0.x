@@ -47,8 +47,8 @@ cdef make_GfImFreq ( gf_imfreq  x) :
 # Python -> C for blocks
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:
         cdef vector[gf_imfreq] v_c
-        for item in G:
-            v_c.push_back(as_gf_imfreq(item))
+        for n,g in G:
+            v_c.push_back(as_gf_imfreq(g))
         return make_gf_block_imfreq (v_c)
 
 # C -> Python for block

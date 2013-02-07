@@ -46,8 +46,8 @@ cdef make_GfLegendre ( gf_legendre  x) :
 # Python -> C for blocks
 cdef gf_block_legendre  as_gf_block_legendre (G) except +:
         cdef vector[gf_legendre] v_c
-        for item in G:
-            v_c.push_back(as_gf_legendre(item))
+        for n,g in G:
+            v_c.push_back(as_gf_legendre(g))
         return make_gf_block_legendre (v_c)
 
 # C -> Python for block

@@ -44,8 +44,8 @@ cdef make_GfImTime ( gf_imtime  x) :
 # Python -> C for blocks
 cdef gf_block_imtime  as_gf_block_imtime (G) except +:
         cdef vector[gf_imtime] v_c
-        for item in G:
-            v_c.push_back(as_gf_imtime(item))
+        for n,g in G:
+            v_c.push_back(as_gf_imtime(g))
         return make_gf_block_imtime (v_c)
 
 # C -> Python for block
