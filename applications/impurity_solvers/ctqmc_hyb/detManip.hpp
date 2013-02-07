@@ -256,7 +256,7 @@ class detManip : public triqs::det_manip::det_manip<FunctionTypeArg> {
 
     for (size_t i=0; i<this->N; ++i) { 
       for (size_t j=0; j<this->N; ++j) {
-        this->mat_inv(i,j) = f(this->x_values[i], this->y_values[j]);
+        this->mat_inv(i,j) = this->f(this->x_values[i], this->y_values[j]);
       }
     }
 
