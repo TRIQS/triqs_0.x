@@ -26,9 +26,9 @@
 using python::extract;
 using namespace OP_Tools;
 
-Configuration::Configuration(triqs::python_tools::improved_python_dict params):
+Configuration::Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc):
   Delta_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["Delta_tau"]) ),
-  H(extract<const Hloc &>(params.dict()["H_diag"])),
+  H(*hloc),
   Beta(Delta_tau.Beta()),
   DT(H,Beta), 
   Na(python::len(params.dict()["C_Cdag_Ops"])),

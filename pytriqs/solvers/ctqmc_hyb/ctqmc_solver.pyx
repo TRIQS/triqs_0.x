@@ -1,25 +1,4 @@
-
-################################################################################
-#
-# TRIQS: a Toolbox for Research in Interacting Quantum Systems
-#
-# Copyright (C) 2011 by M. Ferrero, O. Parcollet
-#
-# TRIQS is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# TRIQS. If not, see <http://www.gnu.org/licenses/>.
-#
-################################################################################
-
+from boost cimport *
 from types import *
 from pytriqs.base.gf_local import *
 from pytriqs.solvers import SolverBase
@@ -28,12 +7,17 @@ from pytriqs.base.utility.my_utils import *
 import pytriqs.base.utility.parameters as parameters
 import pytriqs.base.utility.mpi as mpi
 
-try :
-    import ctqmc_hyb as C_Module
-except : 
-    raise ImportError, "Oops ! Did you compile the Hybridization solver ? I can't find it !"
+cdef extern from "applications/impurity_solvers/ctqmc_hyb/Hloc.hpp":
 
-__add__ = []
+    cdef cppclass Hloc_c "Hloc":
+      Hloc_c(int, int, boost_object, boost_object, boost_object, boost_object, int)
+
+cdef extern from "applications/impurity_solvers/ctqmc_hyb/MC.hpp" namespace "triqs::app::impurity_solvers":
+
+    cdef cppclass solver_c "triqs::app::impurity_solvers::ctqmc_hyb":
+      solver_c(boost_object, Hloc_c *)
+      void solve()
+
 
 class Solver(SolverBase):
     """
@@ -116,13 +100,6 @@ class Solver(SolverBase):
 
     #--------------------------------------------------
 
-    @classmethod
-    def Random_Generators_Available(cls) :
-        """ List of all random number generators compiled """
-        return C_Module.Random_Generators_Available(' ').split()
-
-    #--------------------------------------------------
-                
     def Solve(self):
         """ Solve the impurity problem """
 
@@ -260,7 +237,7 @@ class Solver(SolverBase):
         # Transcription of operators for C++
         Oplist2 = operators.transcribe_op_list_for_C(OPdict)
         SymList = [sym for (n,sym) in SymChar.items() if n in QuantumNumberSymmetries]
-        self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0) 
+        #self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0) 
 
         # Create the C_Cag_Ops array which describes the grouping of (C,Cdagger) operator
         # for the MonteCarlo moves : (a, alpha) block structure [ [ (C_name, Cdag_name)]]
@@ -293,7 +270,12 @@ class Solver(SolverBase):
         
         # Starting the C++ code
         self.Sigma_Old <<= self.Sigma
-        C_Module.MC_solve(self.__dict__ ) # C++ solver
+
+        # C++ solver
+        solver_c(boost_object(self.__dict__),
+                 new Hloc_c(nf, nb, boost_object(Oplist2), boost_object(QuantumNumberOperators), boost_object(SymList),
+                            boost_object(self.Quantum_Numbers_Selection), 0)).solve()
+
         
         # Compute G on Matsubara axis possibly fitting the tail
         if self.Legendre_Accumulation:

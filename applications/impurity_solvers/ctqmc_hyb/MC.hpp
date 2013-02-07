@@ -29,16 +29,19 @@
 #include "Configuration.hpp"
 #include <map>
 
-typedef std::complex<double> SignType;
+namespace triqs { namespace app { namespace impurity_solvers {
+
 
 /**
    
  */
-class MC_Hybridization_Matsubara : public triqs::mc_tools::mc_generic<SignType> { 
+class ctqmc_hyb {
+
+  typedef std::complex<double> SignType;
 
 protected:
 
- typedef triqs::mc_tools::mc_generic<SignType>  BaseType;
+  triqs::python_tools::improved_python_dict params;
   Configuration Config;
   triqs::mc_tools::HistogramBinnedMap Histograms; 
   GF_C<GF_Bloc_ImTime> G_tau, F_tau;
@@ -47,14 +50,15 @@ protected:
   const bool TimeAccumulation;
   const bool LegendreAccumulation;
   const int N_Frequencies_Accu,Freq_Fit_Start;
+  triqs::mc_tools::mc_generic<SignType> QMC;
 
 public : 
 
-  MC_Hybridization_Matsubara(triqs::python_tools::improved_python_dict const & params);
-  void finalize(boost::mpi::communicator const & c);
+  ctqmc_hyb(boost::python::object, Hloc *);
+  void solve();
 
 };
 
+}}}
 
 #endif
-

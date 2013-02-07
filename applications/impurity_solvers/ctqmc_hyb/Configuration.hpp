@@ -89,7 +89,7 @@ struct Configuration {
  map<string, O_Odag_Insertions_type > O1_K_O2_Insertions; 
 
  ///
- Configuration(triqs::python_tools::improved_python_dict params);
+ Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc);
 
  /// 
  // Configuration (const Configuration & C);

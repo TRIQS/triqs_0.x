@@ -58,11 +58,13 @@ std::string make_string( T1 const & x1,T2 const & x2) {
 }
 
 
+namespace triqs { namespace app { namespace impurity_solvers {
+
 //-----------------------------------------------------
 
-MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::improved_python_dict const & params) :
- BaseType(params),
- Config(params),
+ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc) :
+ params(p),
+ Config(params, hloc),
  G_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["G_tau"])),
  F_tau (extract<GF_C<GF_Bloc_ImTime> > (params.dict()["F_tau"])),
  G_legendre (extract<GF_C<GF_Bloc_ImLegendre> > (params.dict()["G_Legendre"])),
@@ -70,8 +72,8 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  TimeAccumulation (params["Time_Accumulation"]),
  LegendreAccumulation (params["Legendre_Accumulation"]),
  N_Frequencies_Accu (params["N_Frequencies_Accumulated"]),
- Freq_Fit_Start (params["Fitting_Frequency_Start"])
-
+ Freq_Fit_Start (params["Fitting_Frequency_Start"]),
+ QMC(params)
 {
 
  const bool UseSegmentPicture (params["Use_Segment_Picture"]);
@@ -81,23 +83,23 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  double p_mv = params["Proba_Move"];
 
  typedef move_set<SignType> move_set_type;
- boost::shared_ptr<move_set_type> AllInserts(new move_set_type(this->RandomGenerator));
- boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(this->RandomGenerator));
+ boost::shared_ptr<move_set_type> AllInserts(new move_set_type(QMC.RandomGenerator));
+ boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(QMC.RandomGenerator));
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
-   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
   }  
   else {  
-   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, this->RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, this->RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
   }
  }
 
- this->add_move(AllInserts, "INSERT", p_ir);
- this->add_move(AllRemoves, "REMOVE", p_ir);
- this->add_move(new Move_C_Delta(Config, this->RandomGenerator), "Move C Delta", p_mv);
+ QMC.add_move(AllInserts, "INSERT", p_ir);
+ QMC.add_move(AllRemoves, "REMOVE", p_ir);
+ QMC.add_move(new Move_C_Delta(Config, QMC.RandomGenerator), "Move C Delta", p_mv);
 
  // Register the Global moves
  python::list GM_List = python::extract<python::list>(params.dict()["Global_Moves_Mapping_List"]);
@@ -110,7 +112,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
    //cout<< "MAP" << Config.H[p->key].Number<< "  "<<mapping[Config.H[p->key].Number]->Number<<endl<<
    //      Config.H[p->key].name<< "  "<<mapping[Config.H[p->key].Number]->name<<endl;
   }
-  this->add_move(new Global_Move(g->x3 , Config, this->RandomGenerator, mapping), "Global move", g->x1);
+  QMC.add_move(new Global_Move(g->x3 , Config, QMC.RandomGenerator, mapping), "Global move", g->x1);
  }
 
  /*************
@@ -121,11 +123,11 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
 
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
-     this->add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
+     QMC.add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
      if (bool(params["Keep_Full_MC_Series"])) 
-      this->add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
+      QMC.add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
    } else if (TimeAccumulation) {
-     this->add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
+     QMC.add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
      assert(0);
    }
@@ -135,13 +137,13 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  // register the measure of F
  if (bool(params["Use_F"]))
    for (int a =0; a<Config.Na;++a) 
-     this->add_measure(new Measure_F_tau(Config, a, F_tau[a] ), make_string("F(tau) ",a));
+     QMC.add_measure(new Measure_F_tau(Config, a, F_tau[a] ), make_string("F(tau) ",a));
 
  // register the measures of the average of some operators
  python::dict opAv_results = python::extract<python::dict>(params.dict()["Measured_Operators_Results"]);
  python::list opAv_List = python::extract<python::list>(params.dict()["Operators_To_Average_List"]);
  for (triqs::python_tools::IteratorOnPythonList<string> g(opAv_List); !g.atEnd(); ++g) {
-  this->add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
+  QMC.add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
  }
 
  // register the measures for the time correlators:
@@ -151,7 +153,7 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
   str1+= "OpCorr";
-  this->add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()), str1);
+  QMC.add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh.len()), str1);
  }
 
 }
@@ -159,32 +161,15 @@ MC_Hybridization_Matsubara::MC_Hybridization_Matsubara(triqs::python_tools::impr
 
 //********************************************************
 
-void MC_Hybridization_Matsubara::finalize (boost::mpi::communicator const & c) { 
-
-  report<<"Monte-Carlo : Time measurements (cpu time) : "<<endl;
-  report<<"   time elapsed total : " << this->Timer << " seconds" << endl;
-
-}
-
-
-//********************************************************
-
-namespace MC_Hybridization_Matsu {
-void solve(boost::python::object parent) {
+void ctqmc_hyb::solve() {
 
   // communicate on the world = all nodes
   boost::mpi::communicator c;
 
-  // get parameters of parent in parms
-  triqs::python_tools::improved_python_dict parms(parent);
-
-  // construct the QMC
-  MC_Hybridization_Matsubara QMC(parms);
-
   // run!! The empty configuration has sign = 1
-  QMC.start(1.0, triqs::utility::clock_callback(parms.value_or_default("MAX_TIME",-1)));
+  QMC.start(1.0, triqs::utility::clock_callback(params.value_or_default("MAX_TIME",-1)));
   QMC.collect_results(c);
-  QMC.finalize(c);
 
 }
-}
+
+}}}
