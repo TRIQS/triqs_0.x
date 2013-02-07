@@ -26,7 +26,7 @@ from pytriqs.dft.sumk_lda_tools import SumkLDATools
 
 SK = SumkLDATools(hdf_file = 'SrVO3.h5')
 
-dm = SK.density_gf()
+dm = SK.density_gf(40)
 
 
 ar = HDFArchive('sumklda_basic.output.h5','w')
