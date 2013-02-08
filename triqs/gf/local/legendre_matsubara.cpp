@@ -32,7 +32,7 @@ namespace triqs { namespace gf {
 void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & gl) {
 
   gw() = 0.0;
-  triqs::arrays::range R();
+  triqs::arrays::range R;
 
   // Use the transformation matrix
   for (auto om: gw.mesh()) {
