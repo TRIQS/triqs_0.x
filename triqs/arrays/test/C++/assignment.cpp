@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include "./src/matrix.hpp"
@@ -32,7 +30,9 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  array<long,2> A (2,3);
- array<long,2,Option::Fortran> Af (2,3);
+ //array<long,2> Af (2,3, "F" );
+ array<long,2> Af (2,3, FORTRAN_LAYOUT );
+ //array<long,2> Af (2,3, memory_layout<2>('F'));
 
  std::cout <<"Filling Af...."<<std::endl;
 
@@ -65,12 +65,11 @@ int main(int argc, char **argv) {
  array<double,2> F = A;
  std::cout<<"  F = A"<<F<<std::endl;
 
+ matrix<std::complex<double> > M1(2,2), M2(2,2);
+ M1() = 0;
+ A()=0;
+ std::cerr<< " is scalar "<< is_scalar_for< int, matrix<std::complex<double> > >::type::value<< std::endl; 
 
-matrix<std::complex<double> > M1(2,2), M2(2,2);
-M1() = 0;
-A()=0;
-std::cerr<< " is scalar "<< is_scalar_for< int, matrix<std::complex<double> > >::type::value<< std::endl; 
-
-return 0;
+ return 0;
 }
 

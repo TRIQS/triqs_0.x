@@ -22,10 +22,9 @@
 #define TRIQS_ARRAY_IMPL_INDEX_STORAGE_PAIR_H
 
 #include "./common.hpp"
+#include "./flags.hpp"
 #include "../storages/shared_block.hpp"
 #include "./assignment.hpp"
-#include "./option.hpp"
-#include "./sliceable_object.hpp"
 #include "triqs/utility/exceptions.hpp"
 #include "triqs/utility/typeid_name.hpp"
 #include "triqs/utility/view_tools.hpp"
@@ -48,20 +47,14 @@ namespace triqs { namespace arrays {
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
- template < class V, int R, class Opt, class ViewTag > struct ViewFactory;
+ template < class V, int R, ull_t OptionFlags, class ViewTag > struct ViewFactory;
 
- template <typename IndexMapType, typename StorageType, typename Opt,  typename ViewTag > 
-  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray),
-  public sliceable_object < typename StorageType::value_type,
-  IndexMapType,
-  Opt,
-  ViewTag, 
-  ViewFactory,
-  indexmaps::slicer,
-  indexmap_storage_pair<IndexMapType,StorageType,Opt,ViewTag> > {
-
+ template <typename IndexMapType, typename StorageType, ull_t OptionFlags,  typename ViewTag > 
+  class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray) { 
+   
    public : 
     typedef typename StorageType::value_type value_type;
+    //ok in std, but not implemented in g++
     //static_assert(std::is_default_constructible<value_type>::value, "array/array_view and const operate only on values");
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
@@ -83,7 +76,7 @@ namespace triqs { namespace arrays {
 
     /// The storage is allocated from the size of IM.
     indexmap_storage_pair (const indexmap_type & IM): indexmap_(IM),storage_(){
-     this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename Opt::InitTag() );
+     this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type() );
     }
 
     /// Shallow copy
@@ -98,8 +91,8 @@ namespace triqs { namespace arrays {
      catch(numpy_interface::copy_exception s){// intercept only this one...
       TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
-       //  <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
-       <<"\n   Opt = "<< triqs::utility::typeid_name(Opt())
+       <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
+       <<"\n   OptionFlags = "<< OptionFlags
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X) 
        <<"\nThe error was :\n "<<s.what();
      }
@@ -154,10 +147,68 @@ namespace triqs { namespace arrays {
     //bool is_empty() const { return this->num_elements()==0;}
     bool is_empty() const { return this->storage_.empty();}
 
-    //  Evaluation. Slices are made by Sliceable object 
+    //  Evaluation on keys.
     typedef typename domain_type::index_value_type key_type;
     template<typename KeyType> value_type const & operator[](KeyType const & key) const { return storage_[indexmap_[key]]; } 
     template<typename KeyType> value_type & operator[](KeyType const & key) { return storage_[indexmap_[key]]; } 
+
+    // Evaluation and slices 
+    template<typename... Args>      
+     typename std::enable_if< 
+     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
+     , value_type &>::type 
+     operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
+
+    template<typename... Args>      
+     typename std::enable_if< 
+     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
+     , value_type const &>::type 
+     operator()(Args const & ... args) const { return storage_[indexmap_(args...)]; }
+
+    template<bool is_const, typename ... Args> struct result_of_call_as_view {
+     typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;
+     typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
+     // should be kept but then replace enable_if by a lazy _enable_if below !
+     //static_assert(IM2::domain_type::rank !=0, "Internal error");
+     typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, ViewTag >::type type;
+    };
+
+    template<typename... Args>   // non const version
+     typename std::enable_if< 
+     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     , typename result_of_call_as_view<false,Args...>::type 
+     >::type // enable_if 
+     operator()(Args const & ... args) { 
+      return typename result_of_call_as_view<false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+
+    template<typename... Args>  // const version   
+     typename std::enable_if< 
+     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     , typename result_of_call_as_view<true,Args...>::type 
+     >::type // enable_if 
+     operator()(Args const & ... args) const { 
+      return typename result_of_call_as_view<true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
+
+     typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, ViewTag >::type view_type;
+
+    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+    // NEED TO PORT TO CLEF2
+    template<typename ...Args>
+     typename std::enable_if<    // enable the template if
+     clef::one_is_lazy<Args...>::value,  // One of Args is a lazy expression
+     std::result_of<clef::lazy_call<view_type>(Args...)>
+      >::type     // end of lazy_enable_if 
+      operator()(Args const &... args) const { 
+       static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+       return clef::lazy_call<view_type>(*this)(args...);
+      }
+
+    /// Equivalent to make_view
+    // CLEAN OPT HRERE
+    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, ViewTag >::type
+     operator()() const { return *this; } 
+    typename ViewFactory<value_type,domain_type::rank, OptionFlags, ViewTag >::type
+     operator()() { return *this; } 
 
     // Iterators
     typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;
@@ -173,7 +224,7 @@ namespace triqs { namespace arrays {
      this->indexmap_ = IndexMapType(d);// build a new one with the lengths of IND
      // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
      if (this->storage_.size() != this->indexmap_.domain().number_of_elements())
-      this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename Opt::InitTag() );
+      this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type()  );
     }
 
     template<typename Xtype>
@@ -189,11 +240,10 @@ namespace triqs { namespace arrays {
   };// end class
 
  // pretty print of the array
- template <typename I, typename S ,class Opt, typename V> 
+ template <typename I, typename S ,ull_t Opt, typename V> 
   std::ostream & operator << (std::ostream & out, const triqs::arrays::indexmap_storage_pair<I,S,Opt,V> & A) {
-   //std::cerr<< "Lengths = "<<A.indexmap().lengths()<<"Strides = "<<A.indexmap().strides()<< "  ";
    if (A.storage().size()==0) out<<"empty ";
-   else pretty_print(out, A.indexmap().domain(),A);
+   else indexmaps::pretty_print(out, A.indexmap().domain(),A);
    return out;
   }
 

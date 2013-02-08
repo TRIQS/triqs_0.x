@@ -20,16 +20,12 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_IMPL_COMMON_H
 #define TRIQS_ARRAYS_IMPL_COMMON_H
+#include <triqs/utility/first_include.hpp>
+#include <triqs/clef/core.hpp>
 #define TRIQS_ARRAYS_ALREADY_INCLUDED
 
 /// Maximum dimension of the arrays
 #define ARRAY_NRANK_MAX 10
-
-// including python first remove some warning
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-//#include <boost/tuple/tuple_io.hpp>
-#include "Python.h"
-#endif
 
 #include <exception> 
 #include <assert.h>

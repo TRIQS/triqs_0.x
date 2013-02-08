@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
  tqa::array<long,2> A (2,3),B,vc;
  tqa::array<double,2> D (2,3), D2;
 
- tqa::array<long,2,tqa::Option::Fortran> Af,Bf,vf;
+ tqa::array<long,2> Af(FORTRAN_LAYOUT),Bf(FORTRAN_LAYOUT),vf(FORTRAN_LAYOUT);
 
  tqa::array<std::complex<double>,1> C(5), C2;
  std::complex<double> z(1,2);

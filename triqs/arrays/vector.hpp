@@ -20,23 +20,23 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAY_VECTOR_H
 #define TRIQS_ARRAY_VECTOR_H
-#include "indexmaps/cuboid/cuboid_map.hpp"
-#include "indexmaps/cuboid/cuboid_slice.hpp"
+#include "indexmaps/cuboid/map.hpp"
+#include "indexmaps/cuboid/slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
-#include "impl/option.hpp"
+#include "impl/flags.hpp"
 
 namespace triqs { namespace arrays {
 
- template <typename ValueType, typename Opt = Option::Default> class vector_view;
- template <typename ValueType, typename Opt = Option::Default> class vector;
+ template <typename ValueType, ull_t Opt=0> class vector_view;
+ template <typename ValueType, ull_t Opt=0> class vector;
 
- // ---------------------- implementation --------------------------------
+ // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair < typename R_Opt_2_IM<1,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::vector_view >
- 
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt> , storages::shared_block<ValueType>, Opt, Tag::vector_view > 
+
  /** */
- template <typename ValueType, typename Opt >
+ template <typename ValueType, ull_t Opt >
   class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(ImmutableVector), public  IMPL_TYPE { 
   public :
    typedef vector_view<ValueType,Opt> view_type;
@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
    typedef typename IMPL_TYPE::storage_type storage_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S, bool BoundCheck> vector_view (indexmaps::cuboid_map<indexmaps::IndexOrder::C<1>, BoundCheck > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
+   template<typename S, bool BoundCheck> vector_view (indexmaps::cuboid::map<1, BoundCheck > const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP>
@@ -76,9 +76,10 @@ namespace triqs { namespace arrays {
 
  };
 
- template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::vector_view> { typedef vector_view<V,Opt> type; };
+ template < class V, int R, ull_t OptionFlags > struct ViewFactory< V, R,OptionFlags , Tag::vector_view> { typedef vector_view<V,OptionFlags> type; };
+ // ---------------------- vector--------------------------------
 
- template <typename ValueType, typename Opt>
+ template <typename ValueType, ull_t Opt>
   class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(ImmutableVector), public IMPL_TYPE { 
   public :
    typedef typename IMPL_TYPE::value_type value_type;
@@ -124,7 +125,7 @@ namespace triqs { namespace arrays {
     * Resizes the vector. NB : all references to the storage is invalidated.
     * Does not initialize the vector by default: to resize and init, do resize(IND).init()
     */
-   vector & resize (const indexmaps::cuboid_domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+   vector & resize (const indexmaps::cuboid::domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
    /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
    vector & operator=(const vector & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
@@ -157,7 +158,7 @@ namespace triqs { namespace arrays {
 #include <boost/numeric/bindings/detail/adaptor.hpp>
 namespace boost { namespace numeric { namespace bindings { namespace detail {
 
- template <typename ValueType, typename Opt, typename Id >
+ template <typename ValueType, triqs::ull_t Opt, typename Id >
   struct adaptor<  triqs::arrays::vector_view<ValueType,Opt>, Id > {  
    typedef typename copy_const< Id, ValueType >::type value_type;
    typedef mpl::map<
@@ -173,7 +174,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
    static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[0]; }
   };
 
- template <typename ValueType, typename Opt, typename Id >
+ template <typename ValueType, triqs::ull_t Opt, typename Id >
   struct adaptor< triqs::arrays::vector<ValueType,Opt>, Id >: 
   adaptor<  triqs::arrays::vector_view<ValueType,Opt>, Id > {};
 
@@ -186,67 +187,67 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
 #include <boost/numeric/bindings/blas/level1/swap.hpp>
 namespace triqs { namespace arrays { 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs) { boost::numeric::bindings::blas::copy(rhs,lhs); }
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { 
    T a =  1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { 
    T a = -1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type 
   triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) { 
    T a = rhs; boost::numeric::bindings::blas::scal(a,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type 
   triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) { 
    T a = 1/rhs; boost::numeric::bindings::blas::scal(a,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs) { boost::numeric::bindings::blas::copy(rhs,lhs); }
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { 
    T a =  1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_vector_or_view <RHS > >::type 
   triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { 
    T a = -1.0; boost::numeric::bindings::blas::axpy(a,rhs,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type 
   triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) { 
    T a = rhs; boost::numeric::bindings::blas::scal(a,lhs);
   } 
 
- template<typename RHS, typename T, typename Opt> 
+ template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_scalar_for<RHS,vector_view<T,Opt> > >::type 
   triqs_arrays_compound_assign_delegation (vector_view<T,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) { 
    T a = 1/rhs; boost::numeric::bindings::blas::scal(a,lhs);
   } 
 
  // swapping 2 vector 
- template <typename V, typename S1, typename S2>
+ template <typename V, ull_t S1, ull_t S2>
   void deep_swap(vector_view <V,S1> x, vector_view<V,S2> y) { boost::numeric::bindings::blas::swap(x,y);} 
 
- template <typename V, typename S1, typename S2>
+ template <typename V, ull_t S1, ull_t S2>
   void deep_swap(vector <V,S1> & x, vector<V,S2>  & y) { boost::numeric::bindings::blas::swap(x,y);} 
 
 }}
@@ -254,7 +255,7 @@ namespace triqs { namespace arrays {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std { 
- template <typename V, typename S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
+ template <typename V, triqs::ull_t S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
 }
 #endif
 

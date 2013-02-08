@@ -20,8 +20,12 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
 #define TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
-#include "../permutation2.hpp"
-namespace triqs { namespace arrays { namespace indexmaps { namespace index_order {
+#include "../permutation.hpp"
+namespace triqs { namespace arrays {
+
+ struct memory_layout_type { ull_t value; explicit memory_layout_type(ull_t v) : value(v){} };
+
+ namespace indexmaps { namespace index_order {
   /* The storage order is given by a permutation P stored in a ull_t (unsigned long long) as in permutations::..
    *   P[0] : the fastest index, 
    *   P[RANK-1] : the slowest index

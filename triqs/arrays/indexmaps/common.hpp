@@ -33,7 +33,7 @@ namespace triqs { namespace arrays { namespace Tag {struct indexmap{}; }}}
 namespace triqs { namespace arrays { namespace indexmaps { 
 
  // to be specialized for all IndexMap types.
- template<typename IndexMap, typename Args> struct slicer; 
+ template<typename IndexMap, typename... Args> struct slicer; 
 
  /// Returns whether the 2 indexMaps are compatible with A op B (op : = , +, etc...)
  template< typename IndexMap1, typename IndexMap2>
@@ -68,8 +68,8 @@ namespace triqs { namespace arrays { namespace indexmaps {
   *     and use indexmap_iterator_adapter to deduce the iterator on B that traver
   se the indices in the same way. 
   */
- template <typename IndexMapIterator, typename IndexMap>
-  struct indexmap_iterator_adapter;
+ //template <typename IndexMapIterator, typename IndexMap>
+ // struct indexmap_iterator_adapter;
 
  /**
   * Pretty printing : a generic version for any domain. To be specialized.

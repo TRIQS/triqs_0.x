@@ -21,7 +21,7 @@
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
-#include <triqs/arrays/indexmaps/permutation2.hpp>
+#include <triqs/arrays/indexmaps/permutation.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs::arrays::permutations;
@@ -30,12 +30,12 @@ int main(int argc, char **argv) {
 
   init_python_stuff(argc,argv);
 
- constexpr auto p0= permutation2(0,1);
- constexpr auto p=  permutation2(0,2,1);
- constexpr auto p2= permutation2(2,1,0,3);
- constexpr auto pc= permutation2(1,2,3,0);
+ constexpr auto p0= permutation(0,1);
+ constexpr auto p=  permutation(0,2,1);
+ constexpr auto p2= permutation(2,1,0,3);
+ constexpr auto pc= permutation(1,2,3,0);
 
- std::cout << P<permutation2(0,1) >() << std::endl;
+ std::cout << P<permutation(0,1) >() << std::endl;
  std::cout << P<p0>() << std::endl;
  std::cout << P<p>() << std::endl;
  std::cout << P<p2>() << std::endl;

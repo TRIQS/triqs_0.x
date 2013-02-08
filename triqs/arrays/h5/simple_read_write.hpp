@@ -115,7 +115,7 @@ namespace triqs {
       if (h5::exists(f, name)) f->unlink( name.c_str());  // put some option here ?
       DataSet ds;
       if (C_reorder) {
-       BOOST_AUTO(C, make_const_cache(A,Option::C()));
+       auto C = make_const_cache(A);
        ds = f->createDataSet( name.c_str(), data_type_file(typename ArrayType::value_type()), data_space(C.view()) );
        ds.write( data(C.view()), data_type_mem(A), data_space(C.view()) );
       }
@@ -157,7 +157,7 @@ namespace triqs {
       mini_vector<size_t,ArrayType::rank > d2; for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
       resize_or_check(A, d2 );
       if (C_reorder) {
-       BOOST_AUTO(C,  make_cache(A, Option::C() ));
+       auto C = make_const_cache(A);
        ds.read( data(C.view()), data_type_mem(C.view()), data_space(C.view()) , dataspace );
       }
       else { ds.read( data(A), data_type_mem(A), data_space(A) , dataspace ); }

@@ -97,7 +97,8 @@ namespace triqs { namespace arrays {
 #ifndef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH 
       typename RHS::const_iterator it_rhs = rhs.begin();
       typedef typename RHS::const_iterator::indexmap_iterator_type RHS_mapit;
-      typedef typename indexmaps::indexmap_iterator_adapter< RHS_mapit, typename LHS::indexmap_type >::type IT;
+      //typedef typename indexmaps::indexmap_iterator_adapter< RHS_mapit, typename LHS::indexmap_type >::type IT;
+      typedef typename LHS::indexmap_type::iterator IT;
       iterator_adapter<false, IT, typename LHS::storage_type > it_lhs(lhs.indexmap(),lhs.storage());
       for (;it_lhs; ++it_lhs, ++it_rhs) { assert(it_rhs);  _ops_<value_type, typename RHS::value_type, OP>::invoke(*it_lhs , *it_rhs); }
 #else

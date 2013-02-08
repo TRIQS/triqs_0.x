@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,135 +18,84 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#ifndef TRIQS_ARRAYS_PERMUTATIONS2_H
+#define TRIQS_ARRAYS_PERMUTATIONS2_H
+namespace triqs { namespace arrays { namespace permutations { 
 
-#ifndef TRIQS_ARRAYS_PERMUTATIONS_H
-#define TRIQS_ARRAYS_PERMUTATIONS_H
+ typedef unsigned long long ull;
 
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/int.hpp>
-#include <boost/mpl/size.hpp>
-#include <boost/mpl/equal.hpp>
-#include <boost/mpl/at.hpp>
-#include <boost/mpl/count.hpp>
-#include <boost/mpl/for_each.hpp>
-#include <boost/mpl/push_front.hpp>
-#include <boost/mpl/push_back.hpp>
-#include <boost/mpl/vector.hpp>
-#include <boost/mpl/max_element.hpp>
-#include <boost/mpl/min_element.hpp>
-#include <boost/mpl/find.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_base_of.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum.hpp>
-#include <boost/preprocessor/arithmetic/dec.hpp> 
+ constexpr ull apply(ull p, ull i) { return (p >> (4*(i+1))) & 0xFull;}
+ constexpr ull size( ull p) { return p & 0xFull;}
 
-#include <ostream>
-#include <sstream>
-#include <vector>
+// icc 13.0 has a big bug in constexpr.
+// ok but for the moment, we do not use it at compile time, so the simple solution is fine.... 
+//#define TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
 
-namespace triqs { namespace arrays { namespace Permutations { 
- struct perm_tag{};
- namespace mpl = boost::mpl;
+ //  sum_{k=0}^{n-1} k a^k =  ( (n-1) * a**(n+1) - n * a**n + a)/(a-1)**2
+ //  sum_{k=0}^{n-1} k a^(n-k-1) =  ( (n-1)  - n * a + a**n)/(a-1)**2
+ //  with a = 16, a**n = 1<<4n
+ constexpr ull _identity(ull n) { return  ( (n-1)*(1<<(4*(n+1))) +(1<<4)- n *(1<<(4*n))) /( (1<<4) -1) /((1<<4) -1); } 
+ constexpr ull identity(ull n) { return n + 0x10 * _identity(n);}
 
-#define NMAX ARRAY_NRANK_MAX
+ constexpr ull _ridentity(ull n) { return  ( (n-1) - n* (1<<4) + (1<<(4*n))) /( (1<<4) -1) /((1<<4) -1); } 
+ constexpr ull ridentity(ull n) { return n + 0x10 *_ridentity(n); }
 
- /**
-  *  permutation<n1,n2,n3> is the permutation [n1,n2,n3]
-  *  e.g. permutation<2,3,1> is a 3 cycle
-  */
-#define TEXT(z, nval, text) int n##nval=-1
- template <int N , BOOST_PP_ENUM(BOOST_PP_DEC(NMAX), TEXT, dd)> 
-#undef TEXT
-  struct permutation: perm_tag { 
-   typedef typename mpl::push_front< typename permutation< BOOST_PP_ENUM_PARAMS(BOOST_PP_DEC(NMAX), n) >::V , mpl::int_<N> >::type V;
-   static_assert( (mpl::count<V, mpl::int_<N> >::type::value==1) ,  "Permutation : error, index appears twice");
-  };
- template<> struct permutation<-1>: perm_tag { typedef mpl::vector<> V;};
+ constexpr ull make_perm_impl(){ return 0;}
+ template<typename ... T> constexpr ull make_perm_impl(ull i0, T... x) { return i0 + 0x10 * make_perm_impl(x...); } 
+ template<typename ... T> constexpr ull permutation(T... x) { return ull(sizeof...(T)) + 0x10* make_perm_impl(x...); } 
 
- typedef permutation<-1> empty;
+ constexpr ull compose_impl(ull p1, ull p2, ull c) { return apply(p2, apply(p1,c)) + 16ull * ( (c+1 <size(p1) ? compose_impl(p1,p2,c+1ull) : 0)); }
+ constexpr ull compose(ull p1, ull p2) { return size(p1) + 0x10* compose_impl(p1,p2, 0);}
 
- template <int Head, typename P>
-  struct push_front : perm_tag {typedef typename mpl::push_front< typename P::V, mpl::int_<Head> >::type V;}; 
+ constexpr ull inverse_impl(ull p, ull c) { return (c << (4*apply(p,c))) + (c>0 ? inverse_impl(p,c-1): 0 ); }
+ constexpr ull inverse(ull p) { return inverse_impl(p,size(p)-1);}
 
- template <int Head, typename P>
-  struct push_back  : perm_tag {typedef typename mpl::push_back < typename P::V, mpl::int_<Head> >::type V;}; 
+#else
 
- //  identity<N> is the identity permutation with N elements. [0, ..., N-1]
- template<int N> struct identity:push_back<N-1,identity<N-1> > {};
- template<> struct identity<0>:perm_tag {typedef mpl::vector<> V;};
+ constexpr ull _identity(ull n) { return  ( (n-1ull)*(1ull<<(4*(n+1))) +(1ull<<4)- n *(1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
+ constexpr ull identity(ull n) { return n + 0x10 * _identity(n);}
 
- // reverse_identity<N> is [N-1, N-2, ... ,0] 
- template<int N> struct reverse_identity:push_front < N-1, reverse_identity<N-1> > {}; 
- template<> struct reverse_identity<0> : perm_tag  { typedef  mpl::vector<> V;};
+ constexpr ull _ridentity(ull n) { return  ( (n-1ull) - n* (1ull<<4) + (1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
+ constexpr ull ridentity(ull n) { return n + 0x10 *_ridentity(n); }
 
- // is_permutation<P>::value == true iif P is a permutation. Unicity is by construction.
- template <typename P, int shift =0>
-  struct is_permutation : mpl::bool_< ((mpl::deref< typename mpl::max_element<typename P::V>::type>::type::value ==  mpl::size<typename P::V>::type::value -1) 
-    &&  (mpl::deref< typename mpl::min_element<typename P::V>::type>::type::value ==  0) )> {};
+ // todo generalize with preproc...
+ constexpr ull make_perm_impl(ull i0) { return i0;} 
+ constexpr ull make_perm_impl(ull i0, ull i1) { return i0 + 0x10ull * i1;} 
+ constexpr ull make_perm_impl(ull i0, ull i1, ull i2) { return i0 + 0x10ull *make_perm_impl(i1,i2);} 
+ constexpr ull make_perm_impl(ull i0, ull i1, ull i2, ull i3) { return i0 + 0x10ull *make_perm_impl(i1,i2,i3);} 
+ constexpr ull make_perm_impl(ull i0, ull i1, ull i2, ull i3, ull i4) { return i0 + 0x10ull * make_perm_impl(i1,i2,i3,i4); } 
 
- // length of the permutation
- template <typename P> struct length : mpl::size<typename P::V> {};
+ constexpr ull permutation2(ull i0) { return 1ull +  0x10ull *make_perm_impl(i0);} 
+ constexpr ull permutation2(ull i0, ull i1) { return 2ull +  0x10ull *make_perm_impl(i0,i1);}
+ constexpr ull permutation2(ull i0, ull i1, ull i2) { return 3ull +  0x10ull *make_perm_impl(i0,i1,i2);}
+ constexpr ull permutation2(ull i0, ull i1, ull i2, ull i3)  { return 4ull +  0x10ull *make_perm_impl(i0,i1,i2,i3);}
+ constexpr ull permutation2(ull i0, ull i1, ull i2, ull i3, ull i4) { return 5ull +  0x10ull *make_perm_impl(i0,i1,i2,i3,i4);}
 
- // 
- template <typename P1, typename P2 >
-  struct is_equal : mpl::equal<typename P1::V, typename P2::V> {};
+ template<int c> struct _compose { static constexpr ull invoke(ull p1, ull p2) { return apply(p2, apply(p1,c)) + 16ull * _compose<c+1>::invoke(p1,p2); } };
+ template<> struct _compose<15> { static constexpr ull invoke(ull p1, ull p2) { return 0ull; } };
+ constexpr ull compose(ull p1, ull p2) { return size(p1) + 0x10ull* (_compose<0>::invoke(p1,p2) & ((1ull<<4*size(p1)) -1ull));}
 
- //  Transform into a vector
- struct to_vec_ { 
-  std::vector<int> & V; to_vec_ (std::vector<int> & V_):V(V_){}
-  template<typename T> void operator()(T) const { V.push_back(T::value);}
+ template<int c> struct _inverse { static constexpr ull invoke(ull p) { return (ull(c) << (4*apply(p,c))) + _inverse<c+1>::invoke(p);} };
+ template<> struct _inverse<15> { static constexpr ull invoke(ull p) { return 0ull; } };
+ constexpr ull inverse(ull p) { return size(p) + 0x10ull*( _inverse<0>::invoke(p) - 7ull*15ull + size(p)*(size(p)-1ull)/2ull);}
+
+#endif
+
+ template<ull F> struct P { 
+  static constexpr ull value = F;
+  friend std::ostream & operator <<( std::ostream & out, P const &  s) { 
+   out << "Permutation of size " << permutations::size(s.value) << " : "<< std::hex;
+   out << std::hex;
+   s.print(out, std::integral_constant<ull,0>()); 
+   return out << std::dec;
+  } 
+
+  template<ull c> void print( std::ostream & out, std::integral_constant<ull,c>) const { out << apply(this->value,c); print(out,  std::integral_constant<ull,c+1>());}
+  void print( std::ostream & out, std::integral_constant<ull,size(F)>) const {}
  };
- template <typename P> inline void to_vector (std::vector<int> & v) { mpl::for_each<typename P::V>(to_vec_(v));}
-
- //  Transform into a string
- template <typename P>
-  inline std::string to_string () { 
-   std::vector<int> V; to_vector<P>(V);
-   std::stringstream s; s<<"[";
-   for (unsigned int u=0; u<V.size(); ++u) s << (u>0 ? ", ": "") <<V[u]; 
-   s<<"]"; return s.str();
-  }
-
- // eval<P,N>::value is P(N). If Index is out of range, it generates a static_assert 
- template<typename P, int index>
-  struct eval  { //: mpl::at<typename P::V,mpl::int_<index> > {};
-   static_assert ( (index < mpl::size<typename P::V>::value), "Index out of range");
-   typedef typename mpl::at<typename P::V,mpl::int_<index> >::type type;
-   enum { value = type::value};
-  };  
-
- /** 
-  * permutations::find<y,P>::value is :
-  *    -   X such that P(X)==y 
-  *    -  (-1) if target is too large (or not found)    ?????
-  *    */
- template < int y, typename P> struct find {
-  static_assert ( ((y>=0) && (y < length<P>::value)), "Index out of range");
-  typedef typename mpl::int_< mpl::find<typename P::V,mpl::int_<y> >::type::pos::value> type;
-  enum { value = type::value};
- };
-
- // compose<P1,P2> is P1 * P2
- template <typename P1, typename P2, int c> struct comp_impl : push_back< eval<P1, eval<P2,c-1>::value>::value, comp_impl<P1,P2, c-1> > {};
- template <typename P1, typename P2> struct comp_impl<P1,P2,0>  { typedef  mpl::vector<> V;};
- template <typename P1, typename P2> struct compose : comp_impl<P1, P2, length<P1>::value >  {};
-
- // inverse<P> is the inverse permutation
- template<typename P, int c > struct inv_impl : push_back< find <c-1, P>::value, inv_impl<P, c-1> > {};
- template<typename P> struct inv_impl<P,0>  { typedef  mpl::vector<> V;};
- template<typename P> struct inverse : inv_impl<P, length<P>::value > {};
-
- /// Print a permutation 
- template <typename T> typename boost::enable_if<boost::is_base_of<perm_tag,T>, std::ostream &>::type
-  operator<<(std::ostream & out, const T & p) { return out<<to_string<T>(); }
-
 }
 
- using Permutations::permutation;
-
-}}//namespace triqs::arrays 
-#undef NMAX
+}}
 #endif
 

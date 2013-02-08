@@ -52,7 +52,7 @@ namespace triqs { namespace arrays {
 
    operator bool() const { return bool(it);}
 
-   typename IndexMapIterator::domain_type::index_value_type const & indices() const {return it.indices();} 
+   typename IndexMapIterator::indexmap_type::domain_type::index_value_type const & indices() const {return it.indices();} 
    IndexMapIterator const & indexmap_iterator() const { return it;}
 
   private:

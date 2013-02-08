@@ -20,63 +20,38 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_MATRIX_H
 #define TRIQS_ARRAYS_MATRIX_H
-#include "indexmaps/cuboid/cuboid_map.hpp"
-#include "indexmaps/cuboid/cuboid_slice.hpp"
+#include "indexmaps/cuboid/map.hpp"
+#include "indexmaps/cuboid/slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "vector.hpp"
 
 namespace triqs { namespace arrays {
 
- template <typename ValueType, typename Opt = Option::Default> class matrix_view;
- template <typename ValueType, typename Opt = Option::Default> class matrix;
-
- namespace details { // ********************************************************
-  using namespace indexmaps; 
-
-  template<typename OrderTag> struct order_as_char;
-  template<> struct order_as_char<Tag::C> { static const char val='C';};
-  template<> struct order_as_char<Tag::Fortran> { static const char val='F';};
-  // add the  permutations ?
-
-  // flip the order, for transposition.
-  template<char C> struct flip_order;
-  template<> struct flip_order<'C'> { typedef Tag::Fortran type;};
-  template<> struct flip_order<'F'> { typedef Tag::C type;};
-
-  template<typename IO> struct tag_from_index_order;
-  template<int D> struct tag_from_index_order<IndexOrder::C<D> > { typedef Tag::C type; };
-  template<int D> struct tag_from_index_order<IndexOrder::Fortran<D> > { typedef Tag::Fortran type; };
-
- }// details ********************************************************
-
- // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
- template < class V, int R, class Opt > struct ViewFactory< V, R, Opt, Tag::matrix_view> { 
-  typedef typename boost::mpl::if_c<R == 1, vector_view<V,Opt >, matrix_view<V,Opt > >::type type;
- };
-
+ template <typename ValueType, ull_t Opt=0> class matrix_view;
+ template <typename ValueType, ull_t Opt=0> class matrix;
+ 
+ // ---------------------- matrix --------------------------------
+ //
 #define _IMPL_MATRIX_COMMON \
  size_t dim0() const { return this->shape()[0];}\
  size_t dim1() const { return this->shape()[1];}\
  bool is_square() const { return dim0() == dim1();}\
  \
- static const char order = details::order_as_char<typename Opt::IndexOrderTag>::val;\
- typedef matrix_view<ValueType, Option::options<typename details::flip_order<order>::type, typename Opt::StorageTag > > transpose_return_type;\
- transpose_return_type transpose() const {\
-  typedef typename transpose_return_type::indexmap_type im_type; typedef Permutations::permutation<1,0> P;\
-  return transpose_return_type( im_type(eval_permutation<P>(this->indexmap().lengths()), eval_permutation<P>(this->indexmap().strides()),\
-     this->indexmap().start_shift()), this->storage());\
+ view_type transpose() const {\
+  typename indexmap_type::lengths_type l; l[0] = this->indexmap().lengths()[1];l[1] = this->indexmap().lengths()[0];\
+  typename indexmap_type::strides_type s; s[0] = this->indexmap().strides()[1];s[1] = this->indexmap().strides()[0];\
+  return view_type( indexmap_type(l,s, this->indexmap().start_shift()), this->storage());\
  }
 
-#define IMPL_TYPE indexmap_storage_pair < typename R_Opt_2_IM<2,Opt>::type, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
+#define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt>, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
 
- template <typename ValueType, typename Opt >
+ template <typename ValueType, ull_t Opt >
   class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
     typedef matrix_view<ValueType,Opt> view_type;
     typedef matrix<ValueType,Opt>      non_view_type;
     typedef void has_view_type_tag;
-    typedef Opt opt_type;
 
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
@@ -108,9 +83,15 @@ namespace triqs { namespace arrays {
     _IMPL_MATRIX_COMMON;
   };
 
- //--------------------------------------------------
+ //---------------------------------------------------------------------
+ // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
+ template < class V, int R, ull_t OptionFlags > struct ViewFactory< V, R, OptionFlags, Tag::matrix_view> { 
+  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags >, matrix_view<V,OptionFlags > >::type type;
+ };
 
- template <typename ValueType, typename Opt >
+ // ---------------------- matrix --------------------------------
+
+ template <typename ValueType, ull_t Opt >
   class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
     typedef typename IMPL_TYPE::value_type value_type;
@@ -119,27 +100,30 @@ namespace triqs { namespace arrays {
     typedef matrix_view<ValueType,Opt> view_type;
     typedef matrix<ValueType,Opt> non_view_type;
     typedef void has_view_type_tag;
-    typedef Opt opt_type;
 
     /// Empty matrix.
-    matrix(){}
+    matrix(char ml='C'):  IMPL_TYPE(indexmap_type(memory_layout<2>(ml))) {}
 
-    // Move
+    /// Empty matrix.
+    matrix(memory_layout<2> ml = memory_layout<2>() ):  IMPL_TYPE(indexmap_type(ml)) {}
+
+    /// Move
     explicit matrix(matrix && X) { this->swap_me(X); } 
 
     ///
-    matrix(size_t dim1, size_t dim2) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2))) {}
+    matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>() ) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2),ml)) {}
 
     ///
-    matrix(mini_vector<size_t,2> const & sha) : IMPL_TYPE(indexmap_type(sha)) {}
+    matrix(mini_vector<size_t,2> const & sha, memory_layout<2> ml = memory_layout<2>()) : IMPL_TYPE(indexmap_type(sha,ml)) {}
 
     /** Makes a true (deep) copy of the data. */
     matrix(const matrix & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
-     matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
-      IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>()):
+     //matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
@@ -156,7 +140,7 @@ namespace triqs { namespace arrays {
      * Resizes the matrix. NB : all references to the storage is invalidated.
      * Does not initialize the matrix by default
      */
-    matrix & resize (const indexmaps::cuboid_domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+    matrix & resize (const indexmaps::cuboid::domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
     /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
     matrix & operator=(const matrix & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
@@ -194,11 +178,11 @@ namespace triqs { namespace arrays {
   template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
  };
 
- template<typename RHS, typename V, typename Opt> 
+ template<typename RHS, typename V, ull_t Opt> 
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, typename Opt> 
+ template<typename RHS, typename V, ull_t Opt> 
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
 
@@ -210,19 +194,19 @@ namespace triqs { namespace arrays {
   template <typename KeyType> void operator()(V & p, KeyType const & key) const { p += (kronecker(key) ? rhs : RHS() ); }
  };
 
- template<typename RHS, typename V, typename Opt>
+ template<typename RHS, typename V, ull_t Opt>
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, typename Opt>
+ template<typename RHS, typename V, ull_t Opt>
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, typename Opt>
+ template<typename RHS, typename V, ull_t Opt>
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { lhs += (-rhs); }
 
- template<typename RHS, typename V, typename Opt>
+ template<typename RHS, typename V, ull_t Opt>
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
 
@@ -250,16 +234,19 @@ namespace triqs { namespace arrays {
 // blas lapack binder
 namespace boost { namespace numeric { namespace bindings { namespace detail {
 
- namespace numerical_array_detail { 
+ /*namespace numerical_array_detail { 
   template <char C> struct order_trait;
   template <> struct order_trait<'F'> { typedef  tag::column_major data_order;};
   template <> struct order_trait<'C'> { typedef  tag::row_major data_order;};
  }
-
- template <typename ValueType, typename Opt, typename Id >
+*/
+ template <typename ValueType, triqs::ull_t Opt, typename Id >
   struct adaptor<  triqs::arrays::matrix_view <ValueType,Opt>, Id > {
    typedef typename copy_const< Id, ValueType >::type value_type;
-   typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt>::order >::data_order  data_order;
+   //typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt>::order >::data_order  data_order;
+   
+   // PB PB PB  : to be fixed : always row major !!!
+   typedef tag::row_major data_order;
 
    typedef mpl::map<
     mpl::pair< tag::value_type, value_type >,
@@ -282,7 +269,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
    static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[1]; }
   };
 
- template <typename ValueType, typename Opt, typename Id >
+ template <typename ValueType, triqs::ull_t Opt, typename Id >
   struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
 
 }}}} // namespace detail, namespace binding, namespace numeric, namespace boost
@@ -290,7 +277,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std { 
- template <typename V, typename Opt >
+ template <typename V, triqs::ull_t Opt >
   void swap( triqs::arrays::matrix_view<V,Opt> & a , triqs::arrays::matrix_view<V,Opt> & b)= delete;
 }
 

@@ -133,7 +133,7 @@ namespace triqs { namespace arrays {
    return res;
   }
 
- namespace details { 
+/* namespace details { 
   template <typename V, typename P, int N> 
    struct apply_impl { 
     static void invoke (V const & sou, V & res) {
@@ -150,7 +150,7 @@ namespace triqs { namespace arrays {
    details::apply_impl<mini_vector<T,Rank> ,P,Rank-1>::invoke(v,res);
    return res;
   }
-
+*/
  //-----------------------------------------------------------
 
  namespace details { 

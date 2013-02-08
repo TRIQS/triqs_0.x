@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2012 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,43 +18,18 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+#ifndef TRIQS_UTILITY_COUNT_OCCUR_H
+#define TRIQS_UTILITY_COUNT_OCCUR_H
+namespace triqs { 
 
-#include "./python_stuff.hpp"
-#include "./src/array.hpp"
-#include <iostream>
+ /// count_type_occurrence<T, Args...>::value is the number of Args deriving or equal to T
+ 
+ template<typename T, typename ... A > struct count_type_occurrence;
 
-//using std::cout; using std::endl;
-//using namespace triqs::arrays;
-#include <type_traits>
+ template<typename T, typename A0, typename... A > struct count_type_occurrence<T,A0,A...> : 
+  std::integral_constant < int, std::is_base_of<T,A0>::value + count_type_occurrence<T, A...>::value>{};
 
-static_assert( ! std::is_pod< triqs::arrays::array<long,2 > >::value, "POD pb");
+ template<typename T> struct count_type_occurrence<T> : std::integral_constant<int, 0>{};
 
-int main(int argc, char **argv) {
-
- init_python_stuff(argc,argv);
- triqs::arrays::array<long,2 > A (2,3);
-
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-  { A(i,j) = 10*i+ j; }
-
- for (int i =0; i<2; ++i)
-  for (int j=0; j<3; ++j) 
-   std::cout<<"A "<<A(i,j)<<std::endl;
-
- std::cout<<"A = "<<A<<std::endl;
-
- //empty array
- triqs::arrays::array<long,2> B;
- std::cout<<"B= "<<B<<std::endl;
-
- return 0;
- std::cout<<A.indexmap().lengths()<<std::endl;
- std::stringstream fs; fs <<A.indexmap().lengths();
- std::cout<<fs.str();
- return 0;
 }
-
-
-
-
+#endif
