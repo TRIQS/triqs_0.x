@@ -53,4 +53,4 @@ TRIQS can be installed on Ubuntu 12.04 LTS and later.
 
  * How to use :ref:`Intel <icc>` C++ compiler?
 
- 
+#. You also need the latest version of Cython (on Cython.org). If cmake does not find Cython, you can specify it with the option -DCYTHON_EXECUTABLE. 
