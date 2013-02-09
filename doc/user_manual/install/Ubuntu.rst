@@ -69,5 +69,4 @@ On Ubuntu 12.10, you have to recompile hdf5. The problem has been reported and w
 
  * How to use :ref:`Intel <icc>` C++ compiler?
 
-
-#. You also need the latest version of Cython (on Cython.org). If cmake does not find Cython, you can specify it with the option -DCYTHON_EXECUTABLE. 
+.. warning:: For the branch 1.0, you need the latest version of Cython (>=.17, downloadable on Cython.org). If Cython is not found, specify the location of the executable with the option -DCYTHON_EXECUTABLE. 
