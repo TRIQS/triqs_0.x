@@ -21,8 +21,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-#link_libraries( ${link_libs}  ) # adding triqs for the stack_trace fun used in exceptions... 
-link_libraries( ${link_libs} triqs ) # adding triqs for the stack_trace fun used in exceptions... 
+link_libraries( ${link_libs} triqs_utility ) # adding triqs for the stack_trace fun used in exceptions... 
 
 FOREACH( TestName1  ${TestList} )
  STRING(REPLACE ".cpp" "" TestName ${TestName1})
@@ -45,7 +44,7 @@ add_definitions(
 
 # Add the necessary libs to the main target.
 SET( link_libs
-   triqs 
+ triqs_utility 
  ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} 
   #  ${Boost_LIBRARIES} 
   ${LAPACK_LIBS} 
