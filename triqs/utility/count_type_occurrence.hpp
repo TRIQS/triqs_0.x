@@ -31,5 +31,12 @@ namespace triqs {
 
  template<typename T> struct count_type_occurrence<T> : std::integral_constant<int, 0>{};
 
+ template<typename T, typename ... A > struct count_type_occurrence_not;
+
+ template<typename T, typename A0, typename... A > struct count_type_occurrence_not<T,A0,A...> : 
+  std::integral_constant < int, !(std::is_base_of<T,A0>::value) + count_type_occurrence_not<T, A...>::value>{};
+
+ template<typename T> struct count_type_occurrence_not<T> : std::integral_constant<int, 0>{};
+
 }
 #endif
