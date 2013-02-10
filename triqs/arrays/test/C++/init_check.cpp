@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include "./src/matrix.hpp"
@@ -32,9 +30,9 @@ int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- array<long,2, Option::options< Tag::nan_inf_init > > A (2,2);
- array<double,2, Option::options< Tag::nan_inf_init > > B (2,2);
- array<std::complex<double> ,2, Option::options< Tag::nan_inf_init > > C (2,2);
+ array<long,2, NanInit > A (2,2);
+ array<double,2, NanInit > B (2,2);
+ array<std::complex<double> ,2, NanInit > C (2,2);
 
  std::cerr  << A  << std::endl ;
  std::cerr  << B  << std::endl ;

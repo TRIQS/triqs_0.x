@@ -54,18 +54,18 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 
    /** Generates the value of the indices of a cuboid_domain.  */
    template <ull_t IterationOrder= permutations::identity(rank) >
-    class generator {
+    class gal_generator {
       typedef index_value_type indices_type;
       const domain * dom;
       indices_type indices_tuple;
       bool atend;
      public:
-      generator (const domain & P, bool atEnd=false): dom(&P), atend(atEnd) {}
-      bool operator==(const generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
-      bool operator!=(const generator & IT2) const { return (!operator==(IT2));}
+      gal_generator (const domain & P, bool atEnd=false): dom(&P), atend(atEnd) {}
+      bool operator==(const gal_generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
+      bool operator!=(const gal_generator & IT2) const { return (!operator==(IT2));}
       indices_type const & operator *() const { return indices_tuple;}
       operator bool () const { return !atend;}
-      generator & operator++(){ assert(!atend); atend = advance_impl(std::integral_constant<int,0>()); return *this;}
+      gal_generator & operator++(){ assert(!atend); atend = advance_impl(std::integral_constant<int,0>()); return *this;}
      private:
       template<int r> bool advance_impl(std::integral_constant<int,r>) {
       constexpr int p = permutations::apply(IterationOrder, r);
@@ -75,8 +75,11 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
       }
       bool advance_impl(std::integral_constant<int,rank>) { return true;}
     };
-   generator<> begin() const { return generator<>(*this,false);}
-   generator<> end() const { return generator<>(*this,true);}
+
+   typedef gal_generator<> generator;
+
+   generator begin() const { return generator(*this,false);}
+   generator end() const   { return generator(*this,true);}
    /* End of generator */
 
    // Check that key in in the domain
@@ -86,13 +89,13 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
     if (!res) TRIQS_ARRAYS_KEY_ERROR << " key out of domain \n" <<fs.str() ;
    }
    template<int r,class KeyType>
-    bool key_check_impl (std::integral_constant<int,r>, KeyType const & key, n_uple const & L, std::stringstream & fs ) {
+    bool key_check_impl (std::integral_constant<int,r>, KeyType const & key, n_uple const & L, std::stringstream & fs ) const {
      using boost::tuples::get;
      bool cond = (  ( size_t(get<r>(key)) < L[r]));
      if (!cond) fs << "key ["<<r<<"] = "<< get<r>(key) <<" is not within [0,"<<L[r]<<"[\n";
      return key_check_impl(std::integral_constant<int,r+1>(), key,L,fs) && cond;
     }
-   template<class KeyType> bool key_check_impl (std::integral_constant<int,rank>, KeyType const &, n_uple const &, std::stringstream &) { return true;}
+   template<class KeyType> bool key_check_impl (std::integral_constant<int,rank>, KeyType const &, n_uple const &, std::stringstream &) const { return true;}
 
    // Check that key in in the domain : variadic form. No need for speed optimisation here, it is just for debug
    template<typename ... Args> void assert_key_in_domain_v (Args const & ... args) const { assert_key_in_domain( std::make_tuple(args...));}

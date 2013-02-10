@@ -29,7 +29,7 @@ namespace tqa = triqs::arrays;
 int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
  
- tqa::matrix<double, tqa::Option::Fortran > A(3,3),B(3,3);
+ tqa::matrix<double> A(3,3, FORTRAN_LAYOUT),B(3,3,FORTRAN_LAYOUT);
 
  A() = -2;
 

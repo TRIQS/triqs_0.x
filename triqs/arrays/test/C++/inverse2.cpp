@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
  try { 
 
- triqs::arrays::matrix<double,Option::Fortran > W(3,3),Wi(3,3),Wkeep(3,3),A;
+ triqs::arrays::matrix<double> W(3,3,FORTRAN_LAYOUT),Wi(3,3,FORTRAN_LAYOUT),Wkeep(3,3,FORTRAN_LAYOUT),A(FORTRAN_LAYOUT);
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
    W(i,j) = (i>j ? i+2.5*j : i*0.8-j);
@@ -56,19 +56,19 @@ int main(int argc, char **argv) {
  Wkeep = W;
 
  std::cout<< inverse(W) << " = "<< eval_as_matrix (inverse(W))<<std::endl<<std::endl;
- std::cout<< inverse(W) << " = "<< triqs::arrays::matrix<double,Option::Fortran >  (inverse(W))<<std::endl<<std::endl;
+ std::cout<< inverse(W) << " = "<< triqs::arrays::matrix<double >  (inverse(W))<<std::endl<<std::endl;
  std::cout<< inverse(W) << " = "<< triqs::arrays::matrix<double >  (inverse(W))<<std::endl<<std::endl;
  
  std::cout<< " and det = "<< double(determinant(W))<<std::endl<<std::endl;
  Wi = inverse(W);
  std::cout<< " Wi= "<< Wi<<std::endl<<std::endl;
 
- triqs::arrays::matrix<double,Option::Fortran > should_be_one(W*Wi);
+ triqs::arrays::matrix<double > should_be_one(W*Wi);
   for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
     assert ( (abs(should_be_one(i,j) - (i==j ? 1 : 0))) <1.e-10 );
 
- std::cerr<< "W* inverse(W)" << " = "<< triqs::arrays::matrix<double,Option::Fortran > (W*Wi)<<std::endl<<std::endl;
+ std::cerr<< "W* inverse(W)" << " = "<< triqs::arrays::matrix<double > (W*Wi)<<std::endl<<std::endl;
  W=  inverse(W);
  std::cout<< " invert of W= "<< W<<std::endl<<std::endl;
  
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
  std::cout<<"determinant "<<determinant(W)<< " = "<< det<< std::endl<<std::endl;
 
  //
- matrix_view<double,Option::Fortran> V(W(range(0,3,2), range(0,3,2)));
+ matrix_view<double> V(W(range(0,3,2), range(0,3,2)));
  std::cout<<" view = "<< V<<std::endl<<std::endl;
  std::cout<< inverse(V) << " = "<< eval_as_matrix (inverse(V))<<std::endl<<std::endl;
 

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
 #include "./src/functional/fold.hpp"
@@ -28,16 +26,15 @@
 #include "./src/algorithms.hpp"
 #include <iostream>
 
-
 using namespace triqs::arrays;
 
-BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
+auto Abs = map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) );
 
 int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::matrix<double,Option::Fortran > A(3,3),B(3,3),C;
+ triqs::arrays::matrix<double > A(3,3,FORTRAN_LAYOUT),B(3,3,FORTRAN_LAYOUT),C(FORTRAN_LAYOUT);
  triqs::arrays::matrix<double > Ac(3,3);
 
  for (int i =0; i<3; ++i)

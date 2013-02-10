@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/matrix.hpp"
 #include "./src/linalg/matmul.hpp"
@@ -28,10 +26,10 @@
 using std::cout; using std::endl;
 using namespace triqs::arrays;
 
-template<typename O1, typename O2, typename O3> void test(bool all =false)  { 
- matrix<double,O1> M1(2,2);
- matrix<double,O2> M2(2,2);
- matrix<double,O3> M3;
+template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bool all =false)  { 
+ matrix<double> M1(2,2, o1);
+ matrix<double> M2(2,2, o2);
+ matrix<double> M3(o3);
  for (int i =0; i<2; ++i)
   for (int j=0; j<2; ++j)
   { M1(i,j) = i+j; M2(i,j) = 1 + i -j ; }
@@ -45,9 +43,8 @@ template<typename O1, typename O2, typename O3> void test(bool all =false)  {
   std::cout<<"M1 = "<<M1<<std::endl;
   std::cout<<"M2 = "<<M2<<std::endl;
   std::cout<<"M3 = "<<M3<<std::endl;
-  std::cout<<"M4 = "<< matrix<double,Option::Fortran>(matmul(M1,M2)) <<std::endl;
+  std::cout<<"M4 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
   std::cout<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
-
 
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j)
@@ -62,14 +59,13 @@ int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- using namespace Option;
- test<C,C,C>(true);
- test<C,C,Fortran>();
- test<C,Fortran,Fortran>();
- test<C,Fortran,C>();
- test<Fortran,Fortran,Fortran>();
- test<Fortran,C,Fortran>();
- test<Fortran,Fortran,C>();
- test<Fortran,C,C>();
+ test(C_LAYOUT      , C_LAYOUT      , C_LAYOUT      , true);
+ test(C_LAYOUT      , C_LAYOUT      , FORTRAN_LAYOUT);
+ test(C_LAYOUT      , FORTRAN_LAYOUT, FORTRAN_LAYOUT);
+ test(C_LAYOUT      , FORTRAN_LAYOUT, C_LAYOUT      );
+ test(FORTRAN_LAYOUT, FORTRAN_LAYOUT, FORTRAN_LAYOUT);
+ test(FORTRAN_LAYOUT, C_LAYOUT      , FORTRAN_LAYOUT);
+ test(FORTRAN_LAYOUT, FORTRAN_LAYOUT, C_LAYOUT      );
+ test(FORTRAN_LAYOUT, C_LAYOUT      , C_LAYOUT      );
  return 0;
 }

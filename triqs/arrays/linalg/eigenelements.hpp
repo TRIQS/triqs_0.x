@@ -48,9 +48,9 @@ namespace triqs { namespace arrays { namespace linalg {
   *  For a one shot usage, prefer eigenelements, eigenvalues functions.
   */
  template<typename MatrixViewType, bool Compute_Eigenvectors > struct eigenelements_worker;
- template<typename T, typename Opt, bool Compute_Eigenvectors > struct eigenelements_worker_base;
+ template<typename T, ull_t Opt, bool Compute_Eigenvectors > struct eigenelements_worker_base;
 
- template<typename T, typename Opt >
+ template<typename T, ull_t Opt >
   struct eigenelements_worker_base <T,Opt,false> { 
    private:
     void operator = ( eigenelements_worker_base const & x);
@@ -83,7 +83,7 @@ namespace triqs { namespace arrays { namespace linalg {
 
  //--------------------------------
 
- template<typename T, typename Opt>
+ template<typename T, ull_t Opt>
   struct eigenelements_worker_base <T,Opt,true> : eigenelements_worker_base <T,Opt,false>  {
    protected:
     eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) :  eigenelements_worker_base <T,Opt,false>  (the_matrix) {this->compz='V'; }
@@ -96,7 +96,7 @@ namespace triqs { namespace arrays { namespace linalg {
 
  //--------------------------------
 
- template<typename Opt, bool Compute_Eigenvectors >
+ template<ull_t Opt, bool Compute_Eigenvectors >
   struct eigenelements_worker< matrix_view<double,Opt> ,Compute_Eigenvectors > :eigenelements_worker_base<double,Opt,Compute_Eigenvectors> { 
    eigenelements_worker ( matrix_view <double,Opt> the_matrix) : eigenelements_worker_base<double,Opt,Compute_Eigenvectors> (the_matrix) {}
    void invoke() {
@@ -109,7 +109,7 @@ namespace triqs { namespace arrays { namespace linalg {
 
  //--------------------------------
 
- template<typename Opt, bool Compute_Eigenvectors >
+ template<ull_t Opt, bool Compute_Eigenvectors >
   struct eigenelements_worker< matrix_view<dcomplex, Opt>,Compute_Eigenvectors > :eigenelements_worker_base<dcomplex,Opt,Compute_Eigenvectors> { 
    triqs::arrays::vector <double> work2;   
    public :

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,11 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
-
 
 using namespace triqs::arrays;
 
@@ -32,7 +29,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  array<long,2> A (2,3);
- array<long,2,Option::Fortran> Af (2,3);
+ array<long,2> Af (2,3,FORTRAN_LAYOUT);
 
  std::cout <<"Filling Af...."<<std::endl;
 
@@ -43,7 +40,6 @@ int main(int argc, char **argv) {
  // assign 
  A = Af;
  std::cout <<"A= Af --- > A =  "<<A<<std::endl;
-
 
  A *=2.0;
 

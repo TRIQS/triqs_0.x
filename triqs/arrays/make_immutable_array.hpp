@@ -42,7 +42,7 @@ namespace triqs { namespace arrays {
     typedef triqs::clef::make_function_impl<Expr, mpl::vector<PH1, PH2> > function_type;
     // pass this result_type in std result of format ...
     typedef typename function_type::template result_type<size_t,size_t>::type value_type; 
-    typedef indexmaps::cuboid_domain<2> domain_type;
+    typedef indexmaps::cuboid::domain<2> domain_type;
     domain_type domain() const { return dom_;} 
     template<typename KeyType> value_type operator[] (KeyType const & key) const { return f(key[0],key[1]);}
 

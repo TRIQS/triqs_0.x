@@ -36,7 +36,7 @@ void f( array_view<long,2> & A, long u) {
 int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
- array<long,2, Option::Fortran > A (2,3);
+ array<long,2> A (2,3, FORTRAN_LAYOUT);
 
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j) 
@@ -52,27 +52,27 @@ int main(int argc, char **argv) {
  std::cout<<"Ac = "<<Ac<<std::endl;
 
  std::cout<<"----------"<<std::endl;
- std::cout<<"Expr = "<< make_const_cache(2*A, Option::C() ).view() <<std::endl;
+ std::cout<<"Expr = "<< make_const_cache(2*A).view() <<std::endl;
 
  std::cout<<"----------"<<std::endl;
- std::cout<<"A F->C = "<< make_const_cache(A, Option::C()).view() <<std::endl;
+ std::cout<<"A F->C = "<< make_const_cache(A).view() <<std::endl;
 
  std::cout<<"----------"<<std::endl;
- std::cout<<"A C->C = "<< make_const_cache(Ac, Option::C()).view() <<std::endl;
+ std::cout<<"A C->C = "<< make_const_cache(Ac).view() <<std::endl;
 
  std::cout<<"----------"<<std::endl;
- f(make_cache(Ac, Option::C()),287);
+ f(make_cache(Ac),287);
  std::cout<<"Ac = "<<Ac<<std::endl;
 
  std::cout<<"----------"<<std::endl;
- f(make_cache(A, Option::C() ),287);
+ f(make_cache(A ),287);
  std::cout<<"A = "<<A<<std::endl;
 
  std::cout<<"----------"<<std::endl;
  std::cout<<"A = "<<A<<std::endl;
  std::cout<<"A(range(0,1),range(1,2) ) = "<<A( range(0,1),range(1,2) )<<std::endl;
 
- array_view <long,2,Option::Fortran> V(A(range(0,1), range(1,2)));
+ array_view <long,2> V(A(range(0,1), range(1,2)));
  array_view <long,2> Vc(Ac(range(0,1), range(1,2)));
 
  Vc(0,0) = 300;
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
  std::cout<<"A = "<<A<<std::endl;
  std::cout<<"Ac = "<<Ac<<std::endl;
 
- f(make_cache(V, Option::C()),156);
+ f(make_cache(V),156);
  std::cout<<"A = "<<A<<std::endl;
  std::cout<<"Ac = "<<Ac<<std::endl;
 

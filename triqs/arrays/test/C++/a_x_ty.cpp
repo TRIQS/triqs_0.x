@@ -32,14 +32,13 @@
 #include "./src/linalg/a_x_ty.hpp"
 #include <boost/numeric/bindings/blas/level1/dot.hpp>
 
-
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::matrix<double, Option::Fortran > A(5,5);
+ triqs::arrays::matrix<double> A(5,5, FORTRAN_LAYOUT);
  triqs::arrays::matrix<double > Ac(5,5);
  typedef triqs::arrays::vector<double> vector_type;
  vector_type  MC(5), MB(5);

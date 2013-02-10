@@ -28,7 +28,7 @@
 namespace tqa = triqs::arrays;
 
 template<typename T> void test( T val=1 ) { 
- tqa::matrix<T, tqa::Option::Fortran > A(3,3),B(3,3);
+ tqa::matrix<T> A(3,3, FORTRAN_LAYOUT),B(3,3, FORTRAN_LAYOUT);
 
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)

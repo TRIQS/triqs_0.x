@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
@@ -37,7 +35,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  // testing gemv
- triqs::arrays::matrix<double,Option::Fortran > A(5,5);
+ triqs::arrays::matrix<double> A(5,5,FORTRAN_LAYOUT);
 
  for (int i =0; i<5; ++i)
   for (int j=0; j<5; ++j)

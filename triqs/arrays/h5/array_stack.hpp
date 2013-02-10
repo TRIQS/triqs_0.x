@@ -27,15 +27,15 @@ namespace triqs { namespace arrays { namespace h5 {
  using namespace H5;
 
  namespace details { // to be replaced by ellipsis 
-  template<class T, size_t N, class Opt> array_view<T,N-1,Opt> slice0( array<T,N,Opt> & A, size_t ind);
+  template<class T, size_t N, ull_t Opt> array_view<T,N-1,Opt> slice0( array<T,N,Opt> & A, size_t ind);
 #define AUX(z,p,unused) BOOST_PP_COMMA_IF(p) range()
 #define IMPL(z, NN, unused) \
-  template<class T, class Opt> array_view<T,BOOST_PP_INC(NN),Opt> slice0( array<T,BOOST_PP_INC(NN)+1,Opt> & A, size_t ind) {\
+  template<class T, ull_t Opt> array_view<T,BOOST_PP_INC(NN),Opt> slice0( array<T,BOOST_PP_INC(NN)+1,Opt> & A, size_t ind) {\
    return A(ind,BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil));}
   BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
 #undef IMPL
 #undef AUX
-  template<class T, class Opt> T & slice0( array<T,1,Opt> & A, size_t ind) { return A(ind);}
+  template<class T, ull_t Opt> T & slice0( array<T,1,Opt> & A, size_t ind) { return A(ind);}
 
   template<typename B, typename Enable = void> struct get_value_type { typedef B type; static const size_t rank = 0;};
   template<typename B> struct get_value_type<B, typename boost::enable_if<is_amv_value_class<B> >::type > { 

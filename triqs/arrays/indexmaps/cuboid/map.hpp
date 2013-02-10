@@ -32,6 +32,11 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  template< class D, class K> struct _chk<true, D, K>  { static void invoke (D const & d, K const & k) {d.assert_key_in_domain(k);} };
  template< class D, class K> struct _chk<false, D, K> { static void invoke (D const & d, K const & k) {} };
 
+ template< bool BC, class D, class ... K> struct _chk_v;
+ template< class D, class ... K> struct _chk_v<true, D, K...>  { static void invoke (D const & d, K const & ... k) {d.assert_key_in_domain_v(k...);} };
+ template< class D, class ... K> struct _chk_v<false, D, K...> { static void invoke (D const & d, K const & ... k) {} };
+
+
  /** Standard hyper_rectangular arrays, implementing the IndexMap concept.  
  */
  template<int Rank, ull_t OptionsFlags>
@@ -71,7 +76,10 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    //------------- end of concept  ---------------------
 
    // mv into the concept ?
-   template<typename ... Args> size_t operator()(Args const & ... args) const { return start_shift_ + _call_impl<0>(args...);}
+   template<typename ... Args> size_t operator()(Args const & ... args) const { 
+     _chk_v<CheckBounds, domain_type, Args...>::invoke (this->domain(),args...);
+    return start_shift_ + _call_impl<0>(args...);
+   }
    private : 
    template<int N, typename Arg0, typename ... Args> 
     size_t _call_impl( Arg0 const & arg0, Args const & ... args) const { return arg0* strides_[N] + _call_impl<N+1>(args...); }
@@ -105,6 +113,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    strides_type const & strides() const { return this->strides_;}
 
    memory_layout<Rank> memory_indices_layout() const { return memory_order_;}
+    
+   bool memory_layout_is_c() const { return memory_indices_layout() == memory_layout<Rank> (mem_layout::c_order(Rank));}
+   bool memory_layout_is_fortran() const { return memory_indices_layout() == memory_layout<Rank> (mem_layout::fortran_order(Rank));}
 
    private :
    domain_type mydomain;
@@ -165,7 +176,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
       pos -= (im->lengths()[p]-1) * im->strides()[p];
       inc_ind_impl (std::integral_constant<int,v-1>());
      }
-     void inc_ind_impl(std::integral_constant<int,0>) {} 
+     void inc_ind_impl(std::integral_constant<int,0>) { atend = true;} 
      bool equal(iterator const & other) const {return ((other.im==im)&&(other.atend==atend)&&(other.pos==pos));}
      return_type & dereference() const { assert (!atend); return pos; }
      ull_t io; 

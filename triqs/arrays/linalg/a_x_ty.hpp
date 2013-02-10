@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
 
    public:
    typedef BOOST_TYPEOF_TPL( V1() * V2() * ScalarType()) value_type;
-   typedef indexmaps::cuboid_domain<2> domain_type;
+   typedef indexmaps::cuboid::domain<2> domain_type;
    typedef typename const_view_type_if_exists_else_type<VectorType1>::type X_type; 
    typedef typename const_view_type_if_exists_else_type<VectorType2>::type Y_type;
    const ScalarType a; const X_type x; const Y_type y; 

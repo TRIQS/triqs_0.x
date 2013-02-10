@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 
 #include "./src/array.hpp"
@@ -40,8 +38,8 @@ int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::matrix<double,Option::Fortran > A(5,5);
- triqs::arrays::matrix<double > Ac(5,5);
+ triqs::arrays::matrix<double> A(5,5, FORTRAN_LAYOUT);
+ triqs::arrays::matrix<double> Ac(5,5);
  typedef triqs::arrays::vector<double> vector_type;
  vector_type  MC(5), MB(5);
 

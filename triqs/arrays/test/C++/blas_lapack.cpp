@@ -38,8 +38,6 @@
 #include <boost/numeric/bindings/lapack/computational/getrf.hpp>
 #include <boost/numeric/bindings/lapack/computational/getri.hpp>
 
-
-
 using namespace triqs::arrays;
 
 namespace blas = boost::numeric::bindings::blas;
@@ -68,7 +66,8 @@ int main(int argc, char **argv) {
  triqs::arrays::vector <double> V3(2);
  for (int i =0; i<2; ++i) {V3(i) = i+1;}
  
- triqs::arrays::matrix<double,Option::Fortran > M1(2,2), M2(2,2), M3(2,2);
+
+  triqs::arrays::matrix<double> M1(2,2,FORTRAN_LAYOUT), M2(2,2,FORTRAN_LAYOUT), M3(2,2,FORTRAN_LAYOUT);
  for (int i =0; i<2; ++i)
   for (int j=0; j<2; ++j)
   { M1(i,j) = i+j; M2(i,j) = 1; M3(i,j)=0;}
@@ -78,10 +77,21 @@ int main(int argc, char **argv) {
  std::cout<<"M1 = "<<M1<<std::endl;
  std::cout<<"M2 = "<<M2<<std::endl;
  std::cout<<"M3 = "<<M3<<std::endl;
+ 
+ triqs::arrays::matrix<double> Mc1(2,2), Mc2(2,2), Mc3(2,2);
+ for (int i =0; i<2; ++i)
+  for (int j=0; j<2; ++j)
+  { Mc1(i,j) = i+j; Mc2(i,j) = 1; Mc3(i,j)=0;}
 
-/* triqs::arrays::matrix_view<double,'C' > MC1(M1);
- std::cout<<"M1 = "<<M1<<std::endl;
- std::cout<<"MC1 = "<<MC1<<std::endl;
+ // try to multiply
+ blas::gemm(1.0,Mc1, Mc2, 1.0, Mc3);
+ std::cout<<"Mc1 = "<<Mc1<<std::endl;
+ std::cout<<"Mc2 = "<<Mc2<<std::endl;
+ std::cout<<"Mc3 = "<<Mc3<<std::endl;
+
+ /* triqs::arrays::matrix_view<double,'C' > MC1(M1);
+    std::cout<<"M1 = "<<M1<<std::endl;
+    std::cout<<"MC1 = "<<MC1<<std::endl;
 
 */
 

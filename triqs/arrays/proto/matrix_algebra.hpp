@@ -50,7 +50,7 @@ namespace triqs { namespace arrays {
   using boost::enable_if; using boost::enable_if_c; using proto::_left; using proto::_right; 
   using proto::_value; namespace p_tag= proto::tag; using boost::remove_reference;
 
-  typedef indexmaps::cuboid_domain<2> matrix_domain_type;
+  typedef indexmaps::cuboid::domain<2> matrix_domain_type;
 
   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<tup::is_in_ZRC<proto::_value>()> > {}; 
   struct BasicVectorTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableVector<proto::_value>()> > {}; 
@@ -167,16 +167,16 @@ namespace triqs { namespace arrays {
   };
 
   //For matrices and vectors, special treatment : the regular classes are replaced by the corresponding const view
-  template< typename T, typename Opt> struct MatrixDomain::as_child< matrix<T,Opt> > : 
+  template< typename T, ull_t Opt> struct MatrixDomain::as_child< matrix<T,Opt> > : 
    MatrixDomain::proto_base_domain::template as_expr< const matrix_view<T,Opt> >{};
 
-  template< typename T, typename Opt> struct MatrixDomain::as_child< const matrix<T,Opt> > : 
+  template< typename T, ull_t Opt> struct MatrixDomain::as_child< const matrix<T,Opt> > : 
    MatrixDomain::proto_base_domain::template as_expr< const matrix_view<T,Opt> >{};
 
-  template< typename T, typename Opt> struct VectorDomain::as_child< vector<T,Opt> > : 
+  template< typename T, ull_t Opt> struct VectorDomain::as_child< vector<T,Opt> > : 
    VectorDomain::proto_base_domain::template as_expr< const vector_view<T,Opt> >{};
 
-  template< typename T, typename Opt> struct VectorDomain::as_child< const vector<T,Opt> > : 
+  template< typename T, ull_t Opt> struct VectorDomain::as_child< const vector<T,Opt> > : 
    VectorDomain::proto_base_domain::template as_expr< const vector_view<T,Opt> >{};
  }
 

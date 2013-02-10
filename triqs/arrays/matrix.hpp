@@ -102,7 +102,8 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty matrix.
-    matrix(char ml='C'):  IMPL_TYPE(indexmap_type(memory_layout<2>(ml))) {}
+   // ambigous
+   // matrix(char ml='C'):  IMPL_TYPE(indexmap_type(memory_layout<2>(ml))) {}
 
     /// Empty matrix.
     matrix(memory_layout<2> ml = memory_layout<2>() ):  IMPL_TYPE(indexmap_type(ml)) {}
@@ -246,7 +247,7 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
    //typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt>::order >::data_order  data_order;
    
    // PB PB PB  : to be fixed : always row major !!!
-   typedef tag::row_major data_order;
+   typedef tag::column_major data_order;
 
    typedef mpl::map<
     mpl::pair< tag::value_type, value_type >,
@@ -255,18 +256,26 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     mpl::pair< tag::size_type<2>, std::ptrdiff_t >,
     mpl::pair< tag::data_structure, tag::linear_array >,
     mpl::pair< tag::data_order, data_order  >,
-    mpl::pair< tag::stride_type<1>,
-    typename if_row_major< data_order, std::ptrdiff_t, tag::contiguous >::type >,
-    mpl::pair< tag::stride_type<2>,
-    typename if_row_major< data_order, tag::contiguous, std::ptrdiff_t >::type >
+    mpl::pair< tag::stride_type<1>,std::ptrdiff_t >,
+    mpl::pair< tag::stride_type<2>,std::ptrdiff_t >
+    //mpl::pair< tag::stride_type<1>,
+    //typename if_row_major< data_order, std::ptrdiff_t, tag::contiguous >::type >,
+    //mpl::pair< tag::stride_type<2>,
+    //typename if_row_major< data_order, tag::contiguous, std::ptrdiff_t >::type >
      > property_map;
 
-   static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[0]; }
-   static std::ptrdiff_t size2( const Id& id ) { return id.indexmap().lengths()[1];}
+   //static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[0]; }
+   //static std::ptrdiff_t size2( const Id& id ) { return id.indexmap().lengths()[1];}
+   //static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[0]; }
+   //static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[1]; }
+
+   static bool is_f(Id const & id) { return  id.indexmap().memory_layout_is_fortran();}
+   static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[is_f(id) ? 0 :1]; }
+   static std::ptrdiff_t size2( const Id& id ) { return id.indexmap().lengths()[is_f(id) ? 1: 0];}
    static value_type* begin_value( Id& t ) { return &(t(0,0)); }
    static value_type* end_value( Id& t ) { return &t(t.dim0()-1,t.dim1()-1) + 1; } // can't find the doc : if +1 needed ???
-   static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[0]; }
-   static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[1]; }
+   static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[is_f(id) ? 0 :1]; }
+   static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[is_f(id) ? 1 :0]; }
   };
 
  template <typename ValueType, triqs::ull_t Opt, typename Id >

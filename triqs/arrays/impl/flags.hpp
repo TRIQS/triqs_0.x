@@ -47,7 +47,11 @@ namespace triqs { namespace arrays {
   constexpr ull_t get(ull_t f, int a)   { return  (f & (1ull<<a)) >> a;}
   constexpr ull_t get2(ull_t f, int a)  { return  (f & (((1ull<<a) + (1ull<< (a+1))) >> a) );}
 
+#ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
+  constexpr bool bound_check      (ull_t f) { return true;}
+#else
   constexpr bool bound_check      (ull_t f) { return get (f, 0);}
+#endif
 
   //constexpr bool c_order          (ull_t f) { return get (f, 1);}
   //constexpr bool fortran_order    (ull_t f) { return get (f, 2);}

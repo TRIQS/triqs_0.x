@@ -33,12 +33,12 @@ int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::matrix<double,Option::Fortran > A(5,5);
+ triqs::arrays::matrix<double> A(5,5,FORTRAN_LAYOUT);
 
  A() = 2;
  std::cout<<"A = "<<A<<std::endl;
 
- array_view<double,2,Option::Fortran> AA(A); AA = 2;
+ array_view<double,2> AA(A); AA = 2;
  std::cout<<"A = "<<A<<std::endl;
 
 }

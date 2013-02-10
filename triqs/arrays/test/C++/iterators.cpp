@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
@@ -30,9 +28,6 @@ using namespace triqs::arrays;
 int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
- //boost::function_requires<  boost::Mutable_ForwardIteratorConcept<array<long,2>::iterator > >();
- // boost::function_requires<  boost::ForwardIteratorConcept<array<long,2>::const_iterator > >();
-
  array<long,2> A (2,3);
 
  // first print the index generator
@@ -41,13 +36,13 @@ int main(int argc, char **argv) {
 
  std::cout<<std::endl;
 
- for (indexmaps::cuboid_index_generator< array<long,2>::indexmap_type::domain_type, Permutations::permutation<0,1> >
+ for (array<long,2>::indexmap_type::domain_type::gal_generator <permutations::permutation(0,1) >
    it(A.indexmap().domain()); it; ++it)
   std::cout<<"  "<<*it<<std::endl;
 
  std::cout<<std::endl;
 
- for (indexmaps::cuboid_index_generator< array<long,2>::indexmap_type::domain_type, Permutations::permutation<1,0> >
+ for (array<long,2>::indexmap_type::domain_type::gal_generator < permutations::permutation(1,0) >
    it(A.indexmap().domain()); it; ++it)
   std::cout<<"  "<<*it<<std::endl;
 
@@ -70,16 +65,16 @@ int main(int argc, char **argv) {
 
 
  std::cout<<" F order : traversal"<<std::endl; 
- array<long,2,Option::Fortran> Af (2,3);
+ array<long,2> Af (2,3,FORTRAN_LAYOUT);
 
- for (array<long,2,Option::Fortran>::iterator it = Af.begin(); it; ++it) { 
+ for (auto it = Af.begin(); it; ++it) { 
   *it =it.indices()[0] + 10 *it.indices()[1] ;
   std::cout<<" i,j = "<<it.indices()<<std::endl;
  }
  std::cout <<"A = i + 10*j"<<Af<<std::endl;
 
  u=0;
- for (array<long,2,Option::Fortran>::iterator it = Af.begin(); it; ++it,++u) { 
+ for (auto it = Af.begin(); it; ++it,++u) { 
   *it = -u;
   std::cout<<" i,j = "<<it.indices()<<std::endl;
  }

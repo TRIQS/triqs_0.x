@@ -63,7 +63,7 @@ namespace triqs { namespace arrays {
  template<typename ViewType> class det_and_inverse_worker { 
   static_assert ( (is_matrix_view<ViewType>::value),"class must have be a view");
   typedef typename ViewType::value_type VT;
-  typedef matrix_view<VT,Option::Fortran > V_type;
+  typedef matrix_view<VT> V_type;
   ViewType V;
   const size_t dim; 
   triqs::arrays::vector <int> ipiv;
@@ -80,6 +80,7 @@ namespace triqs { namespace arrays {
   private:
   int info; VT _det;
 
+  /*
   template<typename MT>
    typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::C>, V_type>::type 
    fortran_view (MT const &x) { return x.transpose();}
@@ -87,6 +88,9 @@ namespace triqs { namespace arrays {
   template<typename MT>
    typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::Fortran>, V_type>::type 
    fortran_view (MT const &x) { return x;}
+*/
+  template<typename MT>
+   V_type fortran_view (MT const &x) { return (x.indexmap().memory_layout_is_c() ? x.transpose() : x);}
 
   void _step1(V_type & W) { 
    if (step >0) return;
@@ -158,7 +162,8 @@ namespace triqs { namespace arrays {
    template<typename MT> // Optimized implementation of =
     friend void triqs_arrays_assign_delegation (MT & lhs, inverse_lazy const & rhs)  {
      static_assert(is_matrix_or_view<MT>::value, "Internal error");
-     if ((MT::order  !=rhs.a.order)|| (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
+     if ((lhs.indexmap().memory_indices_layout()  !=rhs.a.indexmap().memory_indices_layout())|| 
+       (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
      else {// if M = inverse(M) with the SAME object, then we do not need to copy the data
       reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
       det_and_inverse_worker<typename MT::view_type> W(C());// the worker to make the inversion of the lhs... 

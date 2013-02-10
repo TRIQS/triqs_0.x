@@ -56,6 +56,7 @@ namespace triqs { namespace arrays {
  struct memory_layout_c {};
  
 #define FORTRAN_LAYOUT (triqs::arrays::memory_layout_fortran())
+#define C_LAYOUT (triqs::arrays::memory_layout_fortran())
  //struct custom_memory_layout {};
 
  // stores the layout == order of the indices in memory
@@ -65,11 +66,9 @@ namespace triqs { namespace arrays {
    ull_t value; 
    memory_layout() { value =indexmaps::mem_layout::c_order(Rank);} 
    explicit memory_layout (ull_t v) : value(v) {assert((permutations::size(mo)==Rank));} 
-   memory_layout (const char * ml) {
-    assert( (ml[0]=='C') || (ml[0] == 'F'));
-    value = (ml[0]=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));
-    //assert( (ml=='C') || (ml == 'F'));
-    //value = (ml=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));
+   memory_layout (char ml) {
+    assert( (ml=='C') || (ml == 'F'));
+    value = (ml=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));
    }
    memory_layout (memory_layout_fortran) { value = indexmaps::mem_layout::fortran_order(Rank); }
    memory_layout (memory_layout_c) { value = indexmaps::mem_layout::c_order(Rank); }

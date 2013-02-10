@@ -38,7 +38,7 @@ namespace triqs { namespace arrays {
  // ----------------- implementation  ----------------------------------
 
  // The type of A1, and A2 can already imply a copy. Compile time decision.
- template<typename A1, typename A2, typename Enable =void > struct need_copy_ct; // {}; // : mpl::true_{};
+ template<typename A1, typename A2, typename Enable =void > struct need_copy_ct : mpl::true_{};
  template<typename A1, typename A2> struct need_copy_ct<A1,A2, ENABLE_IF(is_amv_value_or_view_class<A1>)> :  
   mpl::not_<std::is_same< typename A1::value_type, typename A2::value_type> > {};
   //mpl::not_<indexmaps::IndexOrder::same_order<typename A1::indexmap_type::index_order_type, typename A2::indexmap_type::index_order_type> >{};
@@ -64,23 +64,31 @@ namespace triqs { namespace arrays {
    mutable boost::shared_ptr<internal_data> _id;   
    internal_data  & id() const { if (!_id) _id= boost::make_shared<internal_data>(*this,ml); return *_id;}
 
-   exposed_view_type       & view2 ()       { if (need_copy) return id().view; else return keeper;}    
-   exposed_view_type const & view2 () const { if (need_copy) return id().view; else return keeper;} 
- 
+   //exposed_view_type       & view2 ()       { if (need_copy) return id().view; else return keeper;}    
+   //exposed_view_type const & view2 () const { if (need_copy) return id().view; else return keeper;} 
+
    // avoid compiling the transformation keeper-> exposed_view_type when it does not make sense
-   //exposed_view_type       & view1 (mpl::false_)       { if (need_copy) return id().view; else return keeper; }    
-   //exposed_view_type const & view1 (mpl::false_) const { if (need_copy) return id().view; else return keeper;} 
+   exposed_view_type       & view1 (mpl::false_)       { if (need_copy) return id().view; else return keeper; }    
+   exposed_view_type const & view1 (mpl::false_) const { if (need_copy) return id().view; else return keeper;} 
+
+   exposed_view_type       & view1 (mpl::true_)       { return id().view; }     
+   exposed_view_type const & view1 (mpl::true_) const { return id().view; } 
+
+   exposed_view_type       & view2 ()       { return view1(mpl::bool_<CT_need_copy>());}
+   exposed_view_type const & view2 () const { return view1(mpl::bool_<CT_need_copy>());}
+
+   template<typename D> 
+    typename std::enable_if< ! is_amv_value_or_view_class<D>::value, bool>::type 
+    need_copy_dynamic ( D const & x) const { return false;}
    
-   //exposed_view_type       & view1 (mpl::true_)       { return id().view; }     
-   //exposed_view_type const & view1 (mpl::true_) const { return id().view; } 
-   
-   //exposed_view_type       & view2 ()       { return view1(mpl::bool_<CT_need_copy>());}
-   //exposed_view_type const & view2 () const { return view1(mpl::bool_<CT_need_copy>());}
-  
+   template<typename D> 
+    typename std::enable_if<is_amv_value_or_view_class<D>::value, bool>::type 
+    need_copy_dynamic ( D const & x) const { return (x.indexmap().memory_indices_layout() != ml );}
+
   public :
    const_cache (DataType const & x, ml_t ml_ = ml_t()): 
     ml(ml_),keeper (x), 
-    need_copy ( CT_need_copy || (x.indexmap().memory_indices_layout() != ml ) || (!has_contiguous_data(x)) ) {}
+    need_copy ( CT_need_copy || need_copy_dynamic(x)  || (!has_contiguous_data(x)) ) {}
    void update() { if (need_copy && _id) id().view = keeper;} 
    exposed_view_type     const & view () const { return view2();}
    operator exposed_view_type const & () const { return view2();}

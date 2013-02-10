@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #define ARRAY_DEBUG_SLICE
 
@@ -59,14 +57,15 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  try {
- //array<long, 3, Option::general_storage< permutation<2,1,0> > > A0 (2,3,4);
- //array<long, 3, Option::general_storage< permutation<0,1,2> > > A1 (2,3,4);
- //array<long, 3, Option::general_storage< permutation<1,0,2> > > A2 (2,3,4);
- array<long, 3, Option::options<Option::memory_order <2,1,0> > > A0 (2,3,4);
- array<long, 3, Option::options<Option::memory_order <0,1,2> > > A1 (2,3,4);
- array<long, 3, Option::options<Option::memory_order <1,0,2> > > A2 (2,3,4);
- array<long, 3 > A3 (2,3,4);
- array<long, 3, Option::Fortran > A4 (2,3,4);
+ //array<long, 3, Option::options<Option::memory_order <2,1,0> > > A0 (2,3,4);
+ //array<long, 3, Option::options<Option::memory_order <0,1,2> > > A1 (2,3,4);
+ //array<long, 3, Option::options<Option::memory_order <1,0,2> > > A2 (2,3,4);
+ 
+ array<long, 3> A0 (2,3,4,memory_layout<3>(2,1,0));
+ array<long, 3> A1 (2,3,4,memory_layout<3>(0,1,2));
+ array<long, 3> A2 (2,3,4,memory_layout<3>(1,0,2));
+ array<long, 3> A3 (2,3,4);
+ array<long, 3> A4 (2,3,4,FORTRAN_LAYOUT);
 
  f(A0);
  f(A1);

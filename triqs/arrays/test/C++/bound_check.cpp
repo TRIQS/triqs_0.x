@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 
 #include "./python_stuff.hpp"
@@ -27,17 +25,16 @@
 #include "./src/matrix.hpp"
 #include <iostream>
 
-
 using namespace triqs::arrays;
 
 int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- array<long,2, Option::options< Tag::BoundCheck > > A (2,3);
+ array<long,2, BoundCheck > A (2,3);
  array<long,2 > B (2,3);
  array<long,1 > C(2);
- array<long,2,Option::options< Tag::Fortran, Tag::BoundCheck> > Af (2,3);
+ array<long,2, BoundCheck > Af (2,3, FORTRAN_LAYOUT);
 
  try { 
 

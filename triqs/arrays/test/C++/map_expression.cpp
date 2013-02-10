@@ -35,15 +35,15 @@ int main(int argc, char **argv) {
 
  init_python_stuff(argc,argv);
 
- triqs::arrays::matrix<double,Option::Fortran > A(3,3),B(3,3);
+ triqs::arrays::matrix<double> A(3,3, FORTRAN_LAYOUT),B(3,3, FORTRAN_LAYOUT);
  A() = -2;
 
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
   { A(i,j) = i+2*j+1; B(i,j) = i-j;}
 
- BOOST_AUTO( Abs , map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) ) );
- BOOST_AUTO( Max ,  map( boost::function<double(double,double)>(mmax<double>) ) );
+ auto Abs = map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) );
+ auto Max = map( boost::function<double(double,double)>(mmax<double>) );
 
  std::cout<< " A " << A<<std::endl<<std::endl;
  std::cout<< " B " << B<<std::endl<<std::endl;

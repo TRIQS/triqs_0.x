@@ -100,24 +100,24 @@ namespace triqs { namespace arrays { namespace indexmaps {
   }//namespace cuboid_details
 
   // special case of no argument : 
-  template<int R, bool BC> struct slicer < cuboid::map<R, BC> >  { typedef cuboid::map < R, BC > r_type; }; 
+  template<int R, ull_t Opt> struct slicer < cuboid::map<R, Opt> >  { typedef cuboid::map < R, Opt > r_type; }; 
 
   // general case
-  template<int R,  bool BC, typename... Args> struct slicer < cuboid::map<R, BC>,  Args...>  { 
+  template<int R, ull_t Opt, typename... Args> struct slicer < cuboid::map<R, Opt>,  Args...>  { 
 
    static const unsigned int len = sizeof...(Args);
    static_assert((count_type_occurrence<ellipsis,Args...>::value < 2), "Only one ellipsis is permitted");
    static_assert((len>=R || (count_type_occurrence<ellipsis,Args...>::value > 0)), "Too few arguments in slice");
    static_assert(len<=R, "Too many arguments in slice");
-   typedef cuboid::map < count_type_occurrence<range,Args...>::value , BC > r_type; 
-   //typedef cuboid_map < typename index_order::sliced_memory_order<IO,Args...>::type, BC > r_type; 
+   typedef cuboid::map < R - count_type_occurrence_not<range,Args...>::value , Opt > r_type; 
+   //typedef cuboid_map < typename index_order::sliced_memory_order<IO,Args...>::type, Opt > r_type; 
 
-   static r_type invoke (cuboid::map<R, BC> const & X, Args ... args) { 
+   static r_type invoke (cuboid::map<R, Opt> const & X, Args ... args) { 
     mini_vector<l_type,r_type::rank> newlengths;
     mini_vector<s_type,r_type::rank> newstrides;
     s_type newstart= X.start_shift();
     constexpr int EllipsisLength = R - len;
-    cuboid_details::slice_calc<BC>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0]).template invoke<EllipsisLength>(newstart, args...);
+    cuboid_details::slice_calc<flags::bound_check(Opt)>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0]).template invoke<EllipsisLength>(newstart, args...);
     return r_type(newlengths,newstrides,newstart);// use move construction ?
    };
   }; 
