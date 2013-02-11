@@ -23,10 +23,9 @@
 #ifndef MOVE_INSERT_REMOVE_SEGPIC_H_3hurh
 #define MOVE_INSERT_REMOVE_SEGPIC_H_3hurh
 
-#include "Configuration.hpp"
-#include "triqs/mc_tools/random_generator.hpp"
-#include "Move_AuxiliaryFunctions.hpp"
-#include "util.hpp"
+#include "configuration.hpp"
+#include "ctqmc_utils.hpp"
+#include <triqs/mc_tools/random_generator.hpp>
 
 /*
   Implementation of the Segment Picture version of the Insert/remove Moves.
@@ -58,8 +57,8 @@ public :
    Config(Config_), Random(RNG),
    a_level(a), Nalpha(Config.COps[a].size()), 
    name( to_string("Insert_Cdagger_C_SegmentPicture_",a)),
-   HISTO_Length_Kinks_Proposed (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_proposed",triqs::mc_tools::histogram_binned(0,Config.Beta))),
-   HISTO_Length_Kinks_Accepted (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_accepted",triqs::mc_tools::histogram_binned(0,Config.Beta)))
+   HISTO_Length_Kinks_Proposed (ctqmc_utils::map_insert_check(HistoMap, this->name + "_histo_proposed",triqs::mc_tools::histogram_binned(0,Config.Beta))),
+   HISTO_Length_Kinks_Accepted (ctqmc_utils::map_insert_check(HistoMap, this->name + "_histo_accepted",triqs::mc_tools::histogram_binned(0,Config.Beta)))
  {assert(Nalpha==1);}
 
   //---------------------
@@ -98,7 +97,7 @@ public :
    }    
 
    // pick up the actual segment length
-   double rr= Random(try_insert_length_max-2*EPSILON) + EPSILON;
+   double rr= Random(try_insert_length_max-2*ctqmc_utils::EPSILON) + ctqmc_utils::EPSILON;
 
    // deduce the time of the second operator
    double tau2 = Config.CyclicOrientedTimeDistance(tau1 + rr);

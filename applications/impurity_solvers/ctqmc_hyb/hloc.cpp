@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-#include "Hloc.hpp"
+#include "hloc.hpp"
 #include <triqs/python_tools/iterator_python_sequence.hpp>
 #include <algorithm>
 #include <functional>

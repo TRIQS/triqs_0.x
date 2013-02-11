@@ -20,9 +20,9 @@
  *
  ******************************************************************************/
 
-#include "Measures_Z.hpp"
-#include "Measures_G.hpp"
-#include "Measures_Legendre.hpp"
+#include "measure_z.hpp"
+#include "measure_g.hpp"
+#include "measure_legendre.hpp"
 #include <triqs/utility/legendre.hpp>
 
 void Measure_G_Legendre::accumulate(std::complex<double> signe) {

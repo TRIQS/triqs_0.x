@@ -24,8 +24,8 @@
 #define TRACESLICE_H
 
 #include <vector>
-#include "Hloc.hpp"
-#include "SmallMatrix.hpp"
+#include "hloc.hpp"
+#include "small_matrix.hpp"
 
 /**
    One slice in the trace calculation

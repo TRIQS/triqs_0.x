@@ -23,10 +23,10 @@
 #ifndef DYNAMIC_TRACE_H
 #define DYNAMIC_TRACE_H
 
-#include "Hloc.hpp"
-#include "TraceSliceStack.hpp"
-#include "Time_Ordered_Operator_List.hpp"
-#include "TimeEvolution.hpp"
+#include "hloc.hpp"
+#include "trace_slice_stack.hpp"
+#include "time_ordered_list.hpp"
+#include "time_evolution.hpp"
 
 /** 
    Stores a time ordered list of local operators and the trace of their product, with precomputation system for this trace.
@@ -54,7 +54,7 @@ class DynamicTrace {
 public:
   // type of the matrix elements.
   typedef typename Hloc::REAL_OR_COMPLEX  REAL_OR_COMPLEX;
-  // Cf TraceSlice.hpp
+  // Cf trace_slice.hpp
   typedef TraceSlice<REAL_OR_COMPLEX>  myTraceSlice;
 
   // structure stored with the operators.

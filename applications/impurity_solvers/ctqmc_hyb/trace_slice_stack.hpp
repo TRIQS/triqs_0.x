@@ -23,7 +23,7 @@
 #ifndef TRACESLICESTACK_H
 #define TRACESLICESTACK_H
 
-#include "TraceSlice.hpp"
+#include "trace_slice.hpp"
 #include <stack>
 
 /**
@@ -99,7 +99,7 @@ TraceSlice_Stack<TRACE_SLICE_TYPE>::TraceSlice_Stack(const Hloc & H_, int ninit)
   for (Hloc::BlocIterator B= H.BlocBegin(); !B.atEnd(); ++B) { 
     std::vector < const Hloc::Operator * > tmp;
     for (Hloc::OperatorIterator Op = H.OperatorIteratorBegin(); Op != H.OperatorIteratorEnd(); ++Op) { 
-      //Op->second is the operator, Cf Hloc.hpp
+      //Op->second is the operator, Cf hloc.hpp
       if (Op->second[B].Btarget !=NULL) tmp.push_back(& Op->second);
     }
     NonVanishingOpsOnBlock.push_back(tmp);

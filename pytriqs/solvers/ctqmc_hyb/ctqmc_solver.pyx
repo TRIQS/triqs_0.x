@@ -9,12 +9,12 @@ from pytriqs.base.utility.my_utils import *
 import pytriqs.base.utility.parameters as parameters
 import pytriqs.base.utility.mpi as mpi
 
-cdef extern from "applications/impurity_solvers/ctqmc_hyb/Hloc.hpp":
+cdef extern from "applications/impurity_solvers/ctqmc_hyb/hloc.hpp":
 
     cdef cppclass Hloc_c "Hloc":
       Hloc_c(int, int, boost_object, boost_object, boost_object, boost_object, int)
 
-cdef extern from "applications/impurity_solvers/ctqmc_hyb/MC.hpp" namespace "triqs::app::impurity_solvers":
+cdef extern from "applications/impurity_solvers/ctqmc_hyb/ctqmc.hpp" namespace "triqs::app::impurity_solvers":
 
     cdef cppclass solver_c "triqs::app::impurity_solvers::ctqmc_hyb":
       solver_c(boost_object, Hloc_c *, gf_block_imtime, gf_block_imtime, gf_block_imtime, gf_block_imtime, gf_block_legendre)

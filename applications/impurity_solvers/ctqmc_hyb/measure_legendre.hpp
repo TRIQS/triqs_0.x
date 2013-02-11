@@ -24,7 +24,7 @@
 #define TRIQS_CTHYB1_MEASURES_LEGENDRE_H
 
 #include <triqs/gf/legendre.hpp>
-#include "Measures_Z.hpp"
+#include "measure_z.hpp"
 
 /* Measure in Legendre Polynoms.  */
 class Measure_G_Legendre : public Measure_acc_sign<std::complex<double>> { 

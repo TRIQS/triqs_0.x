@@ -31,7 +31,7 @@
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <triqs/mc_tools/histograms.hpp>
 #include <map>
-#include "Configuration.hpp"
+#include "configuration.hpp"
 
 namespace triqs { namespace app { namespace impurity_solvers {
 

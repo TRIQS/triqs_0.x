@@ -23,8 +23,8 @@
 #ifndef TRIQS_CTHYB1_MEASURES_OpAv_H
 #define TRIQS_CTHYB1_MEASURES_OpAv_H
 
-#include "Configuration.hpp"
-#include "Measures_Z.hpp"
+#include "configuration.hpp"
+#include "measure_z.hpp"
 
 /**
    Measure the average of an operator

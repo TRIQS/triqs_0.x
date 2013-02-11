@@ -20,8 +20,8 @@
  *
  ******************************************************************************/
 
-#include "Measures_Z.hpp"
-#include "Measures_OpCorr.hpp"
+#include "measure_z.hpp"
+#include "measure_correlator.hpp"
 
 void Measure_OpCorr::accumulate(std::complex<double> signe) { 
 

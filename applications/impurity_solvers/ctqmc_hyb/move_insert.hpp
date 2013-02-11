@@ -23,11 +23,10 @@
 #ifndef MOVE_INSERT_REMOVE_H_823esfn
 #define MOVE_INSERT_REMOVE_H_823esfn
 
-#include "Configuration.hpp"
-#include "triqs/mc_tools/random_generator.hpp"
-//#include "Move_AuxiliaryFunctions.hpp"
-#include "triqs/mc_tools/histograms.hpp"
-#include "util.hpp"
+#include "configuration.hpp"
+#include "ctqmc_utils.hpp"
+#include <triqs/mc_tools/random_generator.hpp>
+#include <triqs/mc_tools/histograms.hpp>
 
 /*
   Implementation of the generic version of the Insert/remove Moves.
@@ -58,8 +57,8 @@ public :
     Config(Config_), Random(RNG),
     a_level(a), Nalpha(Config.COps[a].size()), 
     name( to_string("Insert_Cdagger_C_",a)),
-   HISTO_Length_Kinks_Proposed (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_proposed",triqs::mc_tools::histogram_binned(0,Config.Beta))),
-   HISTO_Length_Kinks_Accepted (OP_Tools::map_insert_check(HistoMap, this->name + "_histo_accepted",triqs::mc_tools::histogram_binned(0,Config.Beta)))
+   HISTO_Length_Kinks_Proposed (ctqmc_utils::map_insert_check(HistoMap, this->name + "_histo_proposed",triqs::mc_tools::histogram_binned(0,Config.Beta))),
+   HISTO_Length_Kinks_Accepted (ctqmc_utils::map_insert_check(HistoMap, this->name + "_histo_accepted",triqs::mc_tools::histogram_binned(0,Config.Beta)))
  {}
 
   //---------------------

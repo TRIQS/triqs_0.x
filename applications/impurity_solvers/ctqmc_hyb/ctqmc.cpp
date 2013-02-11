@@ -21,27 +21,27 @@
  ******************************************************************************/
 
 // include first because of a namespace clash.. to be fixed...
-#include "MC.hpp"
+#include "ctqmc.hpp"
 #include <triqs/arrays/h5/array_stack.hpp>
 #include <triqs/python_tools/iterator_python_sequence.hpp>
 #include <triqs/utility/callbacks.hpp>
  
 // The moves to insert and remove C, Cdagger operators
-#include "Move_Insert_Remove_Cdag_C_Delta.hpp"
-#include "Move_Insert_Remove_Cdag_C_Delta_SegmentPicture.hpp"
+#include "move_insert.hpp"
+#include "move_insert_segment.hpp"
 
 // The move to move operators
-#include "Move_Move_CC_Delta.hpp"
+#include "move_shift.hpp"
 
 // The Global moves
-#include "Move_Global.hpp"
+#include "move_global.hpp"
 
 // The measures.
-#include "Measures_G.hpp"
-#include "Measures_F.hpp"
-#include "Measures_OpAv.hpp"
-#include "Measures_Legendre.hpp"
-#include "Measures_OpCorr.hpp"
+#include "measure_g.hpp"
+#include "measure_f.hpp"
+#include "measure_average.hpp"
+#include "measure_legendre.hpp"
+#include "measure_correlator.hpp"
 
 using triqs::gf::gf_view;
 using triqs::gf::block;

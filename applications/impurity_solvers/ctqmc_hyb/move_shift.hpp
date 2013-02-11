@@ -23,7 +23,7 @@
 #ifndef MOVE_MOVE_CC_H_w3hbv45
 #define MOVE_MOVE_CC_H_w3hbv45
 
-#include "Configuration.hpp"
+#include "configuration.hpp"
 #include "triqs/mc_tools/random_generator.hpp"
 
 /************************
@@ -113,7 +113,7 @@ public:
     }
 
     // the new operator newOp with a new chosen alpha
-    double newtau =  Config.CyclicOrientedTimeDistance(oldtau - tR + Random(tL + tR - 2*EPSILON) + EPSILON);
+    double newtau =  Config.CyclicOrientedTimeDistance(oldtau - tR + Random(tL + tR - 2*ctqmc_utils::EPSILON) + ctqmc_utils::EPSILON);
     const Hloc::Operator * newOp;
     newOp = (isdagger ? Config.CdagOps[a][newalpha] : Config.COps[a][newalpha]);
 

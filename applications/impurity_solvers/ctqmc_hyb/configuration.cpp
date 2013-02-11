@@ -20,12 +20,12 @@
  *
  ******************************************************************************/
 
-#include "MC.hpp"
+#include "ctqmc.hpp"
 #include <triqs/python_tools/iterator_python_sequence.hpp>
 
 using namespace std;
 using namespace boost;
-using namespace OP_Tools;
+using namespace ctqmc_utils;
 using triqs::gf::gf_view;
 using triqs::gf::block;
 using triqs::gf::imtime;

@@ -20,10 +20,20 @@
  *
  ******************************************************************************/
 
-#ifndef MYCONSTITERATORVECTOR_H
-#define MYCONSTITERATORVECTOR_H
+#ifndef UTIL_CTHYB_H_n2389r8h23 
+#define UTIL_CTHYB_H_n2389r8h23 
 
-namespace OP_Tools {
+namespace ctqmc_utils {
+
+ const double EPSILON = 1.e-13;
+
+ // map : KeyType ->ValType : insert, throw if there is a pb, and return a const & to the value
+ template <typename KeyType, typename ValType, typename MapType> 
+  ValType & map_insert_check( MapType & Map, KeyType const & K, ValType const & V) {
+   std::pair<typename MapType::iterator, bool> R(Map.insert(std::make_pair(K,V)));
+   if (!R.second) TRIQS_RUNTIME_ERROR<< "map_insert_check : key  '"<<K<<"' is already present";
+   return (*R.first).second;
+  }
 
   /// 
   template< typename T>
@@ -43,7 +53,7 @@ namespace OP_Tools {
     bool atEnd () const { return (p==end);}
     operator const T  * () {return &(*p);}
   };
+
 }
 
 #endif
-

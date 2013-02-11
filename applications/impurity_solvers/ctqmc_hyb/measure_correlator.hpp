@@ -24,9 +24,9 @@
 #define TRIQS_CTHYB1_MEASURES_OpCorr_H
 
 #include <triqs/gf/imtime.hpp>
-#include "Measures_Z.hpp"
-#include "Configuration.hpp"
-#include "gf_binner_and_eval.hpp"
+#include "measure_z.hpp"
+#include "configuration.hpp"
+#include "gf_binner.hpp"
 
 /**
    Measure the time correlator of an operator: <O(tau)O>

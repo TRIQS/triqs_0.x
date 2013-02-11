@@ -24,9 +24,9 @@
 #define TRIQS_CTHYB1_MEASURES_F_H
 
 #include <triqs/gf/imtime.hpp>
-#include "Configuration.hpp"
-#include "Measures_Z.hpp"
-#include "gf_binner_and_eval.hpp"
+#include "configuration.hpp"
+#include "measure_z.hpp"
+#include "gf_binner.hpp"
 
 /**
    Measure the F function (one bloc only) in time.

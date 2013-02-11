@@ -27,11 +27,12 @@
 #include <triqs/python_tools/improved_python_dict.hpp>
 #include <triqs/gf/block.hpp>
 #include <triqs/gf/imtime.hpp>
-#include "DynamicTrace.hpp"
+#include "dynamic_trace.hpp"
 #include <triqs/mc_tools/mc_generic.hpp>
 #include <map>
-#include "gf_binner_and_eval.hpp"
-#include "detManip.hpp"
+#include "hloc.hpp"
+#include "gf_binner.hpp"
+#include "det_manip_hyb.hpp"
 
 /**
   The configuration of the Monte Carlo

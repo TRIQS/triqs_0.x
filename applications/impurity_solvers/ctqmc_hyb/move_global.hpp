@@ -23,7 +23,7 @@
 #ifndef GLOBAL_MOVES_H
 #define GLOBAL_MOVES_H
 
-#include "Configuration.hpp"
+#include "configuration.hpp"
 #include "triqs/mc_tools/random_generator.hpp"
 
 

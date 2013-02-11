@@ -30,11 +30,11 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/gf/imfreq.hpp>
-#include "SmallMatrix.hpp"
-#include "myConstIteratorVector.hpp"
+#include "small_matrix.hpp"
+#include "ctqmc_utils.hpp"
 
 // internal class for construction. See cpp file
-namespace Hloc_construction {class mydata;}; 
+namespace Hloc_construction { class mydata; }
 
 /**
    Blocks and local operators matrix elements for a local 
@@ -102,7 +102,7 @@ public :
      for (Hloc::BlocIterator B(HLOC_OBJECT); !B.atEnd(); ++B)
        B->num is the number, etc....
    */
-  typedef OP_Tools::myConstIteratorVector<Bloc> BlocIterator;
+  typedef ctqmc_utils::myConstIteratorVector<Bloc> BlocIterator;
 
 
   //****************************************************************
@@ -257,4 +257,3 @@ public:
 };
 
 #endif
-

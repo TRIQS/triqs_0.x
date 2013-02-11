@@ -20,36 +20,10 @@
  *
  ******************************************************************************/
 
-#ifndef TIME_EVOLUTION_H
-#define TIME_EVOLUTION_H
-#include "Hloc.hpp"
+#include "dynamic_trace.hpp"
 
-/**
+template class DynamicTrace<TimeEvolutionSimpleExp <Hloc::REAL_OR_COMPLEX> >;
 
-  The explicit time evolution operator U
 
-*/
-template<typename REAL_OR_COMPLEX> class TimeEvolutionSimpleExp {  
-  const Hloc & H;
 
-public:
-  typedef TraceSlice<REAL_OR_COMPLEX> myTraceSlice;
-
-  TimeEvolutionSimpleExp(const Hloc &h): H(h) {}
-   
-  inline void Op_U_Slice(const Hloc::Operator * Op, double t1, double t2, 
-			 const myTraceSlice * slice_in, myTraceSlice * slice_res ) const { 
-    assert (t1>=t2);
-    slice_res->setFrom_Op_U_Slice(*Op, t1-t2, slice_in);
-  }
-
-  /// returns the inner product slice1 * U(t1,t2) * slice2
-  inline Hloc::REAL_OR_COMPLEX Slice_U_Slice( const myTraceSlice * slice1,  double t1, double t2, 
-					      const myTraceSlice * slice2) const { 
-    assert (t1>=t2);
-    return myTraceSlice::Slice_U_Slice (slice1,t1-t2, slice2);
-  }
-
-};
-
-#endif
+ 
