@@ -12,11 +12,11 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
 
     def set_from_inverse_fourier(self,GfImFreq_cython gw) :
         """Fills self with the Inverse Fourier transform of gw"""        
-        self._c = lazy_inverse_fourier( gw._c)
+        self._c << lazy_inverse_fourier( gw._c)
 
     def set_from_legendre(self, GfLegendre_cython gl) :
         """Fills self with the Legendre transform of gl"""
-        self._c = lazy_legendre_imtime(gl._c)
+        self._c << lazy_legendre_imtime(gl._c)
 
 #----------------  Reading from h5 ---------------------------------------
 
@@ -29,7 +29,7 @@ register_class (GfImTime, read_fun = h5_read_GfImTime)
 #----------------  Convertions functions ---------------------------------------
 
 # Python -> C
-cdef gf_imtime  as_gf_imtime (g) except +: 
+cdef gf_imtime as_gf_imtime (g) except +:
     return (<GfImTime_cython?>g)._c
 
 # C -> Python. Do NOT add except +

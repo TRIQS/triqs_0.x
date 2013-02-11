@@ -1,12 +1,13 @@
 from dcomplex cimport * 
 from arrays cimport *   
 cdef extern from "triqs/gf/local/tail.hpp" : 
-    cdef cppclass tail "triqs::gf::local::tail_view"  :
+    cdef cppclass tail "triqs::python_tools::cython_proxy<triqs::gf::local::tail_view>"  :
         tail()
         tail(array_view[dcomplex,THREE,COrder], int, array_view[long,TWO,COrder]) except +
         matrix_view[dcomplex,COrder] operator()(int) except +
         array_view[dcomplex,THREE,COrder] data_view()
         array_view[long,TWO,COrder] mask_view()
+        void operator << (tail &)
         long order_min()
         long order_max()
         size_t size() 

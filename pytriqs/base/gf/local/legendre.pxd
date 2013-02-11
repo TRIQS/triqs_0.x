@@ -15,10 +15,11 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
 
     cdef mesh_legendre make_mesh_legendre "triqs::gf::legendre::make_mesh" (double beta, statistic_enum S, size_t n_leg)
 
-    cdef cppclass gf_legendre "triqs::gf::gf_view<triqs::gf::legendre>" :
+    cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::legendre>>" :
         gf_legendre()
         gf_legendre(gf_legendre &)
         gf_legendre(mesh_legendre, array_view[double, THREE,COrder], nothing, nothing, indices_2_t) #except +
+        void operator << (gf_legendre &)
         mesh_legendre mesh() 
         array_view[double, THREE,COrder] data_view()
         indices_2_t indices()
@@ -32,7 +33,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
     cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_legendre &) 
 
 # Python -> C
-cdef gf_legendre as_gf_legendre(g) except +  
+cdef gf_legendre as_gf_legendre(g)# except +  
 
 # C -> Python 
 cdef make_GfLegendre(gf_legendre x)
@@ -41,7 +42,7 @@ cdef make_GfLegendre(gf_legendre x)
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_legendre "triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre> >" :
+    cdef cppclass gf_block_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre>>>" :
         gf_block_legendre()
         gf_legendre & operator [](int)
         discrete_mesh & mesh()

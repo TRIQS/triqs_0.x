@@ -100,10 +100,10 @@ namespace triqs { namespace gf {
    return make_gf(V);
   }
 
-  static gf_view_t make_gf_view(std::vector<gf<Target>> const & V)      { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf<Target>> && V)           { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf_view<Target>> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf_view<Target>> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
+  template<typename GF>
+  static gf_view_t make_gf_view(std::vector<GF> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
+  template<typename GF>
+  static gf_view_t make_gf_view(std::vector<GF> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
 
  };
 

@@ -21,11 +21,12 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
 
     cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
 
-    cdef cppclass gf_imtime "triqs::gf::gf_view<triqs::gf::imtime>" :
+    cdef cppclass gf_imtime "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imtime>>" :
         gf_imtime()
         gf_imtime(gf_imtime &)
         # The constructor must be no_except, or the cython code won't be correct...
         gf_imtime(mesh_imtime, array_view[double, THREE,COrder], tail, nothing, indices_2_t) #except +
+        void operator << (gf_imtime &)
         mesh_imtime mesh() 
         array_view[double, THREE,COrder] data_view()
         tail singularity_view() 
@@ -55,7 +56,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
     cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_imtime &) 
 
 # Python -> C
-cdef gf_imtime  as_gf_imtime (g) except +  
+cdef gf_imtime as_gf_imtime (g) except +
 
 # C -> Python 
 cdef make_GfImTime ( gf_imtime x) 
@@ -64,7 +65,7 @@ cdef make_GfImTime ( gf_imtime x)
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_imtime "triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime> >" :
+    cdef cppclass gf_block_imtime "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>>" :
         gf_block_imtime()
         gf_imtime & operator [](int)
         discrete_mesh & mesh()

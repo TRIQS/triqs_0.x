@@ -14,11 +14,12 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
 
     cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
-    cdef cppclass gf_imfreq "triqs::gf::gf_view<triqs::gf::imfreq>" :
+    cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imfreq> >" :
         gf_imfreq()
         gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
         gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE,COrder], tail, nothing, indices_2_t) #except +
+        void operator << (gf_imfreq &)
         mesh_imfreq mesh() 
         array_view[dcomplex, THREE,COrder] data_view()
         tail singularity_view() 
@@ -57,7 +58,7 @@ cdef make_GfImFreq ( gf_imfreq x)
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_imfreq "triqs::gf::gf_view<triqs::gf::block<triqs::gf::imfreq> >" :
+    cdef cppclass gf_block_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block<triqs::gf::imfreq>>>" :
         gf_block_imfreq()
         gf_imfreq & operator [](int)
         discrete_mesh & mesh()

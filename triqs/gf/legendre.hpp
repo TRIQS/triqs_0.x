@@ -86,9 +86,6 @@ namespace triqs { namespace gf {
     return mesh_t(domain_t(beta,S,n_leg));
   }
 
-  static gf_l make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape) {
-  }
-
   static gf_l make_gf(double beta, statistic_enum S, size_t n_leg, tqa::mini_vector<size_t,2> shape) { 
     gf_l::data_non_view_t A(shape.append(n_leg)); A() = 0;
     return gf_l(make_mesh(beta, S, n_leg), std::move(A), nothing(), nothing(), indices_t(shape));

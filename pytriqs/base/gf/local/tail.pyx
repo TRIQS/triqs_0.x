@@ -86,7 +86,7 @@ cdef class TailGf:
 
     # Should I do more compatibility checks?
     def copy_from(self, TailGf T) :
-        self._c = T._c
+        self._c << T._c
 
     def _make_slice(self, sl1, sl2):
         return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min, mask = self.mask[sl1,sl2])
@@ -115,13 +115,12 @@ cdef class TailGf:
         return (lambda cls, d : cls(**d)) , (self.__class__,self.__reduce_to_dict__())
   
     def invert(self) :
-        self._c = inverse_c (self._c)
-        #self._c = 1.0/self._c
+        self._c << inverse_c (self._c)
 
     #########      arithmetic operations    #################
 
     def __iadd__(self, TailGf arg):
-        self._c = self._c + arg._c
+        self._c << self._c + arg._c
         return self
 
     def __add__(self, TailGf y):
@@ -130,7 +129,7 @@ cdef class TailGf:
         return c
 
     def __isub__(self, TailGf arg):
-        self._c = self._c - arg._c
+        self._c << self._c - arg._c
         return self
 
     def __sub__(self,TailGf y):
@@ -144,9 +143,9 @@ cdef class TailGf:
         """
         n = type(arg).__name__
         if n == 'TailGf' :
-            self._c = self._c * (<TailGf?>arg)._c
+            self._c << self._c * (<TailGf?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            self._c = as_dcomplex(arg)* self._c
+            self._c << as_dcomplex(arg)* self._c
         else : 
             raise RuntimeError, " argument type not recognized in imul for %s"%arg
         return self
@@ -156,12 +155,11 @@ cdef class TailGf:
         n = type(arg).__name__
         cdef matrix_view [dcomplex,COrder] a 
         if n == 'TailGf' :
-            res._c =  self._c * (<TailGf?>arg)._c
+            res._c <<  self._c * (<TailGf?>arg)._c
         elif n in ['float','int', 'complex'] : 
-            res._c = as_dcomplex(arg) * self._c
+            res._c << as_dcomplex(arg) * self._c
         else : 
             a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
-            #res._c =  a * self._c  if s else self._c *a
         return res
 
     def __mul__(self,arg):
@@ -170,14 +168,14 @@ cdef class TailGf:
 
     def __idiv__(self,arg):
         cdef TailGf me = self
-        me._c = me._c / as_dcomplex(arg)
+        me._c << me._c / as_dcomplex(arg)
         return self
 
     def __div_impl_(self, arg, s):
         if s : raise RuntimeError, "Can not divide by a TailGf"
         cdef TailGf res = self.copy()
         if type(arg).__name__  in ['float','int', 'complex'] : 
-            res._c = self._c / as_dcomplex(arg)
+            res._c << self._c / as_dcomplex(arg)
         else : 
             raise RuntimeError, " argument type not recognized for %s"%arg
         return res

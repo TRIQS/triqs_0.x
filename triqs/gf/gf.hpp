@@ -55,8 +55,10 @@ namespace triqs { namespace gf {
   vector_storage( std::vector<T_t>  const &V) : data(V){ } 
   vector_storage( std::vector<T_t>  &&V) : data( std::move(V)) { }
 
-  vector_storage( std::vector<T_other_t>  const &V){ data.reserve(V.size()); for (auto & x : V) data.push_back(x); }
-  vector_storage( std::vector<T_other_t>  &&V)     { data.reserve(V.size()); for (auto & x : V) data.push_back(x); } 
+  template<typename T2>
+  vector_storage( std::vector<T2>  const &V){ data.reserve(V.size()); for (auto & x : V) data.push_back(x); }
+  template<typename T2>
+  vector_storage( std::vector<T2>  &&V)     { data.reserve(V.size()); for (auto & x : V) data.push_back(x); }
 
   template<typename V2, bool _is_view = IsView>
    ENABLE_IFC(_is_view) rebind (V2 const & v) { data.clear(); for (auto & x : v ) data.push_back(x); }
@@ -343,11 +345,6 @@ namespace triqs { namespace gf {
  ///The View class of GF
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
-
-#ifdef TRIQS_ALLOW_EMPTY_VIEW
-  public:
-#endif
-  gf_view ():B(){}
 
   public :
 

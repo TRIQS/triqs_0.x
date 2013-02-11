@@ -58,13 +58,6 @@ namespace triqs { namespace arrays {
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 
-#ifndef TRIQS_ALLOW_EMPTY_VIEW
-   private:
-#endif
-   array_view (){}
-
-   public:
-
    /// Rebind the view
    void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 

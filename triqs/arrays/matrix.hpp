@@ -95,12 +95,6 @@ namespace triqs { namespace arrays {
     /// Copy construction
     matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
-#ifndef TRIQS_ALLOW_EMPTY_VIEW
-   private:
-#endif
-   matrix_view (){}
-   public:
-
     /// Rebind the view
     void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 

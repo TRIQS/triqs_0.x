@@ -23,6 +23,7 @@
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/gf/tools.hpp>
+#include <triqs/python_tools/cython_proxy.hpp>
 
 namespace triqs { namespace gf { namespace local {
 
@@ -39,6 +40,7 @@ namespace triqs { namespace gf { namespace local {
  template<typename G> struct LocalTail  : mpl::false_{};  // a boolean trait to identify the objects modelling the concept LocalTail
  template<> struct LocalTail<tail >     : mpl::true_{};
  template<> struct LocalTail<tail_view >: mpl::true_{};
+ template<> struct LocalTail<python_tools::cython_proxy<tail_view>>: mpl::true_{};
 
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
  template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, tup::is_in_ZRC<T> > {};
@@ -164,10 +166,7 @@ namespace triqs { namespace gf { namespace local {
  class tail_view : public tail_impl <true> {
   typedef tail_impl <true>  B;
   friend class tail;
-#ifdef TRIQS_ALLOW_EMPTY_VIEW
-  public:
-  tail_view ():B(){}
-#endif
+
   public :
   template<bool V> tail_view(tail_impl<V> const & t): B(t){}
   tail_view(B::data_type const &d, long order_min, B::mask_type const &om): B(d, order_min, om){}
