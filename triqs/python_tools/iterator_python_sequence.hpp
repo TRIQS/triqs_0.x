@@ -23,7 +23,7 @@
 #ifndef PYTHON_ITERATORS_H
 #define PYTHON_ITERATORS_H
 
-//#include <boost/python.hpp>
+#include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <list>
 
@@ -52,13 +52,13 @@ namespace triqs { namespace python_tools {
   template<typename T>
   class IteratorOnPythonList { 
     boost::python::stl_input_iterator<boost::python::object> beg,end;
-    std::list<python::object> l;
-    std::list<python::object>::const_iterator p;
+    std::list<boost::python::object> l;
+    std::list<boost::python::object>::const_iterator p;
     T result;
-    inline void convert() {result = python::extract<T>((*p));}    
+    inline void convert() {result = boost::python::extract<T>((*p));}    
   public:
     ///
-    IteratorOnPythonList( const python::list &L): beg(L),end(),l(beg,end) { p=l.begin(); }
+    IteratorOnPythonList( const boost::python::list &L): beg(L),end(),l(beg,end) { p=l.begin(); }
     ///
     IteratorOnPythonList& operator++() {++p;  return *this;}
     ///
@@ -92,14 +92,14 @@ namespace triqs { namespace python_tools {
       /// second element
       T2 x2;};
   private:
-    python::stl_input_iterator<python::object> beg,end;
-    std::list<python::object> l;
-    std::list<python::object>::const_iterator p;
+    boost::python::stl_input_iterator<boost::python::object> beg,end;
+    std::list<boost::python::object> l;
+    std::list<boost::python::object>::const_iterator p;
     pair result;
-    inline void convert() {result.x1 = python::extract<T1>((*p)[0]);result.x2 = python::extract<T2>((*p)[1]);}
+    inline void convert() {result.x1 = boost::python::extract<T1>((*p)[0]);result.x2 = boost::python::extract<T2>((*p)[1]);}
   public:
     ///
-    IteratorOnPythonListOf2Tuples( const python::list &L): beg(L),end(),l(beg,end){ p=l.begin(); }
+    IteratorOnPythonListOf2Tuples( const boost::python::list &L): beg(L),end(),l(beg,end){ p=l.begin(); }
     ///
     IteratorOnPythonListOf2Tuples& operator++() {++p;  return *this;}
     ///
@@ -138,17 +138,17 @@ namespace triqs { namespace python_tools {
       /// third element
       T3 x3;};
   private:
-    python::stl_input_iterator<python::object> beg,end;
-    std::list<python::object> l;
-    std::list<python::object>::const_iterator p;
+    boost::python::stl_input_iterator<boost::python::object> beg,end;
+    std::list<boost::python::object> l;
+    std::list<boost::python::object>::const_iterator p;
     pair result;
     inline void convert() {
-      result.x1 = python::extract<T1>((*p)[0]);
-      result.x2 = python::extract<T2>((*p)[1]);
-      result.x3 = python::extract<T3>((*p)[2]);}
+      result.x1 = boost::python::extract<T1>((*p)[0]);
+      result.x2 = boost::python::extract<T2>((*p)[1]);
+      result.x3 = boost::python::extract<T3>((*p)[2]);}
   public:
     ///
-    IteratorOnPythonListOf3Tuples( const python::list &L): beg(L),end(),l(beg,end){ p=l.begin(); }
+    IteratorOnPythonListOf3Tuples( const boost::python::list &L): beg(L),end(),l(beg,end){ p=l.begin(); }
     ///
     IteratorOnPythonListOf3Tuples& operator++() {++p;  return *this;}
     ///
@@ -186,14 +186,14 @@ namespace triqs { namespace python_tools {
       /// Value
       T2 val;};
   private:
-    python::stl_input_iterator<python::object> beg,end;
-    std::list<python::object> l;
-    std::list<python::object>::const_iterator p;
+    boost::python::stl_input_iterator<boost::python::object> beg,end;
+    std::list<boost::python::object> l;
+    std::list<boost::python::object>::const_iterator p;
     pair result;
-    inline void convert() {result.key = python::extract<T1>((*p)[0]);result.val = python::extract<T2>((*p)[1]);}
+    inline void convert() {result.key = boost::python::extract<T1>((*p)[0]);result.val = boost::python::extract<T2>((*p)[1]);}
   public:
     ///
-    IteratorOnPythonDict( const python::dict &d):beg(d.items()),end(),l(beg,end) { p=l.begin(); }
+    IteratorOnPythonDict( const boost::python::dict &d):beg(d.items()),end(),l(beg,end) { p=l.begin(); }
     ///
     IteratorOnPythonDict& operator++() {++p;  return *this;}
     ///
