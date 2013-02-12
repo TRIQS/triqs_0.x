@@ -22,7 +22,7 @@
 
 from math import *
 import numpy
-from pytriqs.base.gf_local import BlockGf
+from pytriqs.base.gf.local import BlockGf
 from pytriqs.base.utility.my_utils import sum_list
 from pytriqs.solvers.operators import *
 from pytriqs.solvers.ctqmc_hyb import Solver

@@ -21,9 +21,8 @@
 ################################################################################
 
 from pytriqs.base.archive import HDFArchive
-from pytriqs.base.gf_local import *
+from pytriqs.base.gf.local import *
 from pytriqs.base.dmft import DMFTLoopGeneric
-from pytriqs.base.gf_local.descriptors import iOmega_n,SemiCircular
 
 #
 #  Example of DMFT single site solution with CTQMC

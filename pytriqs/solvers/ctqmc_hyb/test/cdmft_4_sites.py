@@ -21,7 +21,7 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.base.gf_local import gf_init, BlockGf, GfImFreq, inverse
+from pytriqs.base.gf.local import gf_init, BlockGf, GfImFreq, inverse
 from pytriqs.base.lattice.super_lattice import TBSuperLattice
 from pytriqs.base.lattice.tight_binding import TBLattice
 from pytriqs.base.sumk import *

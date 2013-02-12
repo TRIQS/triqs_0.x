@@ -1,8 +1,8 @@
 from boost cimport *
 from pytriqs.base.gf.local.gf cimport *
-import pytriqs.base.gf.local
 from types import *
-from pytriqs.base.gf_local import *
+from pytriqs.base.gf.local import *
+from pytriqs.base.gf.local.descriptors import A_Omega_Plus_B
 from pytriqs.solvers import SolverBase
 from pytriqs.solvers.operators import *
 from pytriqs.base.utility.my_utils import *
@@ -127,13 +127,13 @@ class Solver(SolverBase):
         if type(self.H_Local) != type(Operator()) : raise "H_Local is not an operator"
         H = self.H_Local
         for a,alpha_list in  self.GFStruct :
-            for mu in alpha_list : 
-                for nu in alpha_list : 
-                    H += real(self.G0[a]._tail[2][mu,nu]) * Cdag(a,mu)*C(a,nu)
+            for mu, amu in enumerate(alpha_list) :
+                for nu, anu in enumerate(alpha_list) :
+                    H += real(self.G0[a].tail[2][mu,nu]) * Cdag(a,amu)*C(a,anu)
 
         OPdict = {"Hamiltonian": H}
         mpi.report("Hamiltonian with Eps0 term  : ",H)
-        
+
         # First separate the quantum Numbers that are operators and those which are symmetries.
         QuantumNumberOperators  = dict( (n,op) for (n,op) in self.Quantum_Numbers.items() if type(op) == type(Operator()))
         QuantumNumberSymmetries = dict( (n,op) for (n,op) in self.Quantum_Numbers.items() if type(op) != type(Operator()))
@@ -152,7 +152,7 @@ class Solver(SolverBase):
         self.Operators_To_Average_List = []
         for name, op in self.Measured_Operators.items():
           opn = mysearch(op)
-          if opn == None : 
+          if opn == None :
               OPdict[name] = op
               self.Measured_Operators_Results[name] = 0.0
               self.Operators_To_Average_List.append(name)
@@ -166,7 +166,7 @@ class Solver(SolverBase):
         self.OpCorr_To_Average_List = []
         for name, op in self.Measured_Time_Correlators.items():
           opn = mysearch(op[0])
-          if opn == None : 
+          if opn == None :
               OPdict[name] = op[0]
               self.OpCorr_To_Average_List.append(name)
           else:
@@ -233,13 +233,13 @@ class Solver(SolverBase):
                     if not mysearch(op2) : OPdict["%s_Comm_Hloc"%n] = op2
 
         # All operators have real coefficients. Check this and remove the 0j term
-        # since the C++ expects operators with real numbers 
+        # since the C++ expects operators with real numbers
         for n,op in OPdict.items(): op.make_coef_real_and_check()
 
         # Transcription of operators for C++
         Oplist2 = operators.transcribe_op_list_for_C(OPdict)
         SymList = [sym for (n,sym) in SymChar.items() if n in QuantumNumberSymmetries]
-        #self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0) 
+        #self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0)
 
         # Create the C_Cag_Ops array which describes the grouping of (C,Cdagger) operator
         # for the MonteCarlo moves : (a, alpha) block structure [ [ (C_name, Cdag_name)]]
@@ -247,81 +247,62 @@ class Solver(SolverBase):
 
         # Define G0_inv and correct it to have G0 to have perfect 1/omega behavior
         self.G0_inv = inverse(self.G0)
-        Delta = self.G0_inv.delta()
+        Delta = self.G0_inv.copy()
+        for n,d in Delta:
+          d <<= A_Omega_Plus_B(self.G0_inv[n].tail[-1], self.G0_inv[n].tail[0])
+          d -= self.G0_inv[n]
         for n,g in self.G0_inv:
           assert(g.N1==g.N2)
           identity=numpy.identity(g.N1)
-          self.G0[n] <<= gf_init.A_Omega_Plus_B(identity, g._tail[0])
+          self.G0[n] <<= iOmega_n + g.tail[0]
           self.G0[n] -= Delta[n]
-          #self.G0[n] <<= iOmega_n + g._tail[0] - Delta[n]
         self.G0_inv <<= self.G0
         self.G0.invert()
 
         # Construct the function in tau
-        f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_points =L )
+        f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_time_points =L )
         self.Delta_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Delta) )   for n,g in self.G], make_copies=False, name='D')
         self.G_tau = BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Gtau) )    for n,g in self.G], make_copies=False, name='G')
         self.F_tau = BlockGf(name_block_generator = self.G_tau, make_copies=True, name='F')
-        
+
         for (i,gt) in self.Delta_tau : gt.set_from_inverse_fourier(Delta[i])
         mpi.report("Inv Fourier done")
         if (self.Legendre_Accumulation):
-            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =g.indices, beta =g.beta, n_legendre_coeffs =self.N_Legendre_Coeffs) )   for n,g in self.G], make_copies=False, name='Gl')
+            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =g.indices, beta =g.mesh.beta, n_legendre_points =self.N_Legendre_Coeffs) )   for n,g in self.G], make_copies=False, name='Gl')
         else:
-            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =[1], beta =g.beta, n_legendre_coeffs =1) ) for n,g in self.G], make_copies=False, name='Gl') # G_Legendre must not be empty but is not needed in this case. So I make it as small as possible.
-        
+            self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =[1], beta =g.mesh.beta, n_legendre_points =1) ) for n,g in self.G], make_copies=False, name='Gl') # G_Legendre must not be empty but is not needed in this case. So I make it as small as possible.
+
         # Starting the C++ code
         self.Sigma_Old <<= self.Sigma
 
         # C++ solver
-        f = lambda g, L: pytriqs.base.gf.local.GfImTime(indices=g.indices, beta=g.beta, n_time_points=L)
-        DD = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Delta)) for n,g in self.Delta_tau], make_copies=False)
-        GG = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Time_Slices_Gtau)) for n,g in self.G_tau], make_copies=False)
-        FF = pytriqs.base.gf.local.BlockGf(name_block_generator = GG, make_copies=True, name='F')
-
-        f = lambda L : pytriqs.base.gf.local.GfImTime(indices = [0], beta = self.beta, n_time_points =L )
-        if (Nops>0):
-          MM = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(self.Measured_Time_Correlators[n][1]) ) for n in self.Measured_Time_Correlators], make_copies=False)
-        else:
-          MM = pytriqs.base.gf.local.BlockGf(name_block_generator = [ ('OpCorr',f(2)) ], make_copies=False)
-
-        f = lambda g, L: pytriqs.base.gf.local.GfLegendre(indices=g.indices, beta=g.beta, n_legendre_points=L)
-        LL = pytriqs.base.gf.local.BlockGf(name_block_generator = [ (n,f(g,self.N_Legendre_Coeffs)) for n,g in self.G_Legendre], make_copies=False)
-
-        for n,d in DD: d.data[:,:,:] = self.Delta_tau[n]._data.array[:,:,:]
-
         solver_c(boost_object(self.__dict__),
                  new Hloc_c(nf, nb, boost_object(Oplist2), boost_object(QuantumNumberOperators), boost_object(SymList),
                             boost_object(self.Quantum_Numbers_Selection), 0),
-                 as_gf_block_imtime(GG),
-                 as_gf_block_imtime(FF),
-                 as_gf_block_imtime(DD),
-                 as_gf_block_imtime(MM),
-                 as_gf_block_legendre(LL)).solve()
+                 as_gf_block_imtime(self.G_tau),
+                 as_gf_block_imtime(self.F_tau),
+                 as_gf_block_imtime(self.Delta_tau),
+                 as_gf_block_imtime(self.Measured_Time_Correlators_Results),
+                 as_gf_block_legendre(self.G_Legendre)).solve()
 
-        for n,g in self.G_Legendre: g._data.array[:,:,:] = LL[n].data[:,:,:]
-        for n,g in self.G_tau: g._data.array[:,:,:] = GG[n].data[:,:,:]
-        for n,g in self.F_tau: g._data.array[:,:,:] = FF[n].data[:,:,:]
-        for n,g in self.Measured_Time_Correlators_Results: g._data.array[:,:,:] = MM[n].data[:,:,:]
-        
         # Compute G on Matsubara axis possibly fitting the tail
         if self.Legendre_Accumulation:
           for s,g in self.G:
             identity=numpy.zeros([g.N1,g.N2],numpy.float)
-            for i,m in enumerate (g._IndicesL):
-              for j,n in enumerate (g._IndicesR):
+            for i,m in enumerate (g.indicesL):
+              for j,n in enumerate (g.indicesR):
                 if m==n: identity[i,j]=1
-            self.G_Legendre[s].enforce_discontinuity(identity) # set the known tail
+            self.G_Legendre[s].enforce_discontinuity(identity)
             g <<= LegendreToMatsubara(self.G_Legendre[s])
         else:
           if (self.Time_Accumulation):
             for name, g in self.G_tau:
               identity=numpy.zeros([g.N1,g.N2],numpy.float)
-              for i,m in enumerate (g._IndicesL):
-                for j,n in enumerate (g._IndicesR):
+              for i,m in enumerate (g.indicesL):
+                for j,n in enumerate (g.indicesR):
                   if m==n: identity[i,j]=1
-              g._tail.zero()
-              g._tail[1] = identity
+              g.tail.zero()
+              g.tail[1] = identity
               self.G[name].set_from_fourier(g)
 
           # This is very sick... but what can we do???
@@ -344,7 +325,7 @@ class Solver(SolverBase):
             for (n,f) in self.F: f.set_from_fourier(self.F_tau[n])
             self.G2 = self.G0 + self.G0 * self.F
             self.Sigma2 = self.F * inverse(self.G2)
-            
+
     #--------------------------------------------------
 
     def fitTails(self):
@@ -354,10 +335,10 @@ class Solver(SolverBase):
 
             known_coeff = numpy.zeros([sig.N1,sig.N2,1],numpy.float_)
             msh = [x.imag for x in sig.mesh]
-            fit_start = msh[self.fitting_Frequency_Start]
+            fit_start = msh[self.Fitting_Frequency_Start]
             fit_stop  = msh[self.N_Frequencies_Accumulated-1]
-            
-            sig.fitTail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)
+
+            sig.fit_tail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)
 
     #--------------------------------------------------
 
