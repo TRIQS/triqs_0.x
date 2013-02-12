@@ -33,7 +33,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
     cdef void boost_unserialize_into "triqs::deserialize_into_view" (std_string, gf_legendre &) 
 
 # Python -> C
-cdef gf_legendre as_gf_legendre(g)# except +  
+cdef gf_legendre as_gf_legendre(g) except +
 
 # C -> Python 
 cdef make_GfLegendre(gf_legendre x)

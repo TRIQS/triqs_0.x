@@ -3,6 +3,7 @@
 cdef extern from "triqs/gf/local/functions.hpp":
     matrix_view density(gf_imfreq &)
     matrix_view density(gf_legendre &)
+    void enforce_discontinuity(gf_legendre &, array_view[double,TWO,COrder])
 
 ###############  Fourier  #########################
 

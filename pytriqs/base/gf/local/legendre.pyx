@@ -21,6 +21,9 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
     def density(self):
         return density(self._c).to_python()
 
+    def enforce_discontinuity(self, disc):
+        enforce_discontinuity(self._c, array_view[double,TWO,COrder](disc))
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfLegendre ( gr, std_string key) : 
@@ -32,7 +35,7 @@ register_class (GfLegendre, read_fun = h5_read_GfLegendre)
 #----------------  Convertions functions ---------------------------------------
 
 # Python -> C
-cdef gf_legendre as_gf_legendre (g):# except +: 
+cdef gf_legendre as_gf_legendre (g) except +:
     return (<GfLegendre_cython?>g)._c
 
 # C -> Python. Do NOT add except +

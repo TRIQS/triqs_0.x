@@ -103,24 +103,26 @@ namespace triqs { namespace gf {
  }
 
  // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
-/*
  void enforce_discontinuity(gf_view<legendre> & gl, tqa::array_view<double,2> disc) {
 
-   disc.reindexSelf(TinyVector<int,2>(1,1));
+   double norm = 0.0;
+   tqa::vector<double> t(gl.data_view().shape()[2]);
+   for (int i=0; i<t.size(); ++i) {
+     t(i) = triqs::utility::legendre_t(i,1) / gl.domain().beta;
+     norm += t(i)*t(i);
+   }
 
-   Array<double,1> A (Range(0,data.ubound(thirdDim)));
-   for (int i=0; i<=data.ubound(thirdDim); i++)
-     A(i) = legendre_t(i,1) / Beta;
-   double c=sum(A*A);
-   Array<double,2> step=disc.copy();
+   tqa::array<double,2> corr(disc.shape()); corr() = 0;
+   for (auto l : gl.mesh()) {
+     corr += t(l.index) * gl(l);
+   }
 
-   step=disc(tensor::i,tensor::j)-sum(data(tensor::i,tensor::j,tensor::k)*A(tensor::k),tensor::k);
-   data+=step(tensor::i,tensor::j)*A(tensor::k)/c;
+   tqa::range R;
+   for (auto l : gl.mesh()) {
+     gl.data_view()(R,R,l.index) += (disc - corr) * t(l.index) / norm;
+   }
 
-   gl.data(i,j,k) = 
- 
  }
-*/
 
 
 }}
