@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.gf_local import *
+from pytriqs.base.gf.local import *
 import pytriqs.base.utility.mpi as mpi
 from itertools import *
 import inspect
