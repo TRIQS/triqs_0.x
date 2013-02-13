@@ -226,6 +226,22 @@ namespace triqs { namespace arrays {
   typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
   triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
 
+ template<typename RHS, typename V, typename Opt>
+  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
+
+ template<typename RHS, typename V, typename Opt>
+  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
+
+ template<typename RHS, typename V, typename Opt>
+  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
+
+ template<typename RHS, typename V, typename Opt>
+  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
+
 
 }}//namespace triqs::arrays
 
