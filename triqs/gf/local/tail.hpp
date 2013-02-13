@@ -291,11 +291,10 @@ namespace triqs { namespace gf { namespace local {
   t_inv(omin1) = inverse(t(-omin1));
 
   for (size_t n=1; n<si; n++) {
-   // workaround on the bug on calling lapack with views... ?? fix this in the lib ??
    for (size_t p=0; p<n; p++) {
-     t_inv(omin1 + n) -= triqs::arrays::matrix< dcomplex >(t_inv(omin1+p)*t(n-omin1-p));
+     t_inv(omin1 + n) -= t(n-omin1-p) * t_inv(omin1+p);
    }
-   t_inv(omin1 + n) *= t_inv(omin1);
+   t_inv(omin1 + n) = t_inv(omin1) * t_inv(omin1 + n);
   }
   return t_inv;
  }
@@ -348,7 +347,7 @@ namespace triqs { namespace gf { namespace local {
    long omax1 = std::min(l.order_max(),r.order_max());
    size_t si = omax1-omin1+1;
    tail res(l.shape(), si, omin1);
-   for (long i = res.order_min(); i<res.order_max(); ++i) res(i) = l(i) + r(i);
+   for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = l(i) + r(i);
    return res;
   }
 
@@ -360,14 +359,14 @@ namespace triqs { namespace gf { namespace local {
    long omax1 = std::min(l.order_max(),r.order_max());
    size_t si = omax1-omin1+1;
    tail res(l.shape(), si, omin1);
-   for (long i = res.order_min(); i<res.order_max(); ++i) res(i) = l(i) - r(i);
+   for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = l(i) - r(i);
    return res;
   }
 
  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<is_scalar_or_element<T1>, LocalTail<T2>>)
   operator + (T1 const & a, T2 const & t) {
    tail res(t.shape(), t.size(), std::min(long(0), t.smallest_nonzero()));
-   for (long i = res.order_min(); i<res.order_max(); ++i) res(i) = t(i);
+   for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = t(i);
    res(0) += a;
    return res;
   }
