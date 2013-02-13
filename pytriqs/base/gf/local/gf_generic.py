@@ -210,7 +210,7 @@ class GfGeneric:
             for om in range (d.shape[-1]):
                 d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
             self.tail = arg.tail * self.tail
-        elif type(arg).__name__ in ['float', 'int', 'complex']:
+        elif descriptors.is_scalar(arg):
             self.data *= arg
             self.tail *= arg
         else:
@@ -224,7 +224,7 @@ class GfGeneric:
         return res
 
     def __rmul__(self, x):
-        assert type(x).__name__ in ['float', 'int', 'complex'], "lhs must be a scalar but I found %s"%x
+        assert descriptors.is_scalar(x), "lhs must be a scalar but I found %s"%x
         return self.__mul__(x)
 
     def imatmul_L(self, L):
@@ -265,8 +265,7 @@ class GfGeneric:
         """ If arg is a scalar, simple scalar multiplication
         """
         if descriptors.is_lazy(arg): return lazy_expressions.make_lazy(self) / arg
-        n = type(arg).__name__
-        if n in ['float', 'int', 'complex']:
+        if descriptors.is_scalar(arg):
             self.data /= arg
             self.tail /= arg
         else:
@@ -274,10 +273,15 @@ class GfGeneric:
         return self
 
     def __div__(self, arg):
-        assert type(arg).__name__ in  ['float', 'int', 'complex'], "Error in /"
+        assert descriptors.is_scalar(arg), "Error in /"
         res = self.copy()
         res /= arg
         return res
+
+    #---------------------------------------------------
+
+    def zero(self):
+      self <<= 0.0
 
     #---------------------------------------------------
 
