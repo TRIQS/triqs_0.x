@@ -108,9 +108,11 @@ cdef class TailGf:
     def has_coef(self, i):
         return (i >= self.order_min) and (i <= self.order_max)
 
-    def __call__(self, n) :
-        if not self.has_coef(n) : raise IndexError, "Index %s is out of range"%n
-        return self._c(n).to_python()   
+    def __call__(self, x) :
+        val = 0.0
+        for n in range(self.order_min, self.order_max+1):
+          val += self[n] * x**(-n)
+        return val
 
     def __reduce__(self):
         return (lambda cls, d : cls(**d)) , (self.__class__,self.__reduce_to_dict__())
