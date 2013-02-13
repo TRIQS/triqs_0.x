@@ -27,7 +27,7 @@
 
 using namespace triqs::arrays;
 using namespace triqs;
-const int N1= 200, N2 = 300;
+const int N1= 10, N2 = 10;
 
 struct plain_for_no_ptr { 
  void operator()() { 
@@ -62,6 +62,19 @@ struct pointer_generic_form {
  }
 };
 
+struct iterators { 
+ void operator()() { 
+  typedef triqs::arrays::matrix<double > MM; 
+  MM A (N1,N2,FORTRAN_LAYOUT);
+  for (int u =0; u<1000; ++u)
+  {
+   for (MM::iterator it = A.begin(); it; ++it) { 
+    *it =10*it.indices()[0] + it.indices()[1] ;
+   }
+  }
+ }
+};
+
 #include "./src/indexmaps/cuboid/foreach.hpp"
 
 typedef double value_type;
@@ -80,19 +93,6 @@ struct foreach  {
 };
 
 
-struct iterators { 
- void operator()() { 
-  typedef triqs::arrays::matrix<double > MM; 
-  MM A (N1,N2,FORTRAN_LAYOUT);
-  for (int u =0; u<1000; ++u)
-  {
-   for (MM::iterator it = A.begin(); it; ++it) { 
-    *it =10*it.indices()[0] + it.indices()[1] ;
-   }
-  }
- }
-};
-
 struct const_with_iterators {
  void operator()() {
   typedef triqs::arrays::matrix<double> MM;
@@ -109,24 +109,10 @@ struct const_with_iterators {
 struct plain_for_no_ptr_const { 
  void operator()() { 
   triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
-  for (int u =0; u<5000; ++u)
+  for (size_t u =0; u<2500000; ++u)
     for (int j=0; j<A.len(1); ++j) 
    for (int i =0; i<A.len(0); ++i)
      A(i,j) = 1876;
- }
-};
-
-struct foreach_manual_simple { 
- void operator()() { 
-  triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
-  mini_vector<int,2> t;
-  const int u[2] = {1,0}; //=1, u1=0;
-  //int u[2]; for (int i=0; i<2; ++i) u[i] = 1-i;
-  for (int k =0; k<5000; ++k)
-    for (t[u[0]]=0; t[u[0]]<A.len(u[0]); ++t[u[0]]) 
-   for (t[u[1]] =0; t[u[1]]<A.len(u[1]); ++t[u[1]])
-     A(t[u[1]],t[u[0]]) = 1876;
-     //A[t] = 1876;
  }
 };
 
@@ -134,12 +120,11 @@ struct assign_to_const {
  void operator()() { 
   triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
   auto V = make_view(A);
-  for (int u =0; u<5000; ++u)
+  for (size_t  u =0; u<2500000; ++u)
      //make_view(A) = 1867;
      V= 1867;
  }
 };
-
 
 
 
@@ -148,12 +133,9 @@ int main() {
  const int l = 100;
  speed_tester<pointer_generic_form <std::ptrdiff_t> > (l);
  speed_tester<pointer_generic_form < size_t> > (l);
- speed_tester<plain_for_no_ptr> (l);
+ //speed_tester<plain_for_no_ptr> (l);
  //speed_tester<foreach> (l);
- 
  speed_tester<plain_for_no_ptr_const> (l);
- //speed_tester<foreach_manual_simple>(l);
- 
  speed_tester<assign_to_const> (l);
  speed_tester<iterators> (l);
  speed_tester<const_with_iterators> (l);

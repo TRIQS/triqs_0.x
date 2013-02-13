@@ -21,15 +21,15 @@
  ******************************************************************************/
 
 #include "./src/matrix.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 using namespace std;
 using namespace triqs::arrays;
-typedef triqs::arrays::matrix<double,Option::Fortran > MM; 
+typedef triqs::arrays::matrix<double > MM; 
 
 struct bare_loop_with_access { 
  void operator()() { 
   
-  MM A (20,30);
+  MM A (20,30, FORTRAN_LAYOUT);
   for (int i =0; i<20; ++i)
    for (int j=0; j<30; ++j) 
     A(i,j) = 10*i+ j;
@@ -96,7 +96,7 @@ struct expression_template {
 #include "./speed_tester.hpp"
 int main() {
  speed_tester<bare_loop_with_access> (5000);
- speed_tester<pointer_and_expression_template> (5000);
+ //speed_tester<pointer_and_expression_template> (5000);
  speed_tester<expression_template> (5000);
  return 0;
 }

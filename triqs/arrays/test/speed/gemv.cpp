@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include <boost/numeric/bindings/std/vector.hpp>
 #include <boost/numeric/bindings/blas/level1/axpy.hpp>
 #include <boost/numeric/bindings/blas/level2/ger.hpp>
@@ -30,27 +28,26 @@
 
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/expressions/matrix_algebra.hpp"
+#include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/matmul.hpp"
 #include "./src/linalg/mat_vec_mul.hpp"
 
 using namespace std;
+using namespace triqs;
 using namespace triqs::arrays;
-using namespace linalg;
+//using namespace triqs::arrays::linalg;
 namespace blas = boost::numeric::bindings::blas;
 namespace lapack = boost::numeric::bindings::lapack;
 namespace bindings= boost::numeric::bindings;
 
-
-
 struct gemv_via_binder { 
 
- triqs::arrays::matrix<double,Option::Fortran > A;
+ triqs::arrays::matrix<double> A;
  typedef triqs::arrays::vector<double> vector_type;
  vector_type  MC, MB;
  static const unsigned int N =200;
 
- gemv_via_binder(): A(N,N), MC(N), MB(N) {
+ gemv_via_binder(): A(N,N,FORTRAN_LAYOUT), MC(N), MB(N) {
  
   for (int i =0; i<N; ++i)
     for (int j=0; j<N; ++j) 

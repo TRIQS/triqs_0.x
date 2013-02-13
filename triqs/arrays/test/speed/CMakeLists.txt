@@ -1,4 +1,4 @@
-SET ( TestList speed speed2 gemv )
+SET ( TestList speed speed2 speed_small gemv )
 
 enable_testing()
 
@@ -11,6 +11,8 @@ link_libraries(
  ${ALPS_LIBRARIES}   
  
  )
+
+link_libraries( ${link_libs} triqs_utility ) # adding triqs for the stack_trace fun used in exceptions... 
 
 find_package(TestCSimple)
 

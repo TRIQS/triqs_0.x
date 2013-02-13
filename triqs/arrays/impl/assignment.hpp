@@ -138,7 +138,9 @@ namespace triqs { namespace arrays {
      typedef typename indexmap_type::domain_type::index_value_type index_value_type;
      LHS & lhs; const RHS & rhs;
      assign_impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {}
-     void operator()(value_type & p, index_value_type const & key) const {_ops_<value_type, RHS, OP>::invoke(p, rhs);}
+     //void operator()(value_type & p, index_value_type const & key) const {_ops_<value_type, RHS, OP>::invoke(p, rhs);}
+     template<typename ... Args>
+     void operator()(value_type & p, Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(p, rhs);}
      void invoke() {  
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH 
       indexmaps::foreach(*this,lhs);  // if contiguous : plain loop else foreach...

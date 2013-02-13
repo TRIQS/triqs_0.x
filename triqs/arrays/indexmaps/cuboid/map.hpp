@@ -112,7 +112,11 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    lengths_type const & lengths() const { return mydomain.lengths();}
    strides_type const & strides() const { return this->strides_;}
 
-   memory_layout<Rank> memory_indices_layout() const { return memory_order_;}
+   memory_layout<Rank> const & memory_indices_layout() const { return memory_order_;}
+   
+   ull_t memory_indices_layout_ull() const { return memory_order_.value;}
+
+   static constexpr ull_t  memory_indices_layout_ull_s()  { return mem_layout::c_order(Rank);}
     
    bool memory_layout_is_c() const { return memory_indices_layout() == memory_layout<Rank> (mem_layout::c_order(Rank));}
    bool memory_layout_is_fortran() const { return memory_indices_layout() == memory_layout<Rank> (mem_layout::fortran_order(Rank));}
@@ -166,8 +170,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
     private:
      friend class boost::iterator_core_access;
      void increment(){ inc_ind_impl (std::integral_constant<int,Rank>()); }
-     template<int v> void inc_ind_impl(std::integral_constant<int,v>) { 
-      const size_t p = permutations::apply(io, rank-v);
+     template<int v> inline void inc_ind_impl(std::integral_constant<int,v>) { 
+      //const size_t p = permutations::apply(io, rank-v);
+      constexpr size_t p = mem_layout::memory_rank_to_index(mem_layout::fortran_order(Rank), rank-v);
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
       if (atend) TRIQS_RUNTIME_ERROR << "Iterator in cuboid can not be pushed after end !";
 #endif
@@ -176,7 +181,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
       pos -= (im->lengths()[p]-1) * im->strides()[p];
       inc_ind_impl (std::integral_constant<int,v-1>());
      }
-     void inc_ind_impl(std::integral_constant<int,0>) { atend = true;} 
+     inline void inc_ind_impl(std::integral_constant<int,0>) { atend = true;} 
      bool equal(iterator const & other) const {return ((other.im==im)&&(other.atend==atend)&&(other.pos==pos));}
      return_type & dereference() const { assert (!atend); return pos; }
      ull_t io; 

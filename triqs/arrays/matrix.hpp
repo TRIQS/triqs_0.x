@@ -169,6 +169,9 @@ namespace triqs { namespace arrays {
 
  template <typename T, int R> 
   bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));} 
+ 
+ template <typename T> 
+  bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));} 
 
  // assignment for scalar RHS // write a specific one if it is not a view : plain loop
  // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
@@ -176,7 +179,8 @@ namespace triqs { namespace arrays {
  template <typename V, typename RHS> struct __looper { 
   RHS rhs;
   __looper(const RHS & rhs_): rhs(rhs_) {}
-  template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
+  //template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
+  template <typename ... Args> void operator()(V & p, Args const & ... args) const { p = (kronecker(args...) ? rhs : RHS() ); }
  };
 
  template<typename RHS, typename V, ull_t Opt> 
