@@ -1,4 +1,5 @@
 from tools import py_deserialize
+import descriptors
 
 cdef class TailGf:
     cdef tail _c
@@ -144,7 +145,7 @@ cdef class TailGf:
         n = type(arg).__name__
         if n == 'TailGf' :
             self._c << self._c * (<TailGf?>arg)._c
-        elif n in ['float','int', 'complex'] : 
+        elif descriptors.is_scalar(arg):
             self._c << as_dcomplex(arg)* self._c
         else : 
             raise RuntimeError, " argument type not recognized in imul for %s"%arg
@@ -156,7 +157,7 @@ cdef class TailGf:
         cdef matrix_view [dcomplex,COrder] a 
         if n == 'TailGf' :
             res._c <<  self._c * (<TailGf?>arg)._c
-        elif n in ['float','int', 'complex'] : 
+        elif descriptors.is_scalar(arg):
             res._c << as_dcomplex(arg) * self._c
         else : 
             a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
@@ -174,7 +175,7 @@ cdef class TailGf:
     def __div_impl_(self, arg, s):
         if s : raise RuntimeError, "Can not divide by a TailGf"
         cdef TailGf res = self.copy()
-        if type(arg).__name__  in ['float','int', 'complex'] : 
+        if descriptors.is_scalar(arg):
             res._c << self._c / as_dcomplex(arg)
         else : 
             raise RuntimeError, " argument type not recognized for %s"%arg

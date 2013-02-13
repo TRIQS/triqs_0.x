@@ -16,7 +16,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator +( tail &, tail &) except + 
     cdef tail operator -( tail &, tail &) except + 
     
-    cdef tail operator *( tail&, tail &) 
+    cdef tail operator *( tail&, tail &) except +
 
     cdef tail operator *( double, tail &) except + 
     cdef tail operator *( tail &, double) except + 
