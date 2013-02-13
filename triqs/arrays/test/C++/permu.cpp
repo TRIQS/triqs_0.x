@@ -19,7 +19,6 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-#include "./src/array.hpp"
 #include <iostream>
 #include <triqs/arrays/indexmaps/permutation.hpp>
 

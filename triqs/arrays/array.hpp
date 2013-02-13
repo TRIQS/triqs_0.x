@@ -27,23 +27,24 @@
 #include "impl/flags.hpp"
 namespace triqs { namespace arrays {
 
- template <typename ValueType, int Rank, ull_t Opt=0> class array_view;
- template <typename ValueType, int Rank, ull_t Opt=0> class array;
+ template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0> class array_view;
+ template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0> class array;
 
  // ---------------------- array_view  --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt>, storages::shared_block<ValueType>, Opt, Tag::array_view > 
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
+ storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view > 
 
- template <typename ValueType, int Rank, ull_t Opt>
+ template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
   class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE {   
    static_assert( Rank>0, " Rank must be >0");
    public:   
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
    typedef typename IMPL_TYPE::storage_type storage_type;
-   typedef array_view<ValueType,Rank,Opt> view_type;
-   typedef array<ValueType,Rank,Opt> non_view_type;
+   typedef array_view<ValueType,Rank,Opt,TraversalOrder> view_type;
+   typedef array<ValueType,Rank,Opt,TraversalOrder> non_view_type;
    typedef void has_view_type_tag;
-
+ 
    /// Build from an IndexMap and a storage 
    template<typename S> array_view (indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
@@ -73,28 +74,28 @@ namespace triqs { namespace arrays {
 
  //------------------------------- array ---------------------------------------------------
 
- template <typename ValueType, int Rank, ull_t Opt>
+ template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
   class array: Tag::array,  TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE { 
    public:
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef array_view<ValueType,Rank,Opt> view_type;
-    typedef array<ValueType,Rank,Opt> non_view_type;
+    typedef array_view<ValueType,Rank,Opt,TraversalOrder> view_type;
+    typedef array<ValueType,Rank,Opt,TraversalOrder> non_view_type;
     typedef void has_view_type_tag;
 
-    /// Empty array.
-    array(memory_layout<Rank> ml = memory_layout<Rank>()) :IMPL_TYPE(ml){} 
+   /// Empty array.
+    array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)) :IMPL_TYPE(ml){} 
 
     /// From a domain
-    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>()):IMPL_TYPE(indexmap_type(dom),ml){}
+    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):IMPL_TYPE(indexmap_type(dom),ml){}
 
 #ifdef TRIQS_DOXYGEN
     /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
     array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
-    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout<Rank> ml = memory_layout<Rank>()): \
+    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)): \
     IMPL_TYPE(indexmap_type(mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_)),ml)) {\
      static_assert(IMPL_TYPE::rank-1==NN,"array : incorrect number of variables in constructor");}
     BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
@@ -113,7 +114,7 @@ namespace triqs { namespace arrays {
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
     template <typename T> 
-     array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>()):
+     array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):
      //array(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
@@ -156,15 +157,15 @@ namespace triqs { namespace arrays {
  //----------------------------------------------------------------------------------
 
  // how to build the view type ....
- template < class V, int R, ull_t Opt > struct ViewFactory< V, R, Opt, Tag::array_view > { typedef array_view<V,R,Opt> type; };
+ template < class V, int R, ull_t Opt, ull_t TraversalOrder > struct ViewFactory< V, R, Opt, TraversalOrder,Tag::array_view > { typedef array_view<V,R,Opt,TraversalOrder> type; };
 
 }}//namespace triqs::arrays
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std { 
- template <typename V, int R,  triqs::ull_t Opt >
-  void swap( triqs::arrays::array_view<V,R,Opt> & a , triqs::arrays::array_view<V,R,Opt> & b)= delete;
+ template <typename V, int R,  triqs::ull_t Opt, triqs::ull_t To >
+  void swap( triqs::arrays::array_view<V,R,Opt,To> & a , triqs::arrays::array_view<V,R,Opt,To> & b)= delete;
 }
 
 #ifdef TRIQS_HAS_LAZY_EXPRESSIONS

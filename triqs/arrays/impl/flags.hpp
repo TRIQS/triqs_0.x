@@ -35,28 +35,38 @@ namespace triqs { namespace arrays {
  //    0 : Noinit, 1 : NanInit, 2 : DefaultInit
 
  constexpr ull_t BoundCheck   = 1ull << 0;
- //constexpr ull_t COrder       = 1ull << 1;
- //constexpr ull_t FortranOrder = 1ull << 2;
+ constexpr ull_t TraversalOrderC       = 1ull << 1;
+ constexpr ull_t TraversalOrderFortran = 1ull << 2;
  constexpr ull_t NanInit      = 1ull << 3;
  constexpr ull_t DefaultInit  = 1ull << 4;
+
+#define TRAVERSAL_ORDER_C triqs::arrays::TraversalOrderC
+#define TRAVERSAL_ORDER_FORTRAN triqs::arrays::TraversalOrderFortran
 
  // NB : flags MUST be insensitive to slicing ...
  // i.e. when I slice, the flags does not change.
  
  namespace flags { 
-  constexpr ull_t get(ull_t f, int a)   { return  (f & (1ull<<a)) >> a;}
-  constexpr ull_t get2(ull_t f, int a)  { return  (f & (((1ull<<a) + (1ull<< (a+1))) >> a) );}
+  constexpr ull_t get(ull_t f, ull_t a)   { return  (f & (1ull<<a)) >> a;}
+  constexpr ull_t get2(ull_t f, ull_t a)  { return  (f & (((1ull<<a) + (1ull<< (a+1ull))) >> a) );}
+
+#define TRIQS_FLAGS_GET(f,a) ((f & (1ull<<a)) >> a)
 
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   constexpr bool bound_check      (ull_t f) { return true;}
 #else
-  constexpr bool bound_check      (ull_t f) { return get (f, 0);}
+  constexpr ull_t bound_check      (ull_t f) { return get (f, 0ull);}
 #endif
 
-  //constexpr bool c_order          (ull_t f) { return get (f, 1);}
-  //constexpr bool fortran_order    (ull_t f) { return get (f, 2);}
+  constexpr bool traversal_order_c         (ull_t f) { return get (f,1ull)!=0ull;}
+  constexpr bool traversal_order_fortran   (ull_t f) { return get (f,2ull)!=0ull;}
+  //constexpr bool traversal_order_fortran   (ull_t f) { return TRIQS_FLAGS_GET(f,2ull) !=0ull; } //get (f,2ull)!=0ull;}
 
-  constexpr ull_t memory_order (int r, ull_t f, ull_t mo) { return mo + get(f,1) * permutations::identity(r) + get(f,2) * permutations::ridentity(r);}
+  template< ull_t F> struct ttraversal_order_c { 
+   static constexpr bool value = TRIQS_FLAGS_GET(F,1) !=0;
+  };
+
+  //constexpr ull_t memory_order (int r, ull_t f, ull_t mo) { return mo + get(f,1) * permutations::identity(r) + get(f,2) * permutations::ridentity(r);}
 
   //or return an int 0,1,2
   //constexpr bool nan_init         (ull_t f) { return get (f, 3);}
@@ -72,14 +82,16 @@ namespace triqs { namespace arrays {
 
   // for the init_tag, we pass the *whole* option flag.
   template<ull_t F> struct init_tag : init_tag1 < init_mode(F)> {};
+  //template<ull_t F> struct init_tag : init_tag1 < get2 (F,3)> {};
 
-  /*template<ull_t F, ull_t mo> struct assert_make_sense {
-   static_assert ( (!( c_order(F) && fortran_order(F))), "You asked C and Fortran order at the same time...");
-   static_assert ( (!( (c_order(F) || fortran_order(F)) && mo )), "You asked C or Fortran order and gave a memory order ...");
+  template<ull_t F, ull_t To> struct assert_make_sense {
+   static_assert ( (!( traversal_order_c(F) && traversal_order_fortran(F))), "You asked C and Fortran traversal order at the same time...");
+   static_assert ( (!( (traversal_order_c(F) || traversal_order_fortran(F)) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
    static_assert ( (init_mode (F) != 3), "You asked nan and default init at the same time...");
-   //static_assert ( (!( nan_init(F) && default_init(F))), "You asked nan and default init at the same time...");
   };
-  */
+  
+ 
+  
  }
 
 }}//namespace triqs::arrays 

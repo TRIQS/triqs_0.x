@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by O. Parcollet
+ * Copyright (C) 2011-2013 by O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -47,9 +47,9 @@ namespace triqs { namespace arrays {
 
  template <bool Const, typename IndexMapIterator, typename StorageType > class iterator_adapter;
 
- template < class V, int R, ull_t OptionFlags, class ViewTag > struct ViewFactory;
+ template < class V, int R, ull_t OptionFlags, ull_t TraversalOrder,  class ViewTag > struct ViewFactory;
 
- template <typename IndexMapType, typename StorageType, ull_t OptionFlags,  typename ViewTag > 
+ template <typename IndexMapType, typename StorageType, ull_t OptionFlags, ull_t TraversalOrder,  typename ViewTag > 
   class indexmap_storage_pair : Tag::indexmap_storage_pair, TRIQS_MODEL_CONCEPT(ImmutableArray) { 
    
    public : 
@@ -58,9 +58,17 @@ namespace triqs { namespace arrays {
     //static_assert(std::is_default_constructible<value_type>::value, "array/array_view and const operate only on values");
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
-    static const unsigned int rank = IndexMapType::domain_type::rank;
+    static constexpr unsigned int rank = IndexMapType::domain_type::rank;
+    //static constexpr ull_t traversal_order = (flags::traversal_order_c(OptionFlags) ? indexmaps::mem_layout::c_order(rank) : 
+    //(flags::traversal_order_fortran(OptionFlags)  ? indexmaps::mem_layout::fortran_order(rank) : OptionFlags));
+    
+    //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(rank, OptionFlags, TraversalOrder);
+    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<rank, OptionFlags, TraversalOrder>::value;
+    
+    //static_assert( (permutations::size(traversal_order) == rank), "Mismatch between Rank and the TraversalOrder");
 
    protected:
+ 
     indexmap_type indexmap_;
     storage_type storage_;
 
@@ -170,26 +178,28 @@ namespace triqs { namespace arrays {
      typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
      // should be kept but then replace enable_if by a lazy _enable_if below !
      //static_assert(IM2::domain_type::rank !=0, "Internal error");
-     typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, ViewTag >::type type;
+     typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template,  ViewTag >::type type;
     };
 
     template<typename... Args>   // non const version
-     typename std::enable_if< 
+     typename boost::lazy_enable_if_c< 
      (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , typename result_of_call_as_view<false,Args...>::type 
+     , result_of_call_as_view<false,Args...> 
+     //, typename result_of_call_as_view<false,Args...>::type 
      >::type // enable_if 
      operator()(Args const & ... args) { 
       return typename result_of_call_as_view<false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
 
     template<typename... Args>  // const version   
-     typename std::enable_if< 
+     typename boost::lazy_enable_if_c< 
      (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
-     , typename result_of_call_as_view<true,Args...>::type 
+     , result_of_call_as_view<true,Args...> 
+     //, typename result_of_call_as_view<true,Args...>::type 
      >::type // enable_if 
      operator()(Args const & ... args) const { 
       return typename result_of_call_as_view<true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
 
-     typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, ViewTag >::type view_type;
+     typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type view_type;
 
     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
     // NEED TO PORT TO CLEF2
@@ -205,9 +215,9 @@ namespace triqs { namespace arrays {
 
     /// Equivalent to make_view
     // CLEAN OPT HRERE
-    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, ViewTag >::type
+    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
      operator()() const { return *this; } 
-    typename ViewFactory<value_type,domain_type::rank, OptionFlags, ViewTag >::type
+    typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
      operator()() { return *this; } 
 
     // Iterators
@@ -240,8 +250,8 @@ namespace triqs { namespace arrays {
   };// end class
 
  // pretty print of the array
- template <typename I, typename S ,ull_t Opt, typename V> 
-  std::ostream & operator << (std::ostream & out, const triqs::arrays::indexmap_storage_pair<I,S,Opt,V> & A) {
+ template <typename I, typename S ,ull_t Opt, ull_t To, typename V> 
+  std::ostream & operator << (std::ostream & out, const triqs::arrays::indexmap_storage_pair<I,S,Opt,To,V> & A) {
    if (A.storage().size()==0) out<<"empty ";
    else indexmaps::pretty_print(out, A.indexmap().domain(),A);
    return out;

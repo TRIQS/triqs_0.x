@@ -33,7 +33,7 @@ namespace triqs { namespace arrays {
 
  // ---------------------- vector_view --------------------------------
 
-#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt> , storages::shared_block<ValueType>, Opt, Tag::vector_view > 
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<1,Opt,0> , storages::shared_block<ValueType>, Opt, 0, Tag::vector_view > 
 
  /** */
  template <typename ValueType, ull_t Opt >
@@ -47,7 +47,7 @@ namespace triqs { namespace arrays {
    typedef typename IMPL_TYPE::storage_type storage_type;
 
    /// Build from an IndexMap and a storage 
-   template<typename S, ull_t Opt2> vector_view (indexmaps::cuboid::map<1, Opt2> const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
+   template<typename S, ull_t Opt2, ull_t To2> vector_view (indexmaps::cuboid::map<1, Opt2,To2> const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Build from anything that has an indexmap and a storage compatible with this class
    template<typename ISP>
@@ -76,7 +76,7 @@ namespace triqs { namespace arrays {
 
  };
 
- template < class V, int R, ull_t OptionFlags > struct ViewFactory< V, R,OptionFlags , Tag::vector_view> { typedef vector_view<V,OptionFlags> type; };
+ template < class V, int R,  ull_t OptionFlags, ull_t To > struct ViewFactory< V, R,OptionFlags,To, Tag::vector_view> { typedef vector_view<V,OptionFlags> type; };
  // ---------------------- vector--------------------------------
 
  template <typename ValueType, ull_t Opt>

@@ -60,12 +60,13 @@ int main(int argc, char **argv) {
  //array<long, 3, Option::options<Option::memory_order <2,1,0> > > A0 (2,3,4);
  //array<long, 3, Option::options<Option::memory_order <0,1,2> > > A1 (2,3,4);
  //array<long, 3, Option::options<Option::memory_order <1,0,2> > > A2 (2,3,4);
- 
- array<long, 3> A0 (2,3,4,memory_layout<3>(2,1,0));
- array<long, 3> A1 (2,3,4,memory_layout<3>(0,1,2));
- array<long, 3> A2 (2,3,4,memory_layout<3>(1,0,2));
+
+ // permutation in triqs::arrays 
+ array<long, 3, 0, permutation(2,1,0)> A0 (2,3,4);
+ array<long, 3, 0, permutation(0,1,2)> A1 (2,3,4);
+ array<long, 3, 0, permutation(1,0,2)> A2 (2,3,4);
  array<long, 3> A3 (2,3,4);
- array<long, 3> A4 (2,3,4,FORTRAN_LAYOUT);
+ array<long, 3, TRAVERSAL_ORDER_FORTRAN> A4 (2,3,4,FORTRAN_LAYOUT);
 
  f(A0);
  f(A1);

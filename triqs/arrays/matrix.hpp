@@ -28,8 +28,8 @@
 
 namespace triqs { namespace arrays {
 
- template <typename ValueType, ull_t Opt=0> class matrix_view;
- template <typename ValueType, ull_t Opt=0> class matrix;
+ template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix_view;
+ template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix;
  
  // ---------------------- matrix --------------------------------
  //
@@ -42,15 +42,18 @@ namespace triqs { namespace arrays {
   typename indexmap_type::lengths_type l; l[0] = this->indexmap().lengths()[1];l[1] = this->indexmap().lengths()[0];\
   typename indexmap_type::strides_type s; s[0] = this->indexmap().strides()[1];s[1] = this->indexmap().strides()[0];\
   return view_type( indexmap_type(l,s, this->indexmap().start_shift()), this->storage());\
- }
+ }\
+ bool memory_layout_is_c() const {  this->indexmap().strides()[0] > this->indexmap().strides()[1]; } \
+ bool memory_layout_is_fortran() const { !(memory_layout_is_c());}
 
-#define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt>, storages::shared_block<ValueType>, Opt, Tag::matrix_view > 
+#define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
+ storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
 
- template <typename ValueType, ull_t Opt >
+ template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
   class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
-    typedef matrix_view<ValueType,Opt> view_type;
-    typedef matrix<ValueType,Opt>      non_view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder> view_type;
+    typedef matrix<ValueType,Opt,TraversalOrder>      non_view_type;
     typedef void has_view_type_tag;
 
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -85,20 +88,20 @@ namespace triqs { namespace arrays {
 
  //---------------------------------------------------------------------
  // this traits is used by indexmap_storage_pair, when slicing to find the correct view type.
- template < class V, int R, ull_t OptionFlags > struct ViewFactory< V, R, OptionFlags, Tag::matrix_view> { 
-  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags >, matrix_view<V,OptionFlags > >::type type;
+ template < class V, int R, ull_t OptionFlags, ull_t To > struct ViewFactory< V, R, OptionFlags, To, Tag::matrix_view> { 
+  typedef typename std::conditional <R == 1, vector_view<V,OptionFlags >, matrix_view<V,OptionFlags, To > >::type type;
  };
 
  // ---------------------- matrix --------------------------------
 
- template <typename ValueType, ull_t Opt >
+ template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
   class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
    public :
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
     typedef typename IMPL_TYPE::indexmap_type indexmap_type;
-    typedef matrix_view<ValueType,Opt> view_type;
-    typedef matrix<ValueType,Opt> non_view_type;
+    typedef matrix_view<ValueType,Opt,TraversalOrder> view_type;
+    typedef matrix<ValueType,Opt,TraversalOrder> non_view_type;
     typedef void has_view_type_tag;
 
     /// Empty matrix.
@@ -106,23 +109,23 @@ namespace triqs { namespace arrays {
    // matrix(char ml='C'):  IMPL_TYPE(indexmap_type(memory_layout<2>(ml))) {}
 
     /// Empty matrix.
-    matrix(memory_layout<2> ml = memory_layout<2>() ):  IMPL_TYPE(indexmap_type(ml)) {}
+    matrix(memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order) ):  IMPL_TYPE(indexmap_type(ml)) {}
 
     /// Move
     explicit matrix(matrix && X) { this->swap_me(X); } 
 
     ///
-    matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>() ) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2),ml)) {}
+    matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order) ) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2),ml)) {}
 
     ///
-    matrix(mini_vector<size_t,2> const & sha, memory_layout<2> ml = memory_layout<2>()) : IMPL_TYPE(indexmap_type(sha,ml)) {}
+    matrix(mini_vector<size_t,2> const & sha, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order)) : IMPL_TYPE(indexmap_type(sha,ml)) {}
 
     /** Makes a true (deep) copy of the data. */
     matrix(const matrix & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
-     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>()):
+     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::traversal_order)):
      //matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
@@ -183,13 +186,13 @@ namespace triqs { namespace arrays {
   template <typename ... Args> void operator()(V & p, Args const & ... args) const { p = (kronecker(args...) ? rhs : RHS() ); }
  };
 
- template<typename RHS, typename V, ull_t Opt> 
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To> 
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, ull_t Opt> 
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To> 
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
 
  // += for scalar RHS // write a specific one if it is not a view : plain loop
  // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
@@ -199,38 +202,37 @@ namespace triqs { namespace arrays {
   template <typename KeyType> void operator()(V & p, KeyType const & key) const { p += (kronecker(key) ? rhs : RHS() ); }
  };
 
- template<typename RHS, typename V, ull_t Opt>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, ull_t Opt>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
 
- template<typename RHS, typename V, ull_t Opt>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) { lhs += (-rhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'S'>) { lhs += (-rhs); }
 
- template<typename RHS, typename V, ull_t Opt>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt> > >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
 
- template<typename RHS, typename V, typename Opt>
-  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
 
- template<typename RHS, typename V, typename Opt>
-  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
 
- template<typename RHS, typename V, typename Opt>
-  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
+  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
 
- template<typename RHS, typename V, typename Opt>
-  typename std::enable_if<!is_scalar_for<RHS,matrix_view<V,Opt>>::value>::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
-
+ template<typename RHS, typename V, ull_t Opt, ull_t To>
+  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
+  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
 
 }}//namespace triqs::arrays
 
@@ -240,16 +242,16 @@ namespace triqs { namespace arrays {
 namespace boost { namespace numeric { namespace bindings { namespace detail {
 
  /*namespace numerical_array_detail { 
-  template <char C> struct order_trait;
-  template <> struct order_trait<'F'> { typedef  tag::column_major data_order;};
-  template <> struct order_trait<'C'> { typedef  tag::row_major data_order;};
- }
-*/
- template <typename ValueType, triqs::ull_t Opt, typename Id >
-  struct adaptor<  triqs::arrays::matrix_view <ValueType,Opt>, Id > {
+   template <char C> struct order_trait;
+   template <> struct order_trait<'F'> { typedef  tag::column_major data_order;};
+   template <> struct order_trait<'C'> { typedef  tag::row_major data_order;};
+   }
+   */
+ template <typename ValueType, triqs::ull_t Opt, triqs::ull_t To, typename Id >
+  struct adaptor<  triqs::arrays::matrix_view <ValueType,Opt,To>, Id > {
    typedef typename copy_const< Id, ValueType >::type value_type;
-   //typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt>::order >::data_order  data_order;
-   
+   //typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt,To>::order >::data_order  data_order;
+
    // PB PB PB  : to be fixed : always row major !!!
    typedef tag::column_major data_order;
 
@@ -262,10 +264,10 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
     mpl::pair< tag::data_order, data_order  >,
     mpl::pair< tag::stride_type<1>,std::ptrdiff_t >,
     mpl::pair< tag::stride_type<2>,std::ptrdiff_t >
-    //mpl::pair< tag::stride_type<1>,
-    //typename if_row_major< data_order, std::ptrdiff_t, tag::contiguous >::type >,
-    //mpl::pair< tag::stride_type<2>,
-    //typename if_row_major< data_order, tag::contiguous, std::ptrdiff_t >::type >
+     //mpl::pair< tag::stride_type<1>,
+     //typename if_row_major< data_order, std::ptrdiff_t, tag::contiguous >::type >,
+     //mpl::pair< tag::stride_type<2>,
+     //typename if_row_major< data_order, tag::contiguous, std::ptrdiff_t >::type >
      > property_map;
 
    //static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[0]; }
@@ -282,16 +284,16 @@ namespace boost { namespace numeric { namespace bindings { namespace detail {
    static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[is_f(id) ? 1 :0]; }
   };
 
- template <typename ValueType, triqs::ull_t Opt, typename Id >
-  struct adaptor< triqs::arrays::matrix<ValueType,Opt>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt>, Id > {};
+ template <typename ValueType, triqs::ull_t Opt, triqs::ull_t To, typename Id >
+  struct adaptor< triqs::arrays::matrix<ValueType,Opt,To>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt,To>, Id > {};
 
 }}}} // namespace detail, namespace binding, namespace numeric, namespace boost
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
 namespace std { 
- template <typename V, triqs::ull_t Opt >
-  void swap( triqs::arrays::matrix_view<V,Opt> & a , triqs::arrays::matrix_view<V,Opt> & b)= delete;
+ template <typename V, triqs::ull_t Opt, triqs::ull_t To >
+  void swap( triqs::arrays::matrix_view<V,Opt,To> & a , triqs::arrays::matrix_view<V,Opt,To> & b)= delete;
 }
 
 #endif

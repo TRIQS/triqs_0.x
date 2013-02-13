@@ -29,11 +29,11 @@ namespace triqs { namespace arrays {
  
  template<typename D> 
   const_cache<D, array<typename D::value_type, D::domain_type::rank> > 
-  make_const_cache( D const & x, memory_layout< D::domain_type::rank> ml = memory_layout< D::domain_type::rank>()  ) { return {x,ml};}
+  make_const_cache( D const & x, memory_layout< D::domain_type::rank> ml = memory_layout< D::domain_type::rank>('C')  ) { return {x,ml};}
 
  template<typename D> 
   cache<D, array<typename D::value_type, D::domain_type::rank> > 
-  make_cache( D const & x, memory_layout< D::domain_type::rank> ml = memory_layout< D::domain_type::rank>() ) { return {x,ml};}
+  make_cache( D const & x, memory_layout< D::domain_type::rank> ml = memory_layout< D::domain_type::rank>('C') ) { return {x,ml};}
 
  // ----------------- implementation  ----------------------------------
 

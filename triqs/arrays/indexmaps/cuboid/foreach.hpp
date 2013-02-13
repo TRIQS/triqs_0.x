@@ -97,9 +97,9 @@ namespace triqs { namespace arrays { namespace indexmaps {
 #define AUX1(z,P,unused) for (t[p##P]=0; t[p##P]< l[p##P]; ++t[p##P])
 #define AUX2(z,p,unused) BOOST_PP_IF(p,+,) t[p] * s[p] 
 #define IMPL(z, NN, unused)                                \
- template<int Rank, ull_t Opt, typename Function, typename ValueType>\
- struct foreach_impl <cuboid::map<Rank,Opt>,Function,ValueType,typename boost::enable_if_c<(Rank==BOOST_PP_INC(NN))>::type > {\
-  static void invoke ( ValueType * restrict p, cuboid::map<Rank,Opt> const & CM, Function F) { \
+ template<int Rank, ull_t Opt, ull_t To, typename Function, typename ValueType>\
+ struct foreach_impl <cuboid::map<Rank,Opt,To>,Function,ValueType,typename boost::enable_if_c<(Rank==BOOST_PP_INC(NN))>::type > {\
+  static void invoke ( ValueType * restrict p, cuboid::map<Rank,Opt,To> const & CM, Function F) { \
    mini_vector<foreach_int_type, Rank> t;\
    BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX0,NN)\
    const mini_vector<foreach_int_type, Rank>  l(CM.lengths());\
@@ -121,8 +121,8 @@ namespace triqs { namespace arrays { namespace indexmaps {
    int memory_rank_to_index2(ull_t p, int r) { return r;} 
   }
 
- template<int Rank, ull_t Opt, typename Function, typename ValueType>
-  struct foreach_impl <cuboid::map<Rank,Opt>,Function,ValueType,void > {
+ template<int Rank, ull_t Opt, ull_t To, typename Function, typename ValueType>
+  struct foreach_impl <cuboid::map<Rank,Opt,To>,Function,ValueType,void > {
    typedef std::ptrdiff_t int_type; 
    mini_vector<int_type, Rank> t;
    
@@ -131,12 +131,12 @@ namespace triqs { namespace arrays { namespace indexmaps {
    // The clef adapters would convert, but this requires a conversion at each call....
    // typedef size_t int_type;
 
-   ValueType * restrict p; cuboid::map<Rank,Opt> const & CM; Function F;
+   ValueType * restrict p; cuboid::map<Rank,Opt,To> const & CM; Function F;
    int indices[Rank];
    
    const mini_vector<int_type, Rank>  l,s;
  
-   foreach_impl(ValueType * restrict p_, cuboid::map<Rank,Opt> const & CM_, Function F_): p(p_),CM(CM_),F(F_),
+   foreach_impl(ValueType * restrict p_, cuboid::map<Rank,Opt,To> const & CM_, Function F_): p(p_),CM(CM_),F(F_),
    l(CM.lengths()), s(CM.strides()) {
     for (int i=0; i<Rank; ++i) indices[i] = i;//mem_layout::memory_rank_to_index(CM.memory_indices_layout().value,i);     
    }

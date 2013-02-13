@@ -22,12 +22,15 @@
 #define TRIQS_ARRAYS_INDEXMAP_CUBOID_DOMAIN_H
 #include "../common.hpp"
 #include "../range.hpp"
+#include "../permutation.hpp"
 #include "../../impl/mini_vector.hpp"
 #include "../../impl/exceptions.hpp"
 #include <iostream>
 #include <sstream>
 
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
+ using namespace triqs::arrays::permutations;//::identity;
+ 
 
  /// Standard hyper_rectangular domain for arrays
  template<int Rank>
@@ -37,7 +40,8 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("dimensions",lengths_);}
    public :
-   static const unsigned int rank = Rank;
+   //static const unsigned int rank = Rank;
+   static const int rank = Rank;
    typedef n_uple index_value_type;
    domain ():lengths_(){}
    domain (n_uple const & lengths):lengths_(lengths) {}
@@ -52,7 +56,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    bool operator!=(domain const & X) const { return !(this->lengths_ == X.lengths_);}
    n_uple const & lengths() const { return lengths_;}
 
-   /** Generates the value of the indices of a cuboid_domain.  */
+  /** Generates the value of the indices of a cuboid_domain.  */
    template <ull_t IterationOrder= permutations::identity(rank) >
     class gal_generator {
       typedef index_value_type indices_type;
