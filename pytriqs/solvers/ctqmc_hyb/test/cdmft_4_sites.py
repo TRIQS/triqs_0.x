@@ -21,7 +21,7 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.base.gf.local import gf_init, BlockGf, GfImFreq, inverse
+from pytriqs.base.gf.local import BlockGf, GfImFreq, inverse
 from pytriqs.base.lattice.super_lattice import TBSuperLattice
 from pytriqs.base.lattice.tight_binding import TBLattice
 from pytriqs.base.sumk import *
@@ -73,7 +73,7 @@ G= BlockGf( name_block_generator = [ (s, GfImFreq(indices = SK.GFBlocIndices, me
 Sigma = G.copy()
 
 # Init Sigma
-for n, B in S.Sigma : B <<= gf_init.Const(2.0)
+for n, B in S.Sigma : B <<= 2.0
 
 # Now I write my DMFT loop...
 class myloop (DMFTLoopGeneric) :
@@ -102,3 +102,4 @@ myloop(solver_list = S, Chemical_potential  = 2.0).run(n_loops = 1)
 if mpi.is_master_node():
   Results = HDFArchive("cdmft_4_sites.output.h5", 'w')
   Results["G"] = S.G
+  Results["Gl"] = S.G_Legendre

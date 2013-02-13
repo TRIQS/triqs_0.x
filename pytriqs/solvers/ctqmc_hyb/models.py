@@ -78,7 +78,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
       OUT = OUT if OUT else BlockGf(G)
       for sig,B in IN:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
-            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[i+1,j+1]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
+            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[i,j]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
       return OUT
 
    def Transform_SymmetryBasis_toRealSpace(self,IN, OUT = None):
@@ -87,7 +87,7 @@ class Solver_2x2_Para_Hubbard (Solver) :
       for sig,B in OUT : 
          for i in range(4):
             for j in range(4):
-               B[i+1,j+1]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
+               B[i,j]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
                                     for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) ])
       return OUT
 
