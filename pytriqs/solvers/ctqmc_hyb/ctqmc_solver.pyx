@@ -239,7 +239,6 @@ class Solver(SolverBase):
         # Transcription of operators for C++
         Oplist2 = operators.transcribe_op_list_for_C(OPdict)
         SymList = [sym for (n,sym) in SymChar.items() if n in QuantumNumberSymmetries]
-        #self.H_diag = C_Module.Hloc(nf,nb,Oplist2,QuantumNumberOperators,SymList,self.Quantum_Numbers_Selection,0)
 
         # Create the C_Cag_Ops array which describes the grouping of (C,Cdagger) operator
         # for the MonteCarlo moves : (a, alpha) block structure [ [ (C_name, Cdag_name)]]
