@@ -21,7 +21,8 @@
 #include "bravais_lattice_and_brillouin_zone.hpp"
 
 #include <triqs/arrays/proto/matrix_algebra.hpp>
-#include <boost/numeric/bindings/blas/level1/dot.hpp>
+//#include <boost/numeric/bindings/blas/level1/dot.hpp>
+#include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
 #include <triqs/python_tools/converters/unordered_map.hpp> 
@@ -30,7 +31,7 @@ namespace triqs { namespace lattice_tools {
 
  using namespace tqa;
  using namespace std;
- using boost::numeric::bindings::blas::dot;
+ using triqs::arrays::blas::dot;
  const double almost_zero(1E-10);
 
  bravais_lattice::bravais_lattice( units_type const & units__, orbital_type const & orbitals__) : 
