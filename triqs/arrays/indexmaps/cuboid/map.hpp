@@ -52,7 +52,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    public : 
    static constexpr ull_t traversal_order_in_template = TraversalOrder;
    //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(Rank, OptionsFlags, TraversalOrder);
-    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
+   static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
 
    typedef domain<Rank> domain_type;
    domain_type const & domain() const { return mydomain;}
@@ -110,27 +110,25 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    memory_order_ (memory_layout_from_strides(strides)) {}
   //last_index_ = mem_layout::memory_rank_to_index(memory_layout_from_strides(strides), rank -1);
 
-  /*/// Construction from another map with the same order (used in grouping indices)
-    template<typename IO> map (map<IO,CheckBounds> const & C):
-    mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()) {
-    static_assert( (Permutations::is_equal<typename IO::perm,typename IndexOrderType::perm>::value), "Internal error");
-    }
-    */
+  /// Construction from another map with the same order (used in grouping indices)
+  template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
+   mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
+
   /// 
   bool is_contiguous() const {   
    const size_t last_index = mem_layout::memory_rank_to_index(memory_order_.value, rank-1);
-   //const size_t last_index = IndexOrderType::template memory_rank_to_index<rank-1>::value; 
+   //const size_t last_index = IndexOrderType::template memory_rank_to_index<rank-1>::value;
+   //
+   //std::cout   << " Is _conti"<< last_index <<  strides() <<  this->lengths() << mydomain.number_of_elements() <<std::endl; 
    return (strides()[last_index] * this->lengths()[last_index] == mydomain.number_of_elements()); 
   }  
 
-  //IndexOrderType index_order () const {return IndexOrderType();}
   size_t start_shift() const { return start_shift_;}
   lengths_type const & lengths() const { return mydomain.lengths();}
   strides_type const & strides() const { return this->strides_;}
 
   memory_layout<Rank> const & memory_indices_layout() const { return memory_order_;}
   ull_t memory_indices_layout_ull() const { return memory_order_.value;}
-  //static constexpr ull_t  memory_indices_layout_ull_s()  { return mem_layout::c_order(Rank);} 
   bool memory_layout_is_c() const { return memory_indices_layout().value == mem_layout::c_order(Rank);}
   bool memory_layout_is_fortran() const { return memory_indices_layout().value == mem_layout::fortran_order(Rank);}
 
@@ -214,11 +212,11 @@ template<int R1, int R2, ull_t OptFlags1, ull_t OptFlags2, ull_t To1, ull_t To2>
 bool compatible_for_assignment (const cuboid::map<R1,OptFlags1,To1> & X1, const cuboid::map<R2,OptFlags2,To2> & X2) { return X1.lengths() == X2.lengths();}
 
 template<int R1, int R2, ull_t OptFlags1, ull_t OptFlags2, ull_t To1, ull_t To2>
-bool raw_copy_possible (const cuboid::map<R1,OptFlags1,To1> & X1,const cuboid::map<R2,OptFlags2,To2> & X2) {
- return ( (X1.memory_indices_layout() == X2.memory_indices_layout())  
-   && X1.is_contiguous() && X2.is_contiguous() 
-   && (X1.domain().number_of_elements()==X2.domain().number_of_elements()));
-}
+ bool raw_copy_possible (const cuboid::map<R1,OptFlags1,To1> & X1,const cuboid::map<R2,OptFlags2,To2> & X2) {
+  return ( (X1.memory_indices_layout() == X2.memory_indices_layout())  
+    && X1.is_contiguous() && X2.is_contiguous() 
+    && (X1.domain().number_of_elements()==X2.domain().number_of_elements()));
+ }
 
 /*
 /// TO BE REPLACED AT RUN TIME 

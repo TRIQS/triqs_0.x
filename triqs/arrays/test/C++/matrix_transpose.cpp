@@ -28,7 +28,6 @@
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
-namespace bindings= boost::numeric::bindings;
 
 int main(int argc, char **argv) {
 
@@ -49,8 +48,6 @@ int main(int argc, char **argv) {
  std::cout<<A(R,R).transpose() << std::endl;
 
  triqs::arrays::matrix_view<double > Acw =  A.transpose();
- std::cout<<"bindings::stride_major(a) "<<  bindings::stride_major(Acw(R,R)) <<std::endl; 
- std::cout<<"bindings::stride_major(a) "<<  bindings::stride_major(A(R,R)) <<std::endl; 
   
 }
 

@@ -28,9 +28,6 @@
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
- //inline std::string object_to_string (const bpy::object & O1) { return bpy::extract<std::string>(bpy::str(O1)); }
- //inline std::string object_to_string (PyObject * p) { bpy::object obj ( bpy::borrowed (p)); return object_to_string(obj); }
- 
  inline std::string object_to_string (PyObject * p) { 
   if (!PyString_Check(p)) TRIQS_RUNTIME_ERROR<<" Internal error, expected a python string .....";
   return PyString_AsString(p); 
@@ -66,12 +63,8 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    if (X==NULL) TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is NULL !";
    if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";
 
-   // make sure IndexMap is cuboid ?s
-   static const char Order = IndexMapType::index_order_type::C_or_F;
-   static_assert( ((Order=='F')||(Order=='C')), "Ordering must be C or Fortran");
-
-   if ((!PyArray_Check(X)) && (Order=='D'))
-    TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is not a numpy and you ask me to deduce the ordering in memory !";
+   //if ((!PyArray_Check(X)) && (Order=='D'))
+   // TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is not a numpy and you ask me to deduce the ordering in memory !";
 
    const int elementsType (numpy_to_C_type<typename boost::remove_const<ValueType>::type>::arraytype);
    int rank = IndexMapType::rank;
@@ -90,11 +83,11 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
     if ( arr->nd != rank)
      throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
 
-    if ((Order == 'C') && (PyArray_ISFORTRAN(arr))) 
-     throw copy_exception () << error_msg<<"     The numpy is in Fortran order while it is expected in C order. \n";
+    //if ((Order == 'C') && (PyArray_ISFORTRAN(arr))) 
+    // throw copy_exception () << error_msg<<"     The numpy is in Fortran order while it is expected in C order. \n";
 
-    if ((Order == 'F') && (!PyArray_ISFORTRAN(arr))) 
-     throw copy_exception () << error_msg<<"     The numpy is not in Fortran order as it is expected. \n";
+    //if ((Order == 'F') && (!PyArray_ISFORTRAN(arr))) 
+    // throw copy_exception () << error_msg<<"     The numpy is not in Fortran order as it is expected. \n";
 
     numpy_obj = X; Py_INCREF(X); 
    }
@@ -111,8 +104,9 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
     //   - Order = FortranOrder or SameOrder - > Fortran order otherwise C
     bool ForceCast = false;// Unless FORCECAST is present in flags, this call will generate an error if the data type cannot be safely obtained from the object.
     int flags = (ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
-    if (!(PyArray_Check(X) && (Order=='D'))) flags |= (Order =='F' ? NPY_F_CONTIGUOUS : NPY_C_CONTIGUOUS); //impose mem order
-    //if (!(PyArray_Check(X) && (Order=='D'))) flags |= (Order =='F' ? NPY_FARRAY : NPY_CARRAY); //impose mem order
+    if (!(PyArray_Check(X) )) 
+     flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(IndexMapType::rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
+    //if (!(PyArray_Check(X) && (Order=='D'))) flags |= (Order =='F' ? NPY_F_CONTIGUOUS : NPY_C_CONTIGUOUS); //impose mem order
     numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL );
 
     // do several checks
@@ -127,8 +121,8 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
      if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
      if (arr_obj->descr->type_num != elementsType) 
       TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<arr_obj->descr->type_num <<" vs "<<elementsType;
-     if (Order == 'F') { if (!PyArray_ISFORTRAN(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be Fortran array";}
-     else {if (!PyArray_ISCONTIGUOUS(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be contiguous";}
+     //if (Order == 'F') { if (!PyArray_ISFORTRAN(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be Fortran array";}
+     //else {if (!PyArray_ISCONTIGUOUS(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be contiguous";}
     }
     catch(...) { Py_DECREF(numpy_obj); throw;} // make sure that in case of problem, the reference counting of python is still ok...
    }
@@ -139,14 +133,17 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
   ///
   IndexMapType indexmap() const {
    // extract strides and lengths
-   const size_t dim =arr_obj->nd; 
-   std::vector<size_t> lengths (dim);
-   std::vector<std::ptrdiff_t> strides(dim); 
+   const size_t dim =arr_obj->nd; // we know that dim == rank 
+   mini_vector<size_t,IndexMapType::rank> lengths;
+   mini_vector<std::ptrdiff_t,IndexMapType::rank> strides; 
+   //std::vector<size_t> lengths (dim);
+   //std::vector<std::ptrdiff_t> strides(dim); 
    for (size_t i=0; i< dim ; ++i) {
     lengths[i] = size_t(arr_obj-> dimensions[i]); 
     strides[i] = std::ptrdiff_t(arr_obj-> strides[i])/sizeof(ValueType);
    }
-   return IndexMapType (mini_vector<size_t,IndexMapType::rank>(lengths), mini_vector<std::ptrdiff_t,IndexMapType::rank>(strides),0);
+   return IndexMapType (lengths,strides,0);
+   //return IndexMapType (mini_vector<size_t,IndexMapType::rank>(lengths), mini_vector<std::ptrdiff_t,IndexMapType::rank>(strides),0);
   }
 
   ///

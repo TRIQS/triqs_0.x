@@ -30,9 +30,9 @@
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
-namespace blas = boost::numeric::bindings::blas;
-namespace lapack = boost::numeric::bindings::lapack;
-namespace bindings= boost::numeric::bindings;
+//namespace blas = boost::numeric::bindings::blas;
+//namespace lapack = boost::numeric::bindings::lapack;
+//namespace bindings= boost::numeric::bindings;
 
 //using linalg::inverse;
 //using linalg::inverse_and_compute_det;
@@ -52,6 +52,12 @@ int main(int argc, char **argv) {
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
    W(i,j) = (i>j ? i+2.5*j : i*0.8-j);
+
+/*triqs::arrays::vector <int> ipiv22(3);ipiv22()=0;
+ lapack::getrf(W, ipiv22);
+ std::cout<<"getrf W = "<<W<<std::endl<<std::endl;
+ */
+ //return 0;
 
  Wkeep = W;
 
@@ -86,17 +92,16 @@ int main(int argc, char **argv) {
  std::cout<<" view = "<< V<<std::endl<<std::endl;
  std::cout<< inverse(V) << " = "<< eval_as_matrix (inverse(V))<<std::endl<<std::endl;
 
-
  // testing against "manual" call of bindings
  Wi = W;
- triqs::arrays::vector <int> ipiv2(3);
+ triqs::arrays::vector <int> ipiv2(3);ipiv2()=0;
  lapack::getrf(Wi, ipiv2);
- std::cout<<"getrf W = "<<Wi<<std::endl<<std::endl;
+ std::cerr<<"getrf W = "<<Wi<<std::endl<<std::endl;
  lapack::getri(Wi, ipiv2);
  std::cerr<<"inverse W = "<<Wi<<std::endl<<std::endl; // avoid printing because of 1.e-18 error, not reproducible
  for (int i =0; i<3; ++i)
   for (int j=0; j<3; ++j)
-    assert ( (abs(Wi(i,j) - Wkeep(i,j))) <1.e-10 );
+    if (!( (abs(Wi(i,j) - Wkeep(i,j))) <1.e-10 )) TRIQS_RUNTIME_ERROR<< "TEST FAILED";
 
 
  }

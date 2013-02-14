@@ -43,8 +43,8 @@ namespace triqs { namespace arrays {
   typename indexmap_type::strides_type s; s[0] = this->indexmap().strides()[1];s[1] = this->indexmap().strides()[0];\
   return view_type( indexmap_type(l,s, this->indexmap().start_shift()), this->storage());\
  }\
- bool memory_layout_is_c() const {  this->indexmap().strides()[0] > this->indexmap().strides()[1]; } \
- bool memory_layout_is_fortran() const { !(memory_layout_is_c());}
+ bool memory_layout_is_c() const {   return this->indexmap().strides()[0] > this->indexmap().strides()[1]; } \
+ bool memory_layout_is_fortran() const { return !(memory_layout_is_c());}
 
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
@@ -235,59 +235,6 @@ namespace triqs { namespace arrays {
   triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
 
 }}//namespace triqs::arrays
-
-#include <boost/numeric/bindings/detail/adaptor.hpp>
-#include <boost/numeric/bindings/detail/if_row_major.hpp>
-// blas lapack binder
-namespace boost { namespace numeric { namespace bindings { namespace detail {
-
- /*namespace numerical_array_detail { 
-   template <char C> struct order_trait;
-   template <> struct order_trait<'F'> { typedef  tag::column_major data_order;};
-   template <> struct order_trait<'C'> { typedef  tag::row_major data_order;};
-   }
-   */
- template <typename ValueType, triqs::ull_t Opt, triqs::ull_t To, typename Id >
-  struct adaptor<  triqs::arrays::matrix_view <ValueType,Opt,To>, Id > {
-   typedef typename copy_const< Id, ValueType >::type value_type;
-   //typedef typename  numerical_array_detail::order_trait< triqs::arrays::matrix_view <ValueType,Opt,To>::order >::data_order  data_order;
-
-   // PB PB PB  : to be fixed : always row major !!!
-   typedef tag::column_major data_order;
-
-   typedef mpl::map<
-    mpl::pair< tag::value_type, value_type >,
-    mpl::pair< tag::entity, tag::matrix >,
-    mpl::pair< tag::size_type<1>, std::ptrdiff_t >,
-    mpl::pair< tag::size_type<2>, std::ptrdiff_t >,
-    mpl::pair< tag::data_structure, tag::linear_array >,
-    mpl::pair< tag::data_order, data_order  >,
-    mpl::pair< tag::stride_type<1>,std::ptrdiff_t >,
-    mpl::pair< tag::stride_type<2>,std::ptrdiff_t >
-     //mpl::pair< tag::stride_type<1>,
-     //typename if_row_major< data_order, std::ptrdiff_t, tag::contiguous >::type >,
-     //mpl::pair< tag::stride_type<2>,
-     //typename if_row_major< data_order, tag::contiguous, std::ptrdiff_t >::type >
-     > property_map;
-
-   //static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[0]; }
-   //static std::ptrdiff_t size2( const Id& id ) { return id.indexmap().lengths()[1];}
-   //static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[0]; }
-   //static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[1]; }
-
-   static bool is_f(Id const & id) { return  id.indexmap().memory_layout_is_fortran();}
-   static std::ptrdiff_t size1( const Id& id ) { return id.indexmap().lengths()[is_f(id) ? 0 :1]; }
-   static std::ptrdiff_t size2( const Id& id ) { return id.indexmap().lengths()[is_f(id) ? 1: 0];}
-   static value_type* begin_value( Id& t ) { return &(t(0,0)); }
-   static value_type* end_value( Id& t ) { return &t(t.dim0()-1,t.dim1()-1) + 1; } // can't find the doc : if +1 needed ???
-   static std::ptrdiff_t stride1( const Id& id ) { return id.indexmap().strides()[is_f(id) ? 0 :1]; }
-   static std::ptrdiff_t stride2( const Id& id ) { return id.indexmap().strides()[is_f(id) ? 1 :0]; }
-  };
-
- template <typename ValueType, triqs::ull_t Opt, triqs::ull_t To, typename Id >
-  struct adaptor< triqs::arrays::matrix<ValueType,Opt,To>, Id >: adaptor<  triqs::arrays::matrix_view<ValueType,Opt,To>, Id > {};
-
-}}}} // namespace detail, namespace binding, namespace numeric, namespace boost
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).

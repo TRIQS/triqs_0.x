@@ -20,10 +20,10 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_QCACHE_H
 #define TRIQS_ARRAYS_QCACHE_H
-#include "./matrix.hpp"
-#include "./vector.hpp"
-#include <boost/scoped_ptr.hpp>
-namespace triqs { namespace arrays { 
+#include "../matrix.hpp"
+#include "../vector.hpp"
+#include <memory>
+namespace triqs { namespace arrays { namespace blas_lapack_tools {  
 
  /**
   * Given A, a matrix (or vector/array) it presents via the () operator
@@ -38,35 +38,36 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class const_qcache;
 
- template<typename A> class const_qcache< A, ENABLE_IF(is_amv_value_class<A>) > : boost::noncopyable { 
-   A const & x;
-   public:
-   const_qcache(A const & x_):x(x_){}
-   typedef A const & exposed_type; 
-   exposed_type operator()() const {return x;}
-  };
+ template<typename A> class const_qcache< A, ENABLE_IF(is_amv_value_class<A>) > { 
+  A const & x;
+  public:
+  const_qcache(A const & x_):x(x_){}
+  const_qcache(const_qcache const &) = delete;
+  typedef A const & exposed_type; 
+  exposed_type operator()() const {return x;}
+ };
 
- template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >) > : 
-  boost::noncopyable { 
-   typedef matrix<typename A::value_type> X;
-   X x;
-   public:
-   const_qcache(A const & x_):x(x_){}
-   typedef X const & exposed_type; 
-   exposed_type operator()() const {return x;}
-  };
+ template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >) > {
+  typedef matrix<typename A::value_type> X;
+  X x;
+  public:
+  const_qcache(A const & x_):x(x_){}
+  const_qcache(const_qcache const &) = delete;
+  typedef X const & exposed_type; 
+  exposed_type operator()() const {return x;}
+ };
 
- template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >) > :
-  boost::noncopyable { 
-   typedef vector<typename A::value_type> X;
-   X x;
-   public:
-   const_qcache(A const & x_):x(x_){}
-   typedef X const & exposed_type; 
-   exposed_type operator()() const {return x;}
-  };
+ template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >) > {
+  typedef vector<typename A::value_type> X;
+  X x;
+  public:
+  const_qcache(A const & x_):x(x_){}
+  const_qcache(const_qcache const &) = delete;
+  typedef X const & exposed_type; 
+  exposed_type operator()() const {return x;}
+ };
 
- template<typename A> class const_qcache< A, ENABLE_IF(is_amv_view_class<A>)> : boost::noncopyable { 
+ template<typename A> class const_qcache< A, ENABLE_IF(is_amv_view_class<A>)> { 
   const bool need_copy;
   A keeper;
   struct internal_data {
@@ -80,7 +81,7 @@ namespace triqs { namespace arrays {
    }
   };
   friend struct internal_data;   
-  mutable boost::scoped_ptr<internal_data> _id;   
+  mutable std::unique_ptr<internal_data> _id;   
   internal_data & id() const { assert(need_copy); if (!_id) _id.reset(new internal_data(*this)); return *_id;}
 
   protected:
@@ -90,6 +91,7 @@ namespace triqs { namespace arrays {
 
   public :
   explicit const_qcache(A const & x): need_copy (!(has_contiguous_data(x))), keeper(x) {}
+  const_qcache(const_qcache const &) = delete;
   typedef const A exposed_type; 
   exposed_type operator()() const { return view();}
  };
@@ -107,10 +109,11 @@ namespace triqs { namespace arrays {
   */
  template<typename A, typename Enable=void> class reflexive_qcache;
 
- template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_value_class<A>)> : boost::noncopyable { 
+ template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_value_class<A>)> { 
   A & x;
   public:
   reflexive_qcache(A & x_):x(x_){}
+  reflexive_qcache(reflexive_qcache const &) = delete;
   typedef A & exposed_type; 
   exposed_type operator()() const {return x;}
  };
@@ -119,11 +122,12 @@ namespace triqs { namespace arrays {
   typedef const_qcache<A> B;
   public :
   explicit reflexive_qcache(A const & x) : B(x) {} 
+  reflexive_qcache(reflexive_qcache const &) = delete;
   ~reflexive_qcache() { this->back_update();}
   typedef A exposed_type; 
   exposed_type operator()() { return B::view(); } 
  };
 
-}}//namespace triqs::arrays
+}}}//namespace triqs::arrays::blas_lapack
 #endif
 

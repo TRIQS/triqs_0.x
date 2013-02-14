@@ -18,27 +18,16 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <boost/numeric/bindings/std/vector.hpp>
-#include <boost/numeric/bindings/blas/level1/axpy.hpp>
-#include <boost/numeric/bindings/blas/level2/ger.hpp>
-#include <boost/numeric/bindings/blas/level2/gemv.hpp>
-#include <boost/numeric/bindings/blas/level3/gemm.hpp>
-#include <boost/numeric/bindings/lapack/computational/getrf.hpp>
-#include <boost/numeric/bindings/lapack/computational/getri.hpp>
-
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
 #include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/matmul.hpp"
 #include "./src/linalg/mat_vec_mul.hpp"
+#include "./src/blas_lapack/gemv.hpp"
 
 using namespace std;
 using namespace triqs;
 using namespace triqs::arrays;
-//using namespace triqs::arrays::linalg;
-namespace blas = boost::numeric::bindings::blas;
-namespace lapack = boost::numeric::bindings::lapack;
-namespace bindings= boost::numeric::bindings;
 
 struct gemv_via_binder { 
 
@@ -68,36 +57,10 @@ struct expressif : gemv_via_binder  {
  }
 };
 
-namespace myblas { 
-//#include "./myblas.hpp"
-}
-
-#define MYFORTRAN( id ) id##_
-
-//void MYFORTRAN(dgemv)(const char* trans, const int & m, const int & n, const double & alpha, const double A[], int & lda,
-//			const double x[], const int & incx, const double & beta, double y[], const int & incy);
- 
-struct plain_gemv_call : gemv_via_binder  { 
- void operator()() { 
-
- const char CT ='N';
- const double Done=1,Dzero=0;
- const int one =1;
- double * A_ = &A(0,0);
- double * MB_ = &MB(0);
- double * MC_ = &MC(0);
-
- int n = N;
- //myblas::MYFORTRAN(dgemv)(&CT,n,n,Done, A_,n,MC_ ,one,Dzero,MB_,one);
- MYFORTRAN(dgemv)(&CT,&n,&n,&Done, A_,&n,MC_ ,&one,&Dzero,MB_,&one);
- }
-};
-
 
 #include "./speed_tester.hpp"
 int main() {
  const int l= 1000*1000;
- speed_tester<plain_gemv_call> (l);
  speed_tester<gemv_via_binder> (l);
  speed_tester<expressif> (l);
  return 0;

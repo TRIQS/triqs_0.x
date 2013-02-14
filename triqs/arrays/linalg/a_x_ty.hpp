@@ -24,8 +24,7 @@
 #include <boost/typeof/typeof.hpp>
 #include "../matrix.hpp"
 #include "../vector.hpp"
-#include <boost/numeric/bindings/blas/level2/ger.hpp>
-#include "../qcache.hpp"
+#include "../blas_lapack/ger.hpp"
 
 namespace triqs { namespace arrays { 
 
@@ -64,29 +63,23 @@ namespace triqs { namespace arrays {
    // Optimized implementation of =
    template<typename LHS> 
     friend void triqs_arrays_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs)  {
-     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
      resize_or_check_if_view(lhs,make_shape(rhs.dim0(),rhs.dim1()));
      lhs()=0;
-     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
-     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
+     blas::ger(rhs.a,rhs.x, rhs.y, lhs);
     }
 
    //Optimized implementation of +=
    template<typename LHS> 
     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'A'>) {
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
-     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
-     boost::numeric::bindings::blas::ger(rhs.a, Cx(), Cy(),target);
+     blas::ger(rhs.a, rhs.x, rhs.y, lhs);
     }
 
    //Optimized implementation of -=
    template<typename LHS> 
     friend void triqs_arrays_compound_assign_delegation (LHS & lhs, a_x_ty_lazy const & rhs, mpl::char_<'S'>) { 
      static_assert((is_matrix_or_view<LHS>::value), "LHS is not a matrix or a matrix_view"); // check that the target is indeed a matrix.
-     const_qcache<X_type> Cx(rhs.x); const_qcache<Y_type> Cy(rhs.y); 
-     reflexive_qcache<LHS> Clhs(lhs); typename reflexive_qcache<LHS>::exposed_type target = Clhs();
-     boost::numeric::bindings::blas::ger(-rhs.a, Cx(), Cy(),target);
+     blas::ger(- rhs.a, rhs.x, rhs.y, lhs);
     }
 
    friend std::ostream & operator<<(std::ostream & out, a_x_ty_lazy const & a){ return out<<"a_x_ty("<<a.a<<","<<a.x<<","<<a.y<<")";}

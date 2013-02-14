@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
    std::cout<<"A "<<A(i,j)<<std::endl;
 
  std::cout<<"A = "<<A<<std::endl;
-
+ 
  //empty array
  triqs::arrays::array<long,2> B;
  std::cout<<"B= "<<B<<std::endl;

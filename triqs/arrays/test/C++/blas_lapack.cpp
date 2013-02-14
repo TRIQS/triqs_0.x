@@ -30,19 +30,14 @@
 #include "./src/linalg/inverse.hpp"
 #include "./src/linalg/determinant.hpp"
 
-#include <boost/numeric/bindings/std/vector.hpp>
-#include <boost/numeric/bindings/blas/level1/axpy.hpp>
-#include <boost/numeric/bindings/blas/level2/ger.hpp>
-#include <boost/numeric/bindings/blas/level2/gemv.hpp>
-#include <boost/numeric/bindings/blas/level3/gemm.hpp>
-#include <boost/numeric/bindings/lapack/computational/getrf.hpp>
-#include <boost/numeric/bindings/lapack/computational/getri.hpp>
+//#include <boost/numeric/bindings/std/vector.hpp>
+//#include <boost/numeric/bindings/blas/level1/axpy.hpp>
+#include "./src/blas_lapack/gemm.hpp"
+#include "./src/blas_lapack/gemv.hpp"
+#include "./src/blas_lapack/ger.hpp"
+#include "./src/blas_lapack/axpy.hpp"
 
 using namespace triqs::arrays;
-
-namespace blas = boost::numeric::bindings::blas;
-namespace lapack = boost::numeric::bindings::lapack;
-namespace bindings= boost::numeric::bindings;
 
 int main(int argc, char **argv) {
 
@@ -89,13 +84,6 @@ int main(int argc, char **argv) {
  std::cout<<"Mc2 = "<<Mc2<<std::endl;
  std::cout<<"Mc3 = "<<Mc3<<std::endl;
 
- /* triqs::arrays::matrix_view<double,'C' > MC1(M1);
-    std::cout<<"M1 = "<<M1<<std::endl;
-    std::cout<<"MC1 = "<<MC1<<std::endl;
-
-*/
-
- // blas::get(alpha, A,B, c, R) : R <= alpha *A*B + c*R
  std::cout<<"V3 = "<<V3<<std::endl;
  blas::ger(1.0,V3,V3,M2);
  std::cout<<"M2 = "<<M2<<std::endl;

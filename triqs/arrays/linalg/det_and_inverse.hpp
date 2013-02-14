@@ -25,11 +25,10 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/enable_if.hpp>
 #include "../impl/common.hpp"
-#include "../qcache.hpp"
 #include "triqs/utility/proto/tools.hpp"
 #include "../matrix.hpp"
-#include <boost/numeric/bindings/lapack/computational/getrf.hpp>
-#include <boost/numeric/bindings/lapack/computational/getri.hpp>
+#include "../blas_lapack/getrf.hpp"
+#include "../blas_lapack/getri.hpp"
 
 namespace triqs { namespace arrays { 
 
@@ -95,7 +94,7 @@ namespace triqs { namespace arrays {
   void _step1(V_type & W) { 
    if (step >0) return;
    step=1; 
-   info = boost::numeric::bindings::lapack::getrf(W, ipiv);
+   info = lapack::getrf(W, ipiv);
    if (info<0) throw matrix_inverse_exception() << "Inverse/Det error : failure of getrf lapack routine ";
   }
 
@@ -112,8 +111,7 @@ namespace triqs { namespace arrays {
    assert(step==1); //if (step==1) return;
    step=2;
    _compute_det(W); 
-   info = boost::numeric::bindings::lapack::getri(W, ipiv);
-   //std::cerr<<" after tri "<< W<<std::endl;
+   info = lapack::getri(W, ipiv);
    if (info!=0) throw matrix_inverse_exception() << "Inverse/Det error : matrix is not invertible";
   }
  };
@@ -165,7 +163,7 @@ namespace triqs { namespace arrays {
      if ((lhs.indexmap().memory_indices_layout()  !=rhs.a.indexmap().memory_indices_layout())|| 
        (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
      else {// if M = inverse(M) with the SAME object, then we do not need to copy the data
-      reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
+      blas_lapack_tools::reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
       det_and_inverse_worker<typename MT::view_type> W(C());// the worker to make the inversion of the lhs... 
       W.inverse(); // worker is working ...
      }

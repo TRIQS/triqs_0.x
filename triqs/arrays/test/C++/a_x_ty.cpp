@@ -30,7 +30,7 @@
 #include "./src/linalg/inverse.hpp"
 #include "./src/linalg/determinant.hpp"
 #include "./src/linalg/a_x_ty.hpp"
-#include <boost/numeric/bindings/blas/level1/dot.hpp>
+#include "./src/blas_lapack/dot.hpp"
 
 using namespace triqs::arrays;
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
  init_python_stuff(argc,argv);
 
  triqs::arrays::matrix<double> A(5,5, FORTRAN_LAYOUT);
- triqs::arrays::matrix<double > Ac(5,5);
+ //triqs::arrays::matrix<double > A(5,5);
  typedef triqs::arrays::vector<double> vector_type;
  vector_type  MC(5), MB(5);
  A()= 0;
@@ -65,8 +65,8 @@ int main(int argc, char **argv) {
  std::cout<<" full A"<< A<<std::endl<<std::endl;
 
 
- std::cout<< " MB, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MB,MC)<<std::endl;
- std::cout<< " MC, MC, dot "<< MB << MC << boost::numeric::bindings::blas::dot(MC,MC)<<std::endl;
+ std::cout<< " MB, MC, dot "<< MB << MC << blas::dot(MB,MC)<<std::endl;
+ std::cout<< " MC, MC, dot "<< MB << MC << blas::dot(MC,MC)<<std::endl;
 
 }
 
