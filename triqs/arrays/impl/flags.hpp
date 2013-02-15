@@ -71,7 +71,6 @@ static constexpr bool value = bound_check(F);
   }; 
 
   //constexpr ull_t memory_order (int r, ull_t f, ull_t mo) { return mo + get(f,1) * permutations::identity(r) + get(f,2) * permutations::ridentity(r);}
-
   //or return an int 0,1,2
   //constexpr bool nan_init         (ull_t f) { return get (f, 3);}
   //constexpr bool default_init     (ull_t f) { return get (f, 4);}
@@ -81,9 +80,9 @@ static constexpr bool value = bound_check(F);
   constexpr bool check_init_mode   (ull_t f) { return get2 (f,3)!=3ull;}
 
   template<ull_t F> struct init_tag1;
-  template<> struct init_tag1<0ull> { typedef Tag::no_init type;};
-  template<> struct init_tag1<1ull> { typedef Tag::nan_inf_init type;};
-  template<> struct init_tag1<2ull> { typedef Tag::default_init type;};
+  template<> struct init_tag1<0> { typedef Tag::no_init type;};
+  template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
+  template<> struct init_tag1<2> { typedef Tag::default_init type;};
 
   // for the init_tag, we pass the *whole* option flag.
   template<ull_t F> struct init_tag : init_tag1 < init_mode(F)> {};
@@ -98,12 +97,6 @@ static constexpr bool value = bound_check(F);
    static_assert ( (!( (is_c || is_f) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
    static_assert ( (inm), "You asked nan and default init at the same time...");
   };
-  
- 
-  
  }
-
 }}//namespace triqs::arrays 
 #endif
-
-
