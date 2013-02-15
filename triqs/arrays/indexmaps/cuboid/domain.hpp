@@ -34,37 +34,37 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 
  /// Standard hyper_rectangular domain for arrays
  template<int Rank>
-  class domain {
+  class domain_t {
    typedef mini_vector<size_t,Rank> n_uple;
    n_uple lengths_;
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("dimensions",lengths_);}
    public :
    //static const unsigned int rank = Rank;
-   static const int rank = Rank;
+   static constexpr int rank = Rank;
    typedef n_uple index_value_type;
-   domain ():lengths_(){}
-   domain (n_uple const & lengths):lengths_(lengths) {}
-   domain (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
-   domain (std::vector<std::size_t> const & l):lengths_() {
-    if (!l.size()==rank) TRIQS_RUNTIME_ERROR << "cuboid domain construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
+   domain_t ():lengths_(){}
+   domain_t (n_uple const & lengths):lengths_(lengths) {}
+   domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
+   domain_t (std::vector<std::size_t> const & l):lengths_() {
+    if (!l.size()==rank) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
     lengths_ = n_uple(l);
    }
-   domain (const domain & C):lengths_(C.lengths_){}
+   domain_t (const domain_t & C):lengths_(C.lengths_){}
    size_t number_of_elements() const { return lengths_.product_of_elements();}
-   bool operator==(domain const & X) const { return this->lengths_ == X.lengths_;}
-   bool operator!=(domain const & X) const { return !(this->lengths_ == X.lengths_);}
+   bool operator==(domain_t const & X) const { return this->lengths_ == X.lengths_;}
+   bool operator!=(domain_t const & X) const { return !(this->lengths_ == X.lengths_);}
    n_uple const & lengths() const { return lengths_;}
 
   /** Generates the value of the indices of a cuboid_domain.  */
-   template <ull_t IterationOrder= permutations::identity(rank) >
+   template <ull_t IterationOrder= permutations::identity(Rank) >
     class gal_generator {
       typedef index_value_type indices_type;
-      const domain * dom;
+      const domain_t * dom;
       indices_type indices_tuple;
       bool atend;
      public:
-      gal_generator (const domain & P, bool atEnd=false): dom(&P), atend(atEnd) {}
+      gal_generator (const domain_t & P, bool atEnd=false): dom(&P), atend(atEnd) {}
       bool operator==(const gal_generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
       bool operator!=(const gal_generator & IT2) const { return (!operator==(IT2));}
       indices_type const & operator *() const { return indices_tuple;}
@@ -104,7 +104,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    // Check that key in in the domain : variadic form. No need for speed optimisation here, it is just for debug
    template<typename ... Args> void assert_key_in_domain_v (Args const & ... args) const { assert_key_in_domain( std::make_tuple(args...));}
 
-   friend std::ostream & operator<<(std::ostream & out, domain const & x){return out<<"Cuboid of rank "<<x.rank<<" and dimensions "<<x.lengths();}
+   friend std::ostream & operator<<(std::ostream & out, domain_t const & x){return out<<"Cuboid of rank "<<x.rank<<" and dimensions "<<x.lengths();}
   };
 
  /*/// ------------  tensor product ------------------------
@@ -113,7 +113,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    mini_vector<size_t,D1::rank + D2::rank> res; const int R1(D1::rank), R2(D2::rank);
    for (int u=0;u<R1; ++u) res[u] = d1.lengths()[u];
    for (int u=0;u<R2; ++u) res[D1::rank + u ] = d2.lengths()[u];
-   return  domain<D1::rank + D2::rank> (res);
+   return  domain_t<D1::rank + D2::rank> (res);
    }
    */
 }
@@ -121,15 +121,15 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 namespace PrettyPrint_details {
  // TO BE CLEANED
  template<typename A>
-  struct print_impl <cuboid::domain<1>,A> {
-   static void do_it (std::ostream & out,const cuboid::domain<1> & d, A const & a ) { out<<"[";
+  struct print_impl <cuboid::domain_t<1>,A> {
+   static void do_it (std::ostream & out,const cuboid::domain_t<1> & d, A const & a ) { out<<"[";
     for (size_t i=0; i< d.lengths()[0]; ++i) out<<(i>0 ? ",": "")<<a(i);
     out<<"]";}
   };
 
  template<typename A>
-  struct print_impl <cuboid::domain<2>,A> {
-   static void do_it (std::ostream & out,const cuboid::domain<2> & d, A const & a ) {
+  struct print_impl <cuboid::domain_t<2>,A> {
+   static void do_it (std::ostream & out,const cuboid::domain_t<2> & d, A const & a ) {
     out<<"\n[";
     for (size_t i=0; i< d.lengths()[0]; ++i) {
      out<<(i==0 ? "[" : " [");

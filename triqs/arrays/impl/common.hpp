@@ -57,9 +57,6 @@
 #define DISABLE_IF(...)   typename boost::disable_if< __VA_ARGS__ , void >::type
 #define DISABLE_IFC(...)  typename boost::disable_if_c< __VA_ARGS__ , void >::type
 
-// Use Cblas
-#define BOOST_NUMERIC_BINDINGS_BLAS_CBLAS 
-
 namespace boost { namespace serialization { class access;}}
 
 #define TRIQS_ARRAYS_THROW(s) { TRIQS_RUNTIME_ERROR<<s; } 
@@ -87,8 +84,6 @@ namespace triqs {
  template<typename A> typename A::non_view_type make_clone(A const & x) { return typename A::non_view_type(x);}
 
  namespace arrays {
-
-
   /// Is the data contiguous
   template<typename A> typename boost::disable_if<is_amv_value_or_view_class<A>,bool>::type has_contiguous_data(A const &) {return false;}
   template<typename A> typename boost::enable_if<is_amv_value_class<A>,bool>::type has_contiguous_data(A const &) {return true;}
@@ -103,7 +98,6 @@ namespace triqs {
   template< typename A> 
    typename boost::enable_if<is_amv_value_class<A> >::type 
    resize_or_check_if_view ( A & a, typename A::shape_type const & sha) { if (a.shape()!=sha) a.resize(sha); }
-
  }}//namespace triqs::arrays
 #endif
 

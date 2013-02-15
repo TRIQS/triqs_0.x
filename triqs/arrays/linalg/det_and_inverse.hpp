@@ -70,7 +70,8 @@ namespace triqs { namespace arrays {
 
   public:
   det_and_inverse_worker (ViewType const & a): V(a), dim(a.dim0()), ipiv(dim), step(0) { 
-   if (a.dim0()!=a.dim1()) TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<a.dim0()<<","<<a.dim1()<<")"<<"\n  ";
+   if (a.dim0()!=a.dim1()) 
+    TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<a.dim0()<<","<<a.dim1()<<")"<<"\n  ";
    if (!(has_contiguous_data(a))) TRIQS_RUNTIME_ERROR<<"det_and_inverse_worker only takes a contiguous view";
   }
   VT det() { V_type W = fortran_view(V); _step1(W); _compute_det(W); return _det;}
@@ -79,17 +80,8 @@ namespace triqs { namespace arrays {
   private:
   int info; VT _det;
 
-  /*
-  template<typename MT>
-   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::C>, V_type>::type 
-   fortran_view (MT const &x) { return x.transpose();}
-
-  template<typename MT>
-   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::Fortran>, V_type>::type 
-   fortran_view (MT const &x) { return x;}
-*/
-  template<typename MT>
-   V_type fortran_view (MT const &x) { return (x.indexmap().memory_layout_is_c() ? x.transpose() : x);}
+  // no need of special traversal
+  template<typename MT> V_type fortran_view (MT const &x) { return (x.indexmap().memory_layout_is_c() ? x.transpose() : x);}
 
   void _step1(V_type & W) { 
    if (step >0) return;

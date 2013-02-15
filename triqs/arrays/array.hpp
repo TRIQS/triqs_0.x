@@ -127,7 +127,7 @@ namespace triqs { namespace arrays {
      * Resizes the array. NB : all references to the storage is invalidated.
      * Does not initialize the array by default: to resize and init, do resize(IND).init()
      */
-    array & resize (const indexmaps::cuboid::domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+    array & resize (const indexmaps::cuboid::domain_t<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
     /// Assignement resizes the array.  All references to the storage are therefore invalidated.
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }

@@ -48,13 +48,14 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  */
  template<int Rank, ull_t OptionsFlags, ull_t TraversalOrder >
   class map {
-   static constexpr bool CheckBounds = flags::bound_check(OptionsFlags);
+   static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
+   //static constexpr bool CheckBounds = flags::bound_check(OptionsFlags);
    public : 
    static constexpr ull_t traversal_order_in_template = TraversalOrder;
    //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(Rank, OptionsFlags, TraversalOrder);
    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
 
-   typedef domain<Rank> domain_type;
+   typedef domain_t<Rank> domain_type;
    domain_type const & domain() const { return mydomain;}
 
    //map (memory_layout<Rank> ml):mydomain(), start_shift_(0), memory_order_(ml) {} 

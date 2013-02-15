@@ -144,7 +144,7 @@ namespace triqs { namespace arrays {
      * Resizes the matrix. NB : all references to the storage is invalidated.
      * Does not initialize the matrix by default
      */
-    matrix & resize (const indexmaps::cuboid::domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+    matrix & resize (const indexmaps::cuboid::domain_t<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
     /// Assignement resizes the matrix.  All references to the storage are therefore invalidated.
     matrix & operator=(const matrix & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }

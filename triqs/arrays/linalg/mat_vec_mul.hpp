@@ -66,7 +66,8 @@ namespace triqs { namespace arrays {
     if (M.dim1() != V.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< M<<" "<< V; 
    }
 
-   domain_type domain() const { return indexmaps::cuboid::domain<1>(mini_vector<size_t,1>(size()));}
+   domain_type domain() const { return mini_vector<size_t,1>(size());}
+   //domain_type domain() const { return indexmaps::cuboid::domain_t<1>(mini_vector<size_t,1>(size()));}
    size_t size() const { return M.dim0();} 
 
    template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }

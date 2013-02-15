@@ -136,7 +136,7 @@ namespace triqs { namespace arrays { namespace h5 {
  /********************   resize or check the size ****************************************************/
 
  template <typename A> ENABLE_IF(is_amv_value_class<A>) 
-  resize_or_check ( A & a, mini_vector<size_t,A::rank> const & dimsf ) { a.resize( indexmaps::cuboid::domain<A::rank>( dimsf)); }
+  resize_or_check ( A & a, mini_vector<size_t,A::rank> const & dimsf ) { a.resize( indexmaps::cuboid::domain_t<A::rank>( dimsf)); }
 
  template <typename A> ENABLE_IF(is_amv_view_class<A>) 
   resize_or_check ( A const & a, mini_vector<size_t,A::rank> const & dimsf ) { 

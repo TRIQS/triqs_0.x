@@ -46,7 +46,8 @@ int main(int argc, char **argv) {
   std::cout  << " F order " << std::endl ; 
   test< permutation(0,1)     ,permutation(0,1,2,3), int, range,int, range>();
   test< permutation(0,1,2)   ,permutation(0,1,2,3), range, range,int, range>();
-  test< permutation(0,1,2,3) ,permutation(0,1,2,3), range, range, range, range>();
+  test< permutations::identity(4) ,permutation(0,1,2,3), range, range, range, range>();
+  //test< permutation(0,1,2,3) ,permutation(0,1,2,3), range, range, range, range>();
   test< 0                     ,permutation(0,1,2,3), int, int, int, int> (); 
   
   std::cout  << " c order " << std::endl ; 

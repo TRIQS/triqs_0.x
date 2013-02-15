@@ -58,7 +58,7 @@ namespace triqs { namespace arrays {
   // 1 -> Fortran Order
   // Any other number interpreted as a permutation ?
   constexpr ull_t _get_traversal_order (int rank, ull_t fl, ull_t to) { return (flags::traversal_order_c(fl) ? c_order(rank) : 
-    (flags::traversal_order_fortran(fl)  ? fortran_order(rank) : (to==0ull ? c_order(rank) : to )));}
+    (flags::traversal_order_fortran(fl)  ? fortran_order(rank) : (to==0 ? c_order(rank) : to )));}
 
   
   template< int rank, ull_t fl, ull_t to> struct get_traversal_order {

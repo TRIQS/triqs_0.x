@@ -61,7 +61,8 @@ namespace triqs { namespace arrays {
      if (a.dim1() != b.dim0()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in A*B "<< a<<" "<< b; 
     }
 
-    domain_type domain() const { return indexmaps::cuboid::domain<2>(mini_vector<size_t,2>(a.dim0(), b.dim1()));}
+    domain_type domain() const { return mini_vector<size_t,2>(a.dim0(), b.dim1());}
+    //domain_type domain() const { return indexmaps::cuboid::domain_t<2>(mini_vector<size_t,2>(a.dim0(), b.dim1()));}
     size_t dim0() const { return a.dim0();} 
     size_t dim1() const { return b.dim1();} 
 

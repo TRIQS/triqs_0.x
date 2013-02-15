@@ -55,7 +55,7 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
   constexpr bool bound_check      (ull_t f) { return true;}
 #else
-  constexpr ull_t bound_check      (ull_t f) { return get (f, 0ull);}
+  constexpr bool bound_check      (ull_t f) { return get (f, 0)!=0;}
 #endif
 
   constexpr bool traversal_order_c         (ull_t f) { return get (f,1ull)!=0ull;}
@@ -66,6 +66,10 @@ namespace triqs { namespace arrays {
    static constexpr bool value = TRIQS_FLAGS_GET(F,1) !=0;
   };
 
+  template< ull_t F> struct bound_check_trait { 
+static constexpr bool value = bound_check(F);
+  }; 
+
   //constexpr ull_t memory_order (int r, ull_t f, ull_t mo) { return mo + get(f,1) * permutations::identity(r) + get(f,2) * permutations::ridentity(r);}
 
   //or return an int 0,1,2
@@ -74,20 +78,25 @@ namespace triqs { namespace arrays {
   //constexpr bool no_init          (ull_t f) { return (!( default_init(f) || no_init(f))); } 
 
   constexpr ull_t init_mode        (ull_t f) { return get2 (f,3);}
+  constexpr bool check_init_mode   (ull_t f) { return get2 (f,3)!=3ull;}
 
   template<ull_t F> struct init_tag1;
-  template<> struct init_tag1<0> { typedef Tag::no_init type;};
-  template<> struct init_tag1<1> { typedef Tag::nan_inf_init type;};
-  template<> struct init_tag1<2> { typedef Tag::default_init type;};
+  template<> struct init_tag1<0ull> { typedef Tag::no_init type;};
+  template<> struct init_tag1<1ull> { typedef Tag::nan_inf_init type;};
+  template<> struct init_tag1<2ull> { typedef Tag::default_init type;};
 
   // for the init_tag, we pass the *whole* option flag.
   template<ull_t F> struct init_tag : init_tag1 < init_mode(F)> {};
   //template<ull_t F> struct init_tag : init_tag1 < get2 (F,3)> {};
 
   template<ull_t F, ull_t To> struct assert_make_sense {
-   static_assert ( (!( traversal_order_c(F) && traversal_order_fortran(F))), "You asked C and Fortran traversal order at the same time...");
-   static_assert ( (!( (traversal_order_c(F) || traversal_order_fortran(F)) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
-   static_assert ( (init_mode (F) != 3), "You asked nan and default init at the same time...");
+   static constexpr bool bc = bound_check(F);
+   static constexpr bool is_c = traversal_order_c(F);
+   static constexpr bool is_f = traversal_order_fortran(F);
+   static constexpr bool inm = check_init_mode(F);
+   static_assert ( (!( is_c && is_f)), "You asked C and Fortran traversal order at the same time...");
+   static_assert ( (!( (is_c || is_f) && To )), "You asked C or Fortran traversal order and gave a traversal order ...");
+   static_assert ( (inm), "You asked nan and default init at the same time...");
   };
   
  

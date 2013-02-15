@@ -50,7 +50,7 @@ namespace triqs { namespace arrays {
   using boost::enable_if; using boost::enable_if_c; using proto::_left; using proto::_right; 
   using proto::_value; namespace p_tag= proto::tag; using boost::remove_reference;
 
-  typedef indexmaps::cuboid::domain<2> matrix_domain_type;
+  typedef indexmaps::cuboid::domain_t<2> matrix_domain_type;
 
   struct ScalarGrammar : proto::and_< proto::terminal<proto::_>, proto::if_<tup::is_in_ZRC<proto::_value>()> > {}; 
   struct BasicVectorTypeGrammar :  proto::and_< proto::terminal<proto::_>, proto::if_<ImmutableVector<proto::_value>()> > {}; 

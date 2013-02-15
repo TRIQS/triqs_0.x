@@ -127,7 +127,7 @@ namespace triqs { namespace arrays {
     * Resizes the vector. NB : all references to the storage is invalidated.
     * Does not initialize the vector by default: to resize and init, do resize(IND).init()
     */
-   vector & resize (const indexmaps::cuboid::domain<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
+   vector & resize (const indexmaps::cuboid::domain_t<IMPL_TYPE::rank> & l) { IMPL_TYPE::resize(l); return *this; }
 
    /// Assignement resizes the vector.  All references to the storage are therefore invalidated.
    vector & operator=(const vector & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
@@ -185,9 +185,7 @@ namespace triqs { namespace arrays {
  template<typename RHS, typename T, ull_t Opt> 
   typename boost::enable_if< is_scalar_for<RHS,vector<T,Opt> > >::type 
   triqs_arrays_compound_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs, mpl::char_<'M'>) { 
-   T a = rhs; 
-   blas::scal(a,lhs);
-   //boost::numeric::bindings::blas::scal(a,lhs);
+   T a = rhs; blas::scal(a,lhs);
   } 
 
  template<typename RHS, typename T, ull_t Opt> 
