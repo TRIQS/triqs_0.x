@@ -1,4 +1,4 @@
-SET ( TestList speed speed2 speed_small gemv )
+FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
 enable_testing()
 
@@ -16,10 +16,11 @@ link_libraries( ${link_libs} triqs_utility ) # adding triqs for the stack_trace 
 
 find_package(TestCSimple)
 
-FOREACH( TestName  ${TestList} )
- add_executable( ${TestName}  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp )
+FOREACH( TestName1  ${TestList} )
+ STRING(REPLACE ".cpp" "" TestName ${TestName1})
+ add_executable( ${TestName}  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName} )
  #add_test_C_simple( ${TestName} )
-ENDFOREACH( TestName  ${TestList} )
+ENDFOREACH( TestName1  ${TestList} )
 
 
 

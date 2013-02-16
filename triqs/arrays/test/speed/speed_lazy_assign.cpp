@@ -18,21 +18,50 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include "./python_stuff.hpp"
+#include "./src/matrix.hpp"
 #include "./src/array.hpp"
-#include <iostream>
+
+using namespace triqs::arrays;
+using namespace triqs;
+const int N1= 200, N2 = 300;
 namespace tqa=triqs::arrays; namespace tql=triqs::clef;
 
-int main(int argc, char **argv) {
+struct  aux_t { 
+  double operator() (long i, long j) { return i + 2.0*j;}
+ }; 
 
- init_python_stuff(argc,argv);
- tql::placeholder<0> i_;   tql::placeholder<1> j_;
- tqa::array<double,2> A(2,2);
- A(i_,j_) << i_ + 2*j_ ;
-  std::cout << "A = "<<A << std::endl;
+struct plain {
+ void operator()() { 
+  triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
+  for (int u =0; u<5000; ++u)
+  {
+   for (int j=0; j<A.len(1); ++j) 
+    for (int i =0; i<A.len(0); ++i)
+     A(i,j) = i+ 2*j;
+  }
+ }
+};
 
- tqa::array<double,2,TRAVERSAL_ORDER_FORTRAN> B(2,2);
- B(i_,j_) << i_ + 2*j_ ;
-  std::cout << "B = "<<B << std::endl;
+
+struct lazy {
+ void operator()() {
+  tql::placeholder<0> i_;   tql::placeholder<1> j_;  
+  //triqs::arrays::array<double,2> A (N1,N2);
+  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  auto f = make_function(  i_+ 2.0*j_, i_, j_);
+  aux_t aux;
+  for (int u =0; u<5000; ++u)
+   //indexmaps::foreach_av(boost::ref(aux), A);
+   //indexmaps::foreach_av(f, A);
+   A(i_,j_) << i_+ 2*j_;
+ }
+};
+
+#include "./speed_tester.hpp"
+int main() {
+ const int l = 100;
+ speed_tester<plain> (l);
+ speed_tester<lazy> (l);
+ return 0;
 }
 

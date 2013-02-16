@@ -23,6 +23,7 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/facilities/intercept.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
 //#include <boost/preprocessor/control/if.hpp>
 //#include <boost/preprocessor/arithmetic/sub.hpp>
 //#include <boost/type_traits/add_const.hpp>
@@ -33,11 +34,11 @@
 
 namespace triqs { namespace arrays { namespace indexmaps { 
 
-// typedef std::ptrdiff_t foreach_int_type; 
+ typedef std::ptrdiff_t foreach_int_type; 
  // better to be signed here : 1) on some machine/compiler, it is a lot faster !
  // When used with clef auto assign, e.g. A(i_,j_) = i -2*j, one needs signed arithmetics
  // The clef adapters would convert, but this requires a conversion at each call....
-  typedef size_t foreach_int_type;
+  //typedef size_t foreach_int_type;
 
  template< class IndexMap, class Function, typename ValueType, typename Enable=void> struct foreach_impl;
 
@@ -96,6 +97,9 @@ namespace triqs { namespace arrays { namespace indexmaps {
 #define AUX0D(z,P,NNN) const int p##P = mem_layout::memory_rank_to_index(CM.memory_indices_layout_ull(),NNN-P);
 #define AUX1(z,P,unused) for (t[p##P]=0; t[p##P]< l[p##P]; ++t[p##P])
 #define AUX2(z,p,unused) BOOST_PP_IF(p,+,) t[p] * s[p] 
+//#define AUX1(z,P,unused) for (t[p##P]=0; t[p##P]< CM.lengths()[p##P]; ++t[p##P])
+//#define AUX2(z,p,unused) BOOST_PP_IF(p,+,) t[p] * CM.strides()[p] 
+#define AUX3(z,p,unused) BOOST_PP_COMMA_IF(p) t[p]  
 #define IMPL(z, NN, unused)                                \
  template<int Rank, ull_t Opt, ull_t To, typename Function, typename ValueType>\
  struct foreach_impl <cuboid::map<Rank,Opt,To>,Function,ValueType,typename boost::enable_if_c<(Rank==BOOST_PP_INC(NN))>::type > {\
@@ -115,16 +119,16 @@ namespace triqs { namespace arrays { namespace indexmaps {
    const mini_vector<foreach_int_type, Rank>  s(CM.strides());\
    BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX1,nil)\
    {\
-    boost::unwrap_ref(F)(  p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)], BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_INC(NN),t[p,] BOOST_PP_INTERCEPT) );\
+    boost::unwrap_ref(F)(  p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)], BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX3,nil) );\
    } }\
   static void invoke_av ( ValueType * restrict p, cuboid::map<Rank,Opt,To> const & CM, Function F) { \
    mini_vector<foreach_int_type, Rank> t;\
    BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX0,NN)\
    const mini_vector<foreach_int_type, Rank>  l(CM.lengths());\
    const mini_vector<foreach_int_type, Rank>  s(CM.strides());\
-   BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX1,nil)\
+     BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX1,nil)\
    {\
-     p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)] = boost::unwrap_ref(F)( BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_INC(NN),t[p,] BOOST_PP_INTERCEPT));\
+     p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)] = boost::unwrap_ref(F)( BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX3,nil));\
    } }\
  };
   BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
