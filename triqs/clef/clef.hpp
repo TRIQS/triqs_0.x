@@ -102,6 +102,9 @@ namespace triqs { namespace clef {
   template<typename RHS, typename CH = childs_t> 
    typename std::enable_if<std::is_base_of<tags::function_class, typename std::tuple_element<0,CH>::type>::value>::type
    operator= (RHS const & rhs) { *this << rhs;}
+  template<typename RHS, typename CH = childs_t> 
+   typename std::enable_if<!std::is_base_of<tags::function_class, typename std::tuple_element<0,CH>::type>::value>::type
+   operator= (RHS const & rhs) = delete; 
   expr & operator= (expr const & )  = delete; // no ordinary copy
  };
  template<typename Tag, typename... T> struct ph_set< expr<Tag,T... > > : ph_set<T...> {};
