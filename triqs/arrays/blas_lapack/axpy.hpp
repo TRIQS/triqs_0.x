@@ -20,8 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_BLAS_LAPACK_AXPY_H
 #define TRIQS_ARRAYS_BLAS_LAPACK_AXPY_H
-#include <triqs/utility/fortran_mangling.hpp>
-#include "./is_blas_lapack_type.hpp"
+#include "./tools.hpp"
 //#include "./qcache.hpp"
 
 namespace triqs { namespace arrays { namespace blas { 
@@ -29,28 +28,28 @@ namespace triqs { namespace arrays { namespace blas {
  namespace f77 { // overload
 
   extern "C" { 
-   void TRIQS_FORTRAN_MANGLING(daxpy)(const int & N , const double & alpha , const double * x, const int& incx, double * y, const int& incy);
-   void TRIQS_FORTRAN_MANGLING(zaxpy)(const int & N , const std::complex<double> & alpha , const std::complex<double> * x, const int& incx, std::complex<double> * y, const int& incy);
+   void TRIQS_FORTRAN_MANGLING(daxpy)(const int & N, const double & alpha, const double * x, const int& incx, double * y, const int& incy);
+   void TRIQS_FORTRAN_MANGLING(zaxpy)(const int & N, const std::complex<double> & alpha, const std::complex<double> * x, const int& incx, std::complex<double> * y, const int& incy);
   }
 
   void axpy (const int & N, const double & alpha, const double* x, const int & incx, double* Y, const int & incy)  { 
-   TRIQS_FORTRAN_MANGLING(daxpy)(N, alpha, x, incx,  Y, incy);
+   TRIQS_FORTRAN_MANGLING(daxpy)(N, alpha, x, incx, Y, incy);
   }
   void axpy (const int & N, const std::complex<double> & alpha, const std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
-   TRIQS_FORTRAN_MANGLING(zaxpy)(N, alpha, x, incx,  Y, incy);
+   TRIQS_FORTRAN_MANGLING(zaxpy)(N, alpha, x, incx, Y, incy);
   }
  }
 
  /**
   * Blas 1: copy
   */
- template< typename VectorXType,  typename VectorYType> 
-  typename std::enable_if< is_blas_lapack_type<typename VectorXType::value_type>::value && have_same_value_type< VectorXType, VectorYType>::value >::type 
-  axpy (typename VectorXType::value_type const & alpha ,VectorXType const & X, VectorYType & Y) {
-   static_assert( is_amv_value_or_view_class<VectorXType>::value, "blas1 bindings only take vector and vector_view");
-   static_assert( is_amv_value_or_view_class<VectorYType>::value, "blas1 bindings only take vector and vector_view");
+ template< typename VTX, typename VTY> 
+  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value >::type 
+  axpy (typename VTX::value_type const & alpha ,VTX const & X, VTY & Y) {
+   static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
+   static_assert( is_amv_value_or_view_class<VTY>::value, "blas1 bindings only take vector and vector_view");
    //if (( X.size() != Y.size()) ) Y.resize(X.size()); 
-   //const_qcache<VectorXType> Cx(X); // mettre la condition a la main
+   //const_qcache<VTX> Cx(X); // mettre la condition a la main
    //f77::copy(X.size(), Cx().data_start(), Cx().stride(), Y.data_start(), Y.stride());
    f77::axpy(X.size(), alpha, X.data_start(), X.stride(), Y.data_start(), Y.stride());
   }

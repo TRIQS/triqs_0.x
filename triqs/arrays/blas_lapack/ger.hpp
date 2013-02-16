@@ -20,11 +20,12 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_BLAS_LAPACK_GER_H
 #define TRIQS_ARRAYS_BLAS_LAPACK_GER_H
-#include "./is_blas_lapack_type.hpp"
+#include "./tools.hpp"
 #include "./qcache.hpp"
 
 namespace triqs { namespace arrays { namespace blas { 
 
+ using namespace blas_lapack_tools;
  namespace f77 { // overload
   typedef std::complex<double> dcomplex;
 
@@ -33,11 +34,11 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zgerc)(const int &M, const int &N, const dcomplex &, const dcomplex [], const int &, const dcomplex [], const int &, dcomplex [], const int &);
   }
 
-  void ger (const int & M, const int & N, const double & alpha, const double* x, const int & incx, const double* Y, const int & incy,  double* A, const int & LDA)  { 
-   TRIQS_FORTRAN_MANGLING(dger)(M, N, alpha, x, incx,  Y, incy, A, LDA);
+  void ger (const int & M, const int & N, const double & alpha, const double* x, const int & incx, const double* Y, const int & incy, double* A, const int & LDA)  { 
+   TRIQS_FORTRAN_MANGLING(dger)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
   void ger (const int & M, const int & N, const dcomplex & alpha, const dcomplex* x, const int & incx, const dcomplex* Y, const int & incy, dcomplex* A, const int & LDA)  { 
-   TRIQS_FORTRAN_MANGLING(zgerc)(M, N, alpha, x, incx,  Y, incy, A, LDA);
+   TRIQS_FORTRAN_MANGLING(zgerc)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
  }
 
@@ -45,18 +46,18 @@ namespace triqs { namespace arrays { namespace blas {
   * Calls ger : A += alpha * x * ty
   * Takes care of making temporary copies if necessary
   */
- template< typename VectorXType,  typename VectorYType, typename MatrixType> 
-  typename std::enable_if< is_blas_lapack_type<typename VectorXType::value_type>::value && have_same_value_type< VectorXType, VectorYType, MatrixType>::value >::type 
-  ger (typename VectorXType::value_type alpha, VectorXType const & X, VectorYType const & Y,  MatrixType & A) { 
-   static_assert( is_amv_value_or_view_class<MatrixType>::value, "ger : A must be a matrix or a matrix_view");
+ template< typename VTX, typename VTY, typename MT> 
+  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY, MT>::value >::type 
+  ger (typename VTX::value_type alpha, VTX const & X, VTY const & Y, MT & A) { 
+   static_assert( is_amv_value_or_view_class<MT>::value, "ger : A must be a matrix or a matrix_view");
    if (( A.dim0() != Y.size()) || (A.dim1() != X.size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemv : A : "<< A().shape() <<" while X : "<<X().shape()<<" and Y : "<<Y().shape();
-   const_qcache<VectorXType> Cx(X); // mettre la condition a la main
-   const_qcache<VectorYType> Cy(Y); // mettre la condition a la main
-   reflexive_qcache<MatrixType> Ca(A);
+   const_qcache<VTX> Cx(X); // mettre la condition a la main
+   const_qcache<VTY> Cy(Y); // mettre la condition a la main
+   reflexive_qcache<MT> Ca(A);
    if (Ca().memory_layout_is_c()) // tA += alpha y tx  
-    f77::ger(get_n_rows(Ca()), get_n_cols(Ca()), alpha, Cy().data_start(), Cy().stride(), Cx().data_start(), Cx().stride(), Ca().data_start(), get_lda(Ca()));
+    f77::ger(get_n_rows(Ca()), get_n_cols(Ca()), alpha, Cy().data_start(), Cy().stride(), Cx().data_start(), Cx().stride(), Ca().data_start(), get_ld(Ca()));
    else
-    f77::ger(get_n_rows(Ca()), get_n_cols(Ca()), alpha, Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride(), Ca().data_start(), get_lda(Ca()));
+    f77::ger(get_n_rows(Ca()), get_n_cols(Ca()), alpha, Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride(), Ca().data_start(), get_ld(Ca()));
 
   /* std::cerr << " Meme labout  C"<< Ca().memory_layout_is_c()  << "  "<<A.memory_layout_is_c()<<std::endl ;
    std::cerr<< " has_contiguous_data(A) : "<< has_contiguous_data(A) << std::endl;

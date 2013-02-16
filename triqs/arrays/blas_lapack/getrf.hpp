@@ -21,8 +21,7 @@
 #ifndef TRIQS_ARRAYS_BLAS_LAPACK_GETRF_H
 #define TRIQS_ARRAYS_BLAS_LAPACK_GETRF_H
 #include <complex>
-#include <triqs/utility/fortran_mangling.hpp>
-#include "./is_blas_lapack_type.hpp"
+#include "./tools.hpp"
 #include "./qcache.hpp"
 
 namespace triqs { namespace arrays { namespace lapack { 
@@ -48,15 +47,15 @@ namespace triqs { namespace arrays { namespace lapack {
   * Calls getrf on a matrix or view
   * Takes care of making temporary copies if necessary
   */
- template<typename MatrixType> 
-  typename std::enable_if< is_blas_lapack_type<typename MatrixType::value_type>::value, int >::type 
-  getrf (MatrixType & A, arrays::vector<int> & ipiv, bool assert_fortran_order = false ) {
+ template<typename MT> 
+  typename std::enable_if< is_blas_lapack_type<typename MT::value_type>::value, int >::type 
+  getrf (MT & A, arrays::vector<int> & ipiv, bool assert_fortran_order = false ) {
    if (assert_fortran_order && A.memory_layout_is_c()) TRIQS_RUNTIME_ERROR<< "matrix passed to getrf is not in Fortran order";
-   reflexive_qcache<MatrixType> Ca(A);
+   reflexive_qcache<MT> Ca(A);
    auto dm = std::min(Ca().dim0(), Ca().dim1());
    if (ipiv.size() < dm) ipiv.resize(dm); 
    int info;
-   f77::getrf ( get_n_rows(Ca()),  get_n_cols(Ca()), Ca().data_start(), get_lda(Ca()), ipiv.data_start(), info); 
+   f77::getrf ( get_n_rows(Ca()), get_n_cols(Ca()), Ca().data_start(), get_ld(Ca()), ipiv.data_start(), info); 
    return info;
   }
 }}}// namespace

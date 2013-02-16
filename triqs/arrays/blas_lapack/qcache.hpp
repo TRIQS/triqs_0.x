@@ -25,7 +25,7 @@
 #include <memory>
 namespace triqs { namespace arrays { namespace blas_lapack_tools {  
 
- /**
+  /**
   * Given A, a matrix (or vector/array) it presents via the () operator
   *  - a const & to the matrix if A is a value class (matrix, vector, array, ..)
   *  - a const & to a new value class is A is a an expression 
@@ -38,7 +38,11 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   */
  template<typename A, typename Enable=void> class const_qcache;
 
- template<typename A> class const_qcache< A, ENABLE_IF(is_amv_value_class<A>) > { 
+ template <class T> struct guarantee_no_copy : boost::mpl::or_< is_amv_value_class<T>, is_vector_view<T> > {};
+ template <class T> struct may_need_copy : boost::mpl::or_< is_matrix_view<T> > {};
+
+ // For any data structure for which we can guarantee no copy is need to go to blas/lapack : this is just a ref
+ template<typename A> class const_qcache< A, ENABLE_IF(guarantee_no_copy<A>) > { 
   A const & x;
   public:
   const_qcache(A const & x_):x(x_){}
@@ -47,6 +51,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   exposed_type operator()() const {return x;}
  };
 
+ // For any expression with matrix concept : we need to copy it into a matrix before using blas/lapack
  template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableMatrix<A>, mpl::not_<is_matrix_or_view<A> > >) > {
   typedef matrix<typename A::value_type> X;
   X x;
@@ -57,6 +62,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   exposed_type operator()() const {return x;}
  };
 
+ // For any expression with vector concept : we need to copy it into a matrix before using blas/lapack
  template<typename A> class const_qcache< A, ENABLE_IF(mpl::and_<ImmutableVector<A>, mpl::not_<is_vector_or_view<A> > >) > {
   typedef vector<typename A::value_type> X;
   X x;
@@ -67,7 +73,22 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   exposed_type operator()() const {return x;}
  };
 
- template<typename A> class const_qcache< A, ENABLE_IF(is_amv_view_class<A>)> { 
+ // For any data structure for which we can NOT guarantee no copy is need to go to blas/lapack
+ // decision is to be taken at runtime
+
+ // first the function to take the decision
+ // should be copy to call blas/lapack ? only if we have a view and if the min_stride 
+ // of the matrix is not 1, otherwise we use the LD parameter of blas/lapack
+ template <typename T> constexpr bool copy_is_needed (T const & A) { return false;}
+
+ template <typename T, ull_t Opt, ull_t To> 
+  bool copy_is_needed (matrix_view<T,Opt,To> const & A) {
+   auto min_stride = A.indexmap().strides()[A.memory_layout_is_fortran() ? 0 : 1];
+   return min_stride !=1;
+  }
+
+ // now the class
+ template<typename A> class const_qcache< A, ENABLE_IF(may_need_copy<A>)> { 
   const bool need_copy;
   A keeper;
   struct internal_data {
@@ -90,7 +111,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   A const & view() const{ return (need_copy ? id().view : keeper);}
 
   public :
-  explicit const_qcache(A const & x): need_copy (!(has_contiguous_data(x))), keeper(x) {}
+  explicit const_qcache(A const & x): need_copy (blas_lapack_tools::copy_is_needed (x)), keeper(x) {}
   const_qcache(const_qcache const &) = delete;
   typedef const A exposed_type; 
   exposed_type operator()() const { return view();}
@@ -109,7 +130,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   */
  template<typename A, typename Enable=void> class reflexive_qcache;
 
- template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_value_class<A>)> { 
+ template<typename A> class reflexive_qcache <A, ENABLE_IF(guarantee_no_copy<A>)> { 
   A & x;
   public:
   reflexive_qcache(A & x_):x(x_){}
@@ -118,7 +139,7 @@ namespace triqs { namespace arrays { namespace blas_lapack_tools {
   exposed_type operator()() const {return x;}
  };
 
- template<typename A> class reflexive_qcache <A, ENABLE_IF(is_amv_view_class<A>)> : const_qcache<A> {
+ template<typename A> class reflexive_qcache <A, ENABLE_IF(may_need_copy<A>)> : const_qcache<A> {
   typedef const_qcache<A> B;
   public :
   explicit reflexive_qcache(A const & x) : B(x) {} 

@@ -20,11 +20,12 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_BLAS_LAPACK_GEMV_H
 #define TRIQS_ARRAYS_BLAS_LAPACK_GEMV_H
-#include "./is_blas_lapack_type.hpp"
+#include "./tools.hpp"
 #include "./qcache.hpp"
 
 namespace triqs { namespace arrays { namespace blas { 
 
+ using namespace blas_lapack_tools;
  namespace f77 { // overload
   typedef std::complex<double> dcomplex;
 
@@ -49,16 +50,16 @@ namespace triqs { namespace arrays { namespace blas {
   * Calls gemv
   * Takes care of making temporary copies if necessary
   */
- template<typename MatrixType, typename VectorType, typename VectorTypeOut> 
-  typename std::enable_if< is_blas_lapack_type<typename MatrixType::value_type>::value && have_same_value_type< MatrixType, VectorType, VectorTypeOut>::value >::type 
-  gemv (typename MatrixType::value_type alpha, MatrixType const & A, VectorType const & X, typename MatrixType::value_type beta, VectorTypeOut & Y) { 
+ template<typename MT, typename VT, typename VTOut> 
+  typename std::enable_if< is_blas_lapack_type<typename MT::value_type>::value && have_same_value_type< MT, VT, VTOut>::value >::type 
+  gemv (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & Y) { 
    resize_or_check_if_view(Y,make_shape(A.dim0()));// first resize if necessary and possible 
-   const_qcache<MatrixType> Ca(A);
-   const_qcache<VectorType> Cx(X); // mettre la condition a la main
+   const_qcache<MT> Ca(A);
+   const_qcache<VT> Cx(X); // mettre la condition a la main
    if (!(Ca().dim1() == Cx().size())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemv : A : "<< Ca().shape() <<" while X : "<<Cx().shape();
    char trans_a= get_trans(Ca(), false); 
    int m1 = get_n_rows(Ca()), m2 = get_n_cols(Ca());
-   int lda = get_lda(Ca());
+   int lda = get_ld(Ca());
    f77::gemv(&trans_a,m1,m2,alpha, Ca().data_start(), lda, Cx().data_start(), Cx().stride(), beta, Y.data_start(), Y.stride());
   }
 

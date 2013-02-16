@@ -20,16 +20,15 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_BLAS_LAPACK_SCAL_H
 #define TRIQS_ARRAYS_BLAS_LAPACK_SCAL_H
-#include <triqs/utility/fortran_mangling.hpp>
-#include "./is_blas_lapack_type.hpp"
+#include "./tools.hpp"
 
 namespace triqs { namespace arrays { namespace blas { 
 
  namespace f77 { // overload
 
   extern "C" { 
-   void TRIQS_FORTRAN_MANGLING(dscal)(const int & N , const double & alpha,double * x, const int& incx);
-   void TRIQS_FORTRAN_MANGLING(zscal)(const int & N , const std::complex<double> & alpha,std::complex<double> * x, const int& incx);
+   void TRIQS_FORTRAN_MANGLING(dscal)(const int & N, const double & alpha,double * x, const int& incx);
+   void TRIQS_FORTRAN_MANGLING(zscal)(const int & N, const std::complex<double> & alpha,std::complex<double> * x, const int& incx);
   }
 
   void scal (const int & M, const double & alpha, double* x, const int & incx)  { TRIQS_FORTRAN_MANGLING(dscal)(M, alpha, x, incx); }
@@ -39,10 +38,10 @@ namespace triqs { namespace arrays { namespace blas {
  /**
   * Blas1 : scal 
   */
- template< typename VectorType> 
-  typename std::enable_if< is_blas_lapack_type<typename VectorType::value_type>::value && have_same_value_type< VectorType>::value >::type 
-  scal (typename VectorType::value_type const & alpha, VectorType & X) { 
-   static_assert( is_amv_value_or_view_class<VectorType>::value, "blas1 bindings only take vector and vector_view");
+ template< typename VT> 
+  typename std::enable_if< is_blas_lapack_type<typename VT::value_type>::value && have_same_value_type< VT>::value >::type 
+  scal (typename VT::value_type const & alpha, VT & X) { 
+   static_assert( is_amv_value_or_view_class<VT>::value, "blas1 bindings only take vector and vector_view");
    f77::scal(X.size(), alpha, X.data_start(), X.stride());
   }
 

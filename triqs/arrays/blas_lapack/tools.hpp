@@ -21,6 +21,7 @@
 #ifndef TRIQS_ARRAYS_IS_BLAS_LAPACK_TYPE_H
 #define TRIQS_ARRAYS_IS_BLAS_LAPACK_TYPE_H 
 #include <type_traits>
+#include <triqs/utility/fortran_mangling.hpp>
 
 namespace triqs { namespace arrays { 
 
@@ -31,12 +32,6 @@ namespace triqs { namespace arrays {
   template<> struct is_blas_lapack_type <double> : std::true_type{};
   template<> struct is_blas_lapack_type <std::complex<double>> : std::true_type{};
   template<typename T> struct is_blas_lapack_type< const T> : is_blas_lapack_type<T>{};
-
- /* // true iif all T::value_type are lapack_type
-  template<typename ... T> struct value_type_is_blas_lapack_type;
-  template<typename T0, typename ... T> struct value_type_is_blas_lapack_type : 
-   std::integral_constant<bool, is_blas_lapack_type<typename T0::value_type>::value && value_type_is_blas_lapack_type<T...>::value> {};
-  */
 
   // true iif all T::value_type are the same
   template<typename ... T> struct have_same_value_type;
@@ -61,10 +56,9 @@ namespace triqs { namespace arrays {
     return (A.memory_layout_is_fortran() ? A.dim1() : A.dim0());
    }
 
-   template <typename MatrixType> int get_lda (MatrixType const & A) { 
+   template <typename MatrixType> int get_ld (MatrixType const & A) { 
     return A.indexmap().strides()[A.memory_layout_is_fortran() ? 1 : 0];
    }
-
 
   }
 }}// namespace

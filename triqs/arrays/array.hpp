@@ -89,7 +89,7 @@ namespace triqs { namespace arrays {
     array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)) :IMPL_TYPE(ml){} 
 
     /// From a domain
-    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):IMPL_TYPE(indexmap_type(dom),ml){}
+    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):IMPL_TYPE(indexmap_type(dom,ml)){}
 
 #ifdef TRIQS_DOXYGEN
     /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
