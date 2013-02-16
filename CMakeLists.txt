@@ -137,7 +137,8 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # General include header
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
-include_directories(SYSTEM ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
+include_directories(SYSTEM  ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
+#include_directories(SYSTEM ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
 
 #------------------------
 # link libs for shared libs or for pytriqs 

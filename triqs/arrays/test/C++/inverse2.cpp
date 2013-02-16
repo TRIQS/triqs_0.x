@@ -30,10 +30,6 @@
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
-//namespace blas = boost::numeric::bindings::blas;
-//namespace lapack = boost::numeric::bindings::lapack;
-//namespace bindings= boost::numeric::bindings;
-
 //using linalg::inverse;
 //using linalg::inverse_and_compute_det;
 //using linalg::determinant;

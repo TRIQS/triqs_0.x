@@ -30,8 +30,6 @@
 #include "./src/linalg/inverse.hpp"
 #include "./src/linalg/determinant.hpp"
 
-//#include <boost/numeric/bindings/std/vector.hpp>
-//#include <boost/numeric/bindings/blas/level1/axpy.hpp>
 #include "./src/blas_lapack/gemm.hpp"
 #include "./src/blas_lapack/gemv.hpp"
 #include "./src/blas_lapack/ger.hpp"
