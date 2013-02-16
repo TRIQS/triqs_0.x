@@ -27,6 +27,9 @@ project (AllPrograms C CXX Fortran)
 # Make sure the rpath is set fine after installation
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# First check the C++ compiler
+find_package(CompilerCheck)
+
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
 
@@ -155,6 +158,8 @@ SET(TRIQS_LINK_LIBS
 #------------------------
 # General triqs libraries
 #------------------------
+
+MESSAGE( "BOOST_LIB IS ${BOOST_LIBRARY}")
 
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
