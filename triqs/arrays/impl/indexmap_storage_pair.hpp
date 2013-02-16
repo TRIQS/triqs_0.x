@@ -59,8 +59,6 @@ namespace triqs { namespace arrays {
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
-    //static constexpr ull_t traversal_order = (flags::traversal_order_c(OptionFlags) ? indexmaps::mem_layout::c_order(rank) : 
-    //(flags::traversal_order_fortran(OptionFlags)  ? indexmaps::mem_layout::fortran_order(rank) : OptionFlags));
     
     //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(rank, OptionFlags, TraversalOrder);
     static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<rank, OptionFlags, TraversalOrder>::value;

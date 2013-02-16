@@ -49,7 +49,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  template<int Rank, ull_t OptionsFlags, ull_t TraversalOrder >
   class map {
    static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
-   //static constexpr bool CheckBounds = flags::bound_check(OptionsFlags);
+   //static constexpr bool CheckBounds = flags::bound_check(OptionsFlags); // icc bug
    public : 
    static constexpr ull_t traversal_order_in_template = TraversalOrder;
    //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(Rank, OptionsFlags, TraversalOrder);

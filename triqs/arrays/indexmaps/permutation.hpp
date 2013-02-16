@@ -35,8 +35,6 @@ namespace triqs { namespace arrays { namespace permutations {
  }
 
  // icc 13.0 has a big bug in constexpr.
- // ok but for the moment, we do not use it at compile time, so the simple solution is fine.... 
-#define TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
 
  //  sum_{k=0}^{n-1} k a^k =  ( (n-1) * a**(n+1) - n * a**n + a)/(a-1)**2

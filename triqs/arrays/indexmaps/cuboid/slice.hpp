@@ -92,7 +92,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
    typename r_type::strides_type newstrides;
    std::ptrdiff_t newstart= X.start_shift();
    constexpr int EllipsisLength = R - len;
-   cuboid_details::slice_calc::invoke<0,0,flags::bound_check(Opt),EllipsisLength>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0],newstart, args...);
+   cuboid_details::slice_calc::invoke<0,0,flags::bound_check_trait<Opt>::value,EllipsisLength>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0],newstart, args...);
    return r_type(std::move(newlengths),std::move(newstrides),newstart);// use move construction ?
   };
  }; 

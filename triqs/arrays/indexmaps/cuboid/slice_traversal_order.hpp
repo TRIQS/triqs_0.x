@@ -23,8 +23,7 @@
 #include "./mem_layout.hpp"
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid { namespace slicing_TO_order { 
 
-#define TRIQS_WORKAROUND_INTEL_COMPILER_BUGS2
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS2
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
   template <typename... SliceArgs> struct _impl{ 
    static constexpr int n_range_ellipsis=0;
    static constexpr ull_t mask(ull_t mo, int P, int c) { return 0;}
@@ -42,8 +41,8 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid { na
   template<typename ... Args> 
    constexpr ull_t sliced_memory_order1(ull_t mo) { return _impl<Args...>::n_range_ellipsis + 0x10*_impl<Args...>::smo(mo, _impl<Args...>::mask(mo));}
   template<typename ... Args> 
-   constexpr ull_t sliced_memory_order2(ull_t mo) { return (is_c (mo) ? c_order(_impl<Args...>::n_range_ellipsis) : 
-     ( is_fortran(mo) ? fortran_order(_impl<Args...>::n_range_ellipsis) : sliced_memory_order1<Args...>(mo) ));
+   constexpr ull_t sliced_memory_order2(ull_t mo) { return (mem_layout::is_c (mo) ? c_order(_impl<Args...>::n_range_ellipsis) : 
+     ( mem_layout::is_fortran(mo) ? fortran_order(_impl<Args...>::n_range_ellipsis) : sliced_memory_order1<Args...>(mo) ));
    }
   template<ull_t mo, typename ... Args> struct sliced_memory_order { static constexpr ull_t value = sliced_memory_order1<Args...>(mo); };
 #else

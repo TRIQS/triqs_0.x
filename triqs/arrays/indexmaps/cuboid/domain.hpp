@@ -29,9 +29,8 @@
 #include <sstream>
 
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
- using namespace triqs::arrays::permutations;//::identity;
+ using namespace triqs::arrays::permutations;
  
-
  /// Standard hyper_rectangular domain for arrays
  template<int Rank>
   class domain_t {
@@ -58,7 +57,8 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    n_uple const & lengths() const { return lengths_;}
 
   /** Generates the value of the indices of a cuboid_domain.  */
-   template <ull_t IterationOrder= permutations::identity(Rank) >
+   static constexpr ull_t iteration_order_default = permutations::identity(Rank);
+   template <ull_t IterationOrder= iteration_order_default >
     class gal_generator {
       typedef index_value_type indices_type;
       const domain_t * dom;
