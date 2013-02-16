@@ -73,14 +73,15 @@ namespace triqs { namespace arrays {
     /// Copy construction
     matrix_view( matrix_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
+    matrix_view () = delete;
+
     /// Rebind the view
     void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
     /** Assignement.  The size of the array MUST match exactly.  */
     template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
 
-    matrix_view & operator=(matrix_view const & X) { 
-     if (this->is_empty()) rebind(X); else triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+    matrix_view & operator=(matrix_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
     _IMPL_MATRIX_COMMON;
@@ -105,10 +106,6 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty matrix.
-   // ambigous
-   // matrix(char ml='C'):  IMPL_TYPE(indexmap_type(memory_layout<2>(ml))) {}
-
-    /// Empty matrix.
     matrix(memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order) ):  IMPL_TYPE(indexmap_type(ml)) {}
 
     /// Move
@@ -126,7 +123,6 @@ namespace triqs { namespace arrays {
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
      matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::traversal_order)):
-     //matrix(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
@@ -172,7 +168,7 @@ namespace triqs { namespace arrays {
 
  template <typename T, int R> 
   bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));} 
- 
+
  template <typename T> 
   bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));} 
 

@@ -59,6 +59,8 @@ namespace triqs { namespace arrays {
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 
+   array_view () = delete;
+
    /// Rebind the view
    void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
@@ -66,8 +68,7 @@ namespace triqs { namespace arrays {
    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
    ///
-   array_view & operator=(array_view const & X) {  
-    if (this->is_empty()) rebind(X); else triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
+   array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };

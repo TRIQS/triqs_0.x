@@ -61,14 +61,15 @@ namespace triqs { namespace arrays {
    /// Copy construction
    vector_view(vector_view const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
+   vector_view () = delete;
+
    /// Rebind the view
    void rebind (vector_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
    /** Assignment.  The size of the array MUST match exactly.  */
    template<typename RHS> vector_view & operator=(const RHS & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
-   vector_view & operator=(vector_view const & X) {
-   if (this->is_empty()) rebind(X); else  triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+   vector_view & operator=(vector_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
    size_t size() const { return this->shape()[0];}
    
