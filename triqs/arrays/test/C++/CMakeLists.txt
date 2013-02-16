@@ -27,6 +27,7 @@ FOREACH( TestName1  ${TestList} )
  STRING(REPLACE ".cpp" "" TestName ${TestName1})
  add_executable( ${TestName}_nopy  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp )
  add_test_C_simple( ${TestName} _nopy )
+ #add_test ( ${TestName}_valgrind valgrind --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/${TestName}_nopy)
 ENDFOREACH( TestName1  ${TestList} )
 
 else (NOT python_support)
