@@ -249,7 +249,7 @@ namespace triqs { namespace det_manip {
      }
      range R(0,N);
      w1.MB(R) = mat_inv(R,R) * w1.B(R);
-     w1.ksi = f(x,y) - blas::dot( w1.C(R) , w1.MB(R) );
+     w1.ksi = f(x,y) - arrays::blas::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
      return (newdet/det)*(newsign*sign);          // sign is unity, hence 1/sign == sign
