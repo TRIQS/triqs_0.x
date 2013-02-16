@@ -54,18 +54,16 @@ namespace triqs { namespace gf { namespace local {
    typedef tail_view view_type;
    typedef tail      non_view_type;
 
-   typedef arrays::Option::C storage_order;
-
-   typedef arrays::array      <dcomplex,3,storage_order>                         data_non_view_type;
-   typedef arrays::array_view <dcomplex,3,storage_order>                         data_view_type;
+   typedef arrays::array      <dcomplex,3>                         data_non_view_type;
+   typedef arrays::array_view <dcomplex,3>                         data_view_type;
    typedef typename mpl::if_c<IsView, data_view_type, data_non_view_type>::type  data_type;
 
-   typedef arrays::array<long,2,storage_order>                                   mask_non_view_type;
-   typedef arrays::array_view<long,2,storage_order>                              mask_view_type;
+   typedef arrays::array<long,2>                                   mask_non_view_type;
+   typedef arrays::array_view<long,2>                              mask_view_type;
    typedef typename mpl::if_c<IsView, mask_view_type, mask_non_view_type>::type  mask_type;
 
-   typedef arrays::matrix_view<dcomplex,       storage_order>  mv_type;
-   typedef arrays::matrix_view<const dcomplex, storage_order>  const_mv_type;
+   typedef arrays::matrix_view<dcomplex>  mv_type;
+   typedef arrays::matrix_view<const dcomplex>  const_mv_type;
 
    data_view_type data_view()             { return data;}
    const data_view_type data_view() const { return data;}

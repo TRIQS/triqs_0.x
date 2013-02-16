@@ -108,10 +108,10 @@ namespace triqs { namespace gf {
 
  // to metacompute the storage type
 
- template <typename Target, typename SO, bool UsingBigArray> struct gf_storage_type;
- template <typename Target, typename SO> struct gf_storage_type<Target,SO,true>  
- { typedef arrays::array < typename Target::value_type,Target::rank +1,SO> type;};
- template <typename Target, typename SO> struct gf_storage_type<Target,SO,false> 
+ template <typename Target, bool UsingBigArray> struct gf_storage_type;
+ template <typename Target> struct gf_storage_type<Target,true>  
+ { typedef arrays::array < typename Target::value_type,Target::rank +1> type;};
+ template <typename Target> struct gf_storage_type<Target,false> 
  { typedef vector_storage <Target, false> type;};
 
  //------------------------------------------------------------------------
@@ -139,12 +139,9 @@ namespace triqs { namespace gf {
    typedef gf_view<Descriptor> view_type;
    typedef gf<Descriptor>      non_view_type;
 
-   typedef arrays::Option::C storage_order;
-   //typedef arrays::Option::Fortran storage_order;
-
    constexpr static bool using_big_array_storage = arrays::is_amv_value_class<target_t>::value; // let descriptor decide ?
 
-   typedef typename gf_storage_type<target_t, storage_order,using_big_array_storage>::type     data_non_view_t;
+   typedef typename gf_storage_type<target_t, using_big_array_storage>::type     data_non_view_t;
    typedef typename data_non_view_t::view_type                                   data_view_t;
    typedef typename mpl::if_c<IsView, data_view_t, data_non_view_t>::type        data_t;
 
