@@ -1,5 +1,4 @@
-#include <triqs/clef/core.hpp>
-#include "triqs/clef/function.hpp"
+#include <triqs/clef.hpp>
 #include <iostream>
 namespace tql = triqs::clef;
 
@@ -34,8 +33,8 @@ int main() {
  
  std::cout<<g(2,3)<<std::endl;
 
- // lazy function are interoperable with boost::function
- boost::function<double(double,double)> bf(f);
+ // lazy function are interoperable with std::function
+ std::function<double(double,double)> bf(f);
  std::cout<<bf(2,3)<<std::endl;
 
  }

@@ -1,6 +1,6 @@
-#include "triqs/clef2/clef.hpp"
-#include "triqs/clef2/adapters/vector.hpp"
-#include "triqs/clef2/adapters/math.hpp"
+#include "triqs/clef/core.hpp"
+#include "triqs/clef/math.hpp"
+#include "triqs/clef/adapters/vector.hpp"
 #include <iostream> 
 namespace tql = triqs::clef;
 

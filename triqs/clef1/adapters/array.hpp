@@ -20,7 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_CLEF_ARRAY_ADAPTER_H 
 #define TRIQS_CLEF_ARRAY_ADAPTER_H
-#include "triqs/clef2/clef.hpp"
+#include "triqs/clef/core.hpp"
 #include "triqs/arrays/array.hpp"
 #include "triqs/arrays/proto/array_algebra.hpp"
 

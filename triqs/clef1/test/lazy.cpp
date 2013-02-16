@@ -1,5 +1,5 @@
 #include "./common.hpp"
-#include "../adapters/vector.hpp"
+#include "triqs/clef/adapters/vector.hpp"
 
 using namespace triqs::clef;
 

@@ -37,7 +37,7 @@
 namespace triqs { namespace clef { 
  typedef unsigned long long ull_t;
  template<typename T> struct remove_cv_ref : std::remove_cv< typename std::remove_reference<T>::type> {};
- namespace tags { struct function{}; struct subscript{}; struct terminal{}; struct if_else{}; struct unary_op{}; struct binary_op{}; }
+ namespace tags { struct function_class{}; struct function{}; struct subscript{}; struct terminal{}; struct if_else{}; struct unary_op{}; struct binary_op{}; }
 
  /* ---------------------------------------------------------------------------------------------------
   *  Placeholder and corresponding traits
@@ -45,7 +45,8 @@ namespace triqs { namespace clef {
  template<int i, typename T> struct pair { 
   static constexpr int p = i; 
   typedef typename remove_cv_ref <T>::type value_type; 
-  value_type const & r; 
+  value_type const & r;
+  value_type const & rhs() const { return r;} 
   pair (T const & t) : r(t){}
  };
 
@@ -83,10 +84,10 @@ namespace triqs { namespace clef {
  /* ---------------------------------------------------------------------------------------------------
   * Node of the expression tree
   *  --------------------------------------------------------------------------------------------------- */
-
  template<typename Tag, typename... T> struct expr {
   static_assert( has_no_ref<T...>::value , "Internal error : expr childs can not be reference "); 
-  typename std::tuple< T ...> childs; 
+  typedef std::tuple< T ...> childs_t; 
+  childs_t childs; 
   expr(expr const & x) = default; 
   expr(expr && x) : childs(std::move(x.childs)) {}
   template<typename... Args> explicit expr(Tag, Args&&...args) : childs(std::forward<Args>(args)...) {} 
@@ -96,7 +97,11 @@ namespace triqs { namespace clef {
   template< typename... Args > 
    expr<tags::function, expr, typename remove_cv_ref<Args>::type...> operator()(Args && ... args) const 
    { return expr<tags::function, expr, typename remove_cv_ref<Args>::type...>(tags::function(), *this,std::forward<Args>(args)...);}
-  template<typename RHS> void operator= (RHS const & rhs) { *this << rhs;}
+  // only f(i,j) = expr is allowed, in case where f is a clef::function
+  // otherwise use the << operator
+  template<typename RHS, typename CH = childs_t> 
+   typename std::enable_if<std::is_base_of<tags::function_class, typename std::tuple_element<0,CH>::type>::value>::type
+   operator= (RHS const & rhs) { *this << rhs;}
   expr & operator= (expr const & )  = delete; // no ordinary copy
  };
  template<typename Tag, typename... T> struct ph_set< expr<Tag,T... > > : ph_set<T...> {};
@@ -277,6 +282,12 @@ namespace triqs { namespace clef {
   make_fun_impl<typename std::remove_cv<typename std::remove_reference<Expr>::type>::type,Phs::index...> 
   make_function(Expr && ex, Phs...) { return {ex}; }
 
+ namespace result_of {
+  template< typename Expr, typename ... Phs> struct make_function { 
+   typedef make_fun_impl<typename std::remove_cv<typename std::remove_reference<Expr>::type>::type,Phs::index...> type;
+  };
+ }
+
  /* --------------------------------------------------------------------------------------------------
   *  make_function
   *  x_ >> expression  is the same as make_function(expression,x)
@@ -298,15 +309,24 @@ namespace triqs { namespace clef {
 
  // auto assign of an expr ? (for chain calls) : just reuse the same operator
  template<typename Tag, typename... Childs, typename RHS> 
+  void triqs_clef_auto_assign (expr<Tag,Childs...> && ex, RHS const & rhs) { ex << rhs;}
+
+  template<typename Tag, typename... Childs, typename RHS> 
   void triqs_clef_auto_assign (expr<Tag,Childs...> const & ex, RHS const & rhs) { ex << rhs;}
 
  // The case A(x_,y_) = RHS : we form the function (make_function) and call auto_assign (by ADL)
+ template<typename F, typename RHS, int... Is> 
+  void operator<<(expr<tags::function, F, placeholder<Is>...> && ex, RHS && rhs) { 
+   triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
+  }
  template<typename F, typename RHS, int... Is> 
   void operator<<(expr<tags::function, F, placeholder<Is>...> const & ex, RHS && rhs) { 
    triqs_clef_auto_assign(std::get<0>(ex.childs), make_function(std::forward<RHS>(rhs), placeholder<Is>()...));
   }
 
  // any other case e.g. f(x_+y_) = RHS etc .... which makes no sense : compiler will stop
+ template<typename F, typename RHS, typename... T> 
+  void operator<<(expr<tags::function, F, T...> && ex, RHS && rhs) = delete;
  template<typename F, typename RHS, typename... T> 
   void operator<<(expr<tags::function, F, T...> const & ex, RHS && rhs) = delete;
 
@@ -365,7 +385,7 @@ namespace triqs { namespace clef {
   * --------------------------------------------------------------------------------------------------- */
  template<typename F> class function;
 
- template<typename ReturnType, typename... T> class function<ReturnType(T...)>  {
+ template<typename ReturnType, typename... T> class function<ReturnType(T...)> : tags::function_class  {
   typedef std::function<ReturnType(T...)> std_function_type;
   mutable std::shared_ptr <void>  _exp; // CLEAN THIS MUTABLE ?
   mutable std::shared_ptr < std_function_type > _fnt_ptr;

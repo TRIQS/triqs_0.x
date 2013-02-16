@@ -1,6 +1,6 @@
-#include "triqs/clef/core.hpp"
-#include "triqs/clef/math.hpp"
+#include "triqs/clef.hpp"
 #include "triqs/clef/adapters/vector.hpp"
+#include "triqs/clef/adapters/math.hpp"
 #include <iostream> 
 namespace tql = triqs::clef;
 
@@ -12,7 +12,7 @@ int main() {
 
  // automatic assignment of vector and use of lazy math function
  tql::placeholder <0> k_; 
- tql::lazy(V) [k_]  = cos( (2* pi* k_)/ N );
+ tql::lazy(V) [k_]  << cos( (2* pi* k_)/ N );
 
  // check result... 
  for (size_t u=0; u<V.size(); ++u)

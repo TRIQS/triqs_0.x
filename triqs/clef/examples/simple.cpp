@@ -1,4 +1,5 @@
-#include "triqs/clef/core.hpp"
+#include "triqs/clef.hpp"
+#include "triqs/clef/io.hpp"
 #include <iostream>
 
 namespace tql = triqs::clef;
