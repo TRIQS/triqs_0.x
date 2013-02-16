@@ -21,109 +21,80 @@
 #ifndef TRIQS_ARRAYS_INDEXMAP_CUBOID_SLICE_H
 #define TRIQS_ARRAYS_INDEXMAP_CUBOID_SLICE_H
 #include <triqs/utility/count_type_occurrence.hpp>
+#include "./slice_traversal_order.hpp"
 namespace triqs { namespace arrays { namespace indexmaps {  
-
- typedef size_t         l_type;
- typedef std::ptrdiff_t s_type;
-
  namespace cuboid_details { 
+#define LISILOSO  l_type const * li, s_type const * si, l_type * lo, s_type * so
+  typedef size_t         l_type;
+  typedef std::ptrdiff_t s_type;
 
   template <bool BC> inline void _check_BC ( int N, int ind, size_t B, int ind_min =0) { }
   template <> inline void _check_BC<true> (int N, int ind, size_t B, int ind_min) { 
    if (!((ind >= ind_min) && (ind < int(B)))) TRIQS_ARRAYS_KEY_ERROR << " index "<<N<<" is out of domain: \n    " << ind <<" is not within [0,"<< B <<"[\n";
   }
 
-  template<bool BoundCheck> struct slice_calc { 
+  struct slice_calc { // group in a struct to avoid declaration order issue with the cross call of templates...
 
-   l_type const * li; s_type const * si; l_type * lo; s_type * so; int N, P;
-
-   slice_calc(l_type const * li_,s_type const * si_, l_type * lo_, s_type * so_) : li(li_), si(si_), lo (lo_), so(so_),N(0),P(0) {}
-
-   void one_step(std::ptrdiff_t& offset, size_t R){
-    _check_BC <BoundCheck> (N, R, li[N]);
-    offset += R*si[N];
-   }
-
-   //void one_step(size_t const & li, std::ptrdiff_t const & si, size_t & lo, std::ptrdiff_t & so, std::ptrdiff_t& offset, range R){
-   void one_step(std::ptrdiff_t& offset, range R){
-    _check_BC<BoundCheck> (N, R.first(),li[N]);
-    lo[P]  = ((R.last()==-1 ? li[N] : R.last()) - R.first() + R.step()-1 )/R.step(); // python behaviour
-    _check_BC<BoundCheck> (N, R.first() + (lo[P]!=0 ? (lo[P]-1) : 0)*R.step() ,li[N], -1);
-    so[P]  = si[N] * R.step();
-    offset += R.first() * si[N];
-   }
-
-   template<int EllipsisLength, typename Arg0, typename...  Args>
-    typename std::enable_if<((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
-    invoke(s_type & offset, Arg0 const & arg0, Args const & ... args ) {
-     static constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
-     one_step(offset, arg0);
-     N++; P +=dP;
-     invoke<EllipsisLength-1>(offset, arg0, args...);
+   template<int N, int P, bool BoundCheck>
+    static void one_step(LISILOSO, std::ptrdiff_t& offset, size_t R){
+     _check_BC <BoundCheck> (N, R, li[N]);
+     offset += R*si[N];
     }
 
-   template<int EllipsisLength, typename Arg0, typename...  Args>
-    typename std::enable_if<!((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
-    invoke(s_type & offset, Arg0 const & arg0, Args const & ... args ) {
-     static constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
-     one_step(offset, arg0);
-     N++; P +=dP;
-     invoke<EllipsisLength>(offset, args...);
+   template<int N, int P, bool BoundCheck>
+    static void one_step(LISILOSO, std::ptrdiff_t& offset, range R){
+     _check_BC<BoundCheck> (N, R.first(),li[N]);
+     lo[P]  = ((R.last()==-1 ? li[N] : R.last()) - R.first() + R.step()-1 )/R.step(); // python behaviour
+     _check_BC<BoundCheck> (N, R.first() + (lo[P]!=0 ? (lo[P]-1) : 0)*R.step() ,li[N], -1);
+     so[P]  = si[N] * R.step();
+     offset += R.first() * si[N];
     }
 
-   template<int EllipsisLength> void invoke(s_type & offset ) {}
+   template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
+    static typename std::enable_if<!((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
+    invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
+     constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
+     one_step<N,P,BoundCheck>(li,si,lo,so,offset, arg0);
+     invoke<N+1,P+dP,BoundCheck,EllipsisLength>(li,si,lo,so, offset, args...);
+    }
 
-   /*template<int EllipsisLength, typename Arg0, typename...  Args>
-     static typename std::enable_if<((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
-     invoke(l_type const * li,s_type const * si, l_type * lo, s_type * so, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
-     static constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
-     one_step(*li,*si,*lo,*so, offset, arg0);
-   //l_type const * li2 =li +1;
-   slice_calc<N+1,BoundCheck>::invoke<EllipsisLength-1>(li,si,lo,so, offset, arg0, args...);
-   //slice_calc<N+1,BoundCheck>::invoke<EllipsisLength-1>(li+1,si+1,lo+dP,so+dP, offset, arg0, args...);
-   }
+   template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
+    static typename std::enable_if<((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
+    invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
+     constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
+     one_step<N,P,BoundCheck>(li,si,lo,so,offset, arg0);
+     invoke<N+1,P+dP,BoundCheck,EllipsisLength-1>(li,si,lo,so, offset, arg0, args...);
+    }
 
-   template<int EllipsisLength, typename Arg0, typename...  Args>
-   static typename std::enable_if<!((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
-   invoke(l_type const * li,s_type const * si, l_type * lo, s_type * so, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
-   static constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
-   one_step(*li,*si,*lo,*so, offset, arg0);
-   slice_calc<N+1,BoundCheck>::invoke<EllipsisLength>(li+1,si+1,lo+dP,so+dP, offset, args...);
-   }
-
-   template<int EllipsisLength>
-   static void invoke(l_type const * li,s_type const * si, l_type * lo, s_type * so, s_type & offset ) {}
-   */
-
+   template<int N, int P, bool BoundCheck, int EllipsisLength> static void invoke(LISILOSO, s_type & offset ) {}
   };
+#undef LISILOSO
+ }//namespace cuboid_details
 
-  }//namespace cuboid_details
+ // special case of no argument : 
+ template<int R, ull_t Opt, ull_t To> struct slicer < cuboid::map<R, Opt,To> >  { typedef cuboid::map < R, Opt,To > r_type; }; 
 
-  // special case of no argument : 
-  template<int R, ull_t Opt, ull_t To> struct slicer < cuboid::map<R, Opt,To> >  { typedef cuboid::map < R, Opt,To > r_type; }; 
+ // general case
+ template<int R, ull_t Opt, ull_t To, typename... Args> struct slicer < cuboid::map<R, Opt,To>,  Args...>  { 
 
-  // general case
-  template<int R, ull_t Opt, ull_t To, typename... Args> struct slicer < cuboid::map<R, Opt,To>,  Args...>  { 
+  static const unsigned int len = sizeof...(Args);
+  static_assert((count_type_occurrence<ellipsis,Args...>::value < 2), "Only one ellipsis is permitted");
+  static_assert((len>=R || (count_type_occurrence<ellipsis,Args...>::value > 0)), "Too few arguments in slice");
+  static_assert(len<=R, "Too many arguments in slice");
+  
+  typedef cuboid::map<R,Opt,To> im_t;
+  static constexpr int Rf = R - count_type_occurrence_not<range,Args...>::value;
+  static constexpr ull_t To_i = im_t::traversal_order; 
+  typedef cuboid::map < Rf , Opt, cuboid::slicing_TO_order::sliced_memory_order<To_i,Args...>::value > r_type; 
 
-   static const unsigned int len = sizeof...(Args);
-   static_assert((count_type_occurrence<ellipsis,Args...>::value < 2), "Only one ellipsis is permitted");
-   static_assert((len>=R || (count_type_occurrence<ellipsis,Args...>::value > 0)), "Too few arguments in slice");
-   static_assert(len<=R, "Too many arguments in slice");
-   // NOT GOOD  : Recompute the TRAVERSAL order
-   static constexpr int Rf = R - count_type_occurrence_not<range,Args...>::value;
-   static constexpr ull_t Tof = 0;//indexmaps::mem_layout::c_order(Rf);
-   typedef cuboid::map < Rf , Opt, Tof > r_type; 
-   //typedef cuboid_map < typename index_order::sliced_memory_order<IO,Args...>::type, Opt > r_type; 
-
-   static r_type invoke (cuboid::map<R,Opt,To> const & X, Args ... args) { 
-    mini_vector<l_type,r_type::rank> newlengths;
-    mini_vector<s_type,r_type::rank> newstrides;
-    s_type newstart= X.start_shift();
-    constexpr int EllipsisLength = R - len;
-    cuboid_details::slice_calc<flags::bound_check(Opt)>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0]).template invoke<EllipsisLength>(newstart, args...);
-    return r_type(newlengths,newstrides,newstart);// use move construction ?
-   };
-  }; 
-
- }}}//namespaces triqs::arrays::indexmaps
+  static r_type invoke (im_t const & X, Args ... args) { 
+   typename r_type::lengths_type newlengths;
+   typename r_type::strides_type newstrides;
+   std::ptrdiff_t newstart= X.start_shift();
+   constexpr int EllipsisLength = R - len;
+   cuboid_details::slice_calc::invoke<0,0,flags::bound_check(Opt),EllipsisLength>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0],newstart, args...);
+   return r_type(std::move(newlengths),std::move(newstrides),newstart);// use move construction ?
+  };
+ }; 
+}}}//namespaces triqs::arrays::indexmaps
 #endif

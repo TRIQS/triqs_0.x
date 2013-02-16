@@ -20,54 +20,9 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
 #define TRIQS_ARRAYS_INDEXMAP_STORAGE_ORDER_H
-#include "../permutation.hpp"
-namespace triqs { namespace arrays {
+#include "./mem_layout.hpp"
+namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid { namespace slicing_TO_order { 
 
- struct memory_layout_type { ull_t value; explicit memory_layout_type(ull_t v) : value(v){} };
-
- namespace indexmaps { namespace index_order {
-  /* The storage order is given by a permutation P stored in a ull_t (unsigned long long) as in permutations::..
-   *   P[0] : the fastest index, 
-   *   P[RANK-1] : the slowest index
-   *   Example : 
-   *   012 : Fortran, the first index is the fastest
-   *   210:  C the last index is the fastest
-   *   120 : storage (i,j,k) is : index j is fastest, then k, then i 
-   * 
-   * index_to_memory_rank  : i ---> r : to the index (0,1, ... etc), associates the rank in memory
-   *                         e.g. r=0 : fastest index, r = RANK-1 : the slowest
-   * memory_rank_to_index  : the inverse mapping : r---> i : 
-   *                         0-> the fastest index, etc..
-   *
-   * All these computations can be done *at compile time* (constexpr)
-   */
-  constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
-  constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
-  constexpr int rank(ull_t p) { return permutations::size(p);}
-  constexpr ull_t optimal_traversal(ull_t p) { return permutations::inverse(p);}
-
-  constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
-  constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
-
-  constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
-  constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
-  /*
-   * Given a general IndexOrder given by a permutation P, we want to compute the 
-   * IndexOrder resulting from the slicing with arguments (A0,....,A_r-1)
-   * Done in two steps : 
-   *  1) Compute a mask : (A0,...,A_r-1) is replaced by integers, where
-   *      * if A0 is a range : -1
-   *      * else : a increasing integer
-   *    e.g. (4,Range(xxx), Range(xxx), 5) ----> (-1,0,1,-1).
-   *
-   *    Formula : 
-   *      mask(n,p) = [p if A[n] is range else -1] + mask (n+1,p + (1 if A[n] is range else 0))
-   *      mask(r,p ) = []
-   *
-   *  2) Compute the new permutation determining the sliced IndexOrder, from P, the mask M= mask(0,0)     
-   *     p(n) = [ M[P[n]] ] + p(n+1)  if   M[P[n]]!=-1 else  p(n+1)
-   *     p(r) = [] 
-   */
 #define TRIQS_WORKAROUND_INTEL_COMPILER_BUGS2
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS2
   template <typename... SliceArgs> struct _impl{ 
@@ -117,5 +72,5 @@ namespace triqs { namespace arrays {
    static constexpr ull_t value = mask_t::n_range_ellipsis + 0x10* _impl<mo, mask_t::value,0,0,Args...>::value ;
   };
 #endif
-}}}}//namespace triqs::arrays 
+}}}}}//namespace triqs::arrays 
 #endif

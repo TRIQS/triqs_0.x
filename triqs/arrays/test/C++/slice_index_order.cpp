@@ -23,14 +23,14 @@
 #include <triqs/arrays/impl/common.hpp>
 #include <triqs/arrays/indexmaps/range.hpp>
 #include <triqs/arrays/indexmaps/permutation.hpp>
-#include <triqs/arrays/indexmaps/cuboid/index_order.hpp>
+#include <triqs/arrays/indexmaps/cuboid/slice_traversal_order.hpp>
 
 using namespace triqs::arrays;
 using namespace triqs::arrays::permutations;
 
 template<ull R, ull p, typename... Args > void test() { 
 
- typedef indexmaps::index_order::sliced_memory_order<p,Args...> S1;
+ typedef indexmaps::cuboid::slicing_TO_order::sliced_memory_order<p,Args...> S1;
  constexpr auto s1 = S1::value; 
  //std::cout  << " sliced "<< std::hex<< S1::value << "  " <<std::endl ; 
  std::cout << P<p>() << std::endl;
