@@ -176,8 +176,8 @@ namespace triqs { namespace arrays {
 
  // generalize with preproc or variadic template
 #define IMPL(z, NN, unused)                                \
- template <typename T> mini_vector<T,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
- { return mini_vector<T,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
+ template <typename T> mini_vector<size_t,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
+ { return mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
  BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
 #undef IMPL
 // template<typename T0, typename... T> 

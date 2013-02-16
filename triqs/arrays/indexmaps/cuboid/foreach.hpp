@@ -68,6 +68,24 @@ namespace triqs { namespace arrays { namespace indexmaps {
    foreach_impl<indexmap_type, Function, value_type>::invoke(x.data_start(),x.indexmap(),F);
   }
 
+ template <typename T, typename Function> 
+  typename std::enable_if<std::is_base_of<Tag::indexmap_storage_pair,T>::value >::type 
+  foreach_v ( Function F, T & x) { 
+   typedef typename T::value_type v;
+   typedef typename boost::mpl::if_<boost::is_const<T>, typename boost::add_const<v>::type,v>::type value_type;
+   typedef typename T::indexmap_type indexmap_type;
+   foreach_impl<indexmap_type, Function, value_type>::invoke_v(x.data_start(),x.indexmap(),F);
+  }
+
+  template <typename T, typename Function> 
+  typename std::enable_if<std::is_base_of<Tag::indexmap_storage_pair,T>::value >::type 
+  foreach_av ( Function F, T & x) { 
+   typedef typename T::value_type v;
+   typedef typename boost::mpl::if_<boost::is_const<T>, typename boost::add_const<v>::type,v>::type value_type;
+   typedef typename T::indexmap_type indexmap_type;
+   foreach_impl<indexmap_type, Function, value_type>::invoke_av(x.data_start(),x.indexmap(),F);
+  }
+
   template <typename Expr, typename Function> 
   typename std::enable_if< ! std::is_base_of<Tag::indexmap_storage_pair,Expr>::value >::type 
   foreach( Function F, Expr const & x) { for (auto & pt : x.domain()) boost::unwrap_ref(F)(x[pt],pt); }
@@ -97,10 +115,19 @@ namespace triqs { namespace arrays { namespace indexmaps {
    const mini_vector<foreach_int_type, Rank>  s(CM.strides());\
    BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX1,nil)\
    {\
-    boost::unwrap_ref(F)( p(BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_INC(NN),t[p,] BOOST_PP_INTERCEPT)), t );\
+    boost::unwrap_ref(F)(  p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)], BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_INC(NN),t[p,] BOOST_PP_INTERCEPT) );\
+   } }\
+  static void invoke_av ( ValueType * restrict p, cuboid::map<Rank,Opt,To> const & CM, Function F) { \
+   mini_vector<foreach_int_type, Rank> t;\
+   BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX0,NN)\
+   const mini_vector<foreach_int_type, Rank>  l(CM.lengths());\
+   const mini_vector<foreach_int_type, Rank>  s(CM.strides());\
+   BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX1,nil)\
+   {\
+     p[BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX2,nil)] = boost::unwrap_ref(F)( BOOST_PP_ENUM_BINARY_PARAMS(BOOST_PP_INC(NN),t[p,] BOOST_PP_INTERCEPT));\
    } }\
  };
- BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
+  BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);
 #undef IMPL
 #undef AUX0
 #undef AUX1

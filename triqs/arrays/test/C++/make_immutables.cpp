@@ -19,8 +19,6 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-
-#include <triqs/clef/core.hpp> 
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/make_immutable_array.hpp>
 #include <iostream>

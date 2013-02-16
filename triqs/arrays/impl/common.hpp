@@ -21,7 +21,7 @@
 #ifndef TRIQS_ARRAYS_IMPL_COMMON_H
 #define TRIQS_ARRAYS_IMPL_COMMON_H
 #include <triqs/utility/first_include.hpp>
-#include <triqs/clef/core.hpp>
+#include <triqs/clef.hpp>
 #define TRIQS_ARRAYS_ALREADY_INCLUDED
 
 /// Maximum dimension of the arrays

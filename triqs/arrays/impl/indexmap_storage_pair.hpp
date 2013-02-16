@@ -25,6 +25,7 @@
 #include "./flags.hpp"
 #include "../storages/shared_block.hpp"
 #include "./assignment.hpp"
+#include "../indexmaps/cuboid/foreach.hpp"
 #include "triqs/utility/exceptions.hpp"
 #include "triqs/utility/typeid_name.hpp"
 #include "triqs/utility/view_tools.hpp"
@@ -85,8 +86,11 @@ namespace triqs { namespace arrays {
      this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type() );
     }
 
+   public:
     /// Shallow copy
     indexmap_storage_pair(const indexmap_storage_pair & X):indexmap_(X.indexmap()),storage_(X.storage_){}
+    indexmap_storage_pair(indexmap_storage_pair && X):indexmap_(std::move(X.indexmap())),storage_(std::move(X.storage_)){}
+   protected: 
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) { 
@@ -161,13 +165,13 @@ namespace triqs { namespace arrays {
     // Evaluation and slices 
     template<typename... Args>      
      typename std::enable_if< 
-     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
      , value_type &>::type 
      operator()(Args const & ... args) {  return storage_[indexmap_(args...)]; }
 
     template<typename... Args>      
      typename std::enable_if< 
-     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank==0)
      , value_type const &>::type 
      operator()(Args const & ... args) const { return storage_[indexmap_(args...)]; }
 
@@ -181,7 +185,7 @@ namespace triqs { namespace arrays {
 
     template<typename... Args>   // non const version
      typename boost::lazy_enable_if_c< 
-     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
      , result_of_call_as_view<false,Args...> 
      //, typename result_of_call_as_view<false,Args...>::type 
      >::type // enable_if 
@@ -190,7 +194,7 @@ namespace triqs { namespace arrays {
 
     template<typename... Args>  // const version   
      typename boost::lazy_enable_if_c< 
-     (!clef::one_is_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
+     (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
      , result_of_call_as_view<true,Args...> 
      //, typename result_of_call_as_view<true,Args...>::type 
      >::type // enable_if 
@@ -199,52 +203,62 @@ namespace triqs { namespace arrays {
 
      typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type view_type;
 
-    // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
-    // NEED TO PORT TO CLEF2
-    template<typename ...Args>
-     typename std::enable_if<    // enable the template if
-     clef::one_is_lazy<Args...>::value,  // One of Args is a lazy expression
-     std::result_of<clef::lazy_call<view_type>(Args...)>
-      >::type     // end of lazy_enable_if 
-      operator()(Args const &... args) const { 
+     // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+     template< typename... Args>
+      typename triqs::clef::result_of::make_expr_call<indexmap_storage_pair,Args...>::type
+      operator()( Args&&... args ) const { 
        static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-       return clef::lazy_call<view_type>(*this)(args...);
+       return make_expr_call(*this,args...);
+       //return make_expr_call( view_type(*this),args...);
       }
 
-    /// Equivalent to make_view
-    // CLEAN OPT HRERE
-    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-     operator()() const { return *this; } 
-    typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
-     operator()() { return *this; } 
+     /* OLD clef1 : remove after rereading
+     template<typename ...Args>
+      typename std::enable_if<    // enable the template if
+      clef::is_any_lazy<Args...>::value,  // One of Args is a lazy expression
+      std::result_of<clef::lazy_call<view_type>(Args...)>
+       >::type     // end of lazy_enable_if 
+       operator()(Args const &... args) const { 
+	static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
+	return clef::lazy_call<view_type>(*this)(args...);
+	}
+	*/
 
-    // Iterators
-    typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;
-    typedef iterator_adapter<false,typename IndexMapType::iterator, StorageType> iterator;
-    const_iterator begin() const {return const_iterator(indexmap(),storage(),false);}
-    const_iterator end() const {return const_iterator(indexmap(),storage(),true);}
-    iterator begin() {return iterator(indexmap(),storage(),false);}
-    iterator end() {return iterator(indexmap(),storage(),true);}
+     template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { indexmaps::foreach_av(f,x);}
+
+     /// Equivalent to make_view
+     typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+      operator()() const { return *this; } 
+     typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+      operator()() { return *this; } 
+
+     // Iterators
+     typedef iterator_adapter<true,typename IndexMapType::iterator, StorageType> const_iterator;
+     typedef iterator_adapter<false,typename IndexMapType::iterator, StorageType> iterator;
+     const_iterator begin() const {return const_iterator(indexmap(),storage(),false);}
+     const_iterator end() const {return const_iterator(indexmap(),storage(),true);}
+     iterator begin() {return iterator(indexmap(),storage(),false);}
+     iterator end() {return iterator(indexmap(),storage(),true);}
 
    protected:
 
-    void resize (domain_type const & d) {
-     this->indexmap_ = IndexMapType(d);// build a new one with the lengths of IND
-     // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
-     if (this->storage_.size() != this->indexmap_.domain().number_of_elements())
-      this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type()  );
-    }
-
-    template<typename Xtype>
-     void resize_and_clone_data( Xtype const & X) { indexmap_ = X.indexmap(); storage_ = X.storage().clone(); }
-
-    //  BOOST Serialization
-    friend class boost::serialization::access;
-    template<class Archive>
-     void serialize(Archive & ar, const unsigned int version) {
-      ar & boost::serialization::make_nvp("storage",this->storage_);
-      ar & boost::serialization::make_nvp("indexmap",this->indexmap_);
+     void resize (domain_type const & d) {
+      this->indexmap_ = IndexMapType(d);// build a new one with the lengths of IND
+      // optimisation. Construct a storage only if the new index is not compatible (size mismatch).
+      if (this->storage_.size() != this->indexmap_.domain().number_of_elements())
+       this->storage_ = StorageType(this->indexmap_.domain().number_of_elements(), typename flags::init_tag<OptionFlags>::type()  );
      }
+
+     template<typename Xtype>
+      void resize_and_clone_data( Xtype const & X) { indexmap_ = X.indexmap(); storage_ = X.storage().clone(); }
+
+     //  BOOST Serialization
+     friend class boost::serialization::access;
+     template<class Archive>
+      void serialize(Archive & ar, const unsigned int version) {
+       ar & boost::serialization::make_nvp("storage",this->storage_);
+       ar & boost::serialization::make_nvp("indexmap",this->indexmap_);
+      }
   };// end class
 
  // pretty print of the array

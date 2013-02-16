@@ -18,31 +18,17 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_ARRAYS_ALL_H
-#define TRIQS_ARRAYS_ALL_H
+#include "./python_stuff.hpp"
+#include "./src/array.hpp"
+#include <iostream>
+namespace tqa=triqs::arrays; namespace tql=triqs::clef;
 
-// First the lazy expression lib
-#include <triqs/clef/core.hpp>
+int main(int argc, char **argv) {
 
-// The basic classes
-#include <triqs/arrays/array.hpp>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/vector.hpp>
-
-// Proto expression
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-
-//
-//#include <triqs/arrays/functional/map.hpp>
-#include <triqs/arrays/mapped_functions.hpp>
-
-// HDF5 interface
-#include <triqs/arrays/h5/simple_read_write.hpp>
-
-// Linear algebra ?? Keep here ?
-//#include <triqs/arrays/linalg/inverse.hpp>
-//#include <triqs/arrays/linalg/determinant.hpp>
-
-#endif
+ init_python_stuff(argc,argv);
+ tql::placeholder<0> i_;   tql::placeholder<1> j_;
+ tqa::array<double,2> A(2,2);
+ A(i_,j_) << i_ + j_ ;
+ std::cout << "A = "<<A << std::endl;
+}
 
