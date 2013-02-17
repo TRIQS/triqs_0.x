@@ -76,10 +76,6 @@ else(BOOST_SOURCE_DIR)
  set(BOOST_LIBRARY ${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
 endif(BOOST_SOURCE_DIR)
 
-# find cblas.
-find_package(CBLAS)
-include_directories(SYSTEM ${CBLAS_INCLUDE_DIR})
-
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
  GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")
