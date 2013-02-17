@@ -18,10 +18,10 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         gf_imfreq()
         gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE,COrder], tail, nothing, indices_2_t) #except +
+        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE], tail, nothing, indices_2_t) #except +
         void operator << (gf_imfreq &)
         mesh_imfreq mesh() 
-        array_view[dcomplex, THREE,COrder] data_view()
+        array_view[dcomplex, THREE] data_view()
         tail singularity_view() 
         indices_2_t indices()
 
@@ -33,15 +33,15 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
     #cdef gf_imfreq operator *( gf_imfreq &, dcomplex) except + 
     #cdef gf_imfreq operator /( gf_imfreq &, dcomplex) except + 
 
-    #cdef gf_imfreq operator *( matrix_view[dcomplex,COrder] &, gf_imfreq &) except + 
-    #cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex,COrder]&) except + 
+    #cdef gf_imfreq operator *( matrix_view[dcomplex] &, gf_imfreq &) except + 
+    #cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex]&) except + 
 
 cdef extern from "triqs/gf/imfreq.hpp"  :
 
     cdef void h5_write (h5_group_or_file, char *, gf_imfreq &)
     #cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
     
-    #cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE,COrder], tail) except +
+    #cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE], tail) except +
     #cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
 
 cdef extern from "triqs/utility/serialization.hpp"  :

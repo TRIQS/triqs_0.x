@@ -25,10 +25,10 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         gf_imtime()
         gf_imtime(gf_imtime &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_imtime(mesh_imtime, array_view[double, THREE,COrder], tail, nothing, indices_2_t) #except +
+        gf_imtime(mesh_imtime, array_view[double, THREE], tail, nothing, indices_2_t) #except +
         void operator << (gf_imtime &)
         mesh_imtime mesh() 
-        array_view[double, THREE,COrder] data_view()
+        array_view[double, THREE] data_view()
         tail singularity_view() 
         indices_2_t indices()
 
@@ -40,15 +40,15 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
     cdef gf_imtime operator *( gf_imtime &, double) except + 
     cdef gf_imtime operator /( gf_imtime &, double) except + 
 
-    cdef gf_imtime operator *( matrix_view[double,COrder] &, gf_imtime &) except + 
-    cdef gf_imtime operator *( gf_imtime &, matrix_view[double,COrder]&) except + 
+    cdef gf_imtime operator *( matrix_view[double] &, gf_imtime &) except + 
+    cdef gf_imtime operator *( gf_imtime &, matrix_view[double]&) except + 
 
 cdef extern from "triqs/gf/imtime.hpp"  :
 
     cdef void h5_write (h5_group_or_file, char *, gf_imtime &)
     cdef gf_imtime inverse_c "inverse"   (gf_imtime &)
     
-    cdef gf_imtime make_gf_imtime "triqs::gf::imtime::make_gf" (mesh_imtime, array_view[double, THREE,COrder], tail) except +
+    cdef gf_imtime make_gf_imtime "triqs::gf::imtime::make_gf" (mesh_imtime, array_view[double, THREE], tail) except +
     cdef gf_imtime clone_gf_imtime "triqs::make_clone" (gf_imtime &) 
 
 cdef extern from "triqs/utility/serialization.hpp"  :

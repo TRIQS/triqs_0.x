@@ -25,7 +25,6 @@
 #include <set>
 #include <vector>
 #include <boost/python.hpp>
-#include <triqs/clef/core.hpp>
 #include <triqs/arrays.hpp>
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>

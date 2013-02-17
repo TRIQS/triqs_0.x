@@ -5,7 +5,7 @@ cdef class GfImFreq_cython ( GfGeneric_cython ) :
     def __init__(self, MeshImFreq mesh, data, TailGf tail, symmetry, indices, name):
         
         GfGeneric_cython.__init__(self, mesh, data, tail, symmetry, indices, name, GfImFreq)
-        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE,COrder](data), tail._c , nothing(), make_c_indices(indices[0],indices[1]) ) 
+        self._c =  gf_imfreq ( mesh._c, array_view[dcomplex,THREE](data), tail._c , nothing(), make_c_indices(indices[0],indices[1]) ) 
     
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)

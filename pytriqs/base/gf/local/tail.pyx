@@ -30,7 +30,7 @@ cdef class TailGf:
             m = numpy.zeros(a.shape[0:2], int)
             m.fill(omin+a.shape[2]-1)
         assert len(d) == 0, "Unknown parameters in TailGf constructions %s"%d.keys()
-        self._c = tail(array_view[dcomplex,THREE,COrder](a), omin, array_view[long,TWO,COrder](m))
+        self._c = tail(array_view[dcomplex,THREE](a), omin, array_view[long,TWO](m))
     
     #-------------- Reduction -------------------------------
 
@@ -156,13 +156,13 @@ cdef class TailGf:
     def __mul_impl__(self, arg, s) : 
         cdef TailGf res = self.copy()
         n = type(arg).__name__
-        cdef matrix_view [dcomplex,COrder] a 
+        cdef matrix_view [dcomplex] a 
         if n == 'TailGf' :
             res._c <<  self._c * (<TailGf?>arg)._c
         elif descriptors.is_scalar(arg):
             res._c << as_dcomplex(arg) * self._c
         else : 
-            a= matrix_view[dcomplex,COrder](matrix[dcomplex,COrder](numpy.array(arg, self.dtype)))
+            a= matrix_view[dcomplex](matrix[dcomplex](numpy.array(arg, self.dtype)))
         return res
 
     def __mul__(self,arg):

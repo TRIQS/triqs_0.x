@@ -19,11 +19,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef CONFIGURATION_H_37j3hrf
 #define CONFIGURATION_H_37j3hrf
 
-#include <triqs/clef/core.hpp>
 #include <triqs/python_tools/improved_python_dict.hpp>
 #include <triqs/gf/block.hpp>
 #include <triqs/gf/imtime.hpp>

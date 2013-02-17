@@ -18,10 +18,10 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
     cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::legendre>>" :
         gf_legendre()
         gf_legendre(gf_legendre &)
-        gf_legendre(mesh_legendre, array_view[double, THREE,COrder], nothing, nothing, indices_2_t) #except +
+        gf_legendre(mesh_legendre, array_view[double, THREE], nothing, nothing, indices_2_t) #except +
         void operator << (gf_legendre &)
         mesh_legendre mesh() 
-        array_view[double, THREE,COrder] data_view()
+        array_view[double, THREE] data_view()
         indices_2_t indices()
 
 cdef extern from "triqs/gf/legendre.hpp"  :

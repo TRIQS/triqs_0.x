@@ -5,7 +5,7 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
     def __init__(self, MeshLegendre mesh, data, tail, symmetry, indices, name):
 
         GfGeneric_cython.__init__(self, mesh, data, tail, symmetry, indices, name, GfLegendre) 
-        self._c =  gf_legendre ( mesh._c, array_view[double,THREE,COrder](data), nothing(), nothing(), make_c_indices(indices[0],indices[1]) ) 
+        self._c =  gf_legendre ( mesh._c, array_view[double,THREE](data), nothing(), nothing(), make_c_indices(indices[0],indices[1]) ) 
     
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group_or_file(gr), key, self._c)
@@ -22,7 +22,7 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
         return density(self._c).to_python()
 
     def enforce_discontinuity(self, disc):
-        enforce_discontinuity(self._c, array_view[double,TWO,COrder](disc))
+        enforce_discontinuity(self._c, array_view[double,TWO](disc))
 
 #----------------  Reading from h5 ---------------------------------------
 
