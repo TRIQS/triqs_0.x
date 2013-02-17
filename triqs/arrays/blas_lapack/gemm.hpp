@@ -37,7 +37,7 @@ namespace triqs { namespace arrays { namespace blas {
   }
 
   void gemm (char trans_a, char trans_b, const int & M, const int & N, const int & K, double & alpha, 
-    const double* A, const int & LDA, const double* B, const int & LDB, double & beta, double* C, const int &  LDC) { 
+    const double* A, const int & LDA, const double* B, const int & LDB, double & beta, double* C, const int & LDC) { 
    TRIQS_FORTRAN_MANGLING(dgemm)(&trans_a,&trans_b,M,N,K,alpha, A, LDA, B, LDB, beta, C, LDC);
   }
 
@@ -74,14 +74,15 @@ namespace triqs { namespace arrays { namespace blas {
     f77::gemm(trans_a,trans_b,get_n_rows(Ca()),get_n_cols(Cb()),get_n_cols(Ca()),
       alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cc()));
    }
-   else { 
+   else {
+
     const_qcache<MT1> Ca(A);
     const_qcache<MT2> Cb(B);
     if (!(Ca().dim1() == Cb().dim0())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
     char trans_a= get_trans(Ca(), false); 
     char trans_b= get_trans(Cb(), false); 
     f77::gemm(trans_a,trans_b,get_n_rows(Ca()),get_n_cols(Cb()),get_n_cols(Ca()),
-      alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cb()));
+      alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cc()));
    }
   }
 

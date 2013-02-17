@@ -42,13 +42,21 @@ struct plain {
  }
 };
 
+struct foreach_lambda {
+ void operator()() {
+  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  for (int u =0; u<5000; ++u)
+   indexmaps::foreach_av([](long i, long j) { return i + 2.0*j;} , A);
+ }
+};
+
 
 struct lazy {
  void operator()() {
   tql::placeholder<0> i_;   tql::placeholder<1> j_;  
   //triqs::arrays::array<double,2> A (N1,N2);
   triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
-  auto f = make_function(  i_+ 2.0*j_, i_, j_);
+  auto f = make_function(i_+ 2.0*j_, i_, j_);
   aux_t aux;
   for (int u =0; u<5000; ++u)
    //indexmaps::foreach_av(boost::ref(aux), A);
@@ -62,6 +70,7 @@ int main() {
  const int l = 100;
  speed_tester<plain> (l);
  speed_tester<lazy> (l);
+ speed_tester<foreach_lambda> (l);
  return 0;
 }
 

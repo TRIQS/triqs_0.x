@@ -43,8 +43,8 @@ namespace triqs { namespace arrays {
   typename indexmap_type::strides_type s; s[0] = this->indexmap().strides()[1];s[1] = this->indexmap().strides()[0];\
   return view_type( indexmap_type(l,s, this->indexmap().start_shift()), this->storage());\
  }\
- bool memory_layout_is_c() const {   return this->indexmap().strides()[0] > this->indexmap().strides()[1]; } \
- bool memory_layout_is_fortran() const { return !(memory_layout_is_c());}
+ bool memory_layout_is_c() const {   return this->indexmap().strides()[0] >= this->indexmap().strides()[1]; } \
+ bool memory_layout_is_fortran() const { return this->indexmap().strides()[0] < this->indexmap().strides()[1]; }
 
 #define IMPL_TYPE indexmap_storage_pair < indexmaps::cuboid::map<2,Opt,TraversalOrder>, \
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
