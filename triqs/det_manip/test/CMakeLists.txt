@@ -5,7 +5,7 @@ SET( link_libs ${LAPACK_LIBS}  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES})
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-link_libraries( ${link_libs} triqs ) 
+link_libraries( ${link_libs} triqs_utility ) 
 
 FILE(GLOB TestList RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 FOREACH( TestName1  ${TestList} )
