@@ -616,7 +616,7 @@ namespace triqs { namespace det_manip {
      // impl. Cf case 3
      w1.ksi = - 1/(1+ w1.MC(w1.ireal));
      w1.MC(w1.ireal) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,w1.ireal),w1.MC);
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R));
      mat_inv(R,w1.ireal) *= -w1.ksi;
     }
     //------------------------------------------------------------------------------------------
