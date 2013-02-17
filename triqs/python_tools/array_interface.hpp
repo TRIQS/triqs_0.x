@@ -26,29 +26,29 @@
 
 namespace triqs { namespace arrays {
 
- template<class T, int R, class Opt>
- struct array_c: public triqs::python_tools::cython_proxy<array_view<T,R,Opt> > {
+ template<class T, int R, ull_t Opt=0, ull_t To=0>
+ struct array_c: public triqs::python_tools::cython_proxy<array_view<T,R,Opt,To> > {
 
-  typedef triqs::python_tools::cython_proxy<array_view<T,R,Opt>> B;
+  typedef triqs::python_tools::cython_proxy<array_view<T,R,Opt,To>> B;
   array_c(): B() {}
   array_c(array_c const &a): B(a) {};
-  array_c(array_view<T,R,Opt> const &a): B(a) {};
+  array_c(array_view<T,R,Opt,To> const &a): B(a) {};
   template<typename ... Args> explicit array_c(Args && ... args): B(std::forward<Args>(args)...) {}
 
  };
 
- template<class T, class Opt>
- struct matrix_c: public triqs::python_tools::cython_proxy<matrix_view<T,Opt>> {
+ template<class T, ull_t Opt=0, ull_t To=0>
+ struct matrix_c: public triqs::python_tools::cython_proxy<matrix_view<T,Opt,To>> {
 
-  typedef triqs::python_tools::cython_proxy<matrix_view<T,Opt>> B;
+  typedef triqs::python_tools::cython_proxy<matrix_view<T,Opt,To>> B;
   matrix_c(): B() {}
   matrix_c(matrix_c const &a): B(a) {};
-  matrix_c(matrix_view<T,Opt> const &a): B(a) {};
+  matrix_c(matrix_view<T,Opt,To> const &a): B(a) {};
   template<typename ... Args> explicit matrix_c(Args && ... args): B(std::forward<Args>(args)...) {}
 
  };
 
- template<class T, class Opt>
+ template<class T, ull_t Opt=0>
  struct vector_c: public triqs::python_tools::cython_proxy<vector_view<T,Opt>> {
 
   typedef triqs::python_tools::cython_proxy<vector_view<T,Opt>> B;
