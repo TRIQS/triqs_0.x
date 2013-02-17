@@ -34,7 +34,7 @@ namespace triqs { namespace gf {
    enum mesh_kind { half_bins, full_bins, without_last };
 
    linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
      switch(mk) {
        case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
    }
 
    linear_mesh (domain_t && dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
      switch(mk) {
        case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
@@ -53,7 +53,7 @@ namespace triqs { namespace gf {
      xmax = xmin + del*(L-1);
    }
 
-   linear_mesh () : _dom(), a_pt(0), b_pt(0), L(0), xmin(0), del(0), xmax(0), meshk(half_bins) {}
+   linear_mesh () : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
 
    domain_t const & domain() const { return _dom;}
    size_t size() const { return L; }

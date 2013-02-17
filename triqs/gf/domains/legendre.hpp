@@ -31,9 +31,9 @@ namespace triqs { namespace gf {
 
   public:
 
-  size_t Nmax;
   double beta;
   statistic_enum statistic;
+  size_t Nmax;
 
   typedef long point_t;
   size_t size() const { return Nmax;};
