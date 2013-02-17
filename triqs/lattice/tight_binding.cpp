@@ -49,7 +49,8 @@ namespace triqs { namespace lattice_tools {
 
  //------------------------------------------------------
 
- array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, arrays::TraversalOrderFortran> const & k_stack) {
+ array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack) {
+ //array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, arrays::TraversalOrderFortran> const & k_stack) {
   result_of::Fourier<tight_binding>::type TK = Fourier(TB);  
   array<dcomplex,3> res(TB.n_bands(), TB.n_bands(), k_stack.len(1));
   for(size_t i = 0; i<k_stack.len(1); ++i) res(range(), range(), i) = TK(k_stack(range(),i));

@@ -55,7 +55,10 @@ namespace triqs { namespace lattice_tools {
    k_in[:,n] is the nth vector
    In the result, R[:,:,n] is the corresponding hopping t(k)
   */
- array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, arrays::TraversalOrderFortran> const & k_stack);
+ array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack);
+ // only the default array have a boost python converter....
+ // not optimal ordering here . But why is this in FORTRAN ?
+ //array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, arrays::TraversalOrderFortran> const & k_stack);
 
  std::pair<array<double,1>, array<double,2> > dos(tight_binding const & TB, size_t nkpts, size_t neps); 
  std::pair<array<double,1>, array<double,1> > dos_patch(tight_binding const & TB, const array<double,2> & triangles, size_t neps, size_t ndiv);
