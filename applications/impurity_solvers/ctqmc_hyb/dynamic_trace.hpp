@@ -669,7 +669,7 @@ public:
     TimeEvolution.Op_U_Slice( &Replacement, OP->tau, tr,sliR, tmp);
     REAL_OR_COMPLEX res = TimeEvolution.Slice_U_Slice(sliL, tl, OP->tau, tmp);
     TSS->push(tmp); // give back the temporary slice
-    assert(isfinite(CurrentTrace));
+    assert(std::isfinite(CurrentTrace));
     return res/CurrentTrace;
   }
 

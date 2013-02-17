@@ -100,7 +100,7 @@ namespace triqs { namespace arrays {
   struct memory_layout { 
    ull_t value; 
    //memory_layout() { value =indexmaps::mem_layout::c_order(Rank);} 
-   explicit memory_layout (ull_t v) : value(v) {assert((permutations::size(mo)==Rank));} 
+   explicit memory_layout (ull_t v) : value(v) {assert((permutations::size(v)==Rank));} 
    memory_layout (char ml) {
     assert( (ml=='C') || (ml == 'F'));
     value = (ml=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));

@@ -165,7 +165,7 @@ class detManip : public triqs::det_manip::det_manip<FunctionTypeArg> {
     C_Cdagger_M_iterator(const Cdagger_iterator& mit);//not impl
 
     C_Cdagger_M_iterator&  operator=(const Cdagger_iterator& rhs) {
-      assert (rhs.N==N); assert(&rhs.c = &c); assert(&rhs.cdagger = &cdagger);assert(&rhs.m = &m);  
+      assert (rhs.N==N); assert(&rhs.c = &c); assert(&rhs.cdagger = &cdagger);//assert(&rhs.m = &m);  
       i = rhs.i; j= rhs.j;return *this;}
 
     C_Cdagger_M_iterator& operator++() { ++j; if (j>N) { j=1; ++i; };  return *this;}

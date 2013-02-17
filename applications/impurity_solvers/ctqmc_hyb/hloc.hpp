@@ -33,7 +33,7 @@
 #include "ctqmc_utils.hpp"
 
 // internal class for construction. See cpp file
-namespace Hloc_construction { class mydata; }
+namespace Hloc_construction { struct mydata; }
 
 /**
    Blocks and local operators matrix elements for a local 
@@ -84,7 +84,7 @@ public :
     std::vector<double> H_;
     std::vector<double> deltaH_;
     friend class Hloc;
-    friend class Hloc_construction::mydata;
+    friend struct Hloc_construction::mydata;
   public:
     /// Eigenvalues of the Hamiltonian in the bloc H[0] to H[dim-1]
     const double * restrict H;
@@ -167,7 +167,7 @@ public :
     std::vector<std::vector<REAL_OR_COMPLEX> > BlocMatrixElements; 
     std::vector<const Bloc *> BlocCorrespondance;
     friend class Hloc;
-    friend class Hloc_construction::mydata;
+    friend struct Hloc_construction::mydata;
     friend class BlocMatrixElement;
     Operator * transpose; // where is my tranpose operator ?
  private:
