@@ -21,9 +21,6 @@
 #ifndef TRIQS_ARRAYS_ALL_H
 #define TRIQS_ARRAYS_ALL_H
 
-// First the lazy expression lib
-#include <triqs/clef/core.hpp>
-
 // The basic classes
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
