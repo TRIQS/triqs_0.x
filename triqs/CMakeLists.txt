@@ -33,7 +33,7 @@ add_all_subdirectories_with_cmakelist()
 
 # The lib will be build from the sources
 add_library(triqs_utility ${ALLSOURCES_UTIL})
-target_link_libraries (triqs_utility ${TRIQS_LINK_LIBS} )
+target_link_libraries (triqs_utility -lrt ${TRIQS_LINK_LIBS} )
 
 add_library(triqs ${ALLSOURCES_UTIL} ${ALLSOURCES})
 target_link_libraries (triqs triqs_utility ${TRIQS_LINK_LIBS}  )
