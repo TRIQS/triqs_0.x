@@ -57,7 +57,11 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     TRACE_MEM_DEBUG(" construct memblock from pyobject"<<obj<< " # ref ="<<obj->ob_refcnt<<" borrowed = "<< borrowed); 
     assert(obj); import_numpy_array(); 
     if (borrowed) Py_INCREF(obj);
+    // ICC CRASHES ON this ???
+    // THIS IS HIGHLY NOT NORMAL....
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
     if (!PyArray_Check(obj)) TRIQS_RUNTIME_ERROR<<"Internal error : mem_block construct from pyo : obj is not an array";
+#endif
     PyArrayObject * arr = (PyArrayObject *)(obj);
     size_ = PyArray_SIZE(arr);
     this->p = (non_const_value_type*)PyArray_DATA(arr); 
@@ -89,7 +93,7 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     this->memcopy (p, X.p, size_);
    }
 
-   mem_block ( mem_block const & X): size_(X.size()), py_obj(NULL) { 
+   mem_block ( mem_block const & X): size_(X.size()), py_obj(NULL) {
     //p = new non_const_value_type[s]; // check speed penalty for try ??
     try { p = new non_const_value_type[X.size()];}
     catch (std::bad_alloc& ba) { TRIQS_RUNTIME_ERROR<< "Memory allocation error : bad_alloc : "<< ba.what();}
@@ -97,7 +101,7 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     else { 
      // else make a new copy of the numpy ...
      import_numpy_array(); 
-     assert(PyArray_Check(X.py_obj));
+     //assert(PyArray_Check(X.py_obj));
      if (!is_scalar_or_pod<ValueType>::value) TRIQS_RUNTIME_ERROR << "Internal Error : memcpy on non-scalar";
      if ( ( PyArray_ISFORTRAN(X.py_obj)) || (PyArray_ISCONTIGUOUS(X.py_obj)))  { 
       memcpy (p,PyArray_DATA(X.py_obj),size_ * sizeof(ValueType));
