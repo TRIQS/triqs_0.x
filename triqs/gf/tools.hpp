@@ -24,7 +24,7 @@
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
 #include <triqs/utility/cint.hpp>
-#include <triqs/clef/core.hpp>
+#include <triqs/clef.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/utility/proto/tools.hpp>

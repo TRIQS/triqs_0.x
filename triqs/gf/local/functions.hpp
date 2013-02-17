@@ -49,7 +49,7 @@ namespace triqs {
  }
 
  namespace clef {
-  TRIQS_CLEF_MAKE_FNT_LAZY (1, density);
+  TRIQS_CLEF_MAKE_FNT_LAZY (density);
  }
 }
 

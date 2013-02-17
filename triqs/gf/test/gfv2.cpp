@@ -47,13 +47,13 @@ int main() {
 
  std::cout  <<"-------------lazy assign 1 ------------------"<<std::endl;
 
- Gv(om_) = (0.2 + om_ + 2.1);
+ Gv(om_) << (0.2 + om_ + 2.1);
  TEST(G(0));
  TEST(G(inf));
 
  std::cout  <<"-------------lazy assign 2 ------------------"<<std::endl;
 
- G(om_) = 1/(om_ + 2.3);
+ G(om_) << 1/(om_ + 2.3);
 
  TEST(G(0));
  TEST(G(inf));

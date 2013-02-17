@@ -24,7 +24,7 @@ int main() {
  for (auto & t : Gt.mesh()) Gt(t) = 1.0*t*t;
  
  triqs::clef::placeholder<0> t_;
- Gt2( t_)  = 2* t_; // * t_;
+ Gt2( t_)  << 2* t_; // * t_;
 
  std::cout << Gt(3.255) << std::endl; 
  //std::cout << Gt(3.2) << std::endl; 

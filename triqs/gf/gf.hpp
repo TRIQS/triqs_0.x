@@ -170,7 +170,9 @@ namespace triqs { namespace gf {
 
    // Constructors : protected, see gf/gf_view later for public one
    gf_impl() {} // all arrays of zero size (empty)
+  public : //everyone can make a copy (for clef lib)
    gf_impl(gf_impl const & x)                    : _mesh(x._mesh), data(x.data), singularity(x.singularity), _symmetry(x._symmetry), _indices(x._indices){}
+  protected:
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(x.data_view()), singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()){} 
 
    // from the data directly
@@ -196,7 +198,7 @@ namespace triqs { namespace gf {
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
     boost::mpl::or_< // starting condition [OR] 
     boost::is_base_of< typename std::remove_reference<Arg0>::type, mesh_point_t>,  // Arg0 is (a & or a &&) to a mesh_point_t 
-    clef::one_is_lazy<Arg0, Args...>                          // One of Args is a lazy expression
+    clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
      >,                                                       // end of OR 
     std::result_of<typename Descriptor::evaluator(mesh_t, data_t, singularity_t, Arg0, Args...)> // what is the result type of call
      >::type     // end of lazy_disable_if
@@ -205,13 +207,16 @@ namespace triqs { namespace gf {
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg0, typename ...Args>
-    typename boost::lazy_enable_if<    // enable the template if
-    clef::one_is_lazy<Arg0, Args...>,  // One of Args is a lazy expression
-    std::result_of<clef::lazy_call<view_type>(Arg0, Args...)>
-     >::type     // end of lazy_enable_if 
+    //typename boost::lazy_enable_if<    // enable the template if
+    //clef::is_any_lazy<Arg0, Args...>,  // One of Args is a lazy expression
+    typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
+    //clef::result_of::make_expr_call<view_type,Args...>
+     //std::result_of<clef::lazy_call<view_type>(Arg0, Args...)>
+     //>::type     // end of lazy_enable_if 
      operator()(Arg0 arg0, Args... args) const { 
       static_assert(sizeof...(Args) == Descriptor::arity-1, "Incorrect number of variable in call");
-      return clef::lazy_call<view_type>(*this)(arg0,args...);
+      return clef::make_expr_call(*this,arg0, args...);
+      //return clef::lazy_call<view_type>(*this)(arg0,args...);
      }
 
    /// A direct access to the grid point 
@@ -237,15 +242,14 @@ namespace triqs { namespace gf {
 
   public:
 
-   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) = expression fills the functions by evaluation of expression)
-   TRIQS_CLEF_HAS_AUTO_ASSIGN(); 
-   template<typename F> friend void triqs_nvl_auto_assign (gf_impl & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
+   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
+   template<typename F> friend void triqs_clef_auto_assign (gf_impl & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
 
    /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
    //except when there is at least one lazy argument ...
    template<typename Arg >   
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
-    clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
+    clef::is_any_lazy<Arg>,                          // One of Args is a lazy expression
     std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t &, singularity_t &, Arg)> // what is the result type of call
      >::type     // end of lazy_disable_if 
      operator[] (Arg&& arg) {return _bracket_evaluator(_mesh, this->data, singularity, std::forward<Arg>( arg));}
@@ -254,18 +258,19 @@ namespace triqs { namespace gf {
    //except when there is at least one lazy argument ...
    template<typename Arg >   
     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true 
-    clef::one_is_lazy<Arg>,                          // One of Args is a lazy expression
+    clef::is_any_lazy<Arg>,                          // One of Args is a lazy expression
     std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t const &, singularity_t&, Arg)> // what is the result type of call
      >::type     // end of lazy_disable_if 
      operator[] (Arg&& arg) const {return _bracket_evaluator(_mesh, data, singularity, std::forward<Arg>( arg));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
-    typename boost::lazy_enable_if<    // enable the template if
-    clef::one_is_lazy<Arg>,  // One of Args is a lazy expression
-    std::result_of<clef::lazy_call<view_type>(Arg)>
-     >::type     // end of lazy_enable_if 
-     operator[](Arg arg) const { return clef::lazy_call<view_type>(*this)(arg); }
+    //typename boost::lazy_enable_if<    // enable the template if
+    //clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
+    clef::result_of::make_expr_call<gf_impl,Arg>
+    //std::result_of<clef::lazy_call<view_type>(Arg)>
+    // >::type     // end of lazy_enable_if 
+     operator[](Arg arg) const { return  clef::make_expr_call(*this,arg);} //clef::lazy_call<view_type>(*this)(arg); 
 
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
