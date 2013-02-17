@@ -72,9 +72,15 @@ if(BOOST_SOURCE_DIR)
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 else(BOOST_SOURCE_DIR)
  FIND_PACKAGE(Boost 1.46.0 REQUIRED )
+ # In fact this does NOT find boost...
+ # it is an illusion on ubuntu, because it is in /usr/local...
+ #if (NOT Boost_FOUND)
+ # MESSAGE(FATAL_ERROR "Boost not found")
+ #endif()
  include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
  set(BOOST_LIBRARY ${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
 endif(BOOST_SOURCE_DIR)
+
 
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
