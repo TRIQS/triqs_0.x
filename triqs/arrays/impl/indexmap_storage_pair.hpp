@@ -207,6 +207,8 @@ namespace triqs { namespace arrays {
      typedef typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type view_type;
 
      // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
+     // NB : this is ok because indexmap_storage_pair has a shallow copy constructor ...
+     // so A(i_) if A is an array will NOT copy the data....
      template< typename... Args>
       typename clef::result_of::make_expr_call<indexmap_storage_pair,Args...>::type
       operator()( Args&&... args ) const { 
