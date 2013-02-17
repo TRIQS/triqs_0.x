@@ -32,10 +32,10 @@ namespace triqs { namespace arrays { namespace blas {
    double TRIQS_FORTRAN_MANGLING(zdotc)(const int & N, const std::complex<double> * x, const int& incx, const std::complex<double> * y, const int& incy);
   }
 
-  double dot (const int & M, const double* x, const int & incx, const double* Y, const int & incy)  { 
+  inline double dot (const int & M, const double* x, const int & incx, const double* Y, const int & incy)  { 
    return TRIQS_FORTRAN_MANGLING(ddot)(M, x, incx, Y, incy);
   }
-  std::complex<double> dot (const int & M, const std::complex<double>* x, const int & incx, const std::complex<double>* Y, const int & incy)  { 
+  inline std::complex<double> dot (const int & M, const std::complex<double>* x, const int & incx, const std::complex<double>* Y, const int & incy)  { 
    return TRIQS_FORTRAN_MANGLING(zdotc)(M, x, incx, Y, incy);
   }
  }

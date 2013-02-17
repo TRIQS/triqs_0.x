@@ -31,10 +31,10 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zswap)(const int & N, std::complex<double> * x, const int& incx, std::complex<double> * y, const int& incy);
   }
 
-  void swap (const int & N, double* x, const int & incx, double* Y, const int & incy)  { 
+  inline void swap (const int & N, double* x, const int & incx, double* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(dswap)(N, x, incx, Y, incy);
   }
-  void swap (const int & N, std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
+  inline void swap (const int & N, std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(zswap)(N, x, incx, Y, incy);
   }
  }

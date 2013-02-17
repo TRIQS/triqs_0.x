@@ -40,14 +40,14 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("dimensions",lengths_);}
    public :
    //static const unsigned int rank = Rank;
-   static constexpr int rank = Rank;
+   static constexpr unsigned int rank = Rank;
    typedef n_uple index_value_type;
    domain_t ():lengths_(){}
    domain_t (n_uple const & lengths):lengths_(lengths) {}
    domain_t (n_uple && lengths):lengths_(std::move(lengths)) {}
    domain_t (mini_vector<int,Rank> const & lengths):lengths_(lengths) {}
    domain_t (std::vector<std::size_t> const & l):lengths_() {
-    if (!l.size()==rank) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
+    if (!(l.size()==rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
     lengths_ = n_uple(l);
    }
    domain_t (const domain_t & C):lengths_(C.lengths_){}

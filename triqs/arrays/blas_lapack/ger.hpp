@@ -34,10 +34,10 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zgerc)(const int &M, const int &N, const dcomplex &, const dcomplex [], const int &, const dcomplex [], const int &, dcomplex [], const int &);
   }
 
-  void ger (const int & M, const int & N, const double & alpha, const double* x, const int & incx, const double* Y, const int & incy, double* A, const int & LDA)  { 
+  inline void ger (const int & M, const int & N, const double & alpha, const double* x, const int & incx, const double* Y, const int & incy, double* A, const int & LDA)  { 
    TRIQS_FORTRAN_MANGLING(dger)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
-  void ger (const int & M, const int & N, const dcomplex & alpha, const dcomplex* x, const int & incx, const dcomplex* Y, const int & incy, dcomplex* A, const int & LDA)  { 
+  inline void ger (const int & M, const int & N, const dcomplex & alpha, const dcomplex* x, const int & incx, const dcomplex* Y, const int & incy, dcomplex* A, const int & LDA)  { 
    TRIQS_FORTRAN_MANGLING(zgerc)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
  }

@@ -34,10 +34,10 @@ namespace triqs { namespace arrays { namespace lapack {
   void TRIQS_FORTRAN_MANGLING(zgetri) (const int & , std::complex<double> *, const int & ,int *,std::complex<double> *,const int & ,int & );
    }
 
-  void getri (const int & N, double* A, const int & LDA, int * ipiv, double * work, const int & lwork, int & info) { 
+  inline void getri (const int & N, double* A, const int & LDA, int * ipiv, double * work, const int & lwork, int & info) { 
    TRIQS_FORTRAN_MANGLING(dgetri)(N,A,LDA,ipiv,work, lwork, info);
   }
-  void getri (const int & N, std::complex<double>* A, const int & LDA, int * ipiv, std::complex<double> * work, const int & lwork, int & info) { 
+  inline void getri (const int & N, std::complex<double>* A, const int & LDA, int * ipiv, std::complex<double> * work, const int & lwork, int & info) { 
    TRIQS_FORTRAN_MANGLING(zgetri)(N,A,LDA,ipiv,work, lwork, info);
   }
  }

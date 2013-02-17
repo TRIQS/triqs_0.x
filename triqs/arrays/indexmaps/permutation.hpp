@@ -27,7 +27,7 @@ namespace triqs { namespace arrays { namespace permutations {
  constexpr ull apply(ull p, ull i) { return (p >> (4*(i+1))) & 0xFull;}
  constexpr ull size( ull p) { return p & 0xFull;}
 
- ull permutation_from_array ( const int * const p, int length) {
+ inline ull permutation_from_array ( const int * const p, int length) {
   ull res =0; 
   for (int i =length-1; i>=0; --i) res =  p[i] + 0x10*res;
   res= 0x10 * res + length;

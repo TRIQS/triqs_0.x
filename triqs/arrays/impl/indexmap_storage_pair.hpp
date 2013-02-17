@@ -205,7 +205,7 @@ namespace triqs { namespace arrays {
 
      // Interaction with the CLEF library : calling with any clef expression as argument build a new clef expression
      template< typename... Args>
-      typename triqs::clef::result_of::make_expr_call<indexmap_storage_pair,Args...>::type
+      typename clef::result_of::make_expr_call<indexmap_storage_pair,Args...>::type
       operator()( Args&&... args ) const { 
        static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
        return make_expr_call(*this,args...);

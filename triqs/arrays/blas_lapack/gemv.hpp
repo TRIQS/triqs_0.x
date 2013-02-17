@@ -37,11 +37,13 @@ namespace triqs { namespace arrays { namespace blas {
      const std::complex<double> x[], const int & incx, const std::complex<double> & beta, std::complex<double> y[], const int & incy);
   }
 
-  void gemv (char * trans, const int & M, const int & N, double & alpha, const double* A, int & LDA, const double* x, const int & incx, double & beta, double* Y, const int & incy) { 
+  inline void gemv (char * trans, const int & M, const int & N, double & alpha, const double* A, int & LDA, 
+    const double* x, const int & incx, double & beta, double* Y, const int & incy) { 
    TRIQS_FORTRAN_MANGLING(dgemv)(trans, M, N, alpha, A, LDA,x, incx , beta, Y, incy);
   }
 
-  void gemv (char * trans, const int & M, const int & N, dcomplex & alpha, const dcomplex* A, int & LDA, const dcomplex* x, const int & incx, dcomplex & beta, dcomplex* Y, const int & incy) { 
+  inline void gemv (char * trans, const int & M, const int & N, dcomplex & alpha, const dcomplex* A, int & LDA, 
+    const dcomplex* x, const int & incx, dcomplex & beta, dcomplex* Y, const int & incy) { 
    TRIQS_FORTRAN_MANGLING(zgemv)(trans, M, N, alpha, A, LDA,x, incx , beta, Y, incy);
   }
  }

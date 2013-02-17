@@ -30,20 +30,20 @@ namespace triqs { namespace arrays { namespace blas {
  namespace f77 { // overload
 
   extern "C" { 
-   void TRIQS_FORTRAN_MANGLING(dgemm) (char *, char *, const int & , const int & , const int & , double &, 
-     const double[], const int &, const double[], const int &, double &, double[], const int & ); 
-   void TRIQS_FORTRAN_MANGLING(zgemm) (char *, char *, const int & , const int & , const int & , std::complex<double> &,
-     const std::complex<double>[], const int &, const std::complex<double>[], const int &, std::complex<double> &, std::complex<double>[], const int & );
+   void TRIQS_FORTRAN_MANGLING(dgemm) (char *, char *, const int & , const int & , const int & , const double &, 
+     const double[], const int &, const double[], const int &, const double &, double[], const int & ); 
+   void TRIQS_FORTRAN_MANGLING(zgemm) (char *, char *, const int & , const int & , const int & , const std::complex<double> &,
+     const std::complex<double>[], const int &, const std::complex<double>[], const int &, const std::complex<double> &, std::complex<double>[], const int & );
   }
 
-  void gemm (char trans_a, char trans_b, const int & M, const int & N, const int & K, double & alpha, 
-    const double* A, const int & LDA, const double* B, const int & LDB, double & beta, double* C, const int & LDC) { 
+  inline void gemm (char trans_a, char trans_b, const int & M, const int & N, const int & K, const double & alpha, 
+    const double* A, const int & LDA, const double* B, const int & LDB, const double & beta, double* C, const int & LDC) { 
    TRIQS_FORTRAN_MANGLING(dgemm)(&trans_a,&trans_b,M,N,K,alpha, A, LDA, B, LDB, beta, C, LDC);
   }
 
   typedef std::complex<double> dcomplex;
-  void gemm (char trans_a, char trans_b, const int & M, const int & N, const int & K, dcomplex & alpha, 
-    const dcomplex* A, const int & LDA, const dcomplex* B, const int & LDB, dcomplex & beta, dcomplex* C, const int &  LDC) { 
+  inline void gemm (char trans_a, char trans_b, const int & M, const int & N, const int & K, const dcomplex & alpha, 
+    const dcomplex* A, const int & LDA, const dcomplex* B, const int & LDB, const dcomplex & beta, dcomplex* C, const int &  LDC) { 
    TRIQS_FORTRAN_MANGLING(zgemm)(&trans_a,&trans_b,M,N,K,alpha, A, LDA, B, LDB, beta, C, LDC);
   }
  }
@@ -71,11 +71,17 @@ namespace triqs { namespace arrays { namespace blas {
     if (!(Ca().dim0() == Cb().dim1())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
     char trans_a= get_trans(Ca(), true); 
     char trans_b= get_trans(Cb(), true); 
+    //std::cerr<< " about to call GEMM"<< std::endl ;
+    //std::cerr<< "A = "<< Ca().shape()<< Ca()<< std::endl;
+    //std::cerr<< "B = "<< Cb().shape()<< Cb()<< std::endl;
+    //std::cerr<< "C c" << Cc().shape() << Cc().indexmap().strides() << std::endl;
+    //std::cerr<<Ca().memory_layout_is_c() <<Ca().memory_layout_is_fortran()<<std::endl;
+    //std::cerr<< get_n_rows(Ca())<<get_n_cols(Cb())<<get_n_cols(Ca()) << std::endl ;
     f77::gemm(trans_a,trans_b,get_n_rows(Ca()),get_n_cols(Cb()),get_n_cols(Ca()),
       alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cc()));
+    //std::cerr << " gemm ok "<< std::endl ; 
    }
    else {
-
     const_qcache<MT1> Ca(A);
     const_qcache<MT2> Cb(B);
     if (!(Ca().dim1() == Cb().dim0())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();

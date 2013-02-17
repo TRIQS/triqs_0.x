@@ -31,8 +31,8 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zscal)(const int & N, const std::complex<double> & alpha,std::complex<double> * x, const int& incx);
   }
 
-  void scal (const int & M, const double & alpha, double* x, const int & incx)  { TRIQS_FORTRAN_MANGLING(dscal)(M, alpha, x, incx); }
-  void scal (const int & M, const std::complex<double> & alpha, std::complex<double>* x, const int & incx)  { TRIQS_FORTRAN_MANGLING(zscal)(M, alpha, x, incx); }
+  inline void scal (const int & M, const double & alpha, double* x, const int & incx)  { TRIQS_FORTRAN_MANGLING(dscal)(M, alpha, x, incx); }
+  inline void scal (const int & M, const std::complex<double> & alpha, std::complex<double>* x, const int & incx)  { TRIQS_FORTRAN_MANGLING(zscal)(M, alpha, x, incx); }
  }
 
  /**

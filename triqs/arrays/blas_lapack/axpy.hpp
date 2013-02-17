@@ -32,10 +32,10 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zaxpy)(const int & N, const std::complex<double> & alpha, const std::complex<double> * x, const int& incx, std::complex<double> * y, const int& incy);
   }
 
-  void axpy (const int & N, const double & alpha, const double* x, const int & incx, double* Y, const int & incy)  { 
+  inline void axpy (const int & N, const double & alpha, const double* x, const int & incx, double* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(daxpy)(N, alpha, x, incx, Y, incy);
   }
-  void axpy (const int & N, const std::complex<double> & alpha, const std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
+  inline void axpy (const int & N, const std::complex<double> & alpha, const std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(zaxpy)(N, alpha, x, incx, Y, incy);
   }
  }

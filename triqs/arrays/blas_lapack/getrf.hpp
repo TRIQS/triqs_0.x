@@ -35,10 +35,10 @@ namespace triqs { namespace arrays { namespace lapack {
    void TRIQS_FORTRAN_MANGLING(zgetrf) (const int &,const int &,std::complex<double>*, const int & ,int *,int &);
   }
 
-  void getrf (const int & M, const int & N, double* A, const int & LDA, int * ipiv, int & info) { 
+  inline void getrf (const int & M, const int & N, double* A, const int & LDA, int * ipiv, int & info) { 
    TRIQS_FORTRAN_MANGLING(dgetrf)(M,N,A,LDA,ipiv,info);
   }
-  void getrf (const int & M, const int & N, std::complex<double>* A, const int & LDA, int * ipiv, int & info) { 
+  inline void getrf (const int & M, const int & N, std::complex<double>* A, const int & LDA, int * ipiv, int & info) { 
    TRIQS_FORTRAN_MANGLING(zgetrf)(M,N,A,LDA,ipiv,info);
   }
  }

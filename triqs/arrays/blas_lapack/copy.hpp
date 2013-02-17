@@ -32,10 +32,10 @@ namespace triqs { namespace arrays { namespace blas {
    void TRIQS_FORTRAN_MANGLING(zcopy)(const int & N , const std::complex<double> * x, const int& incx, std::complex<double> * y, const int& incy);
   }
 
-  void copy (const int & N, const double* x, const int & incx, double* Y, const int & incy)  { 
+  inline void copy (const int & N, const double* x, const int & incx, double* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(dcopy)(N, x, incx,  Y, incy);
   }
-  void copy (const int & N, const std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
+  inline void copy (const int & N, const std::complex<double>* x, const int & incx, std::complex<double>* Y, const int & incy)  { 
    TRIQS_FORTRAN_MANGLING(zcopy)(N, x, incx,  Y, incy);
   }
  }
