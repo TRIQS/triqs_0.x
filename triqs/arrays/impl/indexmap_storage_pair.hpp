@@ -101,7 +101,10 @@ namespace triqs { namespace arrays {
      catch(numpy_interface::copy_exception s){// intercept only this one...
       TRIQS_RUNTIME_ERROR<< " construction of a "<< name <<" from a numpy  "
        <<"\n   T = "<< triqs::utility::typeid_name(value_type())
-       <<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank
+       // lead to a nasty link pb ??? 
+       // linker search for IndexMapType::domain_type::rank in triqs.so
+       // and can not resolve it ???
+       //<<"\n   rank = "<< IndexMapType::domain_type::rank//this->rank  
        <<"\n   OptionFlags = "<< OptionFlags
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X) 
        <<"\nThe error was :\n "<<s.what();
