@@ -32,7 +32,7 @@ namespace triqs { namespace clef {
  template<int N>       std::ostream &operator <<(std::ostream &sout, placeholder<N> ){return sout << "_"<<N ; }
  template<typename T> std::ostream & operator<<(std::ostream & out, std::reference_wrapper<T> const & x) { return out<< x.get(); }
 
- std::ostream & variadic_print(std::ostream& out) { return out; }
+ inline std::ostream & variadic_print(std::ostream& out) { return out; }
  template<typename T0, typename... T> std::ostream & variadic_print(std::ostream& out, T0&& t0, T&&... t) 
  { out<< t0<<( sizeof...(T)>0 ? ", ": ""); variadic_print (out, t...); return out;} 
 
