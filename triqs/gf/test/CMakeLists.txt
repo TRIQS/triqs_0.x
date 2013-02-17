@@ -20,6 +20,7 @@ FOREACH( TestName1  ${TestList} )
  STRING(REPLACE ".cpp" "" TestName ${TestName1})
  add_executable( ${TestName}  ${CMAKE_CURRENT_SOURCE_DIR}/${TestName}.cpp )
  add_test_C_simple( ${TestName}  )
+ #add_test ( ${TestName}_valgrind valgrind --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/${TestName})
 ENDFOREACH( TestName1  ${TestList} )
 
 endif (Build_Lazy_tests)

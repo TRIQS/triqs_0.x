@@ -209,13 +209,14 @@ namespace triqs { namespace gf {
    template<typename Arg0, typename ...Args>
     //typename boost::lazy_enable_if<    // enable the template if
     //clef::is_any_lazy<Arg0, Args...>,  // One of Args is a lazy expression
-    typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
+    typename clef::result_of::make_expr_call<view_type,Arg0, Args...>::type
+    //typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
     //clef::result_of::make_expr_call<view_type,Args...>
      //std::result_of<clef::lazy_call<view_type>(Arg0, Args...)>
      //>::type     // end of lazy_enable_if 
      operator()(Arg0 arg0, Args... args) const { 
       static_assert(sizeof...(Args) == Descriptor::arity-1, "Incorrect number of variable in call");
-      return clef::make_expr_call(*this,arg0, args...);
+      return clef::make_expr_call(view_type(*this),arg0, args...);
       //return clef::lazy_call<view_type>(*this)(arg0,args...);
      }
 
@@ -242,9 +243,6 @@ namespace triqs { namespace gf {
 
   public:
 
-   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
-   template<typename F> friend void triqs_clef_auto_assign (gf_impl & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
-
    /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
    //except when there is at least one lazy argument ...
    template<typename Arg >   
@@ -267,10 +265,10 @@ namespace triqs { namespace gf {
    template<typename Arg>
     //typename boost::lazy_enable_if<    // enable the template if
     //clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
-    clef::result_of::make_expr_call<gf_impl,Arg>
+    clef::result_of::make_expr_call<view_type,Arg>
     //std::result_of<clef::lazy_call<view_type>(Arg)>
     // >::type     // end of lazy_enable_if 
-     operator[](Arg arg) const { return  clef::make_expr_call(*this,arg);} //clef::lazy_call<view_type>(*this)(arg); 
+     operator[](Arg arg) const { return  clef::make_expr_call(view_type(*this),arg);} //clef::lazy_call<view_type>(*this)(arg); 
 
    /// Write into HDF5
    friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
@@ -366,6 +364,9 @@ namespace triqs { namespace gf {
   void operator = (gf_view const & rhs)  { if (this->is_empty()) { rebind(rhs); return;} triqs_gf_view_assign_delegation(*this,rhs);}
 
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
+
+  // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
+   template<typename F> friend void triqs_clef_auto_assign (gf_view & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
  };
 
  // delegate = so that I can overload it for specific RHS...

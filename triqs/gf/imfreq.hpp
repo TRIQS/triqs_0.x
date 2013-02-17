@@ -72,7 +72,14 @@ namespace triqs { namespace gf {
   template<typename D, typename T, typename RHS> 
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !) 
-    for (auto w: mesh) { target_view_t( data(tqa::range(),tqa::range(),w.index)) = rhs(w); }
+    int i=0;
+    for (auto w: mesh) {
+      
+     if (i<2) std::cerr<< rhs(w)<< std::endl;
+     target_view_t( data(tqa::range(),tqa::range(),w.index)) = rhs(w);
+     if (i<2) std::cerr<< target_view_t( data(tqa::range(),tqa::range(),w.index)) << std::endl ;
+    ++i;
+    }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
     // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty, 
