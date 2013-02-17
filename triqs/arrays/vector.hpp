@@ -63,6 +63,9 @@ namespace triqs { namespace arrays {
 
    vector_view () = delete;
 
+   /// Swap
+   friend void swap( vector_view & A, vector_view & B) { A.swap_me(B);}
+
    /// Rebind the view
    void rebind (vector_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
@@ -146,11 +149,14 @@ namespace triqs { namespace arrays {
     }
 
    /// Move assignment
-   vector & operator=(vector && X) { swap(*this, X); return *this;}
+   vector & operator=(vector && X) { this->swap_me(X); return *this;}
+
+   /// Swap
+   friend void swap( vector & A, vector & B) { A.swap_me(B);}
 
    ///
    size_t size() const { return this->shape()[0];} 
-   
+
    ///
    std::ptrdiff_t stride() const { return this->indexmap().strides()[0];}
 

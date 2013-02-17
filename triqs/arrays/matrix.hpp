@@ -75,6 +75,9 @@ namespace triqs { namespace arrays {
 
     matrix_view () = delete;
 
+    /// Swap
+    friend void swap( matrix_view & A, matrix_view & B) { A.swap_me(B);}
+
     /// Rebind the view
     void rebind (matrix_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
@@ -146,7 +149,10 @@ namespace triqs { namespace arrays {
     matrix & operator=(const matrix & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
     /// Move assignment
-    matrix & operator=(matrix && X) { swap(*this, X); return *this;}
+    matrix & operator=(matrix && X) { this->swap_me(X); return *this;}
+
+    /// Swap
+    friend void swap( matrix & A, matrix & B) { A.swap_me(B);}
 
     /** 
      * Assignement resizes the matrix.  All references to the storage are therefore invalidated.

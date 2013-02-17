@@ -61,6 +61,9 @@ namespace triqs { namespace arrays {
 
    array_view () = delete;
 
+   /// Swap
+   friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
+
    /// Rebind the view
    void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
@@ -134,7 +137,10 @@ namespace triqs { namespace arrays {
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
     /// Move assignment
-    array & operator=(array && X) { swap(*this, X); return *this;}
+    array & operator=(array && X) { this->swap_me(X); return *this;}
+
+    /// Swap
+    friend void swap( array & A, array & B) { A.swap_me(B);}
 
     /** 
      * Assignement resizes the array (if necessary).
