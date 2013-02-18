@@ -45,7 +45,7 @@ namespace triqs { namespace arrays { namespace blas {
   * Takes care of making temporary copies if necessary
   */
  template< typename VTX, typename VTY> 
-  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value, double >::type 
+  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value, typename VTX::value_type >::type 
   dot (VTX const & X, VTY const & Y) { 
    static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
    static_assert( is_amv_value_or_view_class<VTY>::value, "blas1 bindings only take vector and vector_view");

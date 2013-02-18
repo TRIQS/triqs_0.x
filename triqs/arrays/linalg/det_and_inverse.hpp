@@ -171,6 +171,7 @@ namespace triqs { namespace arrays {
   A_type a;
   determinant_lazy(A const & a_):a(a_){}
   operator value_type()  { activate(); return _id->det; }
+  value_type const & operator()() { activate(); return _id->det; }
   friend std::ostream & operator<<(std::ostream & out, determinant_lazy const & x){ return out<<"determinant("<<x.a<<")";}
   protected:
   struct internal_data {
