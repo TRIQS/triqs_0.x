@@ -630,8 +630,10 @@ namespace triqs { namespace det_manip {
       for (size_t j=0; j<N;j++)
        res(i,j) = f(x_values[i], y_values[j]);
      res = inverse(res); 
-     value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
-     value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
+     double r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
+     double r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
+     //value_type r = max_element (abs(res - mat_inv(range(0,N),range(0,N))));
+     //value_type r2= max_element (abs(res + mat_inv(range(0,N),range(0,N))));
      //#define TRIQS_DET_MANIP_VERBOSE_CHECK
 #ifdef TRIQS_DET_MANIP_VERBOSE_CHECK
      std::cout  << "----------------"<<std::endl 

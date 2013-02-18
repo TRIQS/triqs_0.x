@@ -3,10 +3,11 @@
 #include <triqs/arrays/linalg/det_and_inverse.hpp>
 #include <triqs/arrays/asserts.hpp>
 #include <iostream>
+#include <triqs/utility/complex_ops.hpp>
 
 struct fun {
 
- typedef double result_type;
+ typedef std::complex<double> result_type;
  typedef double argument_type;
 
  /*double f(double eps, double tau, double beta) const { 
@@ -15,7 +16,7 @@ struct fun {
    return (s ? 1 : -1 ) * exp( - eps* (tau)) / (1 + exp(- beta *eps));
    }*/
 
- double operator()(double x, double y) const { 
+ std::complex<double> operator()(double x, double y) const { 
   const double pi = acos(-1); 
   const double beta = 10.0; 
   const double epsi = 0.1; 
@@ -32,6 +33,7 @@ struct fun {
 
 template<class T1, class T2 >
 void assert_close( T1 const & A, T2 const & B, double precision) {
+ std::cerr << " assert_close "<< A << "  "<< B<< " "<< std::abs(A-B) <<"  "<< precision << std::endl;
  if ( std::abs(A-B) > precision) TRIQS_RUNTIME_ERROR<<"assert_close error : "<<A<<"\n"<<B;
 }
 const double PRECISION = 1.e-6;
@@ -40,19 +42,19 @@ struct test {
 
  fun f;
  triqs::det_manip::det_manip<fun> D;
- double det_old,detratio;
+ std::complex<double> det_old,detratio;
 
  test() : f(), D(f,100) {}
 
  void check() { 
 #ifndef PRINT_ALL
-  std::cerr  << "det = " << D.determinant() <<  " == " << double(determinant(D.matrix()))<< std::endl;
+  std::cerr  << "det = " << D.determinant() <<  " == " << std::complex<double>(determinant(D.matrix()))<< std::endl;
 #else
-  std::cerr  << "det = " << D.determinant() <<  " == " << double(determinant(D.matrix()))<< std::endl <<
-   D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<double>(inverse(D.matrix()))<<  std::endl;
+  std::cerr  << "det = " << D.determinant() <<  " == " << std::complex<double>(determinant(D.matrix()))<< std::endl <<
+   D.inverse_matrix() << D.matrix() << triqs::arrays::matrix<std::complex<double>>(inverse(D.matrix()))<<  std::endl;
   std::cerr << "det_old = " << det_old << "detratio = "<< detratio<< " determin "<< D.determinant() <<std::endl;
 #endif
-  assert_close(D.determinant() , 1/determinant(D.inverse_matrix()), PRECISION); 
+  assert_close(D.determinant() , long(1)/determinant(D.inverse_matrix())(), PRECISION); 
   triqs::arrays::assert_all_close( inverse(D.matrix()) , D.inverse_matrix(), PRECISION, true);
   assert_close( det_old * detratio , D.determinant(), PRECISION);
  }
@@ -73,11 +75,13 @@ struct test {
 
    switch(RNG(( i>10 ? 4 : 1))) {
     case 0 :
+     std::cerr  << " insert1" << std::endl;
      x = RNG(10.0), y = RNG(10.0);
      std::cerr  << " x,y = "<< x << "  "<< y << std::endl; 
      detratio = D.try_insert(RNG(s),RNG(s), x,y); 
      break;
     case 1 : 
+     std::cerr  << " remove1" << std::endl;
      if (s>0) detratio = D.try_remove(RNG(s),RNG(s));
      break;
     case 2:
@@ -86,10 +90,12 @@ struct test {
      y = RNG(10.0); y1 = RNG(10.0); 
      i0 = RNG(s); i1 = RNG(s+1);
      j0 = RNG(s); j1 = RNG(s+1);
-     if ((i0 !=i1)&& (j0!=j1))  {
+     if ((i0 !=i1)&& (j0!=j1))  
+     {
       detratio = D.try_insert2(i0,i1,j0,j1, x,x1,y,y1);
      }
      else do_something = false;
+
      break;
     case 3:
      std::cerr  << " Remove2" << std::endl;
