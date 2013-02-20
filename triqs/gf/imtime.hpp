@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 
@@ -113,14 +112,8 @@ namespace triqs { namespace gf {
 
  };
 
- // -------------------------------   Expression template --------------------------------------------------
-
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename imtime::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(imtime,imtime::tag, 1,local::is_scalar_or_element,ImmutableGfMatsubaraTime);
-
 }}
 
 #endif

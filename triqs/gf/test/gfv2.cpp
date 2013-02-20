@@ -80,8 +80,12 @@ int main() {
 
 
  // operations on gf
+ G3 = G +2* Gc;
  G3 = G + Gc;
 
+ // does not compile : ok 
+ // G3 = G + Gt;
+ //
  std::cout  <<"-----------------   4 --------------------"<<std::endl;
 
  // test for density

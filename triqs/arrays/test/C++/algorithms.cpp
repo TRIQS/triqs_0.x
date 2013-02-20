@@ -21,7 +21,7 @@
 #include "./python_stuff.hpp"
 
 #include <triqs/arrays/algorithms.hpp>
-#include "./src/proto/matrix_algebra.hpp"
+#include <triqs/arrays/matrix.hpp>
 #include <iostream>
 
 namespace tqa = triqs::arrays;

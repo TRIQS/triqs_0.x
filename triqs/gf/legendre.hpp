@@ -20,11 +20,9 @@
  ******************************************************************************/
 #ifndef TRIQS_GF_LEGENDRE_TIME_H
 #define TRIQS_GF_LEGENDRE_TIME_H
-
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./domains/legendre.hpp"
 #include "./meshes/discrete.hpp"
 
@@ -93,14 +91,8 @@ namespace triqs { namespace gf {
 
  };
 
- // -------------------------------   Expression template --------------------------------------------------
-
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableGfLegendre : boost::is_base_of<typename legendre::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(legendre,legendre::tag, 1, local::is_scalar_or_element, ImmutableGfLegendre);
-
 }}
 
 #endif

@@ -19,12 +19,9 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-
 // order of include in horrible : on mac + clang, array (in fact boost::tuple) must come before boost::mpi
-// on icc, mpi must come before boost::proto expression of arithmetic.... messy
 #include "./src/array.hpp"
 #include <boost/mpi.hpp>
-#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 #include <sstream>
 

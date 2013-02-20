@@ -20,9 +20,8 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-
 #include "./src/functional/map.hpp"
-#include "./src/proto/matrix_algebra.hpp"
+#include "./src/matrix.hpp"
 #include <iostream>
 #include <algorithm>
 

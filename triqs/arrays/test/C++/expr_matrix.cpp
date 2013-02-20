@@ -20,14 +20,11 @@
  *
  ******************************************************************************/
 #include "./python_stuff.hpp"
-
 #include "./src/array.hpp"
-#include "./src/proto/matrix_algebra.hpp"
+#include "./src/matrix.hpp"
 #include <boost/type_traits/is_convertible.hpp>
-#include <boost/proto/debug.hpp>
 #include <iostream>
 #include <triqs/arrays/asserts.hpp>
-
 
 using namespace triqs::arrays;
 namespace tqa = triqs::arrays;

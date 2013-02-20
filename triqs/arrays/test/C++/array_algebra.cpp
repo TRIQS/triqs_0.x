@@ -21,7 +21,6 @@
 
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
-#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 #include <type_traits>
 

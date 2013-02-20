@@ -22,7 +22,6 @@
 #define TRIQS_ARRAYS_EXPRESSION_MATMUL_H
 #include <boost/type_traits/is_same.hpp>
 #include <boost/typeof/typeof.hpp>
-#include <triqs/utility/proto/tools.hpp>
 #include "../blas_lapack/gemm.hpp"
 namespace triqs { namespace arrays {
 

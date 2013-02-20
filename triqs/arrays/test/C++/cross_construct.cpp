@@ -18,10 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
-#include "./src/proto/array_algebra.hpp"
 #include "./src/matrix.hpp"
 #include <iostream>
 

@@ -20,7 +20,6 @@
  ******************************************************************************/
 #include "bravais_lattice_and_brillouin_zone.hpp"
 
-#include <triqs/arrays/proto/matrix_algebra.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,11 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./src/matrix.hpp"
 #include "./src/array.hpp"
-#include "./src/proto/matrix_algebra.hpp"
-#include "./src/proto/array_algebra.hpp"
 using namespace std;
 using namespace triqs::arrays;
 typedef triqs::arrays::matrix<double > MM; 

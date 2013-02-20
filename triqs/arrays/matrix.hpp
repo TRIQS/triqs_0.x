@@ -245,5 +245,7 @@ namespace std {
   void swap( triqs::arrays::matrix_view<V,Opt,To> & a , triqs::arrays::matrix_view<V,Opt,To> & b)= delete;
 }
 
+#include "./expression_template/matrix_algebra.hpp"
+
 #endif
 

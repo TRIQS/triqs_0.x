@@ -32,7 +32,6 @@
 #include <triqs/arrays/linalg/matmul.hpp>
 #include <triqs/arrays/linalg/mat_vec_mul.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp> 
-#include <triqs/arrays/proto/matrix_algebra.hpp>
 
 namespace triqs { namespace det_manip { 
 

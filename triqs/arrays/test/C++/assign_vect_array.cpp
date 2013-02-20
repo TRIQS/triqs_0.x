@@ -23,7 +23,6 @@
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
-#include "./src/proto/array_algebra.hpp"
 #include <iostream>
 
 using namespace triqs::arrays;

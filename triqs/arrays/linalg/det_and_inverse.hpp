@@ -25,7 +25,6 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/enable_if.hpp>
 #include "../impl/common.hpp"
-#include "triqs/utility/proto/tools.hpp"
 #include "../matrix.hpp"
 #include "../blas_lapack/getrf.hpp"
 #include "../blas_lapack/getri.hpp"

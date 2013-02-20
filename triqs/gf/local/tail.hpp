@@ -43,7 +43,7 @@ namespace triqs { namespace gf { namespace local {
  template<> struct LocalTail<python_tools::cython_proxy<tail_view>>: mpl::true_{};
 
  // a trait to find the scalar of the algebra i.e. the true scalar and the matrix ...
- template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, tup::is_in_ZRC<T> > {};
+ template <typename T> struct is_scalar_or_element : mpl::or_< tqa::ImmutableMatrix<T>, utility::is_in_ZRC<T> > {};
 
  // ---------------------- implementation --------------------------------
 
@@ -277,7 +277,6 @@ namespace triqs { namespace gf { namespace local {
   return tail_view(t.data_view()(R1,R2,tqa::range()),t.order_min(),t.mask_view()(R1,R2));
  }
 
- // various operations in a simple, non proto way
  inline tail inverse(tail_view const & t) {
 
   // find in t

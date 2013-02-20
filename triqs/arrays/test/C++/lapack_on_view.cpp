@@ -3,8 +3,6 @@
 #include "./src/matrix.hpp"
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
 #include <triqs/arrays/asserts.hpp>
 
 using std::cout; using std::endl;

@@ -20,9 +20,9 @@
  ******************************************************************************/
 #include "./python_stuff.hpp"
 
+#include "./src/matrix.hpp"
 #include "./src/functional/fold.hpp"
 #include "./src/functional/map.hpp"
-#include "./src/proto/matrix_algebra.hpp"
 #include "./src/algorithms.hpp"
 #include <iostream>
 

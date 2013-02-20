@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
 
@@ -118,13 +117,8 @@ namespace triqs { namespace gf {
 
  typedef gf_view<imfreq> gf_view_imfreq_t;
 
- // -------------------------------   Expression template --------------------------------------------------
-
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(imfreq,imfreq::tag, 1,local::is_scalar_or_element,ImmutableGfMatsubaraFreq);
 
 }}
 

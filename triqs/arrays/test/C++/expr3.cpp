@@ -31,10 +31,7 @@ using namespace storages;
 #include "./src/array.hpp"
 #include "./src/matrix.hpp"
 //#include "./src/vector.hpp"
-
-#include "./src/proto/array_algebra.hpp"
 #include <boost/type_traits/is_convertible.hpp>
-#include <boost/proto/debug.hpp>
  
 namespace ExpressionTools { 
 
@@ -144,12 +141,10 @@ int main(int argc, char **argv) {
 
   array<double,1> V1(3), V2(3);
 
-  //proto::display_expr(A);
   // std::cout<< (A+B) <<std::endl;
   // std::cout<<V1 + V2 <<std::endl;
 
   // type computation 
-  //triqs::utility::proto::print_structure(std::cout, A+ F);
   std::cout<<" A + F = "<< array<double,1>(A+F)<<std::endl;
 
  }

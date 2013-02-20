@@ -30,6 +30,8 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf;         // the value class
  template<typename Descriptor> class gf_view;    // the view class
 
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
+
  // ---------------------- implementation --------------------------------
 
  // A class to store the values of the gf on a mesh when they are not array/matrix
@@ -116,9 +118,10 @@ namespace triqs { namespace gf {
 
  //------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
- template<typename Descriptor,bool IsView> class gf_impl : Descriptor::tag {
+ template<typename Descriptor,bool IsView> class gf_impl : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), Descriptor::tag {
   public : 
 
+   typedef Descriptor                             descriptor_t;
    typedef typename Descriptor::mesh_t            mesh_t;
    typedef typename mesh_t::domain_t              domain_t;
    typedef typename Descriptor::target_t          target_t;
@@ -336,7 +339,6 @@ namespace triqs { namespace gf {
 
   template<typename RHS> void operator = (RHS const & rhs) { 
    this->_mesh = rhs.mesh(); this->data = rhs.data_view(); this->singularity = rhs.singularity_view();
-   // There is a pb hrer : gf_proto has no symmetry .....
    //   this->_symmetry = rhs.symmetry(); this->_indices = rhs._indices();
   }
  };
@@ -397,4 +399,6 @@ namespace triqs { namespace gf {
   }
 
 }}
+
+#include "./gf_expr.hpp"
 #endif

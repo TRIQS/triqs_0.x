@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./meshes/linear.hpp"
 
 // Shall we use the same type as for retime : same code, almost ??
@@ -104,14 +103,8 @@ namespace triqs { namespace gf {
 
  };
 
- // -------------------------------   Expression template --------------------------------------------------
-
  // A trait to identify objects that have the concept ImmutableGfFreq
  template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename refreq::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(refreq,local::is_scalar_or_element,ImmutableGfFreq);
-
 }}
 #endif
 

@@ -26,10 +26,6 @@
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/vector.hpp>
 
-// Proto expression
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-
 //
 //#include <triqs/arrays/functional/map.hpp>
 #include <triqs/arrays/mapped_functions.hpp>

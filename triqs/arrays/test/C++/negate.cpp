@@ -18,25 +18,18 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
+#include "./src/matrix.hpp"
+#include "./src/vector.hpp"
+#include "./src/asserts.hpp"
+#include "./src/algorithms.hpp"
+#include "./src/mapped_functions.hpp"
 #include <iostream>
 
 using namespace triqs::arrays;
 using namespace indexmaps;
 using namespace storages;
-
-#include "./src/array.hpp"
-#include "./src/matrix.hpp"
-#include "./src/vector.hpp"
-
-#include "./src/proto/array_algebra.hpp"
-#include "./src/proto/matrix_algebra.hpp"
-#include <boost/proto/debug.hpp>
-#include "./src/asserts.hpp"
-#include "./src/algorithms.hpp"
-#include "./src/mapped_functions.hpp"
 
 int main(int argc, char **argv) {
 

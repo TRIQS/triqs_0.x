@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./meshes/linear.hpp"
 
 namespace triqs { namespace gf { 
@@ -101,16 +100,9 @@ namespace triqs { namespace gf {
   }
 
  };
-
-
-
- // -------------------------------   Expression template --------------------------------------------------
-
+ 
  // A trait to identify objects that have the concept ImmutableGfOneTime
  template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(times,local::is_scalar_or_element,ImmutableGfOneRealTime);
 
 }}
 #endif

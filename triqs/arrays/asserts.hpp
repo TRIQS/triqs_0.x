@@ -20,7 +20,6 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_ASSERTS_H
 #define TRIQS_ARRAYS_ASSERTS_H
-#include "./proto/array_algebra.hpp"
 #include "./functional/map.hpp"
 #include "./algorithms.hpp"
 

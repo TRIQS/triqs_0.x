@@ -23,24 +23,17 @@
 #include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
-#include <triqs/utility/cint.hpp>
 #include <triqs/clef.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
-#include <triqs/utility/proto/tools.hpp>
 #include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-#include <triqs/arrays/proto/array_algebra.hpp>
 #include "triqs/utility/complex_ops.hpp"
 #include <triqs/utility/view_tools.hpp>
+#include <triqs/utility/expression_template_tools.hpp>
 
 namespace triqs { namespace gf {
-
  namespace tqa= triqs::arrays;
  namespace mpl=boost::mpl;
- namespace proto=boost::proto;
- namespace bf = boost::fusion; 
- namespace tup = triqs::utility::proto;
 
  //------------------------------------------------------
 

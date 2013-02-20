@@ -22,7 +22,6 @@
 
 #include "./src/mapped_functions.hpp"
 #include "./src/matrix.hpp"
-#include "./src/proto/matrix_algebra.hpp"
 #include <iostream>
 
 namespace tqa = triqs::arrays;

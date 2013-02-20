@@ -23,7 +23,6 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./meshes/discrete.hpp"
 
 namespace triqs { namespace gf { 
@@ -112,9 +111,6 @@ namespace triqs { namespace gf {
 
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(block,block_tag, 0,local::is_scalar_or_element,ImmutableBlockGf);
 
 }}
 

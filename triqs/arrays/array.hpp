@@ -175,9 +175,7 @@ namespace std {
   void swap( triqs::arrays::array_view<V,R,Opt,To> & a , triqs::arrays::array_view<V,R,Opt,To> & b)= delete;
 }
 
-#ifdef TRIQS_HAS_LAZY_EXPRESSIONS
-#include <triqs/clef/adapters/array.hpp>
-#endif
+#include "./expression_template/array_algebra.hpp"
 
 #endif
 

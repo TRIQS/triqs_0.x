@@ -24,7 +24,6 @@
 #include "./src/array.hpp"
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
-#include "./src/proto/matrix_algebra.hpp"
 #include "./src/linalg/matmul.hpp"
 #include "./src/linalg/mat_vec_mul.hpp"
 #include "./src/linalg/inverse.hpp"

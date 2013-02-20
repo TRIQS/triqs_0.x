@@ -21,10 +21,9 @@
 #ifndef TRIQS_ARRAYS_EXPRESSION_TOOLS_H
 #define TRIQS_ARRAYS_EXPRESSION_TOOLS_H
 #include <type_traits>
-#include "../array.hpp"
 namespace triqs { namespace arrays {
 
- namespace tags { struct plus{}; struct minus{}; struct multiplies{}; struct divides{}; struct is_scalar{}; }
+ namespace tags { struct plus{}; struct minus{}; struct multiplies{}; struct divides{}; } 
 
 // The basic operations put in a template.... 
  template<typename Tag> struct operation;
@@ -55,7 +54,7 @@ namespace triqs { namespace arrays {
  template<typename S, bool IsMatrix> struct scalar_wrap;
 
  // First the scalar for an array expression ...
- template<typename S> struct scalar_wrap<S,false> : tags::is_scalar {
+ template<typename S> struct scalar_wrap<S,false> {
   typedef S value_type; 
   S s; scalar_wrap(S const &s_):s(s_){} 
   template<typename KeyType> value_type operator[](KeyType&& key) const {return s;}
@@ -64,7 +63,7 @@ namespace triqs { namespace arrays {
  };
 
  // Second the scalar for a matrix expression ...
- template<typename S> struct scalar_wrap<S,true> : tags::is_scalar {
+ template<typename S> struct scalar_wrap<S,true> {
   typedef S value_type; 
   S s; scalar_wrap(S const &s_):s(s_){} 
   template<typename KeyType> value_type operator[](KeyType&& key) const {return (key[0]==key[1] ? s : S());}

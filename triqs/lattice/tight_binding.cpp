@@ -20,8 +20,6 @@
  ******************************************************************************/
 #include "tight_binding.hpp"
 
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/python_tools/converters/vector.hpp> 
