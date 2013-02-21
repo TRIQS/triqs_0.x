@@ -46,7 +46,7 @@ namespace triqs { namespace arrays {
 
   constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
   constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
-  
+
   constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
   constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
 
@@ -68,6 +68,8 @@ namespace triqs { namespace arrays {
  
   constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
   constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
+
+  template<ull_t p, int r> struct index_to_memory_rank_tr {  static constexpr ull_t value = permutations::apply(permutations::inverse(p), r);};
   
   constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
   constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
