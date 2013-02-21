@@ -19,16 +19,22 @@ int main() {
 
  P["a"] = long(1);
  P["d"] = 2.7;
+ P["s"] = std::string("-14.3");
+ P["sc"] = "-14.3";
 
  long j = P["a"];
  double x = P["d"];
  double y = P["a"];
+ double z = P["s"];
+ double zc = P["sc"];
 
+ std::cout  << j << std::endl ;
  std::cout  << x << std::endl;
  std::cout  << y << std::endl ; 
- std::cout  << j << std::endl ;
+ std::cout  << z << std::endl ; 
+ std::cout  << zc << std::endl ; 
+ std::cout  << P["a"] << std::endl ; 
 
- 
  // testing that copy is a copy 
  parameters P2 = P; 
  P2["a"] = 12.3;
@@ -50,7 +56,7 @@ int main() {
 
  std::string s = triqs::serialize(P);
  //std::cout  << " serialization "<< s << std::endl; 
- 
+
  parameters P3 = triqs::deserialize<parameters>(s);
  {
   H5::H5File file( "ess3.h5", H5F_ACC_TRUNC );

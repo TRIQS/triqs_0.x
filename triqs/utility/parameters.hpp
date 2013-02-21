@@ -117,21 +117,26 @@ namespace triqs { namespace utility {
 
 
  // --------------------- extraction  ---------------------------------
- template<typename T> T extract(_object const &obj) {
-  // if T is not a string, and obj is string, attempt lexical_cast
-  if ( (!std::is_same<T,std::string>::value) && (obj.type_num == type_hash_code<std::string>())) {
-   std::string s = extract<std::string>(obj);
+ template<typename T> T extract(_object const &obj);
+
+ template<typename T> T lex_cast_from_string(_object const &obj) {
+  std::string s = extract<std::string>(obj);
    try { return boost::lexical_cast<T>(s); } 
    catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< type_name<T>(); }
-  }
+ }
+ 
+ template<typename T> T extract(_object const &obj) {
+  // if T is not a string, and obj is string, attempt lexical_cast
+  if ( (!std::is_same<T,std::string>::value) && (obj.type_num == type_hash_code<std::string>())) { return lex_cast_from_string<T>(obj); }
   if (obj.type_num != type_hash_code<T>()) 
-   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<type_name<T>()<< " while I am supposed to extract a "<<obj.type_name_;
+   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name_<< " while I am supposed to extract a "<<type_name<T>();
   return * static_cast<T*>(obj.p.get());
  }
 
  template<> // specialize for double since we can make int -> conversion...
   double extract(_object const & obj) { 
    if (obj.type_num == type_hash_code<double>()) return * static_cast<double*>(obj.p.get());
+   if (obj.type_num == type_hash_code<std::string>()) {return lex_cast_from_string<double>(obj); }
 #define DECAYING_TYPE(T) if (obj.type_num == type_hash_code<T>()) return extract<T>(obj)
    DECAYING_TYPE(int);
    DECAYING_TYPE(unsigned int);
@@ -201,9 +206,11 @@ namespace triqs { namespace utility {
       return *this; 
      }
 
-    template <typename RHS, bool C = IsConst> 
-     typename std::enable_if<C, ret_val &>::type
-     operator=(RHS && rhs)  = delete;
+    template <bool C = IsConst> // special treatment for the const *  
+     typename std::enable_if<!C,  ret_val &>::type
+     operator=(const char * rhs) { (*this) = std::string(rhs); return *this;}
+
+    friend std::ostream & operator << (std::ostream & out, ret_val const & x) { return out<< x.get_object();}
    };
 
    friend class ret_val<true>; friend class ret_val<false>;
@@ -244,8 +251,9 @@ namespace triqs { namespace utility {
    }
 
    friend std::ostream & operator << (std::ostream & out, parameters const & p) { 
-    for (auto & pvp : p.object_map) out<< pvp.first << " --> " << pvp.second<< std::endl ;
-    return out;
+    out<< "{";
+    for (auto & pvp : p.object_map) out<< pvp.first << " : " << pvp.second<< ", "; //<< std::endl ;
+    return out<<"}";
    }
  };
 
