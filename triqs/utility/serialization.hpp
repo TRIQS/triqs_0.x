@@ -53,8 +53,8 @@ namespace triqs {
   // wrap buffer inside a stream and deserialize serial_str into obj
   boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
   boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-  //boost::archive::text_iarchive ia(s);
   boost::archive::binary_iarchive ia(s);
+  //boost::archive::text_iarchive ia(s);
   ia >> obj;
   return obj;
  }

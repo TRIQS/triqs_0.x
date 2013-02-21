@@ -25,114 +25,229 @@
 #include <complex>
 #include <memory>
 #include <map>
+#include <boost/lexical_cast.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/serialization/map.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <triqs/utility/serialization.hpp>
+#include <triqs/utility/typeid_name.hpp>
 #include <triqs/arrays.hpp>
 
 namespace triqs { namespace utility {
 
- namespace h5 = arrays::h5;
+ using arrays::h5::group_or_file;
+ using arrays::h5::write_attribute;
 
- template <typename T> struct type_to_number;
- template <> struct type_to_number<int> { static constexpr unsigned int value=1;};
- template <> struct type_to_number<long> { static constexpr unsigned int value=2;};
- template <> struct type_to_number<double> { static constexpr unsigned int value=3;};
+ template<typename T> size_t type_hash_code () { return typeid(T).hash_code();}
+ template<typename T> std::string type_name () { return demangle(typeid(T).name());}
 
- // ------------------------------------------------------
+ template<typename T> std::string get_h5_type_name() { return type_name<T>();}
 
+ // 3 pts for hdf5 : read/write an attribute, get the type of data
+ // Need for python : 
+ // the constructor from PyObject * as in array
+ // and to_ptyhon() methods, as in array ...
+ 
+ // --------------- the opaque object ---------------------------------------
+ // _object is a value : it makes deep copies in particular ...
  struct _object {
-  _object(){}
-  _object(_object const &) = default;
 
-  template<typename T> _object( T && x, std::string doc_ ): 
-   p(std::make_shared<T>(std::forward<T>(x))),
-   type_num(type_to_number<T>::value), 
+  std::shared_ptr<void> p;          // the object handled by the class
+  size_t type_num;                  // id of the type, implementation dependent...
+  std::string type_name_;           // for clear error message
+  std::string doc;                  // a documentation string, only used for default of parameters...
+  std::function<_object()> clone_;  // clones the object : will be used to make copy of parameters !
+  std::function<void(group_or_file const &, std::string const &)> h5_w; // the function to write in h5 !
+  std::function<std::string()> serialize_; // for boost serialization ...
+  std::function<void(std::ostream&)> print_;
+
+  _object() {};
+
+  template<typename T> _object( T * obj, std::string const & doc_ ): 
+   p(obj),
+   type_num(type_hash_code<T>()), type_name_(type_name<T>()), 
    doc(doc_),
-   h5_w ( [&x](h5::group_or_file const &F, std::string const &Name)->void { h5_write(F,Name, x);}) 
-  {}
-  
-  
-  std::shared_ptr<void> p;
-  unsigned int type_num;
-  std::string doc;
-  std::function<void(h5::group_or_file const &, std::string const &)> h5_w;
+   clone_( [obj,doc_]() { return _object( new T(*obj), doc_);}),
+   h5_w ( [obj](group_or_file const &F, std::string const &Name)->void { h5_write(F,Name, *obj);}),
+   //h5_w ( [obj](group_or_file const &F, std::string const &Name)->void { h5_write(F,Name, *obj); write_attribute(F,Name,get_h5_type_name<T>());}),
+   serialize_([obj](){ return triqs::serialize(*obj);}) ,
+   print_([obj](std::ostream & out ){out << *obj;})
+   {}
 
-  friend void h5_write ( h5::group_or_file F, std::string const & Name, _object const & obj){ obj.h5_w(F,Name); };
+  friend std::ostream & operator << (std::ostream & out, _object const & p) { p.print_(out); return out;}
+    
+  friend void h5_write ( group_or_file F, std::string const & Name, _object const & obj){ obj.h5_w(F,Name); };
+ 
+  friend void h5_read ( group_or_file F, std::string const & Name, _object & obj){ 
+   //to try only. Need to make h5_code function for all object....
+   // write, read an attribute with the type ? 
+   obj = h5_read_fnts[type_hash_code<double>()](F,Name);
+  }
 
+  template<class Archive>
+   void save(Archive & ar, const unsigned int version) const { 
+    std::string s = serialize_();
+    ar << boost::serialization::make_nvp("type_num", type_num);
+    ar << boost::serialization::make_nvp("type_name", type_name_);
+    ar << boost::serialization::make_nvp("seria_str", s);
+   }
+  template<class Archive>
+   void load(Archive & ar, const unsigned int version) {
+    std::string s, tnn; 
+    size_t tn;
+    ar >> boost::serialization::make_nvp("type_num", tn);
+    ar >> boost::serialization::make_nvp("type_name", tnn);
+    ar >> boost::serialization::make_nvp("seria_str", s);
+    if (deserialization_fnts.find(tn)== deserialization_fnts.end())
+     TRIQS_RUNTIME_ERROR << " Can not deserialize the type "<< tnn<< "\n Did you forget to register it ?";
+    *this = deserialization_fnts[tn](s);
+   }
+  BOOST_SERIALIZATION_SPLIT_MEMBER();
+
+  // table :  code -> _object ( string) 
+  static std::map<size_t, std::function<_object(std::string const &)>> deserialization_fnts;
+  static std::map<size_t, std::function<_object(group_or_file const &, std::string const &)>> h5_read_fnts;
+
+  template <typename T>
+   static void register_type() {
+    deserialization_fnts[type_hash_code<T>()] = [](std::string const &s) { return _object( new T( triqs::deserialize<T>(s)),"");};
+     h5_read_fnts[type_hash_code<T>()] = [](group_or_file const &f,std::string const &s) ->_object { auto n = new T(); h5_read(f,s,*n); return _object(n,"");};
+   }
  };
 
- // ------------------------------------------------------
- // extraction 
+
+ // --------------------- extraction  ---------------------------------
  template<typename T> T extract(_object const &obj) {
-  if (obj.type_num != type_to_number<T>::value) TRIQS_RUNTIME_ERROR<<"idiot !";return * static_cast<T*>(obj.p.get());
+  // if T is not a string, and obj is string, attempt lexical_cast
+  if ( (!std::is_same<T,std::string>::value) && (obj.type_num == type_hash_code<std::string>())) {
+   std::string s = extract<std::string>(obj);
+   try { return boost::lexical_cast<T>(s); } 
+   catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< type_name<T>(); }
+  }
+  if (obj.type_num != type_hash_code<T>()) 
+   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<type_name<T>()<< " while I am supposed to extract a "<<obj.type_name_;
+  return * static_cast<T*>(obj.p.get());
  }
 
- template<>
+ template<> // specialize for double since we can make int -> conversion...
   double extract(_object const & obj) { 
-   if (obj.type_num == type_to_number<double>::value) return * static_cast<double*>(obj.p.get());
-   if (obj.type_num == type_to_number<int>::value) return extract<int>(obj);
-   if (obj.type_num == type_to_number<long>::value) return extract<long>(obj);
-   TRIQS_RUNTIME_ERROR<<"idiot !";
+   if (obj.type_num == type_hash_code<double>()) return * static_cast<double*>(obj.p.get());
+#define DECAYING_TYPE(T) if (obj.type_num == type_hash_code<T>()) return extract<T>(obj)
+   DECAYING_TYPE(int);
+   DECAYING_TYPE(unsigned int);
+   DECAYING_TYPE(long);
+   DECAYING_TYPE(unsigned long);
+   DECAYING_TYPE(short);
+   DECAYING_TYPE(unsigned short);
+   DECAYING_TYPE(long long);
+   DECAYING_TYPE(unsigned long long);
+   DECAYING_TYPE(float);
+#undef DECAYING_TYPE
+   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name_<< " while I am supposed to extract a double";
   }
 
  // ------------------------------------------------------
  class parameters {
   public : 
 
-   parameters() = default;
+   parameters() { _init(); };
+
+   parameters (parameters const & other) {
+    for (auto & pvp : other.object_map)         { object_map.insert( std::make_pair(pvp.first,pvp.second.clone_()));} 
+    for (auto & pvp : other.object_default_map) { object_default_map.insert( std::make_pair(pvp.first,pvp.second.clone_()));} 
+    _init();
+   }
+
+   parameters (parameters && other) { swap(*this,other);}
+
+   friend void swap(parameters & a, parameters &b) { swap(a.object_map,b.object_map);swap(a.object_default_map,b.object_default_map);}
+
+   parameters & operator =  (parameters const & other)  = default;
+   parameters & operator =  (parameters && other) { swap(*this,other); return *this;}
 
    // put the default parameters ....
    //p(" Name",  DefaultValue, "Documentation")
    //
-  //private: 
+  private: 
    typedef std::map<std::string, _object> map_t;
    map_t object_map, object_default_map;
 
-   // template on a boolean ?? enable the = operator or delete ...
-   template<bool IsConst>
-    class ret_val {
-     typedef typename std::conditional<IsConst, const parameters, parameters>::type param_t;
+   // return class of [] operator
+   template<bool IsConst> class ret_val {
+    typedef typename std::conditional<IsConst, const parameters, parameters>::type param_t;
+    param_t * const p;
+    std::string const & key;
+    _object get_object() const { 
+     auto it = p->object_map.find(key); 
+     if (it!=p->object_map.end()) return it->second;
+     auto it2 = p->object_default_map.find(key);
+     if (it2==p->object_map.end()) TRIQS_RUNTIME_ERROR<<"Parameters : the key "<< key << " is not defined and not in the default";
+     return it2->second;
+    }
+    public:
+    ret_val (param_t * const p_, std::string const & key_ ): p(p_), key(key_) { }
 
-     param_t * const p;
-     std::string const & key;
-     template<typename T> T cast_impl() const { 
-      auto it = p->object_map.find(key); 
-      if (it!=p->object_map.end()) return extract<T>(it->second);
-      auto it2 = p->object_default_map.find(key);
-      if (it2==p->object_map.end()) TRIQS_RUNTIME_ERROR<<"Parameters : the key "<< key << " is not defined and not in the default";
-      return extract<T>(it2->second);
-     }
-     public:
-     ret_val (param_t * const p_, std::string const & key_ ): p(p_), key(key_) { }
-
-#define CAST_OPERATOR(T) operator T () const{ return cast_impl<T>();}
-     CAST_OPERATOR(long)
-      CAST_OPERATOR(double)
-      //CAST_OPERATOR(bool)
-      //CAST_OPERATOR(std::string)
+#define ALLOWED_CAST (int)(long)(double)(bool)(std::string)
+#define CAST_OPERATOR(r, data, T) operator T () const{ return extract<T>(get_object());}
+    BOOST_PP_SEQ_FOR_EACH(CAST_OPERATOR, nil , ALLOWED_CAST); 
 #undef CAST_OPERATOR
 
-      template <typename RHS, bool C = IsConst> 
-      typename std::enable_if<!C,  ret_val &>::type
-      operator=(RHS && rhs) { 
-       p->object_map[key] = _object(std::forward<RHS>(rhs),"");
-       return *this; 
-      }
+    template <typename RHS, bool C = IsConst> 
+     typename std::enable_if<!C,  ret_val &>::type
+     operator=(RHS const & rhs) {
+      // if (p->object_map.find(key) != p->object_map.end())// do I need this ? 
+      p->object_map.erase(key);
+      p->object_map.insert(std::make_pair(key, _object (new RHS (rhs),"")));
+      return *this; 
+     }
 
-     template <typename RHS, bool C = IsConst> 
-      typename std::enable_if<C, ret_val &>::type
-      operator=(RHS && rhs)  = delete;
-    };
+    template <typename RHS, bool C = IsConst> 
+     typename std::enable_if<C, ret_val &>::type
+     operator=(RHS && rhs)  = delete;
+   };
 
    friend class ret_val<true>; friend class ret_val<false>;
+
+   friend class boost::serialization::access;
+   template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+     ar & boost::serialization::make_nvp("object_map",object_map);
+     ar & boost::serialization::make_nvp("object_default_map",object_default_map);
+    }
+
+   static bool initialized;
+   static void _init() { 
+    if (initialized) return;
+#define REGISTER_UNSERIALIZE_FUN(r, data, T) _object::register_type<T>(); 
+    BOOST_PP_SEQ_FOR_EACH(REGISTER_UNSERIALIZE_FUN, nil , ALLOWED_CAST); 
+#undef REGISTER_UNSERIALIZE_FUN
+    _object::register_type<parameters>(); 
+    initialized = true;
+   }
 
   public:
 
    ret_val<true> operator[](std::string const & k) const { return ret_val<true> (this,k); }
    ret_val<false> operator[](std::string const & k) { return ret_val<false> (this,k); }
 
+   friend void h5_write ( group_or_file F, std::string const & subgroup_name, parameters const & p){ 
+    auto gr = F.create_group(subgroup_name);
+    for (auto & pvp : p.object_map) h5_write(gr, pvp.first, pvp.second);
+   }
 
+   friend void h5_read ( group_or_file F, std::string const & subgroup_name, parameters & p){ 
+    auto gr = F.open_group(subgroup_name);
+    _object obj; 
+    // need to loop over subgroup
+    h5_read(gr,"a",obj); p["a"] = obj;
+    //for (auto & pvp : p.object_map) h5_read(gr, pvp.first, pvp.second);
+   }
+
+   friend std::ostream & operator << (std::ostream & out, parameters const & p) { 
+    for (auto & pvp : p.object_map) out<< pvp.first << " --> " << pvp.second<< std::endl ;
+    return out;
+   }
  };
 
-} } 
+}} 
 #endif
-
