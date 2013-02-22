@@ -12,4 +12,4 @@ cdef extern from "<triqs/arrays/h5/group_or_file.hpp>" : #namespace "triqs::arra
 
 cdef inline h5_group_or_file make_h5_group_or_file (gr) :
         import h5py
-        return h5_group_or_file(gr.id.id, type(gr) == h5py._hl.group.Group)
+        return h5_group_or_file(gr.id.id, type(gr) == h5py.highlevel.Group)
