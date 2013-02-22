@@ -69,7 +69,11 @@ int main() {
   H5::H5File file( "ess2.h5", H5F_ACC_RDONLY );
   h5_read( file, "Parameters", P4);
  }
- std::cout << "P4 after : "<< P4<< std::endl ;
+ {
+  H5::H5File file( "ess2_relo.h5", H5F_ACC_TRUNC );
+  h5_write( file, "Parameters", P4);
+ }
+std::cout << "P4 after : "<< P4<< std::endl ;
 
  return 0;
 }
