@@ -36,6 +36,7 @@ namespace triqs {
   runtime_error() throw() :std::exception() {}
   virtual ~runtime_error() throw() {}
   template<typename T> runtime_error & operator  <<( T const & x) { std::stringstream f; f<<acc<<x; acc = f.str(); return *this;}
+  runtime_error & operator  <<( const char * mess ) { (*this) << std::string(mess); return *this;}// to limit code size
   virtual const char* what() const throw() { return acc.c_str();}
  };
 
