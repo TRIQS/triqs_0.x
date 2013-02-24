@@ -202,7 +202,7 @@ namespace triqs { namespace utility {
 
  // --------------------- extraction  ---------------------------------
 
- template<typename T> const T extract(_object const &obj);
+ template<typename T> T extract(_object const &obj);
 
  template<typename T> T lex_cast_from_string(_object const &obj) {
   std::string s = extract<std::string>(obj);
@@ -210,7 +210,7 @@ namespace triqs { namespace utility {
   catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< _object::make_type_name<T>(); }
  }
 
- template<typename T> const T extract(_object const &obj) {
+ template<typename T> T extract(_object const &obj) {
   // if T is not a string, and obj is string, attempt lexical_cast
   if ( (!std::is_same<T,std::string>::value) && (obj.has_type<std::string>())) { return lex_cast_from_string<T>(obj); }
   if (! obj.has_type<T>())
@@ -219,7 +219,7 @@ namespace triqs { namespace utility {
  }
 
  template<> // specialize for double since we can make int -> conversion...
-  inline const double extract(_object const & obj) {
+  inline double extract(_object const & obj) {
    if (obj.has_type<double>()) return * static_cast<const double*>(obj.get_void_ptr());
    if (obj.has_type<std::string>()) {return lex_cast_from_string<double>(obj); }
 #define DECAYING_TYPE(T) if (obj.has_type<T>()) return extract<T>(obj)
