@@ -79,7 +79,7 @@ namespace triqs { namespace arrays { namespace h5 {
      try { 
       if (h5::exists(file_or_group, name.c_str())) file_or_group.unlink( name.c_str());  
       dataset = file_or_group.createDataSet( name.c_str(), native_type_from_C(typename remove_complex<T>::type()), mspace1, cparms );
-      if (boost::is_complex<T>::value)  write_attribute(dataset,"__complex__","1");
+      if (boost::is_complex<T>::value)  write_string_attribute(&dataset,"__complex__","1");
      }
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }

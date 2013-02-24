@@ -22,9 +22,12 @@
 #define TRIQS_ARRAYS_H5_COMMON_H
 
 #include <H5Cpp.h>
+#include "hdf5_hl.h"
 #include "../cache.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/utility/enable_if.hpp>
+
+template<typename T> std::string get_triqs_hdf5_data_scheme(T const & ) { return "";}
 
 namespace triqs { namespace arrays { namespace h5 { 
  using namespace H5;
@@ -144,26 +147,84 @@ namespace triqs { namespace arrays { namespace h5 {
     << "\n in file  : "<< dimsf.to_string() 
      << "\n in view  : "<<a.indexmap().domain().lengths().to_string() ;
   }
+
+
+#define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
+ catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\
+ catch( H5::FileIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 File error"; }\
+ catch( H5::DataSetIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataSet error"; }\
+ catch( H5::DataSpaceIException error ) { error.printError();  TRIQS_RUNTIME_ERROR<<"H5 DataSpace error"; }\
+ catch( H5::DataTypeIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataType error";  }\
+ catch( H5::AttributeIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 Attribute error";  }\
+ catch(...) { TRIQS_RUNTIME_ERROR<<"H5 unknown error";} 
+
  /****************** WRITE attribute *********************************************/
 
- inline void write_attribute ( DataSet & dataset, std::string name, std::string value ) { 
+ /*inline void write_attribute2 ( H5::H5Object const & grp, std::string obj_name, std::string attr_name, std::string value ) { 
+   herr_t err =  H5LTset_attribute_string(grp.getId(),obj_name.c_str(),attr_name.c_str(), , value.c_str() ) ;
+   if (err<0) TRIQS_RUNTIME_ERROR << "Error in setting attribute "<< name << " to " << value;
+   }
+   */
+ /****************** Write string attribute *********************************************/
+
+ inline void write_string_attribute ( H5::H5Object const * obj, std::string name, std::string value ) { 
   DataSpace attr_dataspace = DataSpace(H5S_SCALAR);
   // Create new string datatype for attribute
   StrType strdatatype(PredType::C_S1, value.size()); 
   // Set up write buffer for attribute
-  const H5std_string strwritebuf (value);
+  //const H5std_string strwritebuf (value);
   // Create attribute and write to it
-  Attribute myatt_in = dataset.createAttribute(name.c_str(), strdatatype, attr_dataspace);
+  Attribute myatt_in = obj->createAttribute(name.c_str(), strdatatype, attr_dataspace);
   //myatt_in.write(strdatatype, strwritebuf);
   myatt_in.write(strdatatype, (void *)(value.c_str()));
  } 
 
-#define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
- catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\
- catch( FileIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 File error"; }\
- catch( DataSetIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataSet error"; }\
- catch( DataSpaceIException error ) { error.printError();  TRIQS_RUNTIME_ERROR<<"H5 DataSpace error"; }\
- catch( DataTypeIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataType error";  }\
- catch(...) { TRIQS_RUNTIME_ERROR<<"H5 unknown error";} 
+ /****************** Read string attribute *********************************************/
+
+ /// Return the attribute name of obj, and "" if the attribute does not exist.
+ inline std::string read_string_attribute (H5::H5Object const * obj, std::string name ) { 
+  std::string value ="";
+  Attribute attr;
+  if (H5LTfind_attribute(obj -> getId(), name.c_str() )==0)  return value;// not present
+  // can not find how to get the size with hl. Using full interface 
+  //herr_t err2 =  H5LTget_attribute_string(gr.getId(), x.c_str(), name.c_str() , &(buf.front())  ) ;
+  //if (err2 < 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
+  //value.append( &(buf.front()) );
+  try { attr= obj->openAttribute(name.c_str());}
+  catch (H5::AttributeIException) { return value;}
+  try { 
+   DataSpace dataspace = attr.getSpace();
+   int rank = dataspace.getSimpleExtentNdims();
+   if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
+   size_t size = attr.getStorageSize();
+   StrType strdatatype(PredType::C_S1, size);
+   std::vector<char> buf(size+1, 0x00);
+   attr.read(strdatatype, (void *)(&buf[0])); 
+   value.append( &(buf.front()) );
+  }
+  TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
+  return value;
+ } 
+
+ /****************** Read/Write the special TRIQS_HDF5_data_scheme attribute *********************************************/
+
+ template<typename T>  
+  inline void write_triqs_hdf5_data_scheme( H5::Group g, T const & obj) {  
+   write_string_attribute( &g, "TRIQS_HDF5_data_scheme" , get_triqs_hdf5_data_scheme(obj).c_str() ) ;
+   // herr_t err =  H5LTset_attribute_string(F.getId(), subgroup_name.c_str(), "TRIQS_HDF5_data_scheme" , get_triqs_hdf5_data_scheme(p).c_str() ) ;
+  }   
+
+ inline std::string read_triqs_hdf5_data_scheme( H5::Group g) { return read_string_attribute( &g, "TRIQS_HDF5_data_scheme") ; }   
+
+
+ /****************** WRITE attribute *********************************************/
+
+ //inline void write_triqs_data_scheme ( H5::H5Object const & grp, std::string obj_name, std::string attr_name, std::string triqs_data_scheme ) { 
+ // herr_t err =  H5LTset_attribute_string(grp.getId(),obj_name.c_str(),attr_name.c_str(), , value.c_str() ) ;
+ // if (err<0) TRIQS_RUNTIME_ERROR << "Error in setting attribute "<< name << " to " << value;
+ // }
+
+
+
 }}}
 #endif

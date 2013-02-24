@@ -124,7 +124,7 @@ namespace triqs {
        ds.write( data(A), data_type_mem(A), data_space(A) );
       }
       // if complex, to be python compatible, we add the __complex__ attribute
-      if (boost::is_complex<typename ArrayType::value_type>::value)  write_attribute(ds,"__complex__","1");
+      if (boost::is_complex<typename ArrayType::value_type>::value)  write_string_attribute(&ds,"__complex__","1");
      }
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }
