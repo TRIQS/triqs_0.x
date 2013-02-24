@@ -33,18 +33,6 @@ find_package(CompilerCheck)
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
 
-# Check user input for BOOST_SOURCE_DIR
-if(BOOST_SOURCE_DIR)
- if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
-  Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
- endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
- STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
- IF(TILDE)
-  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
- ENDIF(TILDE)
-endif(BOOST_SOURCE_DIR)
-
-
 # find the basic libraries from which TRIQS depends and add the def, include and link
 find_package(TRIQS_dep_libs)
 # Add macro definitions needed to use ALPS and dependent libraries
@@ -65,22 +53,47 @@ string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${ALPS_PYTHON_SIT
 SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
 MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
 
-# compile boost if necessary
+# Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
+ if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
+  Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
+ endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
+ STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
+ IF(TILDE)
+  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
+ ENDIF(TILDE)
+
+ # compile boost if necessary
  add_subdirectory(foreignlibs/boost)
  MESSAGE(STATUS  "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
-else(BOOST_SOURCE_DIR)
- FIND_PACKAGE(Boost 1.46.0 REQUIRED )
- # In fact this does NOT find boost...
- # it is an illusion on ubuntu, because it is in /usr/local...
- #if (NOT Boost_FOUND)
- # MESSAGE(FATAL_ERROR "Boost not found")
- #endif()
- include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
- set(BOOST_LIBRARY ${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
-endif(BOOST_SOURCE_DIR)
 
+else(BOOST_SOURCE_DIR)
+
+ # if static build, request static lib
+ IF(TRIQS_BUILD_STATIC)
+  set(Boost_USE_STATIC_LIBS        ON)
+ else()
+  set(Boost_USE_STATIC_LIBS        OFF)
+ endif()
+ # icc requires a higher version
+ IF(CMAKE_COMPILER_IS_ICC)
+  SET(BOOST_VERSION 1.53)
+ else()
+  SET(BOOST_VERSION 1.46)
+ endif()
+ FIND_PACKAGE(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization ) #filesystem  )
+ if (NOT Boost_FOUND)
+  MESSAGE(FATAL_ERROR "Boost not found")
+ endif()
+ MESSAGE(STATUS "BOOST has been detected")
+ MESSAGE(STATUS "BOOST include dir ${Boost_INCLUDE_DIRS}")
+ MESSAGE(STATUS "BOOST LIBRARY ${Boost_LIBRARIES}")
+ include_directories(${Boost_INCLUDE_DIRS})
+ #include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
+ set(BOOST_LIBRARY ${Boost_LIBRARIES}) #${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
+
+endif(BOOST_SOURCE_DIR)
 
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
