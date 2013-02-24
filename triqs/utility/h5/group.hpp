@@ -26,7 +26,7 @@ namespace triqs { namespace h5 {
   *  \brief A local derivative of Group.
   *  Rational : use ADL for h5_read/h5_write, catch and rethrow exception, add some policy for opening/creating 
   */
- class group : public H5::Group {
+ class group : protected H5::Group {
   public:
    group() = default;
    group( group const & ) = default;
@@ -90,6 +90,12 @@ namespace triqs { namespace h5 {
      catch (H5::GroupIException e){ TRIQS_RUNTIME_ERROR << "Error in creating the dataset "<< key <<"\n H5 error message : \n "<< e.getCDetailMsg(); } 
      return res;
     }
+
+   /// Returns all names of subgroup of key in G
+   std::vector<std::string> get_all_subgroup_names(std::string const & key) const;
+
+   /// Returns all names of dataset of key in G
+   std::vector<std::string> get_all_dataset_names(std::string const & key) const;
  };
 }}
 #endif

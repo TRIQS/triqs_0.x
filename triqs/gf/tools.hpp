@@ -30,7 +30,7 @@
 #include "triqs/utility/complex_ops.hpp"
 #include <triqs/utility/view_tools.hpp>
 #include <triqs/utility/expression_template_tools.hpp>
-#include <triqs/h5/vector.hpp>
+#include <triqs/utility/h5.hpp>
 
 namespace triqs { namespace gf {
  namespace tqa= triqs::arrays;

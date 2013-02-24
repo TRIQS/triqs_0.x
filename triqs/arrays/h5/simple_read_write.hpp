@@ -22,9 +22,7 @@
 #define TRIQS_ARRAYS_H5_LOWLEVEL_H
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/vector.hpp>
-#include <triqs/h5/group.hpp>
-#include <triqs/h5/string.hpp>
-#include <triqs/h5/scalar.hpp>
+#include <triqs/utility/h5.hpp>
 #include "../cache.hpp"
 
 namespace triqs { namespace arrays { 

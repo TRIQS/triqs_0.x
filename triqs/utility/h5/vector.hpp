@@ -21,6 +21,7 @@
 #ifndef TRIQS_H5_VECTOR_H
 #define TRIQS_H5_VECTOR_H
 #include "./group.hpp"
+#include "./string.hpp"
 #include <vector>
 
 namespace triqs { namespace h5 {

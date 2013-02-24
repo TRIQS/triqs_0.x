@@ -6,9 +6,14 @@ using namespace triqs::utility;
 
 int main() {
 
- parameters param_defaults,P,P2;
+ parameters P,P2;
+ parameters_defaults pdef;
 
- param_defaults.insert 
+ pdef.required 
+  ( "A", int(), "really ?")
+  ;
+
+ pdef.optional 
   ( "B", short(0), " short ")
   ( "C", 1u, " unsigned short ")
   ( "D", int(2), " int ")
@@ -35,22 +40,16 @@ int main() {
  P["B"] = B;
 
  std::cout  << P << std::endl;
- std::cout  << param_defaults<< std::endl;
+ std::cout  << pdef<< std::endl;
 
  try { 
   P2 = P;
-  P2.update_with_defaults(param_defaults);
+  P2.update(pdef);
  }
  catch (triqs::runtime_error const & e) { 
   std::cout<< " Caught as expected : update_with_defaults error "<< e.what() << std::endl ;
  }
  std::cout  << P2 << std::endl;
-
- P2 = P;
- P2.update(param_defaults);
-
- std::cout  << P2 << std::endl;
-
 
 }
 

@@ -79,10 +79,10 @@ int main(int argc, char **argv) {
  h5_write(top, "x",x);
 
  h5_write(top, "s", std::string("a nice chain"));
- top.createGroup("G");
+ top.create_group("G");
  h5_write(top,"G/A",A);
 
- H5::Group G = top.open_group("G");
+ auto G = top.open_group("G");
  h5_write(G, "A2",A);
 
  h5_read (top, "A",B);   std::cout<< "B = "<< B<<std::endl;
