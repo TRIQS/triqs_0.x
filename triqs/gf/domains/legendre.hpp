@@ -45,16 +45,16 @@ namespace triqs { namespace gf {
   }
 
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, legendre_domain const & d) {
-   tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+  friend void h5_write (h5::group fg, std::string subgroup_name, legendre_domain const & d) {
+   h5::group gr =  fg.create_group(subgroup_name);
    h5_write(gr,"n_max",d.Nmax);
    h5_write(gr,"beta",d.beta);
    h5_write(gr,"statistic",(d.statistic==Fermion ? "F" : "B"));
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, legendre_domain & d){
-   tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+  friend void h5_read  (h5::group fg, std::string subgroup_name, legendre_domain & d){
+   h5::group gr = fg.open_group(subgroup_name);
    long n; double beta; std::string statistic;
    h5_read(gr,"n_max",n);
    h5_read(gr,"beta",beta);

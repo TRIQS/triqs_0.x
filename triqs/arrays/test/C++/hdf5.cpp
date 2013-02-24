@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/array.hpp"
 #include <iostream>
@@ -27,6 +25,7 @@
 
 using std::cout; using std::endl;
 namespace tqa = triqs::arrays;
+namespace h5 = triqs::h5;
 using tqa::range;
 
 template <typename T> 
@@ -68,34 +67,36 @@ int main(int argc, char **argv) {
  std::cout<<" Arange(0,1),range(1,3)  = "<< A(range(),range(1,3))<<std::endl;
 
  H5::H5File file( "ess.h5", H5F_ACC_TRUNC );
- h5_write(file,"A",A);
- h5_write(file,"Af",Af);
- h5_write(file,"C",C);
- h5_write(file,"D",D);
+ h5::group top(file);
+
+ h5_write(top,"A",A);
+ h5_write(top,"Af",Af);
+ h5_write(top,"C",C);
+ h5_write(top,"D",D);
 
  // testing scalar
  double x=2.3;
- tqa::h5::h5_write(file, "x",x);
+ h5_write(top, "x",x);
 
- tqa::h5::h5_write(file, "s", std::string("a nice chain"));
- file.createGroup("G");
- h5_write(file,"G/A",A);
+ h5_write(top, "s", std::string("a nice chain"));
+ top.createGroup("G");
+ h5_write(top,"G/A",A);
 
- H5::Group G = file.openGroup("G");
+ H5::Group G = top.open_group("G");
  h5_write(G, "A2",A);
 
- h5_read (file, "A",B);   std::cout<< "B = "<< B<<std::endl;
- h5_read (file, "Af",Bf); std::cout<< "Bf = "<< Bf<<std::endl;
- h5_read (file, "D",D2);  std::cout<< "D = "<< D2<<std::endl;
- h5_read (file, "C",C2);  std::cout<< "C = "<< C2<<std::endl;
+ h5_read (top, "A",B);   std::cout<< "B = "<< B<<std::endl;
+ h5_read (top, "Af",Bf); std::cout<< "Bf = "<< Bf<<std::endl;
+ h5_read (top, "D",D2);  std::cout<< "D = "<< D2<<std::endl;
+ h5_read (top, "C",C2);  std::cout<< "C = "<< C2<<std::endl;
 
- double xx =0; tqa::h5::h5_read(file, "x",xx); TEST(xx);
+ double xx =0; h5_read(top, "x",xx); TEST(xx);
 
  std::string s2 ("----------------------------------");
- tqa::h5::h5_read(file, "s", s2);
+ h5_read(top, "s", s2);
  TEST(s2);
 
- //tqa::array<long,1> E; h5_read (file, "A",E);   std::cout<< "E = "<< E<<std::endl;
+ //tqa::array<long,1> E; h5_read (top, "A",E);   std::cout<< "E = "<< E<<std::endl;
 
  } 
  catch( const char * err) { std::cout<<err<<std::endl;}

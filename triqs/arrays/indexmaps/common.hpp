@@ -21,14 +21,28 @@
 #ifndef TRIQS_ARRAYS_INDEXMAP_COMMON_H
 #define TRIQS_ARRAYS_INDEXMAP_COMMON_H
 #include "../impl/common.hpp"
-#include "../impl/mini_vector.hpp"
+#include <triqs/utility/mini_vector.hpp>
 #include "../impl/tuple_tools.hpp"
 #include <iostream>
 
 namespace boost { namespace serialization { class access;}}
 namespace triqs { namespace arrays { namespace Tag {struct indexmap{}; }}}
 
-namespace triqs { namespace arrays { namespace indexmaps { 
+namespace triqs { namespace arrays { 
+ using utility::mini_vector;
+
+ // make_shape
+ // generalize with preproc or variadic template
+#define IMPL(z, NN, unused)                                \
+ template <typename T> mini_vector<size_t,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
+ { return mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
+ BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
+#undef IMPL
+// template<typename T0, typename... T> 
+//  mini_vector<T0, sizeof...(T)+1> make_shape(T0 x0, T... args) { return  mini_vector<T0, sizeof...(T)+1> (x0,args...);}
+
+
+ namespace indexmaps { 
 
  // to be specialized for all IndexMap types.
  template<typename IndexMap, typename... Args> struct slicer; 

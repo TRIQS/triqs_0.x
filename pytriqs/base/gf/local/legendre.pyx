@@ -8,7 +8,7 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
         self._c =  gf_legendre ( mesh._c, array_view[double,THREE](data), nothing(), nothing(), make_c_indices(indices[0],indices[1]) ) 
     
     def __write_hdf5__ (self, gr , char * key) :
-        h5_write (make_h5_group_or_file(gr), key, self._c)
+        h5_write (make_h5_group(gr), key, self._c)
 
     def set_from_imtime(self, GfImTime_cython gt) :
         """Fills self with the Legendre transform of gt"""
@@ -27,7 +27,7 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfLegendre ( gr, std_string key) : 
-    return make_GfLegendre( h5_extractor[gf_legendre]()(make_h5_group_or_file(gr),key))
+    return make_GfLegendre( h5_extractor[gf_legendre]()(make_h5_group(gr),key))
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GfLegendre, read_fun = h5_read_GfLegendre)

@@ -30,6 +30,7 @@
 #include "triqs/utility/complex_ops.hpp"
 #include <triqs/utility/view_tools.hpp>
 #include <triqs/utility/expression_template_tools.hpp>
+#include <triqs/h5/vector.hpp>
 
 namespace triqs { namespace gf {
  namespace tqa= triqs::arrays;
@@ -74,20 +75,20 @@ namespace triqs { namespace gf {
   bool same() const { return data[0]==data[1];} 
 
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string key, indices_2_t const & g) {
-    tqa::h5::group_or_file gr = fg.create_group(key);
-    h5_write(gr,"left",g.data[0]);
-    h5_write(gr,"right",g.data[1]);
+  friend void h5_write (h5::group g, std::string key, indices_2_t const & ind) {
+    auto gr = g.create_group(key);
+    h5_write(gr,"left",ind.data[0]);
+    h5_write(gr,"right",ind.data[1]);
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string key, indices_2_t & g){
-    tqa::h5::group_or_file gr = fg.open_group(key);
+  friend void h5_read  (h5::group g, std::string key, indices_2_t & ind){
+    auto gr = g.open_group(key);
     std::vector<std::string> V;
     h5_read(gr,"left",V);
-    g.data.push_back(V);
+    ind.data.push_back(V);
     h5_read(gr,"right",V);
-    g.data.push_back(V);
+    ind.data.push_back(V);
   }
 
   //  BOOST Serialization
@@ -109,8 +110,8 @@ namespace triqs { namespace gf {
   typedef nothing non_view_type;
   void rebind (nothing){}
   void operator=(nothing) {}
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
+  friend void h5_write (h5::group, std::string subgroup_name, nothing ) {}
+  friend void h5_read  (h5::group, std::string subgroup_name, nothing ) {}
   //  BOOST Serialization
   friend class boost::serialization::access;
   template<class Archive>

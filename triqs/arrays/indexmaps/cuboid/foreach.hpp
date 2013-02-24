@@ -28,7 +28,7 @@
 //#include <boost/preprocessor/arithmetic/sub.hpp>
 //#include <boost/type_traits/add_const.hpp>
 //#include <boost/mpl/if.hpp>
-#include "../../impl/mini_vector.hpp"
+#include <triqs/utility/mini_vector.hpp>
 #include "../permutation.hpp"
 #include "./map.hpp"
 

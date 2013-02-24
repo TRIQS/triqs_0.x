@@ -44,14 +44,14 @@ namespace triqs { namespace gf {
   bool operator == (discrete_domain const & D) const { return (Nmax == D.Nmax);}
 
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, discrete_domain const & d) {
-   tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+  friend void h5_write (h5::group fg, std::string subgroup_name, discrete_domain const & d) {
+   h5::group gr =  fg.create_group(subgroup_name);
    h5_write(gr,"n_max",d.Nmax);
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, discrete_domain & d){
-   tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+  friend void h5_read  (h5::group fg, std::string subgroup_name, discrete_domain & d){
+   h5::group gr = fg.open_group(subgroup_name);
    long n; 
    h5_read(gr,"n_max",n);
    d = discrete_domain(n);

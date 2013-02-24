@@ -32,7 +32,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator *( matrix_view[dcomplex] &, tail &) except + 
     cdef tail operator *( tail &, matrix_view[dcomplex]&) except + 
 
-    cdef void h5_write (h5_group_or_file, char *, tail &)
+    cdef void h5_write (h5_group, char *, tail &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (tail &)

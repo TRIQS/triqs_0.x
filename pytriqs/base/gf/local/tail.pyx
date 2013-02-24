@@ -202,12 +202,12 @@ cdef class TailGf:
         return TailGf(data=self.data.conjugate(), order_min=self.order_min, mask=self.mask)
         
     def __write_hdf5__ (self, gr , char * key) :
-        h5_write (make_h5_group_or_file(gr), key, self._c)
+        h5_write (make_h5_group(gr), key, self._c)
 
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_TailGf( gr, std_string key) : 
-    return make_TailGf( h5_extractor[tail]()(make_h5_group_or_file(gr),key))
+    return make_TailGf( h5_extractor[tail]()(make_h5_group(gr),key))
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (TailGf, read_fun = h5_read_TailGf)

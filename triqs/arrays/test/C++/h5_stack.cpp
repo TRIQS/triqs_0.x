@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #include "./python_stuff.hpp"
 #include "./src/h5/array_stack.hpp"
 #include "./src/h5/simple_read_write.hpp"
@@ -28,11 +26,13 @@
 
 using std::cout; using std::endl;
 using namespace triqs::arrays;
+using namespace triqs;
 
 template < class T>
 void test(std::string filename, T init) { 
 
- h5::H5File file( filename.c_str(), H5F_ACC_TRUNC );
+ H5::H5File file( filename.c_str(), H5F_ACC_TRUNC );
+ h5::group top (file);
 
  const size_t N = 12, bufsize = 5, d= 2;
 
@@ -46,13 +46,13 @@ void test(std::string filename, T init) {
  array<T,1> C_stack_keep(N), C_stack_compare(N);
 
  //h5::array_stack<T,2> SA( file, "A", A.shape() , bufsize);
- //h5::array_stack<T,1> SB( file, "B", B.shape() , bufsize);
- //h5::array_stack<T,0> SC( file, "C", mini_vector<size_t,0>() , bufsize);
- h5::array_stack< array<T,2 > > SA( file, "A", A.shape() , bufsize);
- h5::array_stack< array<T,1 > > SB( file, "B", B.shape() , bufsize);
- h5::array_stack< T> SC( file, "C", bufsize);
- //h5::array_stack< T> SC( file, "C", mini_vector<size_t,0>() , bufsize); // also valid ...
- //h5::array_stack< array<T,1 > > SB2( file, "B", bufsize); // does not compile
+ //h5::array_stack<T,1> SB( top, "B", B.shape() , bufsize);
+ //h5::array_stack<T,0> SC( top, "C", mini_vector<size_t,0>() , bufsize);
+ array_stack< array<T,2 > > SA( top, "A", A.shape() , bufsize);
+ array_stack< array<T,1 > > SB( top, "B", B.shape() , bufsize);
+ array_stack< T> SC( top, "C", bufsize);
+ //h5::array_stack< T> SC( top, "C", mini_vector<size_t,0>() , bufsize); // also valid ...
+ //h5::array_stack< array<T,1 > > SB2( top, "B", bufsize); // does not compile
  
  for (size_t u = 0; u<N; ++u)  {
   A() = double(u+1)* init; 
@@ -75,20 +75,22 @@ void test(std::string filename, T init) {
 
  // now we read the file and compare
 
- h5::H5File file2( filename.c_str() ,H5F_ACC_RDONLY );
- h5_read (file2, "A",A_stack_compare); 
+ H5::H5File file2( filename.c_str() ,H5F_ACC_RDONLY );
+ h5::group top2(file2);
+
+ h5_read (top2, "A",A_stack_compare); 
  std::cerr<< "A keep      "<< A_stack_keep<<std::endl;
  std::cerr<< "A in file   "<< A_stack_compare<<std::endl;
  
  assert_all_close (A_stack_keep, A_stack_compare, 1.e-13);
 
- h5_read (file2, "B",B_stack_compare); 
+ h5_read (top2, "B",B_stack_compare); 
  std::cerr<< "B keep      "<< B_stack_keep<<std::endl;
  std::cerr<< "B in file   "<< B_stack_compare<<std::endl;
  
  assert_all_close (B_stack_keep, B_stack_compare, 1.e-13);
 
- h5_read (file2, "C",C_stack_compare); 
+ h5_read (top2, "C",C_stack_compare); 
  std::cerr<< "C keep      "<< C_stack_keep<<std::endl;
  std::cerr<< "C in file   "<< C_stack_compare<<std::endl;
  

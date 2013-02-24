@@ -21,12 +21,12 @@
 #ifndef TRIQS_ARRAYS_H5_STACK_H
 #define TRIQS_ARRAYS_H5_STACK_H
 #include "../array.hpp"
-#include "./group_or_file.hpp" 
+#include <triqs/h5/group.hpp>
+#include "./simple_read_write.hpp"
 
-namespace triqs { namespace arrays { namespace h5 { 
- using namespace H5;
+namespace triqs { namespace arrays {  
 
- namespace details { // to be replaced by ellipsis 
+ namespace h5_stack_details { // to be replaced by ellipsis 
   template<class T, size_t N, ull_t Opt> array_view<T,N-1,Opt> slice0( array<T,N,Opt> & A, size_t ind);
 #define AUX(z,p,unused) BOOST_PP_COMMA_IF(p) range()
 #define IMPL(z, NN, unused) \
@@ -54,18 +54,18 @@ namespace triqs { namespace arrays { namespace h5 {
   class array_stack {
    typedef BaseElementType base_element_type;
    static_assert( (is_amv_value_class<BaseElementType>::value || is_scalar<BaseElementType>::value), "BaseElementType must be an array/matrix/vector or a simple number");
-   typedef typename details::get_value_type<BaseElementType>::type T;
-   static const size_t dim = details::get_value_type<BaseElementType>::rank; 
+   typedef typename h5_stack_details::get_value_type<BaseElementType>::type T;
+   static const size_t dim = h5_stack_details::get_value_type<BaseElementType>::rank; 
    static const bool base_is_array = dim >0;
    size_t bufsize_, step, _size; 
    static const bool T_is_complex = boost::is_complex<T>::value;
    static const unsigned int RANK = dim + 1 + (T_is_complex ? 1 : 0);
-   mini_vector<hsize_t,RANK> dims, offset, maxdims, dim_chunk, buffer_dim, zero;
-   DataSet dataset;
+   utility::mini_vector<hsize_t,RANK> dims, offset, maxdims, dim_chunk, buffer_dim, zero;
+   H5::DataSet dataset;
    array<T,dim+1> buffer;
 
    template <typename FileGroupType >
-    void construct_delegate ( FileGroupType file_or_group, std::string const & name, mini_vector<size_t,dim> const & a_dims, size_t bufsize)  {
+    void construct_delegate ( FileGroupType g, std::string const & name, mini_vector<size_t,dim> const & a_dims, size_t bufsize)  {
      mini_vector<hsize_t,RANK> dim_chunk;
      bufsize_ = bufsize; step = 0; _size =0; 
      for (size_t i =1; i<=dim; ++i) { dims[i] = a_dims[i-1];}
@@ -74,12 +74,11 @@ namespace triqs { namespace arrays { namespace h5 {
      dims[0] = 0; maxdims[0] = H5S_UNLIMITED; dim_chunk[0]=1; buffer_dim[0] = bufsize_;
      mini_vector<size_t,dim+1> s; for (size_t i =0; i<=dim; ++i) {s[i] =  buffer_dim[i];} 
      buffer.resize(s);
-     DataSpace mspace1( RANK, dims.ptr(), maxdims.ptr());
-     DSetCreatPropList cparms; cparms.setChunk( RANK, dim_chunk.ptr() ); // Modify dataset creation properties, i.e. enable chunking.
+     H5::DataSpace mspace1( RANK, dims.ptr(), maxdims.ptr());
+     H5::DSetCreatPropList cparms; cparms.setChunk( RANK, dim_chunk.ptr() ); // Modify dataset creation properties, i.e. enable chunking.
      try { 
-      if (h5::exists(file_or_group, name.c_str())) file_or_group.unlink( name.c_str());  
-      dataset = file_or_group.createDataSet( name.c_str(), native_type_from_C(typename remove_complex<T>::type()), mspace1, cparms );
-      if (boost::is_complex<T>::value)  write_string_attribute(&dataset,"__complex__","1");
+      dataset = g.create_dataset(name,h5::native_type_from_C(typename h5::remove_complex<T>::type()), mspace1, cparms );
+      if (boost::is_complex<T>::value)  h5::write_string_attribute(&dataset,"__complex__","1");
      }
      TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     }
@@ -88,28 +87,28 @@ namespace triqs { namespace arrays { namespace h5 {
 
    /** 
     * \brief Constructor 
-    *  \param file_or_group The h5 file or group, of type FileGroupType
+    *  \param g The h5 file or group, of type FileGroupType
     *  \param name The name of the hdf5 array in the file/group where the stack will be stored
     *  \param base_element_shape The shape of the base array/matrix/vector [or mini_vector<size_t,0>() for a scalar]
     *  \param bufsize The size of the bufferThe name of the hdf5 array in the file/group where the stack will be stored
     *  \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with stackstrace, cf doc). 
     */
    template <typename FileGroupType >
-    array_stack( FileGroupType file_or_group, std::string const & name, mini_vector<size_t,dim> const & base_element_shape, size_t bufsize)  {
-     construct_delegate ( file_or_group, name, base_element_shape, bufsize);
+    array_stack( FileGroupType g, std::string const & name, mini_vector<size_t,dim> const & base_element_shape, size_t bufsize)  {
+     construct_delegate ( g, name, base_element_shape, bufsize);
     }
 
    /** 
     * \brief Constructor : valid only if the base is a scalar
-    *  \param file_or_group The h5 file or group, of type FileGroupType
+    *  \param g The h5 file or group, of type FileGroupType
     *  \param name The name of the hdf5 array in the file/group where the stack will be stored
     *  \param bufsize The size of the bufferThe name of the hdf5 array in the file/group where the stack will be stored
     *  \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with stackstrace, cf doc). 
     */
    template <typename FileGroupType >
-    array_stack( FileGroupType file_or_group, std::string const & name, size_t bufsize)  {
+    array_stack( FileGroupType g, std::string const & name, size_t bufsize)  {
      static_assert( (is_scalar<BaseElementType>::value), "This constructor is only available for a scalar BaseElementType");
-     construct_delegate ( file_or_group, name,mini_vector<size_t,0>() , bufsize);
+     construct_delegate ( g, name,mini_vector<size_t,0>() , bufsize);
     }
 
    ///
@@ -122,7 +121,7 @@ namespace triqs { namespace arrays { namespace h5 {
     * \return A view (for an array/matrix/vector base) or a reference (for a scalar base) to the top of the stack
     *         i.e. the next element to be assigned to
     */
-   slice_type operator() () { return details::slice0(buffer, step); } 
+   slice_type operator() () { return h5_stack_details::slice0(buffer, step); } 
 
    /// Advance the stack by one
    void operator++() { ++step; ++_size; if (step==bufsize_) flush();  } 
@@ -145,14 +144,14 @@ namespace triqs { namespace arrays { namespace h5 {
     dims[0] += step;
     buffer_dim[0] = step; 
     dataset.extend(dims.ptr());
-    DataSpace fspace1 = dataset.getSpace (), mspace = data_space(buffer); 
+    H5::DataSpace fspace1 = dataset.getSpace (), mspace = h5_impl::data_space(buffer); 
     fspace1.selectHyperslab( H5S_SELECT_SET, buffer_dim.ptr(), offset.ptr() );
     mspace.selectHyperslab(  H5S_SELECT_SET, buffer_dim.ptr(), zero.ptr() );
-    try { dataset.write( data(buffer), data_type_mem(buffer), mspace, fspace1 ); }
+    try { dataset.write( h5_impl::get_data_ptr(buffer), h5::data_type_memory<T>(), mspace, fspace1 ); }
     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     offset [0] += step;
    }
   };
-}}} // namespace
+}} // namespace
 #endif
 

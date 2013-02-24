@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -24,9 +23,11 @@
 #include <iostream>
 #include "./src/h5/simple_read_write.hpp"
 #include "./src/asserts.hpp"
+#include <triqs/h5/vector.hpp>
 
 using std::cout; using std::endl;
 namespace tqa = triqs::arrays;
+namespace h5 = triqs::h5;
 using tqa::range;
 using namespace tqa;
 
@@ -42,12 +43,14 @@ int main(int argc, char **argv) {
 
  // writing 
  H5::H5File file( "test_array_string.h5", H5F_ACC_TRUNC );
- h5_write(file,"A",A);
- h5_write(file,"V",V1);
+ h5::group top(file);
+
+ h5_write(top,"A",A);
+ h5_write(top,"V",V1);
 
  // rereading
- h5_read (file, "A",B); 
- h5_read (file, "V",V2);
+ h5_read (top, "A",B); 
+ h5_read (top, "V",V2);
 
  //comparing
  for (auto &x : V2) std::cerr << x << std::endl ;

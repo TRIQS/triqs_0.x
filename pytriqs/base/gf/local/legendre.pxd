@@ -26,7 +26,7 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
 
 cdef extern from "triqs/gf/legendre.hpp"  :
 
-    cdef void h5_write (h5_group_or_file, char *, gf_legendre &)
+    cdef void h5_write (h5_group, char *, gf_legendre &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (gf_legendre &) 

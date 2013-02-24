@@ -36,8 +36,8 @@ namespace triqs { namespace gf {
   struct domain_t {
    typedef double point_t; 
    bool operator == (domain_t const & D) const { return true; }
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t const & d) {}
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t & d){ }
+   friend void h5_write (h5::group fg, std::string subgroup_name, domain_t const & d) {}
+   friend void h5_read  (h5::group fg, std::string subgroup_name, domain_t & d){ }
    friend class boost::serialization::access;
    template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
   };

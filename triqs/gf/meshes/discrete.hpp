@@ -62,14 +62,14 @@ namespace triqs { namespace gf {
    bool operator == (discrete_mesh const & M) const { return (_dom == M._dom) ;} 
 
    /// Write into HDF5
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, discrete_mesh const & m) {
-    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   friend void h5_write (h5::group fg, std::string subgroup_name, discrete_mesh const & m) {
+    h5::group gr =  fg.create_group(subgroup_name);
     h5_write(gr,"domain",m.domain());
    }
 
    /// Read from HDF5
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, discrete_mesh & m){
-    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   friend void h5_read  (h5::group fg, std::string subgroup_name, discrete_mesh & m){
+    h5::group gr = fg.open_group(subgroup_name);
     typename discrete_mesh::domain_t dom;
     h5_read(gr,"domain",dom);
     m = discrete_mesh(std::move(dom));

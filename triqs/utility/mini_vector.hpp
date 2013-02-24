@@ -24,11 +24,9 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <vector>
-#include "../indexmaps/permutation.hpp"
 #include "boost/tuple/tuple.hpp"
-#include "../../utility/exceptions.hpp"
 
-namespace triqs { namespace arrays { 
+namespace triqs { namespace utility { 
 
  template <typename T, int Rank> 
   class mini_vector { 
@@ -133,24 +131,6 @@ namespace triqs { namespace arrays {
    return res;
   }
 
-/* namespace details { 
-  template <typename V, typename P, int N> 
-   struct apply_impl { 
-    static void invoke (V const & sou, V & res) {
-     res[N] =  sou[Permutations::eval<P,N>::value]; 
-     apply_impl<V,P,N-1>::invoke(sou,res);
-    }
-   };
-  template <typename V, typename P> struct apply_impl<V,P,-1> { static void invoke (V const & sou, V & res) {} };
- }
-
- template <typename P, typename T, int Rank> 
-  mini_vector<T,Rank> eval_permutation(mini_vector<T,Rank> const & v) { 
-   mini_vector<T,Rank> res; 
-   details::apply_impl<mini_vector<T,Rank> ,P,Rank-1>::invoke(v,res);
-   return res;
-  }
-*/
  //-----------------------------------------------------------
 
  namespace details { 
@@ -174,15 +154,6 @@ namespace triqs { namespace arrays {
  template <int V, typename T, int Rank> 
   T const & get( mini_vector<T,Rank> const & A) { static_assert( (V<Rank), " V>= Rank !"); return A[V];}  
 
- // generalize with preproc or variadic template
-#define IMPL(z, NN, unused)                                \
- template <typename T> mini_vector<size_t,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
- { return mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
- BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
-#undef IMPL
-// template<typename T0, typename... T> 
-//  mini_vector<T0, sizeof...(T)+1> make_shape(T0 x0, T... args) { return  mini_vector<T0, sizeof...(T)+1> (x0,args...);}
-
-}}//namespace triqs::arrays 
+ }}//namespace triqs::arrays 
 #endif
 

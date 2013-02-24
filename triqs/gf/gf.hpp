@@ -274,8 +274,8 @@ namespace triqs { namespace gf {
      operator[](Arg arg) const { return  clef::make_expr_call(view_type(*this),arg);} //clef::lazy_call<view_type>(*this)(arg); 
 
    /// Write into HDF5
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl const & g) {
-    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
+    auto gr =  fg.create_group(subgroup_name);
     // Add the attribute
     h5_write(gr,"data",g.data);
     h5_write(gr,"singularity",g.singularity);
@@ -285,8 +285,8 @@ namespace triqs { namespace gf {
    }
 
    /// Read from HDF5
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, gf_impl & g){
-    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   friend void h5_read  (h5::group fg, std::string subgroup_name, gf_impl & g){
+    auto gr = fg.open_group(subgroup_name);
     // Check the attribute or throw 
     h5_read(gr,"data",g.data);
     h5_read(gr,"singularity",g.singularity);

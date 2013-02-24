@@ -111,34 +111,34 @@ namespace triqs { namespace gf {
    friend bool operator == (mesh_product const & M1, mesh_product const & M2) { return M1.m_tuple==M2.m_tuple; }
 
    /// Write into HDF5
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_product const & m) {
-    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   friend void h5_write (h5::group fg, std::string subgroup_name, mesh_product const & m) {
+    h5::group gr =  fg.create_group(subgroup_name);
     h5_write(gr,"domain",m.domain());
     m.h5_write_impl(gr,cint<0>());
    }
 
    private:
-   template<int N> void h5_write_impl (tqa::h5::group_or_file gr, cint<N> n) {
+   template<int N> void h5_write_impl (h5::group gr, cint<N> n) {
      std::stringstream fs;fs <<"MeshComponent"<< N; 
      h5_write(gr,fs.str(), this->component(n));
      h5_write_impl(gr,cint<N+1>());
     }
-   void h5_write_impl (tqa::h5::group_or_file gr, cint<dim>) {}
+   void h5_write_impl (h5::group gr, cint<dim>) {}
 
    /// Read from HDF5
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, mesh_product & m){
-    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   friend void h5_read  (h5::group fg, std::string subgroup_name, mesh_product & m){
+    h5::group gr = fg.open_group(subgroup_name);
     h5_read(gr,"domain",m._dom);
     m.h5_read_impl(gr,cint<0>());
    }
 
    private:
-   template<int N> void h5_read_impl (tqa::h5::group_or_file gr, cint<N> n) {
+   template<int N> void h5_read_impl (h5::group gr, cint<N> n) {
      std::stringstream fs; fs <<"MeshComponent"<< N; 
      h5_read(gr,fs.str(), this->component(n));
      h5_read_impl(gr,cint<N+1>());
     }
-   void h5_read_impl (tqa::h5::group_or_file gr, cint<dim>) {}
+   void h5_read_impl (h5::group gr, cint<dim>) {}
  
    //  BOOST Serialization
    friend class boost::serialization::access;

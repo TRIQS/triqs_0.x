@@ -92,8 +92,8 @@ namespace triqs { namespace gf {
    bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
 
    /// Write into HDF5
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
-    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   friend void h5_write (h5::group fg, std::string subgroup_name, linear_mesh const & m) {
+    h5::group gr =  fg.create_group(subgroup_name);
     int k;
     switch(m.meshk) {
        case half_bins: k=0; break;
@@ -108,8 +108,8 @@ namespace triqs { namespace gf {
    }
 
    /// Read from HDF5
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh & m){
-    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   friend void h5_read  (h5::group fg, std::string subgroup_name, linear_mesh & m){
+    h5::group gr = fg.open_group(subgroup_name);
     typename linear_mesh::domain_t dom;
     double a,b;
     size_t L; 

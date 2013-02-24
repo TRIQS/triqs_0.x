@@ -23,7 +23,7 @@
 #include "../common.hpp"
 #include "../range.hpp"
 #include "../permutation.hpp"
-#include "../../impl/mini_vector.hpp"
+#include <triqs/utility/mini_vector.hpp>
 #include "../../impl/exceptions.hpp"
 #include <iostream>
 #include <sstream>

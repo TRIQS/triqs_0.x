@@ -8,7 +8,7 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
         self._c =  gf_imtime ( mesh._c, array_view[double,THREE](data), tail._c , nothing(), make_c_indices(indices[0],indices[1]) ) 
     
     def __write_hdf5__ (self, gr , char * key) :
-        h5_write (make_h5_group_or_file(gr), key, self._c)
+        h5_write (make_h5_group(gr), key, self._c)
 
     def set_from_inverse_fourier(self,GfImFreq_cython gw) :
         """Fills self with the Inverse Fourier transform of gw"""        
@@ -21,7 +21,7 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImTime ( gr, std_string key) : 
-    return make_GfImTime( h5_extractor[gf_imtime]()(make_h5_group_or_file(gr),key))
+    return make_GfImTime( h5_extractor[gf_imtime]()(make_h5_group(gr),key))
 
 from pytriqs.base.archive.hdf_archive_schemes import register_class
 register_class (GfImTime, read_fun = h5_read_GfImTime)
