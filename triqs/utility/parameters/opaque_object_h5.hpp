@@ -40,10 +40,7 @@ namespace triqs { namespace utility {
 
  // --------------- the opaque object ---------------------------------------
  // _object is a value : it makes deep copies in particular ...
- struct _object {
-
-  template<typename T> static constexpr size_t type_code () { return typeid(T).hash_code();}
-  template<typename T> static std::string make_type_name () { return demangle(typeid(T).name());}
+ class _object {
 
   std::shared_ptr<void> p;          // the object handled by the class
   size_t type_code_;                // id of the type, implementation dependent...
@@ -52,10 +49,15 @@ namespace triqs { namespace utility {
   std::function<std::string()> serialize_; // for boost serialization ...
   std::function<void(std::ostream&)> print_;
 
+  public :
+
+  template<typename T> static constexpr size_t type_code () { return typeid(T).hash_code();}
+  template<typename T> static std::string make_type_name () { return demangle(typeid(T).name());}
+
   _object() {_init(); };
 
   // pass a const & or a && (in which case a move will be used, provided that T has a move constructor
-  template<typename T> 
+  template<typename T>
    //static _object factory( T && obj){ _object res; res.delegate_constructor( new typename std::remove_reference<T>::type(std::forward<T>(obj))); return res;}
    _object ( T && obj,bool){ delegate_constructor( new typename std::remove_reference<T>::type(std::forward<T>(obj)));}
 
@@ -87,15 +89,23 @@ namespace triqs { namespace utility {
   _object & operator = (_object const & x ) {*this = x.clone_(); return *this; }
 
   template <typename RHS> _object & operator=(RHS && rhs) {
-   *this =  _object (std::forward<RHS>(rhs),true); //*this =  factory (std::forward<RHS>(rhs)); 
-   register_type<typename std::remove_reference<RHS>::type>::invoke(); 
-   return *this; 
+   *this =  _object (std::forward<RHS>(rhs),true); //*this =  factory (std::forward<RHS>(rhs));
+   register_type<typename std::remove_reference<RHS>::type>::invoke();
+   return *this;
   }
 
   // special treatment for the const *, fall back to string
   _object &  operator=(const char * rhs) { *this = std::string(rhs); return *this;}
 
-  // implemented later, since need the extract function ...
+  friend bool have_same_type( _object const & a, _object const & b) { return a.type_code_ == b.type_code_;}
+
+  template<typename T> bool has_type() const { return type_code_ == type_code<T>();}
+
+  //std::shared_ptr<void> get_ptr() const { return p;}
+  const void * get_void_ptr() const { return p.get();}
+  void * get_void_ptr() { return p.get();}
+
+   // implemented later, since need the extract function ...
 #define CAST_OPERATOR(r, data, T) operator T () const;
   BOOST_PP_SEQ_FOR_EACH(CAST_OPERATOR, nil , TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST);
 #undef CAST_OPERATOR
@@ -132,8 +142,8 @@ namespace triqs { namespace utility {
   static std::map<hid_t, size_t >                                                           h5_type_to_c_equivalence;
   static std::map<std::pair<size_t,int>, size_t >                                           code_element_rank_to_code_array;
   static std::map<std::string, size_t >                                                     h5_scheme_to_code;
-  static std::map<size_t, std::string >                                                     type_code_to_type_name; 
-  static std::map<std::string, size_t >                                                     type_name_to_type_code; 
+  static std::map<size_t, std::string >                                                     type_code_to_type_name;
+  static std::map<std::string, size_t >                                                     type_name_to_type_code;
 
   static bool initialized;
   static void _init();
@@ -162,13 +172,13 @@ namespace triqs { namespace utility {
    code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5_read(f,s,n); return _object(std::move(n),true);};// _object::factory(std::move(n));};
    auto h5_scheme = get_triqs_hdf5_data_scheme(T());
    if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = code;
-   std::cerr  << " registering " << type_code_to_type_name[code] << "h5 scehme "<< h5_scheme<< std::endl ;
+   //std::cerr  << " registering " << type_code_to_type_name[code] << "h5 scehme "<< h5_scheme<< std::endl ;
    return false;
   }
  };
 
  // special case for array, we need to fill one more table
- template<typename T, int R> struct _object::register_type<arrays::array<T,R>>{ 
+ template<typename T, int R> struct _object::register_type<arrays::array<T,R>>{
   static bool invoke() {
    typedef arrays::array<T,R> A;
    if (is_initialised(type_code<A>())) return true;
@@ -192,7 +202,7 @@ namespace triqs { namespace utility {
 
  // --------------------- extraction  ---------------------------------
 
- template<typename T> T extract(_object const &obj);
+ template<typename T> const T extract(_object const &obj);
 
  template<typename T> T lex_cast_from_string(_object const &obj) {
   std::string s = extract<std::string>(obj);
@@ -200,20 +210,20 @@ namespace triqs { namespace utility {
   catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< _object::make_type_name<T>(); }
  }
 
- template<typename T> T extract(_object const &obj) {
+ template<typename T> const T extract(_object const &obj) {
   // if T is not a string, and obj is string, attempt lexical_cast
-  if ( (!std::is_same<T,std::string>::value) && (obj.type_code_ == _object::type_code<std::string>())) { return lex_cast_from_string<T>(obj); }
-  if (obj.type_code_ != _object::type_code<T>())
+  if ( (!std::is_same<T,std::string>::value) && (obj.has_type<std::string>())) { return lex_cast_from_string<T>(obj); }
+  if (! obj.has_type<T>())
    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
-  return * static_cast<T*>(obj.p.get());
+  return * static_cast<const T*>(obj.get_void_ptr());
  }
 
  template<> // specialize for double since we can make int -> conversion...
-  inline double extract(_object const & obj) {
-   if (obj.type_code_ == _object::type_code<double>()) return * static_cast<double*>(obj.p.get());
-   if (obj.type_code_ == _object::type_code<std::string>()) {return lex_cast_from_string<double>(obj); }
-#define DECAYING_TYPE(T) if (obj.type_code_ == _object::type_code<T>()) return extract<T>(obj)
-   DECAYING_TYPE(int);	
+  inline const double extract(_object const & obj) {
+   if (obj.has_type<double>()) return * static_cast<const double*>(obj.get_void_ptr());
+   if (obj.has_type<std::string>()) {return lex_cast_from_string<double>(obj); }
+#define DECAYING_TYPE(T) if (obj.has_type<T>()) return extract<T>(obj)
+   DECAYING_TYPE(int);
    //DECAYING_TYPE(unsigned int);
    DECAYING_TYPE(long);
    //DECAYING_TYPE(unsigned long);

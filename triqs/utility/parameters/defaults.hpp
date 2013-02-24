@@ -32,23 +32,23 @@ namespace triqs { namespace utility {
    parameters_defaults (parameters_defaults && other) { swap(*this,other);}
    parameters_defaults & operator =  (parameters_defaults const & other)  = default;
    parameters_defaults & operator =  (parameters_defaults && other) { swap(*this,other); return *this;}
-   friend void swap(parameters_defaults & a, parameters_defaults &b) { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);} 
+   friend void swap(parameters_defaults & a, parameters_defaults &b) { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);}
 
   private:
    typedef std::map<std::string, _object> map_t;
    map_t object_map;
    std::map<std::string, std::string> documentation;
-   std::map<std::string, bool > is_optional; 
+   std::map<std::string, bool > is_optional;
 
    friend class boost::serialization::access;
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("object_map",object_map); }
 
-   struct _inserter { 
-    parameters_defaults * p; bool opt; 
+   struct _inserter {
+    parameters_defaults * p; bool opt;
     _inserter(parameters_defaults *p_, bool opt_) : p(p_), opt(opt_) {}
     template<typename T> _inserter operator()(std::string const & key, T && def_val, std::string const & doc) {
-     p->object_map[key] = std::forward<T>(def_val); 
+     p->object_map[key] = std::forward<T>(def_val);
      p->documentation[key] = doc;
      p->is_optional[key] = opt;
      return *this;
@@ -56,6 +56,10 @@ namespace triqs { namespace utility {
 
    };
    friend struct _inserter;
+
+   template<typename T> const T getter(std::map<std::string,T> const & m, std::string const & key) const {
+    auto it = m.find(key); assert(it !=m.end()); return it->second;
+   }
 
   public:
 
@@ -66,15 +70,17 @@ namespace triqs { namespace utility {
    iterator begin() { return object_map.begin();}
    iterator end() { return object_map.end();}
 
-   bool has_key(std::string const & k) const { return object_map.find(k) != object_map.end();}
+   bool has_key(std::string const & key) const { return object_map.find(key) != object_map.end();}
+   bool is_required(std::string const & key) const { return (has_key(key) && (! getter(this->is_optional,key)));}
+   std::string doc(std::string const & key) const { return (has_key(key) ? getter(this->documentation,key) : "");}
 
-   template<typename T> 
-    _inserter optional (std::string const & key, T && def_val, std::string const & doc) { 
+   template<typename T>
+    _inserter optional (std::string const & key, T && def_val, std::string const & doc) {
      return _inserter(this, true)(key,std::forward<T>(def_val), doc);
     }
 
-   template<typename T> 
-    _inserter required (std::string const & key, T && def_val, std::string const & doc) { 
+   template<typename T>
+    _inserter required (std::string const & key, T && def_val, std::string const & doc) {
      return _inserter(this, false)(key,std::forward<T>(def_val), doc);
     }
 

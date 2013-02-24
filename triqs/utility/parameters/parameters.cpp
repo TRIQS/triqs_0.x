@@ -38,6 +38,10 @@ namespace triqs { namespace utility {
 
  void parameters::update (parameters_defaults const & pdef, ull_t flag ){
 
+  // FIRST DRAFT : TO BE REREAD/check 
+  // it would be better to first compute all the error and present a clean report
+  // rather that exiting after the first error...
+
   if ( (flag & reject_key_without_default) ) { // check that no other parameter is present
    for (auto const & pvp : *this) 
     if (!pdef.has_key( pvp.first)) 
@@ -45,13 +49,20 @@ namespace triqs { namespace utility {
   }
 
   for (auto const & pvp : pdef) {
-   if (this->has_key( pvp.first)) { // check the type is correct 
-    if (pvp.second.type_code_ != (*this)[pvp.first].type_code_)
-     TRIQS_RUNTIME_ERROR << "update_with_defaults : parameter "<< pvp.first << " does not have the right type";
+   auto key = pvp.first;
+
+   if (pdef.is_required(key) && (!this->has_key(key)))
+    TRIQS_RUNTIME_ERROR << "update : parameter "<< key << " is required but absent \n   Doc : "<< pdef.doc(key); // ADD THE DOC 
+
+   if (this->has_key(key)) { // check the type is correct 
+    if (! have_same_type(pvp.second, (*this)[key]))
+     TRIQS_RUNTIME_ERROR << "update_with_defaults : parameter "<< key << " does not have the right type";
    }
    else { 
-    (*this)[pvp.first] = pvp.second; // insert the default
+    (*this)[key] = pvp.second; // insert the default
    }
+
+
   }
  }
 
