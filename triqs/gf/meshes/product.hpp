@@ -38,37 +38,37 @@ namespace triqs { namespace gf {
 
    domain_t const & domain() const { return _dom;}
 
-   size_t size() const {return _size(cint<dim-1>());}
+   size_t size() const {return _size(std::integral_constant<int,dim-1>());}
    private: // implementation of size computation
-   template<int N> size_t _size(cint<N> n) const { return _size(cint<N-1>()) * component(n).size();}
-   size_t _size(cint<-1>) const { return 1;}
+   template<int N> size_t _size(std::integral_constant<int,N> n) const { return _size(std::integral_constant<int,N-1>()) * component(n).size();}
+   size_t _size(std::integral_constant<int,-1>) const { return 1;}
    public : 
 
    /// Each component of the mesh : mesh.component(one), mesh.component(zero)
    m_tuple_t const & components() const { return m_tuple;}
    
-   template<int N> typename std::tuple_element<N,m_tuple_t>::type const & component(cint<N>) const { return std::get<N>(m_tuple);}
-   template<int N> typename std::tuple_element<N,m_tuple_t>::type & component(cint<N>)             { return std::get<N>(m_tuple);}
+   template<int N> typename std::tuple_element<N,m_tuple_t>::type const & component(std::integral_constant<int,N>) const { return std::get<N>(m_tuple);}
+   template<int N> typename std::tuple_element<N,m_tuple_t>::type & component(std::integral_constant<int,N>)             { return std::get<N>(m_tuple);}
 
    /// Conversions point <-> index <-> linear_index
-   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; index_to_point_impl(res, ind, cint<dim-1>()); return res; }
+   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; index_to_point_impl(res, ind, std::integral_constant<int,dim-1>()); return res; }
    private: // implementation
-   template<int N> void index_to_point_impl( domain_pt_t & P, index_t const & ind, cint<N> n) const { 
+   template<int N> void index_to_point_impl( domain_pt_t & P, index_t const & ind, std::integral_constant<int,N> n) const { 
     std::get<N>(P) = component(n).index_to_point(std::get<N>(ind));
-    index_to_point_impl(P,ind,cint<N-1>());
+    index_to_point_impl(P,ind,std::integral_constant<int,N-1>());
    }
-   void index_to_point_impl( domain_pt_t & P, index_t const & ind, cint<-1>) const {} 
+   void index_to_point_impl( domain_pt_t & P, index_t const & ind, std::integral_constant<int,-1>) const {} 
 
    public:
 
    // index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
-   size_t index_to_linear(index_t const & ind) const { size_t R=0; index_to_linear_impl(R,ind, cint<dim-1>()); return R; }
+   size_t index_to_linear(index_t const & ind) const { size_t R=0; index_to_linear_impl(R,ind, std::integral_constant<int,dim-1>()); return R; }
    private: // implementation
-   template<int N> void index_to_linear_impl( size_t & R, index_t const & ind, cint<N> n) const { 
+   template<int N> void index_to_linear_impl( size_t & R, index_t const & ind, std::integral_constant<int,N> n) const { 
     R = component(n).index_to_linear(std::get<N>(ind)) + R * component(n).size();
-    index_to_linear_impl(R,ind,cint<N-1>());
+    index_to_linear_impl(R,ind,std::integral_constant<int,N-1>());
    }
-   void index_to_linear_impl( size_t & R, index_t const & ind, cint<-1>) const {} 
+   void index_to_linear_impl( size_t & R, index_t const & ind, std::integral_constant<int,-1>) const {} 
 
    public:
 
@@ -83,7 +83,7 @@ namespace triqs { namespace gf {
      component (mesh_point_t const & p_):p(&p_){}
      operator CastType() const { return std::get<N>(p->m->m_tuple).index_to_point(std::get<N>(p->index));}
     };
-    template<int N> component<N,typename std::tuple_element<N,m_tuple_t>::type::domain_t::point_t> operator[](cint<N>) const { return *this;}
+    template<int N> component<N,typename std::tuple_element<N,m_tuple_t>::type::domain_t::point_t> operator[](std::integral_constant<int,N>) const { return *this;}
 
     mesh_point_t(mesh_product const & m_, index_t index_ ) : m(&m_), index(index_) {} 
     mesh_point_t(mesh_product const & m_)                  : m(&m_), index()    {} 
@@ -92,10 +92,10 @@ namespace triqs { namespace gf {
     operator cast_t() const { return m->index_to_point(index);}
 
     // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
-    void advance() { advance_impl(cint<0>());}
+    void advance() { advance_impl(std::integral_constant<int,0>());}
     private: // implementation
-    template<int N> void advance_impl(cint<N> n) { auto & i=std::get<N>(index); ++i; if (i==m->component(n).size()) {i=0;advance_impl(cint<N+1>());} }
-    void advance_impl(cint<dim>) {}  
+    template<int N> void advance_impl(std::integral_constant<int,N> n) { auto & i=std::get<N>(index); ++i; if (i==m->component(n).size()) {i=0;advance_impl(std::integral_constant<int,N+1>());} }
+    void advance_impl(std::integral_constant<int,dim>) {}  
    };
 
    /// Accessing a point of the mesh
@@ -114,47 +114,47 @@ namespace triqs { namespace gf {
    friend void h5_write (h5::group fg, std::string subgroup_name, mesh_product const & m) {
     h5::group gr =  fg.create_group(subgroup_name);
     h5_write(gr,"domain",m.domain());
-    m.h5_write_impl(gr,cint<0>());
+    m.h5_write_impl(gr,std::integral_constant<int,0>());
    }
 
    private:
-   template<int N> void h5_write_impl (h5::group gr, cint<N> n) {
+   template<int N> void h5_write_impl (h5::group gr, std::integral_constant<int,N> n) {
      std::stringstream fs;fs <<"MeshComponent"<< N; 
      h5_write(gr,fs.str(), this->component(n));
-     h5_write_impl(gr,cint<N+1>());
+     h5_write_impl(gr,std::integral_constant<int,N+1>());
     }
-   void h5_write_impl (h5::group gr, cint<dim>) {}
+   void h5_write_impl (h5::group gr, std::integral_constant<int,dim>) {}
 
    /// Read from HDF5
    friend void h5_read  (h5::group fg, std::string subgroup_name, mesh_product & m){
     h5::group gr = fg.open_group(subgroup_name);
     h5_read(gr,"domain",m._dom);
-    m.h5_read_impl(gr,cint<0>());
+    m.h5_read_impl(gr,std::integral_constant<int,0>());
    }
 
    private:
-   template<int N> void h5_read_impl (h5::group gr, cint<N> n) {
+   template<int N> void h5_read_impl (h5::group gr, std::integral_constant<int,N> n) {
      std::stringstream fs; fs <<"MeshComponent"<< N; 
      h5_read(gr,fs.str(), this->component(n));
-     h5_read_impl(gr,cint<N+1>());
+     h5_read_impl(gr,std::integral_constant<int,N+1>());
     }
-   void h5_read_impl (h5::group gr, cint<dim>) {}
+   void h5_read_impl (h5::group gr, std::integral_constant<int,dim>) {}
  
    //  BOOST Serialization
    friend class boost::serialization::access;
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("domain",_dom);
-    ser_impl(ar,version,cint<0>());
+    ser_impl(ar,version,std::integral_constant<int,0>());
     }
 
    private:
-   template<class Archive, int N> void ser_impl (Archive & ar, const unsigned int version, cint<N> n) {
+   template<class Archive, int N> void ser_impl (Archive & ar, const unsigned int version, std::integral_constant<int,N> n) {
      std::stringstream fs; fs <<"MeshComponent"<< N; 
      ar & boost::serialization::make_nvp(fs.str(),this->component(n));
-     ser_impl(ar,version,cint<N+1>());
+     ser_impl(ar,version,std::integral_constant<int,N+1>());
     }
-   template<class Archive> void ser_impl (Archive & ar, const unsigned int version, cint<dim>) {}
+   template<class Archive> void ser_impl (Archive & ar, const unsigned int version, std::integral_constant<int,dim>) {}
 
    private:
    m_tuple_t  m_tuple;
