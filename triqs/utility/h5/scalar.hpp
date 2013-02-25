@@ -23,7 +23,8 @@
 #include "./group.hpp"
 namespace triqs { namespace h5 {
 
- template <typename S> ENABLE_IF(std::is_arithmetic<S>)
+ template <typename S> 
+  typename std::enable_if<std::is_arithmetic<S>::value>::type
   h5_write (group g, std::string const & name, S const & A) {
    try {
     g.unlink_key_if_exists(name);
@@ -33,7 +34,8 @@ namespace triqs { namespace h5 {
    TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
   }
 
- template <typename S> ENABLE_IF(std::is_arithmetic<S>)
+ template <typename S> 
+  typename std::enable_if<std::is_arithmetic<S>::value>::type
   h5_read (group g, std::string const & name,  S & A) {
    try {
     H5::DataSet ds = g.open_dataset(name);

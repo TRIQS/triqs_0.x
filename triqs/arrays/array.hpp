@@ -88,8 +88,8 @@ namespace triqs { namespace arrays {
     typedef array<ValueType,Rank,Opt,TraversalOrder> non_view_type;
     typedef void has_view_type_tag;
 
-   /// Empty array.
-    array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)) :IMPL_TYPE(ml){} 
+    /// Empty array.
+    explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)) :IMPL_TYPE(ml){} 
 
     /// From a domain
     explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):IMPL_TYPE(indexmap_type(dom,ml)){}
@@ -119,7 +119,6 @@ namespace triqs { namespace arrays {
      */
     template <typename T> 
      array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):
-     //array(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT

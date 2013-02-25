@@ -20,6 +20,9 @@
  ******************************************************************************/
 #ifndef TRIQS_H5_H5_EXTRACTOR_GROUP_H
 #define TRIQS_H5_H5_EXTRACTOR_GROUP_H
+#include "./group.hpp"
+#include <triqs/utility/view_tools.hpp>
+
 namespace triqs { namespace h5 {
  
  /** 

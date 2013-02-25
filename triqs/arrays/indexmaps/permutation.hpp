@@ -111,6 +111,13 @@ namespace triqs { namespace arrays { namespace permutations {
   template<ull c> void print( std::ostream & out, std::integral_constant<ull,c>) const { out << apply(this->value,c); print(out,  std::integral_constant<ull,c+1>());}
   void print( std::ostream & out, std::integral_constant<ull,size(F)>) const {}
  };
+
+ inline void print( std::ostream & out, ull perm) { 
+  out << "(";
+  for (int i =0; i< permutations::size(perm); ++i) { out << apply(perm,i) << " ";}
+  out << ")";
+ }
+
 }
 
 using permutations::permutation;

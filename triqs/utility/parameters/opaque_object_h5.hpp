@@ -30,7 +30,6 @@
 #include <boost/serialization/map.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/serialization.hpp>
-#include <triqs/utility/typeid_name.hpp>
 #include <triqs/arrays.hpp>
 
 namespace triqs { namespace utility {
@@ -65,7 +64,7 @@ namespace triqs { namespace utility {
   template<typename T> void delegate_constructor( T * obj) {
    p = std::shared_ptr<void> (obj);
    type_code_ = type_code<T>();
-   clone_ =  [obj]() { return _object( *obj, "");} ;
+   clone_ =  [obj]() { return _object( *obj, true);} ;
    //clone_     = [this,obj]() { return _object::factory( *obj);} ; //clone_ =  [obj]() { return _object( *obj, "");} ;
    h5_w       = [obj](h5::group const &F, std::string const &Name)->void { h5_write(F,Name, *obj);};
    serialize_ = [obj](){ return triqs::serialize(*obj);};
@@ -101,7 +100,6 @@ namespace triqs { namespace utility {
 
   template<typename T> bool has_type() const { return type_code_ == type_code<T>();}
 
-  //std::shared_ptr<void> get_ptr() const { return p;}
   const void * get_void_ptr() const { return p.get();}
   void * get_void_ptr() { return p.get();}
 

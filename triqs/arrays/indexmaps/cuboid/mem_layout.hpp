@@ -115,6 +115,8 @@ namespace triqs { namespace arrays {
     }
    bool operator ==( memory_layout const & ml) const { return value == ml.value;}
    bool operator !=( memory_layout const & ml) const { return value != ml.value;}
+
+  friend std::ostream & operator <<( std::ostream & out, memory_layout const &  s) { permutations::print(out,s.value); return out;}
   };
 
 }}//namespace triqs::arrays 
