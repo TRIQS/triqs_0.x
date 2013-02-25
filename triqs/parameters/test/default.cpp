@@ -1,4 +1,4 @@
-#include <triqs/utility/parameters.hpp>
+#include <triqs/parameters.hpp>
 #include <iostream>
 #define TRIQS_ARRAYS_ENFORCE_BOUNDCHECK
 

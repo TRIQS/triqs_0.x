@@ -23,7 +23,7 @@
 #include <iostream>
 #include "./src/h5/simple_read_write.hpp"
 #include "./src/asserts.hpp"
-#include <triqs/utility/h5.hpp>
+#include <triqs/h5.hpp>
 
 using std::cout; using std::endl;
 namespace tqa = triqs::arrays;

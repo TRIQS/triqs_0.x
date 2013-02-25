@@ -1,4 +1,4 @@
-#include <triqs/utility/parameters.hpp>
+#include <triqs/parameters.hpp>
 #include <iostream>
 
 #include <vector>
