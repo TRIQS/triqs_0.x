@@ -129,7 +129,7 @@ p_ad1_ad1 a1() {
   return std::make_pair ( a,b);
 }
 
-BOOST_PYTHON_MODULE(_pytriqs_test_converter) {
+BOOST_PYTHON_MODULE(_pytriqs_boost_converter) {
 
  triqs::arrays::register_boost_converters();
 

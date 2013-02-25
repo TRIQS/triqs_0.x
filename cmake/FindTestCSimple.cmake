@@ -9,7 +9,7 @@ macro(add_test_C_simple testname )
 
  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
 
- add_test(${testname}${ARGN}
+ add_test(${testname}
   ${CMAKE_COMMAND}
   -Dname=${testname}
   -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
@@ -18,9 +18,29 @@ macro(add_test_C_simple testname )
   )
 
   else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
- add_test(${testname}${ARGN} ${testname}${ARGN} )
+ add_test(${testname} ${testname}${ARGN} )
   endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
 
 endmacro(add_test_C_simple)
+
+macro(add_test_python_simple testname ) 
+ enable_testing()
+
+ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
+  SET (CMD "${CMAKE_BINARY_DIR}/bin/pytriqs ${ARGN}")
+ add_test(${testname}
+  ${CMAKE_COMMAND}
+  -Dname=${testname}
+  -Dcmd=${CMD}
+  -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
+  -P ${TRIQS_SOURCE_DIR}/cmake/run_test_simple.cmake
+  )
+
+  else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+ add_test(${testname} ${ARGN} )
+  endif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
+
+endmacro(add_test_python_simple)
 
 

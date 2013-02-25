@@ -32,7 +32,7 @@ endfunction (python_register_dynamic_module NickName)
 #
 # NickName =  
 # ModuleName = the python name of the module 
-# ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] 
+# ModuleDest = path in the pytriqs tree [ FOR INSTALLATION ONLY] IMPROVE MAKE THIS OPTIONAL (for test) 
 macro (cython_module NickName ModuleName ModuleDest  )
  MESSAGE(STATUS "Preparing cython module  ${NickName} ")
  get_filename_component(CYTHON_EXECUTABLE_PATH ${PYTHON_INTERPRETER} PATH)

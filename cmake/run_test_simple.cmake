@@ -1,6 +1,7 @@
 set (output_new  ${CMAKE_CURRENT_BINARY_DIR}/${name}_output) 
 
 set (COM  ${CMAKE_COMMAND} -E compare_files ${output_new} ${reference})  
+MESSAGE(" about to run ${cmd}")
 
 execute_process(
  COMMAND ${cmd}

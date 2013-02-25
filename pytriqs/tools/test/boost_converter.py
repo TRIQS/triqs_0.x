@@ -21,7 +21,7 @@
 ################################################################################
 
 
-from pytriqs.tools.test.pytriqs_test_converter import *
+from pytriqs.tools.test.pytriqs_boost_converter import *
 
 f1( (1,2,3,4) )
 f11([ [1,2,3,4], [10,20] ])
