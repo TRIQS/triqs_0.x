@@ -25,9 +25,22 @@
 using namespace triqs::arrays;
 using namespace triqs::arrays::permutations;
 
+template<ull F> struct P { 
+ static constexpr ull value = F;
+ friend std::ostream & operator <<( std::ostream & out, P const &  s) { 
+  //out << "Permutation of size " << permutations::size(s.value) << " : "<< std::hex;
+  out << std::hex;
+  s.print(out, std::integral_constant<ull,0>()); 
+  return out << std::dec;
+ } 
+
+ template<ull c> void print( std::ostream & out, std::integral_constant<ull,c>) const { out << apply(this->value,c); print(out,  std::integral_constant<ull,c+1>());}
+ void print( std::ostream & out, std::integral_constant<ull,size(F)>) const {}
+};
+
 int main(int argc, char **argv) {
 
-  init_python_stuff(argc,argv);
+ init_python_stuff(argc,argv);
 
  constexpr auto p0= permutation(0,1);
  constexpr auto p=  permutation(0,2,1);
@@ -51,8 +64,8 @@ int main(int argc, char **argv) {
  INVERSE(p);
  INVERSE(p2);
  INVERSE(pc);
- 
- #define ID(n)\
+
+#define ID(n)\
  std::cout  << " identity  :" << P<identity(n)>() << std::endl ;\
  std::cout  << " ridentity :" << P<ridentity(n)>() << std::endl<<std::endl  ;
 

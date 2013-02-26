@@ -46,12 +46,6 @@ namespace triqs { namespace arrays { namespace permutations {
  constexpr ull _ridentity(ull n) { return  ( (n-1ull) - n* (1ull<<4) + (1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
  constexpr ull ridentity(ull n) { return n + 0x10 *_ridentity(n); }
 
- //constexpr ull _identity(ull n) { return  ( (n-1)*(1ull<<(4*(n+1))) +(1ull<<4)- n *(1<<(4*n))) /( (1<<4) -1) /((1<<4) -1); } 
- //constexpr ull identity(ull n) { return n + 0x10 * _identity(n);}
-
- //constexpr ull _ridentity(ull n) { return  ( (n-1) - n* (1<<4) + (1<<(4*n))) /( (1<<4) -1) /((1<<4) -1); } 
- //constexpr ull ridentity(ull n) { return n + 0x10 *_ridentity(n); }
-
  constexpr ull make_perm_impl(){ return 0;}
  template<typename ... T> constexpr ull make_perm_impl(ull i0, T... x) { return i0 + 0x10 * make_perm_impl(x...); } 
  template<typename ... T> constexpr ull permutation(T... x) { return ull(sizeof...(T)) + 0x10* make_perm_impl(x...); } 
@@ -59,15 +53,9 @@ namespace triqs { namespace arrays { namespace permutations {
  constexpr ull compose_impl(ull p1, ull p2, ull c) { return apply(p2, apply(p1,c)) + 16ull * ( (c+1 <size(p1) ? compose_impl(p1,p2,c+1ull) : 0)); }
  constexpr ull compose(ull p1, ull p2) { return size(p1) + 0x10* compose_impl(p1,p2, 0);}
 
- // ERROR !!!
- /* constexpr ull inverse_impl(ull p, ull c) { return (c << (4*apply(p,c))) + (c>0 ? inverse_impl(p,c-1): 0 ); }
-    constexpr ull inverse(ull p) { return inverse_impl(p,size(p)-1);}
-    */
- template<int c> struct _inverse { static constexpr ull invoke(ull p) { return (ull(c) << (4*apply(p,c))) + _inverse<c+1>::invoke(p);} };
- template<> struct _inverse<15> { static constexpr ull invoke(ull p) { return 0ull; } };
- constexpr ull inverse(ull p) { return size(p) + 0x10ull*( _inverse<0>::invoke(p) - 7ull*15ull + size(p)*(size(p)-1ull)/2ull);}
-
-
+  constexpr ull inverse_impl(ull p, ull c) { return (c << (4*apply(p,c))) + (c>0 ? inverse_impl(p,c-1): 0 ); }
+  constexpr ull inverse(ull p) { return size(p) + 0x10ull*inverse_impl(p,size(p)-1);}
+ 
 #else
 
  constexpr ull _identity(ull n) { return  ( (n-1ull)*(1ull<<(4*(n+1))) +(1ull<<4)- n *(1ull<<(4*n))) /( (1ull<<4) -1ull) /((1ull<<4) -1ull); } 
@@ -98,30 +86,14 @@ namespace triqs { namespace arrays { namespace permutations {
  constexpr ull inverse(ull p) { return size(p) + 0x10ull*( _inverse<0>::invoke(p) - 7ull*15ull + size(p)*(size(p)-1ull)/2ull);}
 
 #endif
-
- template<ull F> struct P { 
-  static constexpr ull value = F;
-  friend std::ostream & operator <<( std::ostream & out, P const &  s) { 
-   //out << "Permutation of size " << permutations::size(s.value) << " : "<< std::hex;
-   out << std::hex;
-   s.print(out, std::integral_constant<ull,0>()); 
-   return out << std::dec;
-  } 
-
-  template<ull c> void print( std::ostream & out, std::integral_constant<ull,c>) const { out << apply(this->value,c); print(out,  std::integral_constant<ull,c+1>());}
-  void print( std::ostream & out, std::integral_constant<ull,size(F)>) const {}
- };
-
+ 
  inline void print( std::ostream & out, ull perm) { 
   out << "(";
   for (int i =0; i< permutations::size(perm); ++i) { out << (i!=0 ? " " : "") << apply(perm,i);}
   out << ")";
  }
-
 }
-
 using permutations::permutation;
-
 }}
 #endif
 
