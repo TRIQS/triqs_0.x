@@ -37,6 +37,7 @@ int main() {
  auto GF =  triqs::gf::block<imfreq>::make_gf_view (V); //{G1,G2,G3});
  //auto GF = triqs::gf::block<imfreq>::make_gf_view ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
+ std::cout  << "Number of blocks " << GF.mesh().size()<<std::endl ;
  auto g0 = GF(0);
  auto g0v = GF_v(0)();
 
