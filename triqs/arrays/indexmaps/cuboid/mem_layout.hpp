@@ -27,7 +27,7 @@ namespace triqs { namespace arrays {
 
  namespace indexmaps { namespace mem_layout {
   /* The storage order is given by a permutation P stored in a ull_t (unsigned long long) as in permutations::..
-   *   P[0] : the fastest index, 
+   *   P[0] : the fastest index,
    *   P[RANK-1] : the slowest index
    *   Example : 
    *   012 : Fortran, the first index is the fastest
@@ -62,48 +62,44 @@ namespace triqs { namespace arrays {
     (flags::traversal_order_fortran(fl)  ? fortran_order(rank) : (to==0 ? c_order(rank) : to )));}
   
   template< int rank, ull_t fl, ull_t to> struct get_traversal_order { static constexpr ull_t value = _get_traversal_order (rank,fl,to); };
- }}
-
 #else
- 
+
   constexpr int memory_rank_to_index(ull_t p, int r) { return permutations::apply(p, r);} 
   constexpr int index_to_memory_rank(ull_t p, int r) { return permutations::apply(permutations::inverse(p), r);} 
 
   template<ull_t p, int r> struct index_to_memory_rank_tr {  static constexpr ull_t value = permutations::apply(permutations::inverse(p), r);};
-  
+
   constexpr bool is_fortran (ull_t p){ return p == permutations::identity(permutations::size(p));}
   constexpr bool is_c       (ull_t p){ return p == permutations::ridentity(permutations::size(p));}
 
   constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
   constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
- 
+
   template<int n> struct fortran_order_tr { static constexpr ull_t value = permutations::identity(n);};
   template<int n> struct c_order_tr       { static constexpr ull_t value = permutations::ridentity(n);};
- 
+
   template< int rank, ull_t fl, ull_t to> struct get_traversal_order {
    static constexpr ull_t value = (flags::traversal_order_c<fl>::value ? c_order_tr<rank>::value :
-    (flags::traversal_order_fortran<fl>::value ?  fortran_order_tr<rank>::value : (to==0 ?  c_order_tr<rank>::value : to )));
+     (flags::traversal_order_fortran<fl>::value ?  fortran_order_tr<rank>::value : (to==0 ?  c_order_tr<rank>::value : to )));
   };
+#endif
  }}
 
 
-#endif
 
  struct memory_layout_fortran {};
  struct memory_layout_c {};
 
 #define FORTRAN_LAYOUT (triqs::arrays::memory_layout_fortran())
 #define C_LAYOUT (triqs::arrays::memory_layout_fortran())
- //struct custom_memory_layout {};
 
  // stores the layout == order of the indices in memory
  // wrapped into a little type to make constructor unambigous.
  template<int Rank>
   struct memory_layout { 
    ull_t value; 
-   //memory_layout() { value =indexmaps::mem_layout::c_order(Rank);} 
    explicit memory_layout (ull_t v) : value(v) {assert((permutations::size(v)==Rank));} 
-   memory_layout (char ml) {
+   memory_layout (char ml='C') {
     assert( (ml=='C') || (ml == 'F'));
     value = (ml=='F' ? indexmaps::mem_layout::fortran_order(Rank) : indexmaps::mem_layout::c_order(Rank));
    }
@@ -113,11 +109,19 @@ namespace triqs { namespace arrays {
     explicit memory_layout(int i0, int i1, INT ... in) : value (permutations::permutation(i0,i1,in...)){
      static_assert( sizeof...(in)==Rank-2, "Error");
     }
+   memory_layout (const memory_layout & C) = default; 
+   memory_layout (memory_layout && C) { *this = std::move(C);}
+   friend void swap( memory_layout & a, memory_layout & b){ std::swap(a.value,b.value);}
+   memory_layout & operator =( memory_layout const &) = default;
+   memory_layout & operator =( memory_layout && x) { swap(*this,x); return *this;}
+
    bool operator ==( memory_layout const & ml) const { return value == ml.value;}
    bool operator !=( memory_layout const & ml) const { return value != ml.value;}
 
-  friend std::ostream & operator <<( std::ostream & out, memory_layout const &  s) { permutations::print(out,s.value); return out;}
+   friend std::ostream & operator <<( std::ostream & out, memory_layout const &  s) { permutations::print(out,s.value); return out;}
   };
+
+ //template<int Rank> void swap( memory_layout<Rank> & a, memory_layout<Rank> & b) { std::swap(a.value,b.value);}
 
 }}//namespace triqs::arrays 
 #endif

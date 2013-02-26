@@ -49,56 +49,21 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  */
  template<int Rank, ull_t OptionsFlags, ull_t TraversalOrder >
   class map {
-   static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
-   //static constexpr bool CheckBounds = flags::bound_check(OptionsFlags); // icc bug
    public :
+   static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
    static constexpr ull_t traversal_order_in_template = TraversalOrder;
-   //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(Rank, OptionsFlags, TraversalOrder);
    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
+   static const unsigned int rank = Rank;
+   typedef mini_vector<size_t,rank> lengths_type;
+   typedef mini_vector<std::ptrdiff_t, rank> strides_type;
 
    typedef domain_t<Rank> domain_type;
    domain_type const & domain() const { return mydomain;}
 
-   map (memory_layout<Rank> ml = memory_layout<Rank>(traversal_order)):mydomain(), start_shift_(0), memory_order_(ml) {}
-   map (map const & C) = default;
-
-   map(domain_type const & C):
-    mydomain(C), start_shift_(0), memory_order_( traversal_order ) { compute_stride_compact(); }
-
-   map(domain_type const & C, memory_layout<Rank> ml):
-    mydomain(C), start_shift_(0), memory_order_(ml) { compute_stride_compact(); }
-
-   /// Returns the shift in position of the element key.
-   template <typename KeyType>
-    size_t operator[] (KeyType const & key ) const {
-     _chk<CheckBounds, domain_type, KeyType>::invoke (this->domain(),key);
-     return start_shift_ + dot_product(key,this->strides());
-    }
-
-   friend std::ostream & operator << (std::ostream & out, const map & P) {
-    out <<"  ordering = {";
-    //arrays::permutations::print(out, P.memory_order_);
-    return out <<"}"<<std::endl
-     <<"  Lengths  :  "<<P.lengths() << std::endl
-     <<"  Stride  : "<<P.strides_ << std::endl;
-   }
-
-   //------------- end of concept  ---------------------
-
-   // mv into the concept ?
-   template<typename ... Args> size_t operator()(Args const & ... args) const {
-    _chk_v<CheckBounds, domain_type, Args...>::invoke (this->domain(),args...);
-    return start_shift_ + _call_impl<0>(args...);
-   }
-   private :
-   template<int N, typename Arg0, typename ... Args>
-    size_t _call_impl( Arg0 const & arg0, Args const & ... args) const { return arg0* strides_[N] + _call_impl<N+1>(args...); }
-   template<int N> size_t _call_impl() const { return 0;}
-
-   public:
-   static const unsigned int rank = Rank;
-   typedef mini_vector<size_t,rank> lengths_type;
-   typedef mini_vector<std::ptrdiff_t, rank> strides_type;
+   // basic construction
+   map (memory_layout<Rank> const & ml = memory_layout<Rank>(traversal_order)):mydomain(), start_shift_(0), memory_order_(ml) {}
+   map(domain_type const & C): mydomain(C), start_shift_(0), memory_order_(traversal_order) {compute_stride_compact();}
+   map(domain_type const & C, memory_layout<Rank> ml): mydomain(C), start_shift_(0), memory_order_(ml) {compute_stride_compact();}
 
    /// Construction from the length, the stride, start_shift
    map(lengths_type const & Lengths, strides_type const & strides, std::ptrdiff_t start_shift ):
@@ -113,6 +78,44 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    /// Construction from another map with the same order (used in grouping indices)
    template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):
     mydomain(C.domain()), strides_(C.strides()), start_shift_(C.start_shift()), memory_order_ (C.memory_indices_layout()) {}
+
+   // value semantics
+   map (map const & C) = default;
+   map (map && C) { *this = std::move(C);}
+   friend void swap(map & a, map & b) {
+    swap(a.mydomain, b.mydomain); std::swap(a.start_shift_,b.start_shift_); 
+#ifdef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+    std::swap(a.memory_order_.value, b.memory_order_.value);// why is there a link pb on icc ? temporary fix...
+#else
+    std::swap(a.memory_order_, b.memory_order_);
+#endif
+    swap(a.strides_, b.strides_);
+   }
+   map & operator = (map const & m) = default;
+   map & operator = (map && m) { swap(*this,m); return *this;}
+
+   /// Returns the shift in position of the element key.
+   template <typename KeyType>
+    size_t operator[] (KeyType const & key ) const {
+     _chk<CheckBounds, domain_type, KeyType>::invoke (this->domain(),key);
+     return start_shift_ + dot_product(key,this->strides());
+    }
+
+   friend std::ostream & operator << (std::ostream & out, const map & P) {
+    return out <<"  ordering = {"<<P.memory_indices_layout()<<"}"<<std::endl
+     <<"  Lengths  :  "<<P.lengths() << std::endl
+     <<"  Stride  : "<<P.strides_ << std::endl;
+   }
+
+   template<typename ... Args> size_t operator()(Args const & ... args) const {
+    _chk_v<CheckBounds, domain_type, Args...>::invoke (this->domain(),args...);
+    return start_shift_ + _call_impl<0>(args...);
+   }
+   private :
+   template<int N, typename Arg0, typename ... Args>
+    size_t _call_impl( Arg0 const & arg0, Args const & ... args) const { return arg0* strides_[N] + _call_impl<N+1>(args...); }
+   template<int N> size_t _call_impl() const { return 0;}
+   public:
 
    ///
    bool is_contiguous() const {
@@ -170,9 +173,8 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      typedef map indexmap_type;
      typedef typename domain_type::index_value_type indices_type;
      typedef const std::ptrdiff_t return_type;
-     iterator (): io(0), im(NULL), pos(0),atend(true) {}
+     iterator (): im(NULL), pos(0),atend(true) {}
      iterator (const map & P, bool atEnd=false, ull_t iteration_order=0):
-      io((iteration_order !=0 ? iteration_order : P.memory_indices_layout().value)),
       im(&P), pos(im->start_shift()),atend(atEnd) {}
      indices_type const & indices() const { return indices_tuple; }
      operator bool() const { return !atend;}
@@ -192,7 +194,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
      inline void inc_ind_impl(std::integral_constant<int,0>) { atend = true;}
      bool equal(iterator const & other) const {return ((other.im==im)&&(other.atend==atend)&&(other.pos==pos));}
      return_type & dereference() const { assert (!atend); return pos; }
-     ull_t io;
      map const * im;
      indices_type indices_tuple;
      std::ptrdiff_t pos;

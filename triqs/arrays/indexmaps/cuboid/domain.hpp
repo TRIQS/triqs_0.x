@@ -30,7 +30,7 @@
 
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  using namespace triqs::arrays::permutations;
- 
+
  /// Standard hyper_rectangular domain for arrays
  template<int Rank>
   class domain_t {
@@ -42,6 +42,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    //static const unsigned int rank = Rank;
    static constexpr unsigned int rank = Rank;
    typedef n_uple index_value_type;
+
    domain_t ():lengths_(){}
    domain_t (n_uple const & lengths):lengths_(lengths) {}
    domain_t (n_uple && lengths):lengths_(std::move(lengths)) {}
@@ -50,7 +51,12 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
     if (!(l.size()==rank)) TRIQS_RUNTIME_ERROR << "cuboid domain_t construction : vector size incorrect : got "<<l.size() <<" while expected "<< rank;
     lengths_ = n_uple(l);
    }
-   domain_t (const domain_t & C):lengths_(C.lengths_){}
+   domain_t (const domain_t & C) = default;
+   domain_t (domain_t && C) { *this = std::move(C);}
+   friend void swap( domain_t & a, domain_t & b) { swap(a.lengths_,b.lengths_);}
+   domain_t & operator =( domain_t const &) = default;
+   domain_t & operator =( domain_t && x) { swap(*this,x); return *this;}
+
    size_t number_of_elements() const { return lengths_.product_of_elements();}
    bool operator==(domain_t const & X) const { return this->lengths_ == X.lengths_;}
    bool operator!=(domain_t const & X) const { return !(this->lengths_ == X.lengths_);}
@@ -108,15 +114,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    friend std::ostream & operator<<(std::ostream & out, domain_t const & x){return out<<"Cuboid of rank "<<x.rank<<" and dimensions "<<x.lengths();}
   };
 
- /*/// ------------  tensor product ------------------------
-   template<class D1, class D2>
-   typename result_of::tensor_product<D1,D2>::type tensor_product( D1 const & d1, D2 const & d2) {
-   mini_vector<size_t,D1::rank + D2::rank> res; const int R1(D1::rank), R2(D2::rank);
-   for (int u=0;u<R1; ++u) res[u] = d1.lengths()[u];
-   for (int u=0;u<R2; ++u) res[D1::rank + u ] = d2.lengths()[u];
-   return  domain_t<D1::rank + D2::rank> (res);
-   }
-   */
 }
 /// ------------  Pretty Printing : specializing the default behaviour for d=1,2  -------------------------
 namespace PrettyPrint_details {
