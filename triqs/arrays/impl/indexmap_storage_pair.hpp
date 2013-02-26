@@ -93,7 +93,8 @@ namespace triqs { namespace arrays {
    protected: 
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-    indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) { 
+    indexmap_storage_pair (PyObject * X, bool allow_copy, const char * name ) {
+     //std::cout << " Enter IPS ref count = "<< X->ob_refcnt << std::endl;
      try { 
       numpy_interface::numpy_extractor<indexmap_type,value_type> E(X, allow_copy);
       this->indexmap_ = E.indexmap(); this->storage_  = E.storage();
@@ -109,6 +110,7 @@ namespace triqs { namespace arrays {
        <<"\nfrom the python object \n"<< numpy_interface::object_to_string(X) 
        <<"\nThe error was :\n "<<s.what();
      }
+     //std::cout << " Leave IPS ref count = "<< X->ob_refcnt << std::endl;
     }
 #endif
 

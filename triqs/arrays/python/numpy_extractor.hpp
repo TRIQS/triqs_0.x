@@ -19,7 +19,7 @@
  *
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_NUMPY_EXTRACTOR_H
-#define TRIQS_ARRAYS_NUMPY_EXTRACTOR_H 
+#define TRIQS_ARRAYS_NUMPY_EXTRACTOR_H
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "../storages/shared_block.hpp"
@@ -28,10 +28,10 @@
 
 namespace triqs { namespace arrays { namespace numpy_interface  {
 
- inline std::string object_to_string (PyObject * p) { 
+ inline std::string object_to_string (PyObject * p) {
   if (!PyString_Check(p)) TRIQS_RUNTIME_ERROR<<" Internal error, expected a python string .....";
-  return PyString_AsString(p); 
- } 
+  return PyString_AsString(p);
+ }
 
  template <class T> struct numpy_to_C_type;
 #define CONVERT(C,P) template <> struct numpy_to_C_type<C> { enum {arraytype = P}; }
@@ -57,102 +57,93 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 
  struct copy_exception : public triqs::runtime_error {};
 
- template<typename IndexMapType, typename ValueType > struct numpy_extractor { 
+ // return a NEW (owned) reference
+ //
+ inline PyObject * numpy_extractor_impl ( PyObject * X, bool allow_copy, std::string type_name, 
+   int elementsType, int rank, size_t * lengths, std::ptrdiff_t * strides, size_t size_of_ValueType) {
 
-  numpy_extractor ( PyObject * X, bool allow_copy) {
-   if (X==NULL) TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is NULL !";
-   if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";
+  PyObject * numpy_obj;
 
-   //if ((!PyArray_Check(X)) && (Order=='D'))
-   // TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is not a numpy and you ask me to deduce the ordering in memory !";
+  if (X==NULL) TRIQS_RUNTIME_ERROR<<"numpy interface : the python object is NULL !";
+  if (_import_array()!=0) TRIQS_RUNTIME_ERROR <<"Internal Error in importing numpy";
 
-   const int elementsType (numpy_to_C_type<typename boost::remove_const<ValueType>::type>::arraytype);
-   int rank = IndexMapType::rank;
-   static const char * error_msg = "   A deep copy of the object would be necessary while views are supposed to guarantee to present a *view* of the python data.\n";
+  static const char * error_msg = "   A deep copy of the object would be necessary while views are supposed to guarantee to present a *view* of the python data.\n";
 
-   if (!allow_copy) {
-    // in case of a view, we decide ourselves if we can do it...
-    // a previous uses PyArray_FromAny, but behaviour changes between different version of numpy, so it is not portable...
-    if (!PyArray_Check(X)) 
-     throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";  
+  if (!allow_copy) {
+   if (!PyArray_Check(X)) throw copy_exception () << error_msg<<"   Indeed the object was not even an array !\n";
+   if ( elementsType != PyArray_TYPE((PyArrayObject*)X))
+    throw copy_exception () << error_msg<<"   The deep copy is caused by a type mismatch of the elements. Expected "<< type_name<< " and found XXX \n";
+   PyArrayObject *arr = (PyArrayObject *)X;
+   if ( arr->nd != rank) throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
+   numpy_obj = X; Py_INCREF(X);
+  }
+  else {
+   // From X, we ask the numpy library to make a numpy, and of the correct type.
+   // This handles automatically the cases where :
+   //   - we have list, or list of list/tuple
+   //   - the numpy type is not the one we want.
+   //   - adjust the dimension if needed
+   // If X is an array :
+   //   - if Order is same, don't change it
+   //   - else impose it (may provoque a copy).
+   // if X is not array :
+   //   - Order = FortranOrder or SameOrder - > Fortran order otherwise C
+   bool ForceCast = false;// Unless FORCECAST is present in flags, this call will generate an error if the data type cannot be safely obtained from the object.
+   int flags = (ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
+   if (!(PyArray_Check(X) ))
+    //flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
+    flags |= (NPY_C_CONTIGUOUS); //impose mem order
+   numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL );
 
-    if ( elementsType != PyArray_TYPE((PyArrayObject*)X)) 
-     throw copy_exception () << error_msg<<"   The deep copy is caused by a type mismatch of the elements. \n";
-
-    PyArrayObject *arr = (PyArrayObject *)X;    
-    if ( arr->nd != rank)
-     throw copy_exception () << error_msg<<"   Rank mismatch . numpy array is of rank "<< arr->nd << "while you ask for rank "<< rank<<". \n";
-
-    //if ((Order == 'C') && (PyArray_ISFORTRAN(arr))) 
-    // throw copy_exception () << error_msg<<"     The numpy is in Fortran order while it is expected in C order. \n";
-
-    //if ((Order == 'F') && (!PyArray_ISFORTRAN(arr))) 
-    // throw copy_exception () << error_msg<<"     The numpy is not in Fortran order as it is expected. \n";
-
-    numpy_obj = X; Py_INCREF(X); 
+   // do several checks
+   if (!numpy_obj) {// The convertion of X to a numpy has failed !
+    if (PyErr_Occurred()) {PyErr_Print();PyErr_Clear();}
+    TRIQS_RUNTIME_ERROR<<"numpy interface : the python object  is not convertible to a numpy. ";
    }
-   else { 
-    // From X, we ask the numpy library to make a numpy, and of the correct type.
-    // This handles automatically the cases where : 
-    //   - we have list, or list of list/tuple
-    //   - the numpy type is not the one we want.
-    //   - adjust the dimension if needed
-    // If X is an array : 
-    //   - if Order is same, don't change it
-    //   - else impose it (may provoque a copy).
-    // if X is not array : 
-    //   - Order = FortranOrder or SameOrder - > Fortran order otherwise C
-    bool ForceCast = false;// Unless FORCECAST is present in flags, this call will generate an error if the data type cannot be safely obtained from the object.
-    int flags = (ForceCast ? NPY_FORCECAST : 0) ;// do NOT force a copy | (make_copy ?  NPY_ENSURECOPY : 0);
-    if (!(PyArray_Check(X) )) 
-     flags |= ( IndexMapType::traversal_order == indexmaps::mem_layout::c_order(IndexMapType::rank) ? NPY_C_CONTIGUOUS : NPY_F_CONTIGUOUS); //impose mem order
-    //if (!(PyArray_Check(X) && (Order=='D'))) flags |= (Order =='F' ? NPY_F_CONTIGUOUS : NPY_C_CONTIGUOUS); //impose mem order
-    numpy_obj= PyArray_FromAny(X,PyArray_DescrFromType(elementsType), rank,rank, flags , NULL );
+   assert (PyArray_Check(numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));
 
-    // do several checks
-    if (!numpy_obj) {// The convertion of X to a numpy has failed !
-     if (PyErr_Occurred()) {PyErr_Print();PyErr_Clear();}
-     TRIQS_RUNTIME_ERROR<<"numpy interface : the python object  is not convertible to a numpy. ";
-    }
-    assert (PyArray_Check(numpy_obj)); assert((numpy_obj->ob_refcnt==1) || ((numpy_obj ==X)));
-
-    arr_obj = (PyArrayObject *)numpy_obj;
-    try {
-     if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
-     if (arr_obj->descr->type_num != elementsType) 
-      TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<arr_obj->descr->type_num <<" vs "<<elementsType;
-     //if (Order == 'F') { if (!PyArray_ISFORTRAN(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be Fortran array";}
-     //else {if (!PyArray_ISCONTIGUOUS(numpy_obj)) TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : should be contiguous";}
-    }
-    catch(...) { Py_DECREF(numpy_obj); throw;} // make sure that in case of problem, the reference counting of python is still ok...
-   }
-
+   PyArrayObject *arr_obj;
    arr_obj = (PyArrayObject *)numpy_obj;
-  } 
-
-  ///
-  IndexMapType indexmap() const {
-   // extract strides and lengths
-   const size_t dim =arr_obj->nd; // we know that dim == rank 
-   mini_vector<size_t,IndexMapType::rank> lengths;
-   mini_vector<std::ptrdiff_t,IndexMapType::rank> strides; 
-   //std::vector<size_t> lengths (dim);
-   //std::vector<std::ptrdiff_t> strides(dim); 
-   for (size_t i=0; i< dim ; ++i) {
-    lengths[i] = size_t(arr_obj-> dimensions[i]); 
-    strides[i] = std::ptrdiff_t(arr_obj-> strides[i])/sizeof(ValueType);
+   try {
+    if (arr_obj->nd!=rank)  TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : dimensions do not match";
+    if (arr_obj->descr->type_num != elementsType)
+     TRIQS_RUNTIME_ERROR<<"numpy interface : internal error : incorrect type of element :" <<arr_obj->descr->type_num <<" vs "<<elementsType;
    }
-   return IndexMapType (lengths,strides,0);
-   //return IndexMapType (mini_vector<size_t,IndexMapType::rank>(lengths), mini_vector<std::ptrdiff_t,IndexMapType::rank>(strides),0);
+   catch(...) { Py_DECREF(numpy_obj); throw;} // make sure that in case of problem, the reference counting of python is still ok...
   }
 
-  ///
-  storages::shared_block<ValueType> storage() const { return storages::shared_block<ValueType> (numpy_obj,false); }
+  // extract strides and lengths
+  PyArrayObject *arr_obj;
+  arr_obj = (PyArrayObject *)numpy_obj;
+  const size_t dim =arr_obj->nd; // we know that dim == rank
+  for (size_t i=0; i< dim ; ++i) {
+   lengths[i] = size_t(arr_obj-> dimensions[i]);
+   strides[i] = std::ptrdiff_t(arr_obj-> strides[i])/ size_of_ValueType;
+  }
+
+  return numpy_obj;
+ }
+
+ // a little template class
+ template<typename IndexMapType, typename ValueType > struct numpy_extractor {
+
+  numpy_extractor (PyObject * X, bool allow_copy) {
+   numpy_obj = numpy_extractor_impl (X, allow_copy, typeid(ValueType).name(), numpy_to_C_type<typename boost::remove_const<ValueType>::type>::arraytype, IndexMapType::rank,
+     &lengths[0], &strides[0],sizeof(ValueType));
+  }
+
+  ~numpy_extractor(){ Py_DECREF(numpy_obj);}
+
+  IndexMapType indexmap() const { return IndexMapType (lengths,strides,0); }
+
+  storages::shared_block<ValueType> storage() const { return storages::shared_block<ValueType> (numpy_obj,true); }
+  // true means borrowed : object is owned by this class, which will decref it in case of exception ...
 
   private:
   PyObject * numpy_obj;
-  PyArrayObject *arr_obj;
+  mini_vector<size_t,IndexMapType::rank> lengths;
+  mini_vector<std::ptrdiff_t,IndexMapType::rank> strides;
  };
-}}} 
+}}}
 #endif
 #endif
