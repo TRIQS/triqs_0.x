@@ -51,7 +51,7 @@ class TBSuperLattice(TBLattice):
             self.__super_lattice_units = numpy.array(super_lattice_units, copy=True)
             assert self.__super_lattice_units.shape == (dim, dim)
         except:
-            raise ValueError, "super_lattice_units is not correct. Cf Doc"
+            raise ValueError, "super_lattice_units is not correct. Cf Doc. value is %s, dim = %s "%(super_lattice_units,dim)
 
         Ncluster_sites = int(numpy.rint(abs(numpy.linalg.det(self.__super_lattice_units ))))
         assert Ncluster_sites >0, "Superlattice vectors are not independant !"

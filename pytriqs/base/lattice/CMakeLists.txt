@@ -1,4 +1,3 @@
-
 SET(PYTHON_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
   ${CMAKE_CURRENT_SOURCE_DIR}/bz_patch.py
@@ -9,8 +8,9 @@ SET(PYTHON_SOURCES
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/lattice)
 
 # THE C++ code
-SET(CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/C++)
+#SET(CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/C++)
+cython_module(LatticeTools lattice_tools  base/lattice )
 
-python_build_module(LatticeTools _pytriqs_LatticeTools base/lattice lattice_wrap.cpp)
-target_link_libraries(_pytriqs_LatticeTools triqs ${TRIQS_LINK_LIBS})
+# ???
+#target_link_libraries(_pytriqs_LatticeTools triqs ${TRIQS_LINK_LIBS})
 

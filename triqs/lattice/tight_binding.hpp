@@ -21,7 +21,6 @@
 #ifndef TRIQS_LATTICE_TIGHTBINDINGS_H
 #define TRIQS_LATTICE_TIGHTBINDINGS_H
 #include "bravais_lattice_and_brillouin_zone.hpp"
-#include <boost/unordered_map.hpp>
 
 namespace triqs { namespace lattice_tools { 
 
@@ -31,34 +30,54 @@ namespace triqs { namespace lattice_tools {
    Overlap between orbital is taken as unit matrix. 
   */
  class tight_binding { 
-  public : 
-   typedef std::vector<int>                                      arg_type;
-   typedef matrix_view <dcomplex>                                   return_type;
-   typedef matrix <dcomplex>                                        return_construct_type;
-   typedef boost::unordered_map<arg_type, array<dcomplex,2> >   map_type;
-
-   tight_binding(bravais_lattice const & bl__, map_type const & t_r);
-   tight_binding(bravais_lattice const & bl__,boost::python::object dct);
-   bravais_lattice const & lattice() const { return bl_;}
-   size_t n_bands() const { return bl_.n_orbitals();}
-   map_type::const_iterator begin() const { return tr.begin();} 
-   map_type::const_iterator end()   const { return tr.end();} 
-
-  protected:
+   typedef std::vector<std::pair<std::vector<long>, matrix<dcomplex>>> displ_value_stack_t;
+   displ_value_stack_t displ_value_stack;
    bravais_lattice bl_;
-   map_type tr;
-   void check();
+  public : 
+   typedef std::vector<long>                                      arg_type;
+
+   ///
+   tight_binding (bravais_lattice const & bl) : bl_(bl) {};
+  
+   /// Underlying lattice 
+   bravais_lattice const & lattice() const { return bl_;}
+
+   /// Number of bands, i.e. size of the matrix t(k)
+   size_t n_bands() const { return bl_.n_orbitals();}
+   
+   /**
+    * Push_back mechanism of a pair displacement -> matrix
+    * VectorIntType is anything from which a std::vector<long> can be constructed
+    * MatrixDComplexType is anything from which a matrix<dcomplex> can be constructed
+    */
+   template<typename VectorIntType, typename MatrixDComplexType>
+    void push_back(VectorIntType && v, MatrixDComplexType && m) {
+     std::vector<long> V(std::forward<VectorIntType>(v)); 
+     if (v.size() != bl_.dim()) TRIQS_RUNTIME_ERROR<<"tight_binding : displacement of incorrect size : got "<< v.size() << "instead of "<< bl_.dim();
+     matrix<dcomplex> M(std::forward<MatrixDComplexType>(m));
+     if (M.len(0) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.len(0) <<" instead of "<< n_bands();
+     if (M.len(1) != n_bands()) TRIQS_RUNTIME_ERROR<<"tight_binding : the first dim matrix is of size "<<  M.len(1) <<" instead of "<< n_bands();
+     displ_value_stack.push_back(std::make_pair(std::move(V), std::move(M)));
+    }
+
+   void reserve(size_t n) { displ_value_stack.reserve(n);}
+
+   // iterators
+   typedef displ_value_stack_t::const_iterator const_iterator; 
+   typedef displ_value_stack_t::iterator iterator; 
+   const_iterator begin() const { return displ_value_stack.begin();} 
+   const_iterator end() const   { return displ_value_stack.end();} 
+   iterator begin() { return displ_value_stack.begin();} 
+   iterator end()   { return displ_value_stack.end();} 
  };
 
  /**
    Factorized version of hopping (for speed)
    k_in[:,n] is the nth vector
    In the result, R[:,:,n] is the corresponding hopping t(k)
-  */
+   */
  array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2> const & k_stack);
- // only the default array have a boost python converter....
- // not optimal ordering here . But why is this in FORTRAN ?
- //array_view <dcomplex,3> hopping_stack (tight_binding const & TB, array_view<double,2, arrays::TraversalOrderFortran> const & k_stack);
+ // not optimal ordering here
 
  std::pair<array<double,1>, array<double,2> > dos(tight_binding const & TB, size_t nkpts, size_t neps); 
  std::pair<array<double,1>, array<double,1> > dos_patch(tight_binding const & TB, const array<double,2> & triangles, size_t neps, size_t ndiv);

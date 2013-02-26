@@ -68,12 +68,12 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    /// Construction from the length, the stride, start_shift
    map(lengths_type const & Lengths, strides_type const & strides, std::ptrdiff_t start_shift ):
     mydomain(Lengths), strides_(strides), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides)) {}
+    memory_order_ (memory_layout_from_strides(strides_)) {}
 
    /// Construction from the length, the stride, start_shift
    map(lengths_type && Lengths, strides_type && strides, std::ptrdiff_t start_shift ):
     mydomain(std::move(Lengths)), strides_(std::move(strides)), start_shift_(start_shift),
-    memory_order_ (memory_layout_from_strides(strides)) {}
+    memory_order_ (memory_layout_from_strides(strides_)) {}
 
    /// Construction from another map with the same order (used in grouping indices)
    template<ull_t Opt2, ull_t To2> map (map<Rank,Opt2,To2> const & C):

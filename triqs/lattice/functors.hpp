@@ -51,37 +51,30 @@ namespace triqs { namespace lattice_tools {
   class fourier_impl {
    F f;
    brillouin_zone bz_;
+  // deduce the return type from decltype(begin()->second)
    public: 
-   //typedef typename F::arg_type K_view_type;
-   typedef typename F::return_type return_type;
+   typedef typename non_view_type_if_exists_else_type< decltype(f.begin()->second)>::type return_construct_type;
+   typedef typename view_type_if_exists_else_type<return_construct_type>::type return_type;
    typedef K_view_type arg_type;
 
    fourier_impl (F f_):f(f_), bz_(f_.lattice()), res(f.n_bands(),f.n_bands()) {}
 
-   brillouin_zone const & bz() const { return bz_; }
-
-   return_type operator()(K_view_type const & k) const {
-    typename F::return_construct_type res(f.n_bands(),f.n_bands()); res()=0;
-    for (typename F::map_type::const_iterator it = f.begin(); it != f.end(); ++it) { 
-     res += it->second * exp( 2*pi*I* dot_product(k,it->first)); 
-    }
-   }
+   //brillouin_zone const & bz() const { return bz_; }
 
    return_type operator()(K_view_type const & k) {
     res()=0;
-    for (typename F::map_type::const_iterator it = f.begin(); it != f.end(); ++it) { 
-     res += it->second * exp( 2*pi*I* dot_product(k,it->first)); 
-    }
+    for (auto const & pdm : f) { res += pdm.second * exp( 2*pi*I* this->dot_product(k,pdm.first)); }
     return res;
    }
 
    protected:
    inline double dot_product(K_view_type const & a, typename F::arg_type const & b) const {
     assert(b.size()>= this->bz().lattice().dim()); 
-    double r=0; for (size_t i=0; i< this->bz().lattice().dim();++i) r += a(i) * b[i];
+    double r=0; for (size_t i=0; i< this->bz_.lattice().dim();++i) r += a(i) * b[i];
     return r;
    }
-   typename F::return_construct_type res;
+   return_construct_type res;
+   //typename F::return_construct_type res;
   };
 
  /**
@@ -90,7 +83,7 @@ namespace triqs { namespace lattice_tools {
   *   - and returns the Fourier transform f(k)
   */
  template<typename F> fourier_impl<F> Fourier(F f) { return fourier_impl<F> (f);}
- namespace result_of { template<typename F> struct Fourier { typedef fourier_impl<F> type;}; }
+ //namespace result_of { template<typename F> struct Fourier { typedef fourier_impl<F> type;}; }
 
 }}
 

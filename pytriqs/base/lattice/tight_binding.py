@@ -23,13 +23,16 @@
 __all__ = ['BravaisLattice', 'TightBinding', 'dos', 'dos_patch', 'energies_on_bz_grid', 'energies_on_bz_path',
            'hopping_stack', 'TBLattice']
 
-from pytriqs_LatticeTools import bravais_lattice as BravaisLattice
-from pytriqs_LatticeTools import tight_binding as TightBinding
-from pytriqs_LatticeTools import dos_patch as dos_patch_c
-from pytriqs_LatticeTools import dos as dos_c
-from pytriqs_LatticeTools import energies_on_bz_grid, energies_on_bz_path, hopping_stack
+from lattice_tools import BravaisLattice as BravaisLattice
+from lattice_tools import TightBinding as TightBinding
+from lattice_tools import dos_patch as dos_patch_c
+from lattice_tools import dos as dos_c
+from lattice_tools import energies_on_bz_grid, energies_on_bz_path, hopping_stack
 from pytriqs.base.dos import DOS
 import numpy
+
+
+# MOVE THIS BACK INTO CYTHON !!!!
 
 def dos(tight_binding, n_kpts, n_eps, name) : 
     """
@@ -50,10 +53,6 @@ def dos_patch(tight_binding, triangles, n_kpts, n_div, name) :
     eps, arr = dos_c(tight_binding, n_kpts, eps)
     return DOS (eps, arr, name)
 
-
-
-
-
 # for backward compatibility. Not documented. 
 class TBLattice:
 
@@ -66,10 +65,11 @@ class TBLattice:
         self.bl = BravaisLattice(units, orb)
         self.tb = TightBinding(self.bl, self._hop) #, orbital_positions )
         self.dim = self.bl.dim
-        self.NOrbitalsInUnitCell = self.bl.n_orbitals
+        self.NOrbitalsInUnitCell = self.bl.n_orbitals()
         self.Units = units
         self.OrbitalPositions = orbital_positions 
         self.OrbitalNames = orbital_names
+        print "self.bl.n_orbitals", self.bl.n_orbitals()
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
     def latt_to_real_x(self, p) : 

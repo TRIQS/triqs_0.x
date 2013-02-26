@@ -57,11 +57,7 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     TRACE_MEM_DEBUG(" construct memblock from pyobject"<<obj<< " # ref ="<<obj->ob_refcnt<<" borrowed = "<< borrowed); 
     assert(obj); import_numpy_array(); 
     if (borrowed) Py_INCREF(obj);
-    // ICC CRASHES ON this ???
-    // THIS IS HIGHLY NOT NORMAL....
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
     if (!PyArray_Check(obj)) TRIQS_RUNTIME_ERROR<<"Internal error : mem_block construct from pyo : obj is not an array";
-#endif
     PyArrayObject * arr = (PyArrayObject *)(obj);
     size_ = PyArray_SIZE(arr);
     this->p = (non_const_value_type*)PyArray_DATA(arr); 
