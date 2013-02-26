@@ -32,7 +32,8 @@ namespace triqs { namespace utility {
    parameters_defaults (parameters_defaults && other) { swap(*this,other);}
    parameters_defaults & operator =  (parameters_defaults const & other)  = default;
    parameters_defaults & operator =  (parameters_defaults && other) { swap(*this,other); return *this;}
-   friend void swap(parameters_defaults & a, parameters_defaults &b) { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);}
+   friend void swap(parameters_defaults & a, parameters_defaults &b) 
+   { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);swap(a.is_optional, b.is_optional);  }
 
   private:
    typedef std::map<std::string, _object> map_t;
