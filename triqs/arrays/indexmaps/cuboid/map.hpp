@@ -56,7 +56,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    static const unsigned int rank = Rank;
    typedef mini_vector<size_t,rank> lengths_type;
    typedef mini_vector<std::ptrdiff_t, rank> strides_type;
-
    typedef domain_t<Rank> domain_type;
    domain_type const & domain() const { return mydomain;}
 

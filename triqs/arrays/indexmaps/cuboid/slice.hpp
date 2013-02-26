@@ -22,8 +22,8 @@
 #define TRIQS_ARRAYS_INDEXMAP_CUBOID_SLICE_H
 #include <triqs/utility/count_type_occurrence.hpp>
 #include "./slice_traversal_order.hpp"
-namespace triqs { namespace arrays { namespace indexmaps {  
- namespace cuboid_details { 
+namespace triqs { namespace arrays { namespace indexmaps {
+ namespace cuboid_details {
 #define LISILOSO  l_type const * li, s_type const * si, l_type * lo, s_type * so
   typedef size_t         l_type;
   typedef std::ptrdiff_t s_type;
@@ -78,16 +78,25 @@ namespace triqs { namespace arrays { namespace indexmaps {
  template<int R, ull_t Opt, ull_t To, typename... Args> struct slicer < cuboid::map<R, Opt,To>,  Args...>  { 
 
   static const unsigned int len = sizeof...(Args);
+  static constexpr bool has_ellipsis = (count_type_occurrence<ellipsis,Args...>::value>0);
   static_assert((count_type_occurrence<ellipsis,Args...>::value < 2), "Only one ellipsis is permitted");
-  static_assert((len>=R || (count_type_occurrence<ellipsis,Args...>::value > 0)), "Too few arguments in slice");
+  static_assert((len>=R || has_ellipsis), "Too few arguments in slice");
   static_assert(len<=R, "Too many arguments in slice");
-  
+
   typedef cuboid::map<R,Opt,To> im_t;
   static constexpr int Rf = R - count_type_occurrence_not<range,Args...>::value;
-  static constexpr ull_t To_i = im_t::traversal_order; 
-  typedef cuboid::map < Rf , Opt, cuboid::slicing_TO_order::sliced_memory_order<To_i,Args...>::value > r_type; 
+  static constexpr ull_t To_i = im_t::traversal_order;
 
-  static r_type invoke (im_t const & X, Args ... args) { 
+  // compute a new traversal order, only if there is no ellipsis
+  // the computation with ellipsis is not yet implemented...
+  static constexpr ull_t Tof = (has_ellipsis ? 0 : cuboid::slicing_TO_order::sliced_memory_order<To_i,Args...>::value);
+  typedef cuboid::map < Rf , Opt, Tof> r_type;
+
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+  static_assert(( (has_ellipsis) ||  (permutations::size(Tof) == Rf)), "Mismatch between Rank and the TraversalOrder");
+#endif
+
+  static r_type invoke (im_t const & X, Args ... args) {
    typename r_type::lengths_type newlengths;
    typename r_type::strides_type newstrides;
    std::ptrdiff_t newstart= X.start_shift();
@@ -95,6 +104,6 @@ namespace triqs { namespace arrays { namespace indexmaps {
    cuboid_details::slice_calc::invoke<0,0,flags::bound_check_trait<Opt>::value,EllipsisLength>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0],newstart, args...);
    return r_type(std::move(newlengths),std::move(newstrides),newstart);// use move construction ?
   };
- }; 
+ };
 }}}//namespaces triqs::arrays::indexmaps
 #endif

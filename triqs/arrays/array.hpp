@@ -89,17 +89,18 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty array.
-    explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)) :IMPL_TYPE(ml){} 
+    explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)) :IMPL_TYPE(ml){} 
 
     /// From a domain
-    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):IMPL_TYPE(indexmap_type(dom,ml)){}
+    explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
+     IMPL_TYPE(indexmap_type(dom,ml)){}
 
 #ifdef TRIQS_DOXYGEN
     /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
     array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
-    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)): \
+    explicit array (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), size_t I_),memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)): \
     IMPL_TYPE(indexmap_type(mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_)),ml)) {\
      static_assert(IMPL_TYPE::rank-1==NN,"array : incorrect number of variables in constructor");}
     BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
@@ -118,7 +119,7 @@ namespace triqs { namespace arrays {
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
     template <typename T> 
-     array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::traversal_order)):
+     array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT

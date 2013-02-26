@@ -60,12 +60,6 @@ namespace triqs { namespace arrays {
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;
-    
-    //static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order(rank, OptionFlags, TraversalOrder);
-    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<rank, OptionFlags, TraversalOrder>::value;
-    
-    //static_assert( (permutations::size(traversal_order) == rank), "Mismatch between Rank and the TraversalOrder");
-
    protected:
  
     indexmap_type indexmap_;
@@ -183,8 +177,7 @@ namespace triqs { namespace arrays {
     template<bool is_const, typename ... Args> struct result_of_call_as_view {
      typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;
      typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
-     // should be kept but then replace enable_if by a lazy _enable_if below !
-     //static_assert(IM2::domain_type::rank !=0, "Internal error");
+     static_assert(IM2::domain_type::rank !=0, "Internal error");
      typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template,  ViewTag >::type type;
     };
 
@@ -192,7 +185,6 @@ namespace triqs { namespace arrays {
      typename boost::lazy_enable_if_c< 
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
      , result_of_call_as_view<false,Args...> 
-     //, typename result_of_call_as_view<false,Args...>::type 
      >::type // enable_if 
      operator()(Args const & ... args) { 
       return typename result_of_call_as_view<false,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
@@ -201,7 +193,6 @@ namespace triqs { namespace arrays {
      typename boost::lazy_enable_if_c< 
      (!clef::is_any_lazy<Args...>::value) && (indexmaps::slicer<indexmap_type,Args...>::r_type::domain_type::rank!=0)
      , result_of_call_as_view<true,Args...> 
-     //, typename result_of_call_as_view<true,Args...>::type 
      >::type // enable_if 
      operator()(Args const & ... args) const { 
       return typename result_of_call_as_view<true,Args...>::type ( indexmaps::slicer<indexmap_type,Args...>::invoke(indexmap_,args...), storage()); }
@@ -218,18 +209,6 @@ namespace triqs { namespace arrays {
        return make_expr_call(*this,args...);
        //return make_expr_call( view_type(*this),args...);
       }
-
-     /* OLD clef1 : remove after rereading
-     template<typename ...Args>
-      typename std::enable_if<    // enable the template if
-      clef::is_any_lazy<Args...>::value,  // One of Args is a lazy expression
-      std::result_of<clef::lazy_call<view_type>(Args...)>
-       >::type     // end of lazy_enable_if 
-       operator()(Args const &... args) const { 
-	static_assert(sizeof...(Args) <= indexmap_type::rank, "Incorrect number of variable in call");// not perfect : ellipsis ...
-	return clef::lazy_call<view_type>(*this)(args...);
-	}
-	*/
 
      template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { indexmaps::foreach_av(f,x);}
 

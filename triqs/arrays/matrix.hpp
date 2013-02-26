@@ -109,23 +109,25 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty matrix.
-    matrix(memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order) ):  IMPL_TYPE(indexmap_type(ml)) {}
+    matrix(memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order) ):  IMPL_TYPE(indexmap_type(ml)) {}
 
     /// Move
     explicit matrix(matrix && X) { this->swap_me(X); } 
 
     ///
-    matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order) ) : IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2),ml)) {}
+    matrix(size_t dim1, size_t dim2, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order) ) :
+     IMPL_TYPE(indexmap_type(mini_vector<size_t,2>(dim1,dim2),ml)) {}
 
     ///
-    matrix(mini_vector<size_t,2> const & sha, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::traversal_order)) : IMPL_TYPE(indexmap_type(sha,ml)) {}
+    matrix(mini_vector<size_t,2> const & sha, memory_layout<2> ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)) :
+     IMPL_TYPE(indexmap_type(sha,ml)) {}
 
     /** Makes a true (deep) copy of the data. */
     matrix(const matrix & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
-     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::traversal_order)):
+     matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
