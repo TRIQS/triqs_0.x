@@ -266,12 +266,11 @@ namespace triqs { namespace gf {
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
-    //typename boost::lazy_enable_if<    // enable the template if
-    //clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
+    typename boost::lazy_enable_if<    // enable the template if
+    clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
     clef::result_of::make_expr_call<view_type,Arg>
-    //std::result_of<clef::lazy_call<view_type>(Arg)>
-    // >::type     // end of lazy_enable_if 
-     operator[](Arg arg) const { return  clef::make_expr_call(view_type(*this),arg);} //clef::lazy_call<view_type>(*this)(arg); 
+     >::type     // end of lazy_enable_if 
+     operator[](Arg const & arg) const { return  clef::make_expr_call(view_type(*this),arg);} //clef::lazy_call<view_type>(*this)(arg); 
 
    /// Write into HDF5
    friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
