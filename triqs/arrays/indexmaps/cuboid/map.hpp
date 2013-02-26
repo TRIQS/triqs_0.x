@@ -125,6 +125,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    strides_type const & strides() const { return this->strides_;}
 
    memory_layout<Rank> const & memory_indices_layout() const { return memory_order_;}
+   memory_layout<Rank> traversal_order_indices_layout() const { return memory_layout<Rank>(traversal_order);}
    ull_t memory_indices_layout_ull() const { return memory_order_.value;}
    bool memory_layout_is_c() const { return memory_indices_layout().value == mem_layout::c_order(Rank);}
    bool memory_layout_is_fortran() const { return memory_indices_layout().value == mem_layout::fortran_order(Rank);}

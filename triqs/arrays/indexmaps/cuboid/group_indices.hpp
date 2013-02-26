@@ -81,8 +81,9 @@ namespace triqs { namespace arrays {
   typedef array_view<typename A::value_type, new_dim,0,traversal_layout > type; 
 
   static type invoke(A const & a) {
-   //for (auto & x : m_index_to_vector( new_memory_pos())) std::cout  << x << std::endl ;
-   //std::cout << new_memory_pos() << std::endl;std::cout << " new traversal_layout"<< traversal_layout << std::endl ;
+   if (a.indexmap().memory_indices_layout_ull() != a.indexmap().traversal_order) 
+    TRIQS_RUNTIME_ERROR << "Grouping indices is only possible for arrays when the memory_layout is the same as the traversal order \n"
+     <<	"But here your memory_layout is "<< a.indexmap().memory_indices_layout() << " while the traversal order is "<< a.indexmap().traversal_order_indices_layout();
    std::vector< std::vector<int> > Indices;
    vector_push_back_v(Indices, m_index_to_vector(MIndex())...);
    mini_vector<size_t, type::rank> l; 
@@ -98,7 +99,7 @@ namespace triqs { namespace arrays {
     }
     ++i;
    }
-   //std::cout  << "strides "<< s << std::endl ;
+   //std::cerr  << "strides "<< s << std::endl ;
    typename type::indexmap_type im(l,s,0);
    return type(im,a.storage());
   }
