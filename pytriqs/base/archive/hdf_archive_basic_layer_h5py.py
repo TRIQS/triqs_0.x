@@ -31,7 +31,7 @@ class HDFArchiveGroupBasicLayer :
         self._group = parent._group[subpath] if subpath else parent._group
         assert type(self._group) in [h5py.highlevel.Group,h5py.highlevel.File], "Internal error"
         self.ignored_keys = [] 
-        self._cached_keys = None
+        self.cached_keys = self._group.keys()
 
     def _init_root(self, LocalFileName, open_flag) : 
         try : 
@@ -54,12 +54,12 @@ class HDFArchiveGroupBasicLayer :
     def is_group(self,p) :
         """Is p a subgroup ?"""
         assert len(p)>0 and p[0]!='/'
-        return p in self._group and type(self._group[p]) == h5py.highlevel.Group
+        return p in self.cached_keys and type(self._group[p]) == h5py.highlevel.Group
     
     def is_data(self,p) :
         """Is p a leaf ?"""
         assert len(p)>0 and p[0]!='/' 
-        return p in self._group and type(self._group[p]) == h5py.highlevel.Dataset
+        return p in self.cached_keys and type(self._group[p]) == h5py.highlevel.Dataset
 
     def write_attr (self, key, val) : 
         self._group.attrs[key] =  val 
@@ -98,28 +98,30 @@ class HDFArchiveGroupBasicLayer :
             val = A
         self._group[key] = numpy.array(val,copy=1,order='C')  
         if c : self._group[key].attrs["__complex__"] = 1
+        self.cached_keys.append(key)
 
     def _write_scalar(self, key, A) :
         c =  self.options["UseAlpsNotationForComplex"] and type(A) ==type (1j) 
         val = numpy.array([A.real, A.imag]) if c else A
         self._group[key] =val 
         if c : self._group[key].attrs["__complex__"]= 1
+        self.cached_keys.append(key)
   
     def _flush(self) : 
         self._group.file.flush()
   
     def create_group (self,key):
         self._group.create_group(key)
-        self._cached_keys = None
+        self.cached_keys.append(key)
 
     def keys(self) :
-
-        if not self._cached_keys : self._cached_keys = self._group.keys()
-        return self._cached_keys
+        return self.cached_keys
 
     def _clean_key(self,key, report_error=False) :
-        if report_error and key not in self._group : 
+        if report_error and key not in self.cached_keys : 
              raise KeyError, "Key %s is not in archive !!"%key 
-        if key in self._group : del self._group[key]
+        if key in self.cached_keys :
+          del self._group[key]
+          self.cached_keys.remove(key)
         else: raise KeyError, "Key %s is not in archive !!"%key 
    
