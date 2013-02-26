@@ -20,13 +20,12 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_MINI_VECTOR_H 
 #define TRIQS_ARRAYS_MINI_VECTOR_H 
+#include "./first_include.hpp"
 #include <iostream>
 #include "./compiler_details.hpp"
 #include "./exceptions.hpp"
 #include <boost/serialization/utility.hpp>
-#include <boost/typeof/typeof.hpp>
 #include <vector>
-#include "boost/tuple/tuple.hpp"
 
 #define TRIQS_MINI_VECTOR_NRANK_MAX 10
 
@@ -36,8 +35,7 @@ namespace triqs { namespace utility {
   class mini_vector { 
    T _data[Rank];
    friend class boost::serialization::access;
-   template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("_data",_data); }
+   template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("_data",_data); }
    void init() { for (int i=0;i<Rank; ++i) _data[i] = 0;}
    public : 
 
@@ -47,40 +45,36 @@ namespace triqs { namespace utility {
 
 #define AUX(z,p,unused)  _data[p] = x_##p; 
 #define IMPL(z, NN, unused)                                \
-   mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
+   explicit mini_vector (BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T x_)){ \
     static_assert(Rank-1==NN,"mini_vector : incorrect number of variables in constructor");\
     BOOST_PP_REPEAT(BOOST_PP_INC(NN),AUX,nil) }
    BOOST_PP_REPEAT(TRIQS_MINI_VECTOR_NRANK_MAX , IMPL, nil);
 #undef IMPL
 #undef AUX
 
-   mini_vector(const mini_vector & x){ (*this) = x; }
+   mini_vector(const mini_vector & x){ *this = x; }
+   mini_vector(mini_vector && x){ *this = std::move(x); }
    
-   template<typename T2>
-   mini_vector(const mini_vector<T2,Rank> & x){ (*this) = x; }
+   template<typename T2> mini_vector(const mini_vector<T2,Rank> & x){ *this = x; }
 
    mini_vector(const std::vector<T> & v){ 
-    if (v.size()!=Rank) TRIQS_RUNTIME_ERROR<< "mini_vector construction : vector size incorrect  : expected "<<Rank<<" got : "<< v.size();
+    if (v.size()!=Rank)
+     TRIQS_RUNTIME_ERROR<< "mini_vector construction : vector size incorrect  : expected "<<Rank<<" got : "<< v.size();
     for (int i=0;i<Rank; ++i)  _data[i] = v[i];
    }
 
    mini_vector & operator=(const mini_vector & x){ for (int i=0;i<Rank; ++i) _data[i] = x._data[i]; return *this;}
+   mini_vector & operator=(mini_vector && x){ swap(*this,x); return *this;}
+
+   friend void swap(mini_vector & a, mini_vector & b) { std::swap(a._data, b._data);}
 
    template<typename T2>
    mini_vector & operator=(const mini_vector<T2,Rank> & x){ for (int i=0;i<Rank; ++i) _data[i] = x[i]; return *this;}
    
    T & operator[](size_t i) { return _data[i];}
-   
    const T & operator[](size_t i) const { return _data[i];}
    
-   std::vector<T> to_vector () const { return to_vector_of_type<T>();}
-   
-   template<class R>
-   std::vector<R> to_vector_of_type () const {
-    std::vector<R> V(Rank);
-    for (int i=0;i<Rank; ++i)  V[i] = _data[i];
-    return V;
-   }
+   std::vector<T> to_vector () const { std::vector<T> V(Rank); for (int i=0;i<Rank; ++i)  V[i] = _data[i]; return V; }
 
    T product_of_elements () const { T res=1; for (int i=0;i<Rank; ++i)  res *= _data[i]; return res; }
  
@@ -134,29 +128,6 @@ namespace triqs { namespace utility {
    for (int i=0;i<Rank; ++i)  res += v1[i]*v2[i];
    return res;
   }
-
- //-----------------------------------------------------------
-
- namespace details { 
-  template <typename TupleType, typename V, int c> 
-   struct dot_product_impl { 
-    static typename V::value_type invoke (TupleType const & t, V const & v) { 
-     return boost::tuples::get<c>(t) * v[c] + dot_product_impl<TupleType,V,c-1>::invoke(t,v);
-    }
-   };
-  template <typename TupleType, typename V> 
-   struct dot_product_impl<TupleType,V,-1> { 
-    static typename V::value_type invoke (TupleType const & t, V const & v) { return typename V::value_type();}
-   };
- }
-
- /// dot product of  a tuple and a mini_vector
- template <typename TupleType, typename T, int Rank> 
-  typename TupleType::head_type dot_product(TupleType const & t, mini_vector<T,Rank> const & v) { 
-   return details::dot_product_impl<TupleType,mini_vector<T,Rank> ,Rank-1>::invoke(t,v);}
-
- template <int V, typename T, int Rank> 
-  T const & get( mini_vector<T,Rank> const & A) { static_assert( (V<Rank), " V>= Rank !"); return A[V];}  
 
  }}//namespace triqs::arrays 
 #endif
