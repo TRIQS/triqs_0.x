@@ -24,7 +24,7 @@
 #include <triqs/arrays/linalg/eigenelements.hpp>
 #include <triqs/python_tools/converters/vector.hpp> 
 #include <triqs/python_tools/converters/unordered_map.hpp> 
-#include <triqs/arrays/python/converters.hpp>
+#include <triqs/arrays/python/boost_python_converters.hpp>
 #include "grid_generator.hpp"
 #include "functors.hpp"
 

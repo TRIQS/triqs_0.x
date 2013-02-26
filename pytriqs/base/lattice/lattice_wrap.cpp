@@ -24,7 +24,7 @@
 #include <boost/python.hpp>
 #include <boost/python/docstring_options.hpp>
 #include <triqs/utility/compiler_details.hpp>
-#include <triqs/arrays/python/converters.hpp>
+#include <triqs/arrays/python/boost_python_converters.hpp>
 #include <triqs/python_tools/converters/pair.hpp> 
 #include <triqs/python_tools/converters/unordered_map.hpp> 
 

@@ -24,7 +24,7 @@
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
 #include <triqs/python_tools/converters/unordered_map.hpp> 
-#include <triqs/arrays/python/converters.hpp>
+#include <triqs/arrays/python/boost_python_converters.hpp>
 namespace triqs { namespace lattice_tools { 
 
  using namespace tqa;

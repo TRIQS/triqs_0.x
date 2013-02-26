@@ -119,7 +119,7 @@ map_st_vi g3() {
 
 // test with arrays
 #include <triqs/arrays/array.hpp>
-#include <triqs/arrays/python/converters.hpp>
+#include <triqs/arrays/python/boost_python_converters.hpp>
 
 typedef triqs::arrays::array<double,1> ad1;
 typedef std::pair < ad1, ad1 > p_ad1_ad1;
