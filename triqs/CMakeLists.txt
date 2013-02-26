@@ -33,8 +33,12 @@ add_all_subdirectories_with_cmakelist()
 
 # The lib will be build from the sources
 add_library(triqs_utility ${ALLSOURCES_UTIL})
-target_link_libraries (triqs_utility -lrt ${TRIQS_LINK_LIBS} )
-
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+SET( LINK_RT "")
+else()
+SET( LINK_RT "-lrt")
+endif()
+target_link_libraries (triqs_utility ${LINK_RT} ${TRIQS_LINK_LIBS} )
 add_library(triqs ${ALLSOURCES})
 target_link_libraries (triqs triqs_utility ${TRIQS_LINK_LIBS}  )
 

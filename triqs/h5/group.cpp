@@ -20,14 +20,14 @@ namespace triqs { namespace h5 {
 
  std::vector<std::string> group::get_all_subgroup_names(std::string const & key) const { 
   std::vector<std::string> grp_name;
-  H5::Group F(*this);
+  H5::Group F(_g);
   F.iterateElems(key.c_str(), NULL, get_group_elements_name_grp, static_cast<void*>(&grp_name));
   return grp_name;
  }
 
  std::vector<std::string> group::get_all_dataset_names(std::string const & key) const { 
   std::vector<std::string> ds_name;
-  H5::Group F(*this);
+  H5::Group F(_g);
   F.iterateElems(key.c_str(), NULL, get_group_elements_name_ds, static_cast<void*>(&ds_name));
   return ds_name;
  }

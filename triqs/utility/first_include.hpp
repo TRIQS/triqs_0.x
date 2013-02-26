@@ -21,6 +21,8 @@
 #ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 #define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 // including python first remove some warning
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "Python.h"
