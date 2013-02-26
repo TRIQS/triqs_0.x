@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
 
  template<typename MeshType>
   class mesh_pt_generator : 
-   public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t const &, boost::forward_traversal_tag, 
+   public boost::iterator_facade< mesh_pt_generator<MeshType>, typename MeshType::mesh_point_t , boost::forward_traversal_tag, 
    typename MeshType::mesh_point_t const & > {
     friend class boost::iterator_core_access;
     MeshType const * mesh;
