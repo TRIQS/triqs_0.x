@@ -82,6 +82,9 @@ int main() {
  // operations on gf
  G3 = G +2* Gc;
  G3 = G + Gc;
+  TEST( G3( 0) ) ;
+  G3 = G3 /2.0;
+ TEST( G3( 0) ) ;
 
  // does not compile : ok 
  // G3 = G + Gt;
