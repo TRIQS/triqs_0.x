@@ -21,6 +21,7 @@
 #ifndef TRIQS_UTILITY_EXPRESSION_TEMPLATE_TOOLS_H
 #define TRIQS_UTILITY_EXPRESSION_TEMPLATE_TOOLS_H
 #include <type_traits>
+#include <complex>
 namespace triqs { namespace utility {
 
  namespace tags { struct plus{}; struct minus{}; struct multiplies{}; struct divides{}; } 
@@ -45,7 +46,7 @@ namespace triqs { namespace utility {
  };
 
  // The scalar ...
- template<typename T> struct is_in_ZRC : boost::is_arithmetic<T>  {};
+ template<typename T> struct is_in_ZRC : std::is_arithmetic<T>  {};
  template<> struct is_in_ZRC<bool> : std::true_type {};
  template<typename T> struct is_in_ZRC<std::complex<T> > : std::true_type {};
 

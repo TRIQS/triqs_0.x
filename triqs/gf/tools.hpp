@@ -103,13 +103,13 @@ namespace triqs { namespace gf {
  //------------------------------------------------------
 
  struct nothing {
-  template<typename... Args> nothing(Args...) {} // takes anything, do nothing..
+  template<typename... Args> explicit nothing(Args...) {} // takes anything, do nothing..
   nothing() {}
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing non_view_type;
   void rebind (nothing){}
-  void operator=(nothing) {}
+  template< typename RHS> void operator=(RHS && ) {}
   friend void h5_write (h5::group, std::string subgroup_name, nothing ) {}
   friend void h5_read  (h5::group, std::string subgroup_name, nothing ) {}
   //  BOOST Serialization
@@ -118,8 +118,17 @@ namespace triqs { namespace gf {
    void serialize(Archive & ar, const unsigned int version) {
    }
   friend nothing operator +( nothing, nothing) { return nothing();}
- }; 
+}; 
 
+ template<typename T> nothing operator+(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator-(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator*(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator/(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator+(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator-(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator*(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator/(T const &, nothing) { return nothing();}
+  
  //------------------------------------------------------
 
 }}

@@ -1,0 +1,82 @@
+/*******************************************************************************
+ *
+ * TRIQS: a Toolbox for Research in Interacting Quantum Systems
+ *
+ * Copyright (C) 2013 by O. Parcollet
+ *
+ * TRIQS is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * TRIQS is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * TRIQS. If not, see <http://www.gnu.org/licenses/>.
+ *
+ ******************************************************************************/
+#ifndef TRIQS_UTILITY_FACTORY_H
+#define TRIQS_UTILITY_FACTORY_H
+#include <type_traits>
+#include <vector>
+
+namespace triqs { namespace utility {
+
+ template <typename T> 
+  struct factory_worker {
+   template < typename U>  static T invoke( U && x) { return T(std::forward<U>(x));}
+  };
+
+ template <typename T> 
+  struct factory_worker <std::vector<T>>{
+   typedef std::vector<T> R;
+   static R invoke(R && x)      { return R(std::move(x));}
+   static R invoke(R const & x) { return R(x);}
+   template <typename U> static R invoke( std::vector<U> && v) { 
+    static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
+    R r; r.reserve(v.size()); 
+    for (auto & x : v) r.push_back(std::move(x)); 
+    return r;
+   }
+   template <typename U> static R invoke( std::vector<U> const & v) { 
+    static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
+    R r; r.reserve(v.size()); 
+    for (auto & x : v) r.push_back(x);
+    return r;
+   }
+  };
+
+ template <typename T, typename U> T factory(U && x) { return factory_worker<T>::invoke(x);}
+
+ // redondant : done with x =factory<T>(x)
+ //
+/* template <typename T> 
+    struct gal_assign {
+    template < typename U> static void invoke(T & x, U && y) { x = std::forward<U>(y);}
+    };
+
+    template <typename T> 
+    struct gal_assign<std::vector<T>> {
+    typedef std::vector<T> R;
+    static void invoke(R & x, R && y) { x=std::move(y);} 
+    static void invoke(R & x, R const & y) { x=y;} 
+    template <typename U> static R invoke( R &r, std::vector<U> && v) { 
+    static_assert(std::is_constructible<T,U>::value, "Can not assign std::vector<U> && -> std::vector<T>");
+    r.clear(); r.reserve(v.size()); 
+    for (auto & x : v) r.push_back(std::move(x));
+    }
+    template <typename U> static R invoke( R &r, std::vector<U> const & v) { 
+    static_assert(std::is_constructible<T,U>::value, "Can not assign std::vector<U> const & -> std::vector<T>");
+    r.clear(); r.reserve(v.size()); 
+    for (auto & x : v) r.push_back(x);
+    }
+    };
+    */
+
+
+
+}}//namespace triqs::utility
+#endif

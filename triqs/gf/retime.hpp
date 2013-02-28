@@ -50,6 +50,10 @@ namespace triqs { namespace gf {
   //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type                                       target_view_t;
 
+  /// The storage
+  typedef arrays::array<target_t::value_type,3> storage_t;
+  typedef typename storage_t::view_type         storage_view_t;
+
   /// The tail
   typedef local::tail   singularity_t;
 

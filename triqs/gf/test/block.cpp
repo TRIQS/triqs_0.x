@@ -58,4 +58,10 @@ int main() {
  gf< block< imfreq> > G9;
  G9 = block<imfreq>::make_gf (2, beta, Fermion, make_shape(2,2));
 
+ // Operation
+ g0.on_mesh(0) = 3.2;
+ TEST( GF(0)(0) ) ;
+ GF = GF/2; 
+ TEST( GF(0)(0) ) ;
+
 }
