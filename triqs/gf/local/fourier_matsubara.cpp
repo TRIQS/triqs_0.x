@@ -43,9 +43,9 @@ namespace triqs { namespace gf {
   double shift;
   size_t L;
   switch(gt.mesh().kind()) {
-    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; L = gt.mesh().size(); break;
-    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
-    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; L = gt.mesh().size(); break;
+    case half_bins: shift = 0.5; L = gt.mesh().size(); break;
+    case full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
+    case without_last: shift = 0.0; L = gt.mesh().size(); break;
   }
 
   auto ta = gt(freq_infty());
@@ -99,9 +99,9 @@ namespace triqs { namespace gf {
   double shift;
   size_t L;
   switch(gt.mesh().kind()) {
-    case gf_view<imtime>::mesh_t::half_bins: shift = 0.5; L = gt.mesh().size(); break;
-    case gf_view<imtime>::mesh_t::full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
-    case gf_view<imtime>::mesh_t::without_last: shift = 0.0; L = gt.mesh().size(); break;
+    case half_bins: shift = 0.5; L = gt.mesh().size(); break;
+    case full_bins: shift = 0.0; L = gt.mesh().size()-1; break;
+    case without_last: shift = 0.0; L = gt.mesh().size(); break;
   }
 
   static bool Green_Function_Are_Complex_in_time = false;
@@ -151,7 +151,7 @@ namespace triqs { namespace gf {
                          + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );
     }
 
-    if (gt.mesh().kind() == gf_view<imtime>::mesh_t::full_bins)
+    if (gt.mesh().kind() == full_bins)
       gt.on_mesh(L)(n1,n2) = -gt.on_mesh(0)(n1,n2)-convert_green<gt_result_type>(ta(1)(n1,n2));
 
     // set tail

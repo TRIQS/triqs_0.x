@@ -1,8 +1,3 @@
-cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf::imtime::mesh_t" : 
-
-    cdef enum mesh_enum "triqs::gf::imtime::mesh_t::mesh_kind":
-        half_bins, full_bins, without_last
-
 cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" : 
   
     cdef cppclass imtime_domain :

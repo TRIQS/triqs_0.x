@@ -49,8 +49,7 @@ namespace triqs { namespace gf {
 
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
-  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
-  typedef typename target_t::view_type                                       target_view_t;
+  typedef typename target_t::view_type              target_view_t;
 
   /// The storage
   typedef arrays::array<target_t::value_type,3> storage_t;
@@ -75,7 +74,6 @@ namespace triqs { namespace gf {
      size_t index; double w; bool in;
      std::tie(in, index, w) = windowing(mesh,w0);
      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     //return data(arrays::ellipsis(),mesh.index_to_linear(index)); 
      target_t res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
      return res;
     } 
@@ -99,10 +97,18 @@ namespace triqs { namespace gf {
 
   typedef gf<refreq> gf_t;
 
+  static mesh_t make_mesh(double wmin, double wmax, size_t n_freq, mesh_kind mk) {
+    return mesh_t(domain_t(), wmin, wmax, n_freq, mk);
+  }
+
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) { 
-   refreq::mesh_t m(refreq::domain_t(), wmin, wmax, n_freq, mesh_t::full_bins);
-   gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
+   gf_t::data_non_view_t A(shape.append(n_freq)); A() =0;
+   return gf_t(make_mesh(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+  }
+
+  static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) { 
+   gf_t::data_non_view_t A(shape.append(n_freq)); A() =0;
+   return gf_t(make_mesh(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
  };

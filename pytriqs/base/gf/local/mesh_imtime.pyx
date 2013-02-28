@@ -9,6 +9,10 @@ cdef class MeshImTime:
     property beta : 
         """Inverse temperature"""
         def __get__(self): return self._c.domain().beta
+
+    property kind : 
+        """Inverse temperature"""
+        def __get__(self): return self._c.kind()
     
     property statistic : 
         def __get__(self): return 'F' if self._c.domain().statistic==Fermion else 'B'
@@ -24,7 +28,7 @@ cdef class MeshImTime:
             return self._c == other._c
 
     def __reduce__(self):
-        return self.__class__, (self.beta, self.statistic, len(self))
+        return self.__class__, (self.beta, self.statistic, len(self), self.kind)
 
 # C -> Python 
 cdef inline make_MeshImTime ( mesh_imtime x) :

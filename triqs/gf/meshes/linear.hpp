@@ -23,15 +23,15 @@
 #include "./mesh_tools.hpp"
 namespace triqs { namespace gf { 
 
+ // Three possible meshes
+ enum mesh_kind { half_bins, full_bins, without_last };
+
  template<typename Domain>
   struct linear_mesh {
 
    typedef Domain domain_t;
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
-
-   // Three possible meshes
-   enum mesh_kind { half_bins, full_bins, without_last };
 
    linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
      _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {

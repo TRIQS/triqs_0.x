@@ -89,7 +89,7 @@ namespace triqs { namespace gf {
   typedef gf<imtime> gf_t;
   typedef gf_view<imtime> gf_view_t;
 
-  static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_t::mesh_kind mk) {
+  static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk) {
     return mesh_t(domain_t(beta,S), 0, beta, n_time_slices, mk);
   }
 
@@ -99,18 +99,18 @@ namespace triqs { namespace gf {
   }
 
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) { 
-   return make_gf(make_mesh(beta,S,1025,mesh_t::half_bins), shape, local::tail(shape));
+   return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));
   }
 
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) { 
-   return make_gf(make_mesh(beta,S,Nmax,mesh_t::half_bins), shape, local::tail(shape));
+   return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
   }
 
-  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_t::mesh_kind mk) { 
+  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk) { 
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, local::tail(shape));
   }
 
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_t::mesh_kind mk, local::tail_view const & t) { 
+  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) { 
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, t);
   }
 

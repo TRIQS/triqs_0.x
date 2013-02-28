@@ -23,7 +23,7 @@ r""" """
 
 import numpy
 from math import *
-from gf import MeshImFreq,TailGf #, MeshRealFrequency
+from gf import MeshImFreq, TailGf, MeshReFreq
 from pytriqs.base.utility.my_utils import sign
 from lazy_expressions import LazyExprTerminal, LazyExpr, transform
 
@@ -89,7 +89,7 @@ class Const(Base):
          
     def __call__(self,G):
         C = self.C
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(C,numpy.ndarray): 
@@ -110,7 +110,7 @@ class Omega_(Base):
     r"""The function:math:`\omega \rightarrow \omega` """
     def __str__(self): return "Omega" 
     def __call__(self,G):
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
         t,Id  = G.tail, numpy.identity(G.N1)
@@ -131,7 +131,7 @@ class A_Omega_Plus_B(Base):
          
     def __call__(self,G):
         A,B = self.A, self.B
-        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshRealFrequency']:
+        if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
         if not isinstance(A,numpy.ndarray): A = A*numpy.identity(G.N1) 
@@ -212,8 +212,9 @@ class SemiCircular (Base):
         Id = numpy.identity(G.N1,numpy.complex_)
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (om  - 1j*sign(om.imag)*sqrt(abs(om)**2 +  D*D))/D/D*2*Id
-        elif type(G.mesh) == MeshRealFrequency:
-            def f(om):
+        elif type(G.mesh) == MeshReFreq:
+            def f(om_):
+              om = om_.real
               if (om > -D) and (om < D):
                 return (2.0/D**2) * (om - 1j* sqrt(D**2 - om**2))
               else:
@@ -256,7 +257,7 @@ class Wilson (Base):
 
         if type(G.mesh) == MeshImFreq:
             f = lambda om: (-1/(2.0*D)) * numpy.log((om-D)/(om+D)) * Id
-        elif type(G.mesh) == MeshRealFrequency:
+        elif type(G.mesh) == MeshReFreq:
             def f(om):
               if (om > -D) and (om < D):
                 return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D) - 1j*pi*Id/(2*D)

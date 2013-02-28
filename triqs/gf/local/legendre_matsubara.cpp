@@ -55,7 +55,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   long Nt = 50000;
   auto gt = triqs::gf::imtime::make_gf(gw.domain().beta, gw.domain().statistic,
     triqs::arrays::mini_vector<size_t,2>(gw.data_view().shape()[0],gw.data_view().shape()[1]),
-    Nt, triqs::gf::imtime::mesh_t::half_bins);
+    Nt, triqs::gf::half_bins);
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
   gt() = lazy_inverse_fourier(gw);

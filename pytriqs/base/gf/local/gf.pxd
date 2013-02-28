@@ -33,6 +33,11 @@ cdef extern from "triqs/gf/tools.hpp" namespace "triqs::gf" :
         vector[vector[std_string]] & operator()()
         bint same() 
 
+cdef extern from "triqs/gf/meshes/linear.hpp" namespace "triqs::gf" :
+
+    cdef enum mesh_enum "triqs::gf::mesh_kind":
+        half_bins, full_bins, without_last
+
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
   
     cdef cppclass discrete_domain :
@@ -50,5 +55,6 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
 include "tail.pxd"
 include "imfreq.pxd"
 include "imtime.pxd"
+include "refreq.pxd"
 include "legendre.pxd"
 
