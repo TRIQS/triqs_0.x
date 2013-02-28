@@ -174,7 +174,7 @@ SET(TRIQS_LINK_LIBS
 # General triqs libraries
 #------------------------
 
-MESSAGE( "BOOST_LIB IS ${BOOST_LIBRARY}")
+MESSAGE(STATUS "BOOST_LIB IS ${BOOST_LIBRARY}")
 
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
