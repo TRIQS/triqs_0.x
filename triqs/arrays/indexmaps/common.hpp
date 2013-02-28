@@ -22,7 +22,8 @@
 #define TRIQS_ARRAYS_INDEXMAP_COMMON_H
 #include "../impl/common.hpp"
 #include <triqs/utility/mini_vector.hpp>
-#include "../impl/tuple_tools.hpp"
+//#include "../impl/tuple_tools.hpp"
+#include <boost/ref.hpp>
 #include <iostream>
 
 namespace boost { namespace serialization { class access;}}

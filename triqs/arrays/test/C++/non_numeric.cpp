@@ -42,7 +42,8 @@ struct S {
 
 double my_fun(double x, double y) { return x+y;}
 
-std::ostream & operator << (std::ostream & out, S const & s) { return out<<boost::make_tuple(s.x,s.y,s.i);}
+std::ostream & operator << (std::ostream & out, S const & s) { return out<<"("<<s.x<<" "<<s.y<<" "<<s.i<<")";}
+//std::ostream & operator << (std::ostream & out, S const & s) { return out<<std::make_tuple(s.x,s.y,s.i);}
 
 int main(int argc, char **argv) {
  

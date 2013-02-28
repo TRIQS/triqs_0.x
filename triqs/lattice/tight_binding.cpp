@@ -90,7 +90,7 @@ using namespace std;
     //cerr<<" index = "<<grid.index()<<endl;
     array_view <double,1> eval_sl = eval(range(),grid.index());
     array_view <dcomplex,2> evec_sl =  evec(range(),range(),grid.index());
-    boost::tie (eval_sl,evec_sl) = linalg::eigenelements( TK( (*grid) (range(0,ndim)))); //,  true);
+    std::tie (eval_sl,evec_sl) = linalg::eigenelements( TK( (*grid) (range(0,ndim)))); //,  true);
     //cerr<< " point "<< *grid <<  " value "<< eval_sl<< endl; //" "<< (*grid) (range(0,ndim)) << endl;
    }
 
