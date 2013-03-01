@@ -46,15 +46,15 @@ namespace triqs { namespace arrays {
 
   // The ImmutableCuboidArray concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableCuboidArray,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray)(MutableArray));
  
  // The ImmutableMatrix concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix)(MutableArray));
 
  // The ImmutableVector concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableArray));
- TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector)(MutableArray));
 
  namespace Tag { struct array{}; struct array_view {}; }
  template <typename T> struct is_array : std::is_base_of<Tag::array,T> {};

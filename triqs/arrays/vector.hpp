@@ -37,7 +37,7 @@ namespace triqs { namespace arrays {
 
  /** */
  template <typename ValueType, ull_t Opt >
-  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(ImmutableVector), public  IMPL_TYPE { 
+  class vector_view : Tag::vector_view, TRIQS_MODEL_CONCEPT(MutableVector), public  IMPL_TYPE { 
   public :
    typedef vector_view<ValueType,Opt> view_type;
    typedef vector<ValueType,Opt> non_view_type;
@@ -86,7 +86,7 @@ namespace triqs { namespace arrays {
  // ---------------------- vector--------------------------------
 
  template <typename ValueType, ull_t Opt>
-  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(ImmutableVector), public IMPL_TYPE { 
+  class vector: Tag::vector,  TRIQS_MODEL_CONCEPT(MutableVector), public IMPL_TYPE { 
   public :
    typedef typename IMPL_TYPE::value_type value_type;
    typedef typename IMPL_TYPE::storage_type storage_type;

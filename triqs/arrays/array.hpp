@@ -36,7 +36,7 @@ namespace triqs { namespace arrays {
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view > 
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
-  class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE {   
+  class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
    static_assert( Rank>0, " Rank must be >0");
    public:   
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -79,7 +79,7 @@ namespace triqs { namespace arrays {
  //------------------------------- array ---------------------------------------------------
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
-  class array: Tag::array,  TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE { 
+  class array: Tag::array,  TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
    public:
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;

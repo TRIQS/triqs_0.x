@@ -22,30 +22,30 @@
 #include "./src/array.hpp"
 using namespace std;
 using namespace triqs::arrays;
-typedef triqs::arrays::matrix<double > MM; 
-//typedef triqs::arrays::array<double,2 > MM; 
+typedef triqs::arrays::matrix<double > MM;
+//typedef triqs::arrays::array<double,2 > MM;
 
-struct bare_loop_with_access { 
- void operator()() { 
-  
+struct bare_loop_with_access {
+ void operator()() {
+
   MM A (20,30);//, FORTRAN_LAYOUT);
   for (int i =0; i<20; ++i)
-   for (int j=0; j<30; ++j) 
+   for (int j=0; j<30; ++j)
     A(i,j) = 10*i+ j;
 
   MM B(A), C(A), D(A);
 
   for (int u =0; u<5000; ++u)
    for (int i =0; i<20; ++i)
-    for (int j=0; j<30; ++j) 
+    for (int j=0; j<30; ++j)
      A(i,j) = B(i,j) + 3* C(i,j) + D(i,j);
  }
 };
-struct expression_template { 
- void operator()() { 
+struct expression_template {
+ void operator()() {
   MM A (20,30);
   for (int i =0; i<20; ++i)
-   for (int j=0; j<30; ++j) 
+   for (int j=0; j<30; ++j)
     A(i,j) = 10*i+ j;
 
   MM B(A), C(A), D(A);
@@ -56,12 +56,12 @@ struct expression_template {
  }
 };
 
-struct bare_loop_with_access_big { 
- void operator()() { 
-  
+struct bare_loop_with_access_big {
+ void operator()() {
+
   MM A (200,300);//, FORTRAN_LAYOUT);
   for (int i =0; i<200; ++i)
-   for (int j=0; j<300; ++j) 
+   for (int j=0; j<300; ++j)
     A(i,j) = 10*i+ j;
 
   MM B(A), C(A), D(A);
@@ -71,15 +71,15 @@ struct bare_loop_with_access_big {
 
   for (int u =0; u<500; ++u)
    for (int i =0; i<200; ++i)
-    for (int j=0; j<300; ++j) 
+    for (int j=0; j<300; ++j)
      A(i,j) = B(i,j) + 3* C(i,j) + D(i,j);
  }
 };
-struct expression_template_big { 
- void operator()() { 
+struct expression_template_big {
+ void operator()() {
   MM A (200,300);
   for (int i =0; i<200; ++i)
-   for (int j=0; j<300; ++j) 
+   for (int j=0; j<300; ++j)
     A(i,j) = 10*i+ j;
 
   MM B(A), C(A), D(A);
@@ -92,19 +92,19 @@ struct expression_template_big {
 
 
 /*
-struct pointer_and_expression_template { 
+struct pointer_and_expression_template {
  MM A,B,C;
 
  pointer_and_expression_template():A(20,30) {}
  double f(size_t i, size_t j) const { return B(i,j) + 3*C(i,j);}
- 
+
 inline void F(double * restrict p, size_t sh,double const & rhs) { p[sh]=rhs;}
 inline void F2(double & r,double const & rhs) { r=rhs;}
 
- void operator()() { 
-  
+ void operator()() {
+
   for (int i =0; i<20; ++i)
-   for (int j=0; j<30; ++j) 
+   for (int j=0; j<30; ++j)
     A(i,j) = 10*i+ j;
 
  B = A; C=A;
@@ -113,15 +113,15 @@ inline void F2(double & r,double const & rhs) { r=rhs;}
  double * restrict pB = &B(0,0);
 
  MM const & BB(B);
- size_t s1=1, s2 = 20; 
+ size_t s1=1, s2 = 20;
   boost::tuple<int,int> t;
   for (int u =0; u<5000; ++u)
     for (int j=0; j<30; ++j) {
-   for (int i =0; i<20; ++i ) { 
+   for (int i =0; i<20; ++i ) {
      p[i*s1 + j*s2] = (B + 3* C)(i,j);
      //F(p,i*s1 + j*s2, (B + 3* C)(i,j));
      //F2(p[i*s1 + j*s2], (B + 3* C)(i,j));
-    
+
     }
  }
  }

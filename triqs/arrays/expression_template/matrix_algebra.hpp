@@ -43,7 +43,7 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return this->domain().lengths()[0];} 
    size_t dim1() const { return this->domain().lengths()[1];} 
 
-   template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
+   //template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
    template<typename ... Args> value_type operator()(Args && ... args) const { return operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
    friend std::ostream &operator <<(std::ostream &sout, matrix_expr const &expr){return sout << "("<<expr.l << " "<<operation<Tag>::name << " "<<expr.r<<")" ; }
   };
@@ -61,7 +61,7 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return this->domain().lengths()[0];} 
    size_t dim1() const { return this->domain().lengths()[1];} 
 
-   template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
+   //template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
    template<typename ... Args> value_type operator()(Args && ... args) const { return -l(std::forward<Args>(args)...);}
    friend std::ostream &operator <<(std::ostream &sout, matrix_unary_m_expr const &expr){return sout << '-'<<expr.l; }
   };

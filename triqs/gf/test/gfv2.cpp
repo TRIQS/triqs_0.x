@@ -117,8 +117,7 @@ int main() {
 
  TEST( t(1));
 
- tqa::array<double,9> A(1,2,3,4,5,6,7,8,9);
- A()=0;
+ //tqa::array<double,9> A(1,2,3,4,5,6,7,8,9); A()=0;
  //auto x = local::impl::gf_impl<triqs::gf::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
  // test hdf5 

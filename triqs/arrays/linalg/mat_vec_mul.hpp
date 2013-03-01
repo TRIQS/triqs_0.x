@@ -70,7 +70,7 @@ namespace triqs { namespace arrays {
    //domain_type domain() const { return indexmaps::cuboid::domain_t<1>(mini_vector<size_t,1>(size()));}
    size_t size() const { return M.dim0();} 
 
-   template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
+   template<typename KeyType> value_type operator() (KeyType const & key) const { activate(); return _id->R (key); }
 
    template<typename LHS> // Optimized implementation of =
     friend void triqs_arrays_assign_delegation (LHS & lhs, mat_vec_mul_lazy const & rhs)  {
