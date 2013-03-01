@@ -51,7 +51,7 @@ namespace triqs { namespace arrays {
  /** 
   * \brief Makes a lazy immutable (cuboid) array from a simple expression and a set of range...
   * \param expr The lazy expression
-  * \param i_=R i_ is a placeholder, R a range. The i_=R produce a (boost::fusion) pair of i_ and R , which is the parameter.
+  * \param i_=R i_ is a placeholder, R a range. The i_=R produce a pair of i_ and R , which is the parameter.
   * \return A lazy object implementing the ImmutableCuboidArray concept with the domain built from the ranges. 
   */
  template<typename Expr, int ph_n1, int ph_n2>
