@@ -206,7 +206,10 @@ class SumkLDA:
         
         gf_downfolded = gf_inp.copy()
         isp = self.names_to_ind[self.SO][sig]       # get spin index for proj. matrices
-        gf_downfolded.from_L_G_R(self.proj_mat[ik][isp][icrsh],gf_to_downfold,self.proj_mat[ik][isp][icrsh].conjugate().transpose())  # downfolding G
+        dim = self.corr_shells[icrsh][3]
+        n_orb = self.n_orbitals[ik,isp]
+        
+        gf_downfolded.from_L_G_R(self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb],gf_to_downfold,self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb].conjugate().transpose())  # downfolding G
 
         return gf_downfolded
         
@@ -217,7 +220,10 @@ class SumkLDA:
         gf_upfolded = gf_inp.copy()
         
         isp = self.names_to_ind[self.SO][sig]       # get spin index for proj. matrices
-        gf_upfolded.from_L_G_R(self.proj_mat[ik][isp][icrsh].conjugate().transpose(),gf_to_upfold,self.proj_mat[ik][isp][icrsh]) 
+        dim = self.corr_shells[icrsh][3]
+        n_orb = self.n_orbitals[ik,isp]
+        
+        gf_upfolded.from_L_G_R(self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb].conjugate().transpose(),gf_to_upfold,self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb]) 
 
         return gf_upfolded
 
@@ -254,7 +260,7 @@ class SumkLDA:
 
         ntoi = self.names_to_ind[self.SO]
         bln = self.block_names[self.SO]
-
+                
         if (not hasattr(self,"Sigma_imp")): with_Sigma=False
 
         if (with_Sigma): 
@@ -263,7 +269,7 @@ class SumkLDA:
             
         if (self.Gupf is None):
             # first setting up of Gupf
-            BS = [ range(self.n_orbitals[ik][ntoi[ib]]) for ib in bln ]
+            BS = [ range(self.n_orbitals[ik,ntoi[ib]]) for ib in bln ]
             gf_struct = [ (bln[ib], BS[ib]) for ib in range(self.n_spin_blocks_gf[self.SO]) ]
             a_list = [a for a,al in gf_struct]   
             if (with_Sigma):                     #take the mesh from Sigma if necessary 
@@ -274,11 +280,11 @@ class SumkLDA:
             self.Gupf.zero()
 
         GFsize = [ gf.N1 for sig,gf in self.Gupf]  
-        unchangedsize = all( [ self.n_orbitals[ik][ntoi[bln[ib]]]==GFsize[ib] 
+        unchangedsize = all( [ self.n_orbitals[ik,ntoi[bln[ib]]]==GFsize[ib] 
                                for ib in range(self.n_spin_blocks_gf[self.SO]) ] )
 
         if ((not unchangedsize)or(self.Gupf.beta!=beta)):
-            BS = [ range(self.n_orbitals[ik][ntoi[ib]]) for ib in bln ]
+            BS = [ range(self.n_orbitals[ik,ntoi[ib]]) for ib in bln ]
             gf_struct = [ (bln[ib], BS[ib]) for ib in range(self.n_spin_blocks_gf[self.SO]) ]
             a_list = [a for a,al in gf_struct]                                 
             if (with_Sigma):
@@ -288,14 +294,16 @@ class SumkLDA:
             self.Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
             self.Gupf.zero()
 
-        idmat = [numpy.identity(self.n_orbitals[ik][ntoi[bl]],numpy.complex_) for bl in bln]  
+        
+        idmat = [numpy.identity(self.n_orbitals[ik,ntoi[bl]],numpy.complex_) for bl in bln]  
         #for ibl in range(self.n_spin_blocks_gf[self.SO]): mupat[ibl] *= mu
 
         self.Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=0)
         M = copy.deepcopy(idmat)
         for ibl in range(self.n_spin_blocks_gf[self.SO]): 
             ind = ntoi[bln[ibl]]
-            M[ibl] = self.hopping[ik][ind] - (idmat[ibl]*mu) - (idmat[ibl] * self.h_field * (1-2*ibl))
+            n_orb = self.n_orbitals[ik,ind]
+            M[ibl] = self.hopping[ik,ind,0:n_orb,0:n_orb] - (idmat[ibl]*mu) - (idmat[ibl] * self.h_field * (1-2*ibl))
         self.Gupf -= M
 
         if (with_Sigma):
@@ -317,8 +325,9 @@ class SumkLDA:
         for ik in range(self.n_k):
         
             for ish in range(self.n_corr_shells):
-                Norb = self.corr_shells[ish][3]
-                dens_mat[ish][:,:] += numpy.dot(self.proj_mat[ik][0][ish],self.proj_mat[ik][0][ish].transpose().conjugate()) * self.bz_weights[ik]
+                dim = self.corr_shells[ish][3]
+                n_orb = self.n_orbitals[ik,0]
+                dens_mat[ish][:,:] += numpy.dot(self.proj_mat[ik,0,ish,0:dim,0:n_orb],self.proj_mat[ik,0,ish,0:dim,0:n_orb].transpose().conjugate()) * self.bz_weights[ik]
 
         if (self.symm_op!=0): dens_mat = self.Symm_corr.symmetrize(dens_mat)
 
@@ -340,7 +349,7 @@ class SumkLDA:
         ntoi = self.names_to_ind[self.SO]
         bln = self.block_names[self.SO]
 
-        MMat = [numpy.zeros( [self.n_orbitals[0][ntoi[bl]],self.n_orbitals[0][ntoi[bl]]], numpy.complex_) for bl in bln] 
+        MMat = [numpy.zeros( [self.n_orbitals[0,ntoi[bl]],self.n_orbitals[0,ntoi[bl]]], numpy.complex_) for bl in bln] 
 
         dens_mat = [ {} for icrsh in xrange(self.n_corr_shells)]
         for icrsh in xrange(self.n_corr_shells):
@@ -351,16 +360,16 @@ class SumkLDA:
           
         for ik in mpi.slice_array(ikarray):
             
-            unchangedsize = all( [ self.n_orbitals[ik][ntoi[bln[ib]]]==len(MMat[ib]) 
+            unchangedsize = all( [ self.n_orbitals[ik,ntoi[bln[ib]]]==len(MMat[ib]) 
                                    for ib in range(self.n_spin_blocks_gf[self.SO]) ] )
                
             if (not unchangedsize):
-                MMat = [numpy.zeros( [self.n_orbitals[ik][ntoi[bl]],self.n_orbitals[ik][ntoi[bl]]], numpy.complex_) for bl in bln] 
+                MMat = [numpy.zeros( [self.n_orbitals[ik,ntoi[bl]],self.n_orbitals[ik,ntoi[bl]]], numpy.complex_) for bl in bln] 
 
             for ibl,bl in enumerate(bln):
                 ind = ntoi[bl]
-                for inu in range(self.n_orbitals[ik][ind]):
-                    if ( (self.hopping[ik][ind][inu,inu]-self.h_field*(1-2*ibl)) < 0.0): 
+                for inu in range(self.n_orbitals[ik,ind]):
+                    if ( (self.hopping[ik,ind,inu,inu]-self.h_field*(1-2*ibl)) < 0.0): 
                         MMat[ibl][inu,inu] = 1.0
                     else:
                         MMat[ibl][inu,inu] = 0.0 
@@ -369,9 +378,12 @@ class SumkLDA:
             for icrsh in range(self.n_corr_shells):
                 for ibn,bn in enumerate(self.block_names[self.corr_shells[icrsh][4]]):
                     isp = self.names_to_ind[self.corr_shells[icrsh][4]][bn]
+                    dim = self.corr_shells[icrsh][3]
+                    n_orb = self.n_orbitals[ik,isp]
+                    
                     #print ik, bn, isp
-                    dens_mat[icrsh][bn] += self.bz_weights[ik] * numpy.dot( numpy.dot(self.proj_mat[ik][isp][icrsh],MMat[ibn]) , 
-                                                                           self.proj_mat[ik][isp][icrsh].transpose().conjugate() )
+                    dens_mat[icrsh][bn] += self.bz_weights[ik] * numpy.dot( numpy.dot(self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb],MMat[ibn]) , 
+                                                                           self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb].transpose().conjugate() )
 
         # get data from nodes:
         for icrsh in range(self.n_corr_shells):
@@ -414,8 +426,11 @@ class SumkLDA:
             for icrsh in range(self.n_corr_shells):
                 for ibn,bn in enumerate(self.block_names[self.corr_shells[icrsh][4]]):
                     isp = self.names_to_ind[self.corr_shells[icrsh][4]][bn]
+                    dim = self.corr_shells[icrsh][3]
+                    n_orb = self.n_orbitals[ik,isp]
                     #print ik, bn, isp
-                    dens_mat[icrsh][bn] += numpy.dot( numpy.dot(self.proj_mat[ik][isp][icrsh],MMat[ibn]),self.proj_mat[ik][isp][icrsh].transpose().conjugate() )
+                    dens_mat[icrsh][bn] += numpy.dot( numpy.dot(self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb],MMat[ibn]),
+                                                      self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb].transpose().conjugate() )
 
         # get data from nodes:
         for icrsh in range(self.n_corr_shells):
@@ -573,13 +588,15 @@ class SumkLDA:
                     self.Hsumk[icrsh][bn] = numpy.zeros([dim,dim],numpy.complex_)
           
             for icrsh in range(self.n_corr_shells):
+                dim = self.corr_shells[icrsh][3]
                 for ibn, bn in enumerate(self.block_names[self.corr_shells[icrsh][4]]):
                     isp = self.names_to_ind[self.corr_shells[icrsh][4]][bn]
                     for ik in xrange(self.n_k):
-                        MMat = numpy.identity(self.n_orbitals[ik][isp], numpy.complex_)
-                        MMat = self.hopping[ik][isp] - (1-2*ibn) * self.h_field * MMat
-                        self.Hsumk[icrsh][bn] += self.bz_weights[ik] * numpy.dot( numpy.dot(self.proj_mat[ik][isp][icrsh],MMat), #self.hopping[ik][isp]) , 
-                                                                                  self.proj_mat[ik][isp][icrsh].conjugate().transpose() )
+                        n_orb = self.n_orbitals[ik,isp]
+                        MMat = numpy.identity(n_orb, numpy.complex_)
+                        MMat = self.hopping[ik,isp,0:n_orb,0:n_orb] - (1-2*ibn) * self.h_field * MMat
+                        self.Hsumk[icrsh][bn] += self.bz_weights[ik] * numpy.dot( numpy.dot(self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb],MMat), #self.hopping[ik][isp]) , 
+                                                                                  self.proj_mat[ik,isp,icrsh,0:dim,0:n_orb].conjugate().transpose() )
 
             # symmetrisation:
             if (self.symm_op!=0): self.Hsumk = self.Symm_corr.symmetrize(self.Hsumk)
@@ -1041,7 +1058,7 @@ class SumkLDA:
         # Set up deltaN:
         deltaN = {}
         for ib in bln:
-            deltaN[ib] = [ numpy.zeros( [self.n_orbitals[ik][ntoi[ib]],self.n_orbitals[ik][ntoi[ib]]], numpy.complex_) for ik in range(self.n_k)]
+            deltaN[ib] = [ numpy.zeros( [self.n_orbitals[ik,ntoi[ib]],self.n_orbitals[ik,ntoi[ib]]], numpy.complex_) for ik in range(self.n_k)]
 
         ikarray=numpy.array(range(self.n_k))
         
@@ -1081,9 +1098,9 @@ class SumkLDA:
             if (self.SP!=0): f1.write("%.14f\n"%(S.beta*self.energy_unit))
             if (self.SP==0):
                 for ik in range(self.n_k):
-                    f.write("%s\n"%self.n_orbitals[ik][0])
-                    for inu in range(self.n_orbitals[ik][0]):
-                        for imu in range(self.n_orbitals[ik][0]):
+                    f.write("%s\n"%self.n_orbitals[ik,0])
+                    for inu in range(self.n_orbitals[ik,0]):
+                        for imu in range(self.n_orbitals[ik,0]):
                             valre = (deltaN['up'][ik][inu,imu].real + deltaN['down'][ik][inu,imu].real) / 2.0
                             valim = (deltaN['up'][ik][inu,imu].imag + deltaN['down'][ik][inu,imu].imag) / 2.0
                             f.write("%.14f  %.14f "%(valre,valim))
@@ -1092,34 +1109,34 @@ class SumkLDA:
                 f.close()
             elif ((self.SP==1)and(self.SO==0)):
                 for ik in range(self.n_k):
-                    f.write("%s\n"%self.n_orbitals[ik][0])
-                    for inu in range(self.n_orbitals[ik][0]):
-                        for imu in range(self.n_orbitals[ik][0]):
+                    f.write("%s\n"%self.n_orbitals[ik,0])
+                    for inu in range(self.n_orbitals[ik,0]):
+                        for imu in range(self.n_orbitals[ik,0]):
                             f.write("%.14f  %.14f "%(deltaN['up'][ik][inu,imu].real,deltaN['up'][ik][inu,imu].imag))
                         f.write("\n")
                     f.write("\n")
                 f.close()
                 for ik in range(self.n_k):
-                    f1.write("%s\n"%self.n_orbitals[ik][1])
-                    for inu in range(self.n_orbitals[ik][1]):
-                        for imu in range(self.n_orbitals[ik][1]):
+                    f1.write("%s\n"%self.n_orbitals[ik,1])
+                    for inu in range(self.n_orbitals[ik,1]):
+                        for imu in range(self.n_orbitals[ik,1]):
                             f1.write("%.14f  %.14f "%(deltaN['down'][ik][inu,imu].real,deltaN['down'][ik][inu,imu].imag))
                         f1.write("\n")
                     f1.write("\n")
                 f1.close()
             else:
                 for ik in range(self.n_k):
-                    f.write("%s\n"%self.n_orbitals[ik][0])
-                    for inu in range(self.n_orbitals[ik][0]):
-                        for imu in range(self.n_orbitals[ik][0]):
+                    f.write("%s\n"%self.n_orbitals[ik,0])
+                    for inu in range(self.n_orbitals[ik,0]):
+                        for imu in range(self.n_orbitals[ik,0]):
                             f.write("%.14f  %.14f "%(deltaN['ud'][ik][inu,imu].real,deltaN['ud'][ik][inu,imu].imag))
                         f.write("\n")
                     f.write("\n")
                 f.close()
                 for ik in range(self.n_k):
-                    f1.write("%s\n"%self.n_orbitals[ik][0])
-                    for inu in range(self.n_orbitals[ik][0]):
-                        for imu in range(self.n_orbitals[ik][0]):
+                    f1.write("%s\n"%self.n_orbitals[ik,0])
+                    for inu in range(self.n_orbitals[ik,0]):
+                        for imu in range(self.n_orbitals[ik,0]):
                             f1.write("%.14f  %.14f "%(deltaN['ud'][ik][inu,imu].real,deltaN['ud'][ik][inu,imu].imag))
                         f1.write("\n")
                     f1.write("\n")

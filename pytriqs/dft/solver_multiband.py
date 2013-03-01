@@ -92,7 +92,7 @@ class SolverMultiBand (Solver):
        
         # now initialize the solver with the stuff given above:
         Solver.__init__(self,
-                        beta = beta,
+                        Beta = beta,
                         GFstruct = gf_struct,
                         H_Local = Hamiltonian,
                         Quantum_Numbers = Quantum_Numbers )

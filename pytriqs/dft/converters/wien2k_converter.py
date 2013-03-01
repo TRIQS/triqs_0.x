@@ -90,16 +90,16 @@ class Wien2kConverter:
             # the information on the non-correlated shells is not important here, maybe skip:
             n_shells = int(R.next())                      # number of shells (e.g. Fe d, As p, O p) in the unit cell, 
                                                                # corresponds to index R in formulas
-            # now read the information about the shells:
             shells = [ [ int(R.next()) for i in range(4) ] for icrsh in range(n_shells) ]    # reads iatom, sort, l, dim
-
+            #shells = numpy.array(shells)
+            
             n_corr_shells = int(R.next())                 # number of corr. shells (e.g. Fe d, Ce f) in the unit cell, 
                                                           # corresponds to index R in formulas
             # now read the information about the shells:
             corr_shells = [ [ int(R.next()) for i in range(6) ] for icrsh in range(n_corr_shells) ]    # reads iatom, sort, l, dim, SO flag, irep
 
             self.inequiv_shells(corr_shells)              # determine the number of inequivalent correlated shells, has to be known for further reading...
-
+            #corr_shells = numpy.array(corr_shells)
 
             use_rotations = 1
             rot_mat = [numpy.identity(corr_shells[icrsh][3],numpy.complex_) for icrsh in xrange(n_corr_shells)]
@@ -146,21 +146,26 @@ class Wien2kConverter:
 
     
             # Spin blocks to be read:
-            n_spin_blocs = SP + 1 - SO   # number of spins to read for Norbs and Ham, NOT Projectors
+            n_spin_blocs = SP + 1 - SO   
                  
         
             # read the list of n_orbitals for all k points
-            n_orbitals = [ [0 for isp in range(n_spin_blocs)] for ik in xrange(n_k)]
+            n_orbitals = numpy.zeros([n_k,n_spin_blocs],numpy.int)
+            #n_orbitals = [ [0 for isp in range(n_spin_blocs)] for ik in xrange(n_k)]
             for isp in range(n_spin_blocs):
                 for ik in xrange(n_k):
-                    n_orbitals[ik][isp] = int(R.next())
+                    #n_orbitals[ik][isp] = int(R.next())
+                    n_orbitals[ik,isp] = int(R.next())
             #print n_orbitals
+            
 
             # Initialise the projectors:
-            proj_mat = [ [ [numpy.zeros([corr_shells[icrsh][3], n_orbitals[ik][isp]], numpy.complex_) 
-                            for icrsh in range (n_corr_shells)] 
-                           for isp in range(n_spin_blocs)] 
-                         for ik in range(n_k) ]
+            #proj_mat = [ [ [numpy.zeros([corr_shells[icrsh][3], n_orbitals[ik][isp]], numpy.complex_) 
+            #                for icrsh in range (n_corr_shells)] 
+            #               for isp in range(n_spin_blocs)] 
+            #             for ik in range(n_k) ]
+            proj_mat = numpy.zeros([n_k,n_spin_blocs,n_corr_shells,max(numpy.array(corr_shells)[:,3]),max(n_orbitals)],numpy.complex_)
+            
 
             # Read the projectors from the file:
             for ik in xrange(n_k):
@@ -170,19 +175,21 @@ class Wien2kConverter:
                     for isp in range(n_spin_blocs):
                         for i in xrange(no):
                             for j in xrange(n_orbitals[ik][isp]):
-                                proj_mat[ik][isp][icrsh][i,j] = R.next()
+                                #proj_mat[ik][isp][icrsh][i,j] = R.next()
+                                proj_mat[ik,isp,icrsh,i,j] = R.next()
                     # now Imag part:
                     for isp in range(n_spin_blocs):
                         for i in xrange(no):
                             for j in xrange(n_orbitals[ik][isp]):
-                                proj_mat[ik][isp][icrsh][i,j] += 1j * R.next()
+                                #proj_mat[ik][isp][icrsh][i,j] += 1j * R.next()
+                                proj_mat[ik,isp,icrsh,i,j] += 1j * R.next()
             
           
             # now define the arrays for weights and hopping ...
             bz_weights = numpy.ones([n_k],numpy.float_)/ float(n_k)  # w(k_index),  default normalisation 
-            hopping = [ [numpy.zeros([n_orbitals[ik][isp],n_orbitals[ik][isp]],numpy.complex_) 
-                         for isp in range(n_spin_blocs)] for ik in xrange(n_k) ]
-
+            #hopping = [ [numpy.zeros([n_orbitals[ik][isp],n_orbitals[ik][isp]],numpy.complex_) 
+            #             for isp in range(n_spin_blocs)] for ik in xrange(n_k) ]
+            hopping = numpy.zeros([n_k,n_spin_blocs,max(n_orbitals),max(n_orbitals)],numpy.complex_)
                             
             # weights in the file
             for ik in xrange(n_k) : bz_weights[ik] = R.next()         
@@ -197,7 +204,8 @@ class Wien2kConverter:
                 for ik in xrange(n_k) :
                     no = n_orbitals[ik][isp]
                     for i in xrange(no):
-                        hopping[ik][isp][i,i] = R.next() * energy_unit
+                        #hopping[ik][isp][i,i] = R.next() * energy_unit
+                        hopping[ik,isp,i,i] = R.next() * energy_unit
             
             #keep some things that we need for reading parproj:
             self.n_shells = n_shells
