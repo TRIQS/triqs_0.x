@@ -29,7 +29,7 @@ Example
 .. compileblock::
 
   #include "triqs/clef.hpp"
-  #include "triqs/clef2/adapters/vector.hpp"
+  #include "triqs/clef/adapters/vector.hpp"
   #include <iostream> 
 
   int main() { 

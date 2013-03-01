@@ -20,12 +20,13 @@ EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/foreignlibs/boost/libb
 else(BOOST_SOURCE_DIR)
  SET(  link_boost_for_triqs " ")
 endif(BOOST_SOURCE_DIR)
-SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
+SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs_utility ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
 SET(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR}  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/foreignlibs  )
 SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
 SET(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
 
 EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
+EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs_utility.so ${CMAKE_CURRENT_BINARY_DIR}")
 
 # generating the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
