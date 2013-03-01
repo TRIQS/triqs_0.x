@@ -1,5 +1,5 @@
 # Import the Green's functions 
-from pytriqs.base.gf_local import GfImFreq, iOmega_n, inverse 
+from pytriqs.base.gf.local import GfImFreq, iOmega_n, inverse
 
 # Create the Matsubara-frequency Green's function and initialize it
 g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "imp")

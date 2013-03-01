@@ -1,10 +1,10 @@
-from pytriqs.base.gf_local import GfReFreq, Omega, Wilson, inverse
+from pytriqs.base.gf.local import GfReFreq, Omega, Wilson, inverse
 import numpy
-a = numpy.arange(-1.99,2.00,0.02) # Define the energy array
+
 eps_d,V  = 0.3, 0.2
 
 # Create the real-frequency Green's function and initialize it
-g = GfReFreq(indices = ['s','d'], beta = 50, mesh_array = a, name = "s+d")
+g = GfReFreq(indices = ['s','d'], omega_min = -2, omega_max = 2, n_freq_points = 1000, name = "s+d")
 g['d','d'] = Omega - eps_d
 g['d','s'] = V
 g['s','d'] = V

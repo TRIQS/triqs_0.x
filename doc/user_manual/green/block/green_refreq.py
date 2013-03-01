@@ -1,7 +1,7 @@
 import numpy as np
-from pytriqs.base.gf_local import GfReFreq, SemiCircular
+from pytriqs.base.gf.local import GfReFreq, SemiCircular
 
-g = GfReFreq(indices = ['eg1', 'eg2'], beta = 50, mesh_array = np.arange(-5,5,0.01) , name = "egBlock")
+g = GfReFreq(indices = ['eg1', 'eg2'], omega_min = -5, omega_max = 5, n_freq_points = 1000, name = "egBlock")
 
 g['eg1','eg1'] = SemiCircular(half_bandwidth = 1)
 g['eg2','eg2'] = SemiCircular(half_bandwidth = 2)

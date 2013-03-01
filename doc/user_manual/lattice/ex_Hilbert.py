@@ -1,6 +1,6 @@
 from pytriqs.base.lattice.tight_binding import *
 from pytriqs.base.dos import HilbertTransform
-from pytriqs.base.gf_local import GfImFreq
+from pytriqs.base.gf.local import GfImFreq
 
 # Define a DOS (here on a square lattice)
 BL = BravaisLattice(Units = [(1,0,0) , (0,1,0) ], orbital_positions= {"" :  (0,0,0)} ) 

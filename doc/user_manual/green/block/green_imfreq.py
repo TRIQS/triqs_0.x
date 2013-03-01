@@ -1,4 +1,4 @@
-from pytriqs.base.gf_local import GfImFreq, SemiCircular
+from pytriqs.base.gf.local import GfImFreq, SemiCircular
 
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
 

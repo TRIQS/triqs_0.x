@@ -10,7 +10,7 @@ First, we load the necessary modules::
   from pytriqs.dft.sumk_lda import *
   from pytriqs.dft.converters.wien2k_converter import *
   from pytriqs.dft.solver_multiband import *
-  from pytriqs.base.gf_local import *
+  from pytriqs.base.gf.local import *
   from pytriqs.base.archive import *
 
 Then we define some parameters::

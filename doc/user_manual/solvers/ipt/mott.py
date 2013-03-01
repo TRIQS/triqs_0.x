@@ -4,8 +4,8 @@ from math import *
 import os
 import numpy
 
-from pytriqs.base.gf_local import *
-from pytriqs.base.gf_local import Omega, SemiCircular, inverse
+from pytriqs.base.gf.local import *
+from pytriqs.base.gf.local import Omega, SemiCircular, inverse
 from pytriqs.base.archive import *
 from pytriqs.base.plot.mpl_interface import oplot
 import matplotlib.pyplot as plt

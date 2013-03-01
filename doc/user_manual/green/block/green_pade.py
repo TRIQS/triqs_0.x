@@ -1,8 +1,8 @@
 import numpy
 from math import pi
 from cmath import sqrt, log
-from pytriqs.base.gf_local import *
-from pytriqs.base.gf_local.descriptors import Function
+from pytriqs.base.gf.local import *
+from pytriqs.base.gf.local.descriptors import Function
 
 beta = 100  # Inverse temperature
 L = 101     # Number of Matsubara frequencies used in the Pade approximation
@@ -25,17 +25,17 @@ def G(z):
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm <<= Function(G)
-gm._tail.zero()
-gm._tail[1] = numpy.array([[1.0]])
+gm.tail.zero()
+gm.tail[1] = numpy.array([[1.0]])
 
 # Real frequency BlockGf(reference)
-gr = GfReFreq(indices = [0], beta = beta, mesh_array = numpy.arange(-6,6,0.01), name = "gr")
+gr = GfReFreq(indices = [0], omega_min = -6, omega_max = 6, n_freq_points = 1000, name = "gr")
 gr <<= Function(G)
-gr._tail.zero()
-gr._tail[1] = numpy.array([[1.0]])
+gr.tail.zero()
+gr.tail[1] = numpy.array([[1.0]])
 
 # Analytic continuation of gm
-g_pade = GfReFreq(indices = [0], beta = beta, mesh_array = numpy.arange(-6,6,0.01), name = "g_pade")
+g_pade = GfReFreq(indices = [0], omega_min = -6, omega_max = 6, n_freq_points = 1000, name = "g_pade")
 g_pade.set_from_pade(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
 
 # Comparison plot

@@ -1,5 +1,5 @@
 from pytriqs.base.archive import HDFArchive
-from pytriqs.base.gf_local import GfImFreq
+from pytriqs.base.gf.local import GfImFreq
 
 R = HDFArchive('myfile.h5', 'r')  # Opens the file myfile.h5 in readonly mode 
 G = R['g1'] # Retrieve the object named g1 in the file as G
