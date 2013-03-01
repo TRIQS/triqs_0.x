@@ -17,7 +17,7 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
          * :param x_window: (xmin,xmax) or None [default]
          * :param Name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
     """
-    Name = opt_dict.pop('Name', '' )  # consume it
+    Name = opt_dict.pop('name', '' )  # consume it
     NamePrefix = opt_dict.pop('NamePrefix', '' )  # consume it
     if Name and NamePrefix : raise ValueError, 'Name and NamePrefix can not be used at the same time'
     if NamePrefix : name_save, self.name = self.name, Name or NamePrefix
