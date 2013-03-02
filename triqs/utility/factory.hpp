@@ -35,6 +35,7 @@ namespace triqs { namespace utility {
    typedef std::vector<T> R;
    static R invoke(R && x)      { return R(std::move(x));}
    static R invoke(R const & x) { return R(x);}
+   static R invoke(R & x) { return R(x);}
    template <typename U> static R invoke( std::vector<U> && v) { 
     static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
     R r; r.reserve(v.size()); 
@@ -44,7 +45,7 @@ namespace triqs { namespace utility {
    template <typename U> static R invoke( std::vector<U> const & v) { 
     static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
     R r; r.reserve(v.size()); 
-    for (auto & x : v) r.push_back(x);
+    for (auto & x : v) r.push_back(T(x));
     return r;
    }
   };
