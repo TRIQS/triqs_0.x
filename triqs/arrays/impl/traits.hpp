@@ -31,8 +31,9 @@ namespace triqs { namespace arrays {
 
  // The ImmutableArray concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableArray);
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableArray,(ImmutableArray));
 
- template <class X> struct BCC_ImmutableArray { 
+ /*template <class X> struct BCC_ImmutableArray { 
   BOOST_CONCEPT_USAGE(BCC_ImmutableArray)
   {
    typename X::mc_weight_type r = i.Try();  // this is e.g. for a QMC move  
@@ -41,50 +42,40 @@ namespace triqs { namespace arrays {
   }
   private: X i;
  };
+*/
 
   // The ImmutableCuboidArray concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableCuboidArray,(ImmutableArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableCuboidArray,(ImmutableCuboidArray));
  
  // The ImmutableMatrix concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableMatrix,(ImmutableArray));
-
- template <class X> struct BCC_ImmutableMatrix{ 
-  BOOST_CONCEPT_USAGE(BCC_ImmutableMatrix)
-  {
-  }
-  private: X i;
- };
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableMatrix,(ImmutableMatrix));
 
  // The ImmutableVector concept 
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(ImmutableVector,(ImmutableArray));
+ TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT_R(MutableVector,(ImmutableVector));
 
- template <class X> struct BCC_ImmutableVector { 
-  BOOST_CONCEPT_USAGE(BCC_ImmutableVector)
-  {
-  }
-  private: X i;
- };
- 
- namespace Tag { struct array{}; struct array_view {}; struct C{}; struct Fortran{}; }
- template <typename T> struct is_array : boost::is_base_of<Tag::array,T> {};
- template <typename T> struct is_array_view : boost::is_base_of<Tag::array_view,T> {};
+ namespace Tag { struct array{}; struct array_view {}; }
+ template <typename T> struct is_array : std::is_base_of<Tag::array,T> {};
+ template <typename T> struct is_array_view : std::is_base_of<Tag::array_view,T> {};
  template <typename T> struct is_array_or_view : boost::mpl::or_< is_array<T>, is_array_view<T> > {};
 
  namespace Tag { struct vector{}; struct vector_view {};}
- template <typename T> struct is_vector : boost::is_base_of<Tag::vector,T> {};
- template <typename T> struct is_vector_view : boost::is_base_of<Tag::vector_view,T> {};
+ template <typename T> struct is_vector : std::is_base_of<Tag::vector,T> {};
+ template <typename T> struct is_vector_view : std::is_base_of<Tag::vector_view,T> {};
  template <typename T> struct is_vector_or_view : boost::mpl::or_< is_vector<T>, is_vector_view<T> > {};
 
  namespace Tag { struct matrix_view {}; struct matrix {}; }
- template <typename T> struct is_matrix : boost::is_base_of<Tag::matrix,T> {};
- template <typename T> struct is_matrix_view : boost::is_base_of<Tag::matrix_view,T> {};
+ template <typename T> struct is_matrix : std::is_base_of<Tag::matrix,T> {};
+ template <typename T> struct is_matrix_view : std::is_base_of<Tag::matrix_view,T> {};
  template <typename T> struct is_matrix_or_view : boost::mpl::or_< is_matrix<T>, is_matrix_view<T> > {};
 
  template <class T> struct is_amv_value_class : boost::mpl::or_< is_array<T>, is_matrix<T>, is_vector<T> > {};
  template <class T> struct is_amv_view_class : boost::mpl::or_< is_array_view<T>, is_matrix_view<T>, is_vector_view<T> > {};
  template <class T> struct is_amv_value_or_view_class : boost::mpl::or_< is_amv_value_class<T>, is_amv_view_class<T> > {};
 
- template <class S> struct is_scalar : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S> > {};
+ template <class S> struct is_scalar : boost::mpl::or_<std::is_arithmetic<S > , boost::is_complex<S> > {};
  
  // beware : complex is not a pod
  template <class S> struct is_scalar_or_pod : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S>, boost::is_pod<S> > {};
