@@ -56,7 +56,7 @@ int main() {
 
  // bug fixed for this
  gf< block< imfreq> > G9;
- G9 = block<imfreq>::make_gf (2, beta, Fermion, make_shape(2,2));
+ G9 = block<imfreq>::make_gf (2, imfreq::make_gf(beta, Fermion, make_shape(2,2)));
 
  // Operation
  g0.on_mesh(0) = 3.2;

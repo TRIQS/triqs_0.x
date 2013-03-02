@@ -96,19 +96,40 @@ namespace triqs { namespace gf {
    static gf_t make_gf(std::vector<gf<Target>> const & V)  { return gf_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
    static gf_t make_gf(std::vector<gf<Target>> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
 
-   static gf_t make_gf(std::vector<std::string> const & Names, std::vector<gf<Target>> const & V) {
-    return gf_t(mesh_t(Names), V, nothing(), nothing() );
+   static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<gf<Target>> const & V) {
+    return gf_t(mesh_t(block_names), V, nothing(), nothing() );
    }
-   static gf_t make_gf(std::vector<std::string> const & Names, std::vector<gf<Target>> && V) {
-    return gf_t(mesh_t(Names), std::move(V), nothing(), nothing() );
+   static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<gf<Target>> && V) {
+    return gf_t(mesh_t(block_names), std::move(V), nothing(), nothing() );
    }
 
-   template<typename... Args>
+  /* template<typename... Args>
     static gf_t make_gf(size_t N, Args&& ...args)  {
-     std::vector<gf<Target>> V;
-     for (size_t i=0; i<N; ++i)  V.push_back( Target::make_gf (args...));
+     std::vector<gf<Target>> V; V.reserve(N);
+     for (size_t i=0; i<N; ++i) V.push_back( Target::make_gf (std::forward<Args>(args...)));
      return make_gf(V);
-    }
+     }
+     */
+   static gf_t make_gf(int N, gf<Target> const & g)  {
+    std::vector<gf<Target>> V; V.reserve(N);
+    for (size_t i=0; i<N; ++i)  V.push_back(g);
+    return make_gf(V);
+   }
+
+   static gf_t make_gf(std::vector<std::string> const & block_names, gf<Target> const & g)  {
+    std::vector<gf<Target>> V; V.reserve(block_names.size());
+    for (size_t i=0; i<block_names.size(); ++i)  V.push_back(g);
+    return make_gf(block_names,V);
+   }
+
+
+   /*  template<typename... Args>
+       static gf_t make_gf(std::vector<std::string> const & block_names, Args&& ...args)  {
+       std::vector<gf<Target>> V; V.reserve(block_names.size());
+       for (size_t i=0; i<block_names.size(); ++i)  V.push_back( Target::make_gf (std::forward<Args>(args...)));
+       return make_gf(block_names,V);
+       }
+       */
 
    template<typename GF>
     static gf_view_t make_gf_view(std::vector<GF> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
