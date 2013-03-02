@@ -22,8 +22,6 @@ class GfImFreq ( GfImFreq_cython, GfGeneric ) :
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
-        If you already have the mesh, you can use a simpler version :
-
         GfImFreq(indices, mesh, data, tail, name)
 
               * ``indices``:  a list of indices names of the block
@@ -33,7 +31,9 @@ class GfImFreq ( GfImFreq_cython, GfGeneric ) :
               * ``name``:  a name of the GF
 
         .. warning::
-        The Green function take a **view** of the array data, and a **reference** to the tail.
+
+          The Green function take a **view** of the array data, and a **reference** to the tail.
+
         """
         mesh = d.pop('mesh',None)
         if mesh is None :

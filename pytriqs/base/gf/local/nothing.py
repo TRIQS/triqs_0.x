@@ -40,3 +40,4 @@ class Nothing:
     def invert(self): pass
     def transpose(self): return Nothing()
     def conjugate(self): return Nothing()
+    def copy(self): return Nothing()

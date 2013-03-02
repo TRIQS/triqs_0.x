@@ -21,6 +21,7 @@
 ################################################################################
 
 import copy_reg
+from nothing import Nothing
 
 # Function that transcribe the indices to C++
 cdef indices_2_t make_c_indices(indicesL, indicesR) : 
@@ -59,9 +60,12 @@ cdef class GfGeneric_cython :
     
     property tail : 
         def __get__(self): return self._singularity
-        def __set__(self,TailGf t): 
-            assert (self.N1, self.N2) == (t.N1, t.N2)
-            self._singularity.copy_from (t)
+        def __set__(self, t):
+            if type(t) == TailGf:
+              assert (self.N1, self.N2) == (t.N1, t.N2)
+              self._singularity.copy_from (t)
+            if type(t) == Nothing:
+              self._singularity = Nothing()
 
     property data : 
         """Access to the data array"""

@@ -48,8 +48,6 @@ class GfReTime (GfReTime_cython, _GFBloc_general):
            * ``name``:  a name of the GF
            * ``note``:  any string you like...
 
-    If you already have the mesh, you can use a simpler version :
-
     GfReTime (indices, mesh, data, tail, name,note)
         
            * ``indices``:  a list of indices names of the block
@@ -59,10 +57,10 @@ class GfReTime (GfReTime_cython, _GFBloc_general):
            * ``name``:  a name of the GF
            * ``note``:  any string you like...
 
-.. warning::
-    The Green function take a **view** of the array data, and a **reference** to the tail.
+    .. warning::
+      The Green function take a **view** of the array data, and a **reference** to the tail.
 
-         """
+     """
         # construct the mesh if needed
         if 'mesh' not in d : 
             if 'beta' not in d : raise ValueError, "beta not provided"

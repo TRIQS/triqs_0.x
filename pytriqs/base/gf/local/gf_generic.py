@@ -23,6 +23,7 @@
 import numpy
 import lazy_expressions, descriptors
 import pytriqs.base.utility.my_utils
+from gf import MeshImFreq
 from pytriqs.base.plot.protocol import clip_array
 from types import IntType, SliceType, StringType
 from tools import LazyCTX, IndicesConverter, get_indices_in_dict, py_deserialize

@@ -21,7 +21,6 @@ class GfLegendre ( GfLegendre_cython, GfGeneric ) :
               * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
               * ``tail``:  the tail 
               * ``name``:  a name of the GF
-        If you already have the mesh, you can use a simpler version :
 
         GfLegendre (indices, mesh, data, tail, name)
            
@@ -32,7 +31,8 @@ class GfLegendre ( GfLegendre_cython, GfGeneric ) :
               * ``name``:  a name of the GF
 
         .. warning::
-        The Green function take a **view** of the array data, and a **reference** to the tail.
+
+          The Green function take a **view** of the array data, and a **reference** to the tail.
 
         """
         mesh = d.pop('mesh',None)

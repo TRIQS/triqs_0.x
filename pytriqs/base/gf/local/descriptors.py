@@ -259,7 +259,7 @@ class Wilson (Base):
             f = lambda om: (-1/(2.0*D)) * numpy.log((om-D)/(om+D)) * Id
         elif type(G.mesh) == MeshReFreq:
             def f(om):
-              if (om > -D) and (om < D):
+              if (om.real > -D) and (om.real < D):
                 return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D) - 1j*pi*Id/(2*D)
               else:
                 return -numpy.log(abs(om-D)/abs(om+D))*Id/(2*D)
@@ -332,6 +332,6 @@ class MatsubaraToLegendre (Base):
     def __str__(self): return "MatsubaraToLegendre(%s)"%self.G.name
 
     def __call__(self,G2):
-        G2.set_from_matsubara(self.G)
+        G2.set_from_imfreq(self.G)
         return G2
 
