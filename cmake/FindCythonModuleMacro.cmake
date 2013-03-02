@@ -40,7 +40,7 @@ macro (cython_module NickName ModuleName ModuleDest  )
  SET(cython_src ${CMAKE_CURRENT_SOURCE_DIR}/${ModuleName}.pyx )
  FILE(GLOB all_pyx_src RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.pyx *.pxd )
  SET(cython_wrap  ${CMAKE_CURRENT_BINARY_DIR}/wrap_${NickName}_by_cython.cpp)
- add_custom_command (OUTPUT ${cython_wrap} DEPENDS ${all_pyx_src} ${ARGN} COMMAND ${CYTHON_EXECUTABLE} ${cython_src} -I ${CMAKE_CURRENT_SOURCE_DIR}/ -I${CMAKE_SOURCE_DIR}/pytriqs/pxd --cplus -o ${cython_wrap}  )
+ add_custom_command (OUTPUT ${cython_wrap} DEPENDS ${all_pyx_src} ${ARGN} COMMAND ${CYTHON_EXECUTABLE} ${cython_src} -I ${CMAKE_CURRENT_SOURCE_DIR}/ -I${CMAKE_SOURCE_DIR}/pytriqs/pxd -X embedsignature=True --cplus -o ${cython_wrap}  )
  add_custom_target(cython_${NickName} ALL DEPENDS ${cython_wrap})
 
  add_library(${ModuleName} MODULE ${cython_wrap}  )
