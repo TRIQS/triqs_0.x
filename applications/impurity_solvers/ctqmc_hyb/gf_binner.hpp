@@ -31,7 +31,7 @@ class gf_binner {
  gf_binner ( GFType & G_): G(G_), L_over_Beta(1.0/G.mesh().delta()) {}
 
  // Binning operation
- void operator() (int alpha1, double t1, int alpha2, double t2,  typename GFType::value_t val)  { 
+ void operator() (int alpha1, double t1, int alpha2, double t2,  typename GFType::data_t::value_type val)  { 
   if (t1>=t2) 
    G.data_view()(alpha1, alpha2,int(floor((t1 - t2)*L_over_Beta))) += val;
   else
@@ -51,7 +51,7 @@ class gf_grid_evaluator {
  // For speed, it is better to make no interpolation and use a very fine grid.
  // otherwise the function is not really inlined.... and it is evaluated a lot !
  // alpha starts at ZERO
- typename GFType::value_t operator() (int alpha1, double tau1, int alpha2, double tau2 ) const 
+ typename GFType::data_t::value_type operator() (int alpha1, double tau1, int alpha2, double tau2 ) const 
  { 
   return ( (tau1>=tau2) ? G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2)*L_over_Beta))) : 
     - G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2 + G.domain().beta)*L_over_Beta)) ) );

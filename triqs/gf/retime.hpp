@@ -25,16 +25,16 @@
 #include "./local/tail.hpp"
 #include "./meshes/linear.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gf {
 
  struct retime {
 
-  /// A tag to recognize the function 
+  /// A tag to recognize the function
   struct tag {};
 
   /// The domain
   struct domain_t {
-   typedef double point_t; 
+   typedef double point_t;
    bool operator == (domain_t const & D) const { return true; }
    friend void h5_write (h5::group fg, std::string subgroup_name, domain_t const & d) {}
    friend void h5_read  (h5::group fg, std::string subgroup_name, domain_t & d){ }
@@ -44,14 +44,14 @@ namespace triqs { namespace gf {
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
- 
+
   /// The target
   typedef arrays::matrix<std::complex<double> >     target_t;
   //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
   typedef typename target_t::view_type                                       target_view_t;
 
   /// The storage
-  typedef arrays::array<target_t::value_type,3> storage_t;
+  typedef arrays::array<std::complex<double>,3> storage_t;
   typedef typename storage_t::view_type         storage_view_t;
 
   /// The tail
@@ -63,30 +63,30 @@ namespace triqs { namespace gf {
   /// Indices
   typedef indices_2_t indices_t;
 
-  /// Arity (number of argument in calling the function)
-  static const int arity =1;
+  /// ---------------------------  evaluator ---------------------------------
 
-  struct evaluator { 
-   /// All the possible calls of the gf
-   template<typename D, typename T>
-    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
+  template<typename G>
+   struct evaluator {
+    static const int arity =1;/// Arity (number of argument in calling the function)
+    G const * g; evaluator(G const & g_): g(&g_){}
+    arrays::matrix_view<std::complex<double> >  operator() (double t0)  const {
+     auto & data = g->data_view();
+     auto & mesh = g->mesh();
      size_t index; double w; bool in;
      std::tie(in, index, w) = windowing(mesh,t0);
      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     //return data(arrays::ellipsis(),mesh.index_to_linear(index)); 
-     target_t res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+     //return data(arrays::ellipsis(),mesh.index_to_linear(index));
+     arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
      return res;
-    } 
-
-   template<typename D, typename T>
-    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
-  };
+    }
+    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+   };
 
   struct bracket_evaluator {};
 
   /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS> 
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
+  template<typename D, typename T, typename RHS>
+   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
     for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
@@ -97,16 +97,16 @@ namespace triqs { namespace gf {
 
   typedef gf<retime> gf_t;
 
-  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) { 
+  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) {
    retime::mesh_t m(retime::domain_t(), tmin, tmax, n_time_points, full_bins);
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
   }
 
  };
- 
+
  // A trait to identify objects that have the concept ImmutableGfOneTime
- template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};  
+ template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};
 
 }}
 #endif

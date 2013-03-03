@@ -34,6 +34,9 @@ namespace triqs { namespace gf {
    friend std::ostream &operator <<(std::ostream &sout, scalar_wrap const &expr){return sout << expr.s; }
   };
 
+
+#define DECL_AND_RETURN(...)  -> decltype(__VA_ARGS__) { return __VA_ARGS__;}
+
   // Combine the two meshes of LHS and RHS : need to specialize where there is a scalar
   struct combine_mesh {
    template<typename L, typename R> 
@@ -52,10 +55,10 @@ namespace triqs { namespace gf {
   typedef typename gf_expr_tools::keeper_type<L>::type L_t;
   typedef typename gf_expr_tools::keeper_type<R>::type R_t;
   typedef Descriptor  descriptor_t;
-  typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_t;
+  //typedef typename std::result_of<utility::operation<Tag>(typename L_t::value_type,typename R_t::value_type)>::type  value_t;
   typedef typename std::remove_reference<typename std::result_of<gf_expr_tools::combine_mesh(L_t,R_t)>::type>::type        mesh_t;
   typedef typename Descriptor::singularity_t::view_type    singularity_view_t;
-  typedef value_t value_type;
+  //typedef value_t value_type;
   L_t l; R_t r;
   template<typename LL, typename RR> gf_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
   mesh_t mesh() const  { return gf_expr_tools::combine_mesh()(l,r); } 
@@ -63,8 +66,8 @@ namespace triqs { namespace gf {
   const singularity_view_t singularity_view() const { return utility::operation<Tag>()(l.singularity_view() , r.singularity_view());}
   //symmetry_t const & symmetry() const { return _symmetry;}
   //indices_t const & indices() const { return _indices;}
-  template<typename KeyType> value_type operator[](KeyType && key) const { return utility::operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
-  template<typename ... Args> value_type operator()(Args && ... args) const { return utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
+  template<typename KeyType> auto operator[](KeyType && key) const DECL_AND_RETURN(utility::operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]));
+  template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN(utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...)));
   friend std::ostream &operator <<(std::ostream &sout, gf_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
  };
 
@@ -73,7 +76,7 @@ namespace triqs { namespace gf {
  template<typename Descriptor, typename L>   struct gf_unary_m_expr : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction),Descriptor::tag {
   typedef typename gf_expr_tools::keeper_type<L>::type L_t;
   typedef Descriptor  descriptor_t;
-  typedef typename L_t::value_type value_type;
+  //typedef typename L_t::value_type value_type;
   typedef typename L_t::mesh_t mesh_t;
   typedef typename Descriptor::singularity_t::view_type    singularity_view_t;
   L_t l; 
@@ -83,8 +86,8 @@ namespace triqs { namespace gf {
   const singularity_view_t singularity_view() const { return l.singularity_view();}
   //symmetry_t const & symmetry() const { return _symmetry;}
   //indices_t const & indices() const { return _indices;}
-  template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
-  template<typename ... Args> value_type operator()(Args && ... args) const { return -l(std::forward<Args>(args)...);}
+  template<typename KeyType> auto operator[](KeyType&& key) const DECL_AND_RETURN( -l[key]); 
+  template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( -l(std::forward<Args>(args)...));
   friend std::ostream &operator <<(std::ostream &sout, gf_unary_m_expr const &expr){return sout << '-'<<expr.l; }
  };
 
