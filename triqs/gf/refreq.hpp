@@ -78,8 +78,6 @@ namespace triqs { namespace gf {
     local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
    };
 
-  struct bracket_evaluator {};
-
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS>
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {

@@ -35,7 +35,6 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf_view;    // the view class
 
  //template<typename Descriptor> class evaluator;          // Dispatch of all the () call except mesh_point
- //template<typename Descriptor> class bracket_evaluator;  // Dispatch of all the [] call 
 
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
@@ -128,10 +127,7 @@ namespace triqs { namespace gf {
    indices_t _indices;
    typedef typename Descriptor::template evaluator<gf_impl> evaluator_t;
    //friend class Descriptor::template evaluator<gf_impl>;// pb on gcc 4.6 and not really needed ...
-   //typedef evaluator<Descriptor> evaluator_t;
    evaluator_t evaluator_;
-   typename Descriptor::bracket_evaluator _bracket_evaluator;
-   //bracket_evaluator<Descriptor> _bracket_evaluator;
    typedef gf_data_getter<data_t> data_getter_t;
    data_getter_t data_getter;
   public:
@@ -243,24 +239,8 @@ namespace triqs { namespace gf {
    _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
 
   public:
-
-   /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
-   //except when there is at least one lazy argument ...
-   template<typename Arg >
-    typename boost::lazy_disable_if<  // disable the template if one the following conditions it true
-    clef::is_any_lazy<Arg>,                          // One of Args is a lazy expression
-    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t &, singularity_t &, Arg)> // what is the result type of call
-     >::type     // end of lazy_disable_if
-     operator[] (Arg&& arg) {return bracket_evaluator_(_mesh, this->data, singularity, std::forward<Arg>( arg));}
-
-   /// [] Calls are (perfectly) forwarded to the Descriptor::operator[]
-   //except when there is at least one lazy argument ...
-   template<typename Arg >
-    typename boost::lazy_disable_if<  // disable the template if one the following conditions it true
-    clef::is_any_lazy<Arg>,                          // One of Args is a lazy expression
-    std::result_of<typename Descriptor::bracket_evaluator(mesh_t, data_t const &, singularity_t&, Arg)> // what is the result type of call
-     >::type     // end of lazy_disable_if
-     operator[] (Arg&& arg) const {return bracket_evaluator_(_mesh, data, singularity, std::forward<Arg>( arg));}
+   typename data_getter_t::r_type       & operator[] ( mesh_index_t const & arg)       { return data_getter(_mesh.index_to_linear(arg));}
+   typename data_getter_t::r_type const & operator[] ( mesh_index_t const & arg) const { return data_getter(_mesh.index_to_linear(arg));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -268,7 +248,7 @@ namespace triqs { namespace gf {
     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
     clef::result_of::make_expr_call<view_type,Arg>
      >::type     // end of lazy_enable_if
-     operator[](Arg const & arg) const { return  clef::make_expr_call(view_type(*this),arg);} //clef::lazy_call<view_type>(*this)(arg);
+     operator[](Arg const & arg) const { return  clef::make_expr_call(view_type(*this),arg);}
 
    //----------------------------- HDF5 -----------------------------
 

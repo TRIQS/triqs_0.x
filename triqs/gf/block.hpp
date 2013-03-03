@@ -60,12 +60,6 @@ namespace triqs { namespace gf {
     gf_view<Target> operator() (long  n)  const {return g->data_view()[n]; }
    };
 
-  struct bracket_evaluator {
-   template<typename Td, typename T>
-    Td & operator() (mesh_t const & mesh, std::vector<Td> & data, T & t, long  n)  const {return data[n]; }
-   template<typename Td, typename T>
-    const Td & operator() (mesh_t const & mesh, std::vector<Td> const & data, T & t, long  n)  const {return data[n]; }
-  };
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS>

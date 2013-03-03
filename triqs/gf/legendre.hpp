@@ -39,12 +39,8 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef discrete_mesh<domain_t> mesh_t;
 
-  /// The target
-  typedef arrays::matrix<double>         target_t;
-  typedef typename target_t::view_type   target_view_t;
-
   /// The storage
-  typedef arrays::array<target_t::value_type,3> storage_t;
+  typedef arrays::array<double,3> storage_t;
   typedef typename storage_t::view_type         storage_view_t;
 
   /// The tail
@@ -69,8 +65,6 @@ namespace triqs { namespace gf {
     arrays::matrix_view<double >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
     local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
    };
-
-  struct bracket_evaluator {};
 
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS>

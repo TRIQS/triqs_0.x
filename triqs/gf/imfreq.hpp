@@ -58,10 +58,7 @@ namespace triqs { namespace gf {
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
     int i=0;
     for (auto w: mesh) {
-
-     //if (i<2) std::cerr<< rhs(w)<< std::endl;
      arrays::matrix_view<std::complex<double> >( data(tqa::range(),tqa::range(),w.index)) = rhs(w);
-     //if (i<2) std::cerr<< llltarget_view_t( data(tqa::range(),tqa::range(),w.index)) << std::endl ;
     ++i;
     }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
@@ -79,8 +76,6 @@ namespace triqs { namespace gf {
     arrays::matrix_view<std::complex<double> >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
     local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
    };
-
-  struct bracket_evaluator {};
 
   static std::string h5_name() { return "imfreq_gf";}
 
@@ -112,11 +107,8 @@ namespace triqs { namespace gf {
 
  };
 
- typedef gf_view<imfreq> gf_view_imfreq_t;
-
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
-
 
 }}
 

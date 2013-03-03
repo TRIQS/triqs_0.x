@@ -39,11 +39,6 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-  /// The target
-  typedef arrays::matrix<double >     llltarget_t;
-  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
-  typedef typename llltarget_t::view_type            llltarget_view_t;
-
   /// The storage
   typedef arrays::array<double,3> storage_t;
   typedef typename storage_t::view_type         storage_view_t;
@@ -61,7 +56,7 @@ namespace triqs { namespace gf {
   template<typename D, typename T, typename RHS>
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
     // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
+    for (size_t u=0; u<mesh.size(); ++u)  { arrays::matrix_view<double>( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
     // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
     // it uses the fact that tail_non_view_t can be casted into freq_infty
@@ -109,7 +104,6 @@ namespace triqs { namespace gf {
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, t);
   }
-  struct bracket_evaluator {};
 
  };
 
@@ -117,6 +111,5 @@ namespace triqs { namespace gf {
  template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename imtime::tag,G> {};
 
 }}
-
 #endif
 

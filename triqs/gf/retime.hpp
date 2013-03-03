@@ -45,11 +45,6 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-  /// The target
-  typedef arrays::matrix<std::complex<double> >     target_t;
-  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
-  typedef typename target_t::view_type                                       target_view_t;
-
   /// The storage
   typedef arrays::array<std::complex<double>,3> storage_t;
   typedef typename storage_t::view_type         storage_view_t;
@@ -82,12 +77,10 @@ namespace triqs { namespace gf {
     local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
    };
 
-  struct bracket_evaluator {};
-
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS>
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
+    for (size_t u=0; u<mesh.size(); ++u)  { arrays::matrix_view<std::complex<double> >( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
    }
 
