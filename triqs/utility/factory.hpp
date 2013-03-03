@@ -23,15 +23,15 @@
 #include <type_traits>
 #include <vector>
 
-namespace triqs { namespace utility {
+namespace triqs { namespace utility {  
 
  template <typename T> 
-  struct factory_worker {
+  struct factories {
    template < typename U>  static T invoke( U && x) { return T(std::forward<U>(x));}
   };
 
  template <typename T> 
-  struct factory_worker <std::vector<T>>{
+  struct factories <std::vector<T>>{
    typedef std::vector<T> R;
    static R invoke(R && x)      { return R(std::move(x));}
    static R invoke(R const & x) { return R(x);}
@@ -50,7 +50,7 @@ namespace triqs { namespace utility {
    }
   };
 
- template <typename T, typename U> T factory(U && x) { return factory_worker<T>::invoke(x);}
+ template <typename T, typename ... U> T factory(U && ... x) { return factories<T>::invoke(std::forward<U>(x)...);}
 
  // redondant : done with x =factory<T>(x)
  //
@@ -77,7 +77,5 @@ namespace triqs { namespace utility {
     };
     */
 
-
-
-}}//namespace triqs::utility
+}}//namespace triqs
 #endif

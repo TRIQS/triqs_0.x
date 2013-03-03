@@ -13,7 +13,7 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         double kind()
         bint operator ==( mesh_refreq &)
 
-    cdef mesh_refreq make_mesh_refreq "triqs::gf::refreq::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    cdef mesh_refreq make_mesh_refreq "triqs::gf::gf_factories<triqs::gf::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
 
     cdef cppclass gf_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::refreq>>" :
         gf_refreq()
@@ -48,7 +48,7 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
         gf_refreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::block<triqs::gf::refreq>::make_gf_view" (  vector[gf_refreq] &) 
+    cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
 cdef make_BlockGfReFreq (gf_block_refreq G) 

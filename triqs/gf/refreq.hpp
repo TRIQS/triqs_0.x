@@ -60,10 +60,20 @@ namespace triqs { namespace gf {
   /// Indices
   typedef indices_2_t indices_t;
 
+  /// How to fill a gf from an expression (RHS)
+  template<typename D, typename T, typename RHS>
+   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
+    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
+    t = rhs( local::tail::omega(t.shape(),t.size()));
+   }
+
+  static std::string h5_name() { return "refreq_gf";}
+ };
+
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename G>
-   struct evaluator {
+   struct evaluator<refreq,G> {
     static const int arity =1;/// Arity (number of argument in calling the function)
     G const * g; evaluator(G const & g_): g(&g_){}
     arrays::matrix_view<std::complex<double> >  operator() (double w0)  const {
@@ -78,17 +88,9 @@ namespace triqs { namespace gf {
     local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
    };
 
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS>
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-    t = rhs( local::tail::omega(t.shape(),t.size()));
-   }
-
-  static std::string h5_name() { return "refreq_gf";}
-
   // -------------------------------   Factories  --------------------------------------------------
 
+ template<> struct gf_factories<refreq> : refreq { 
   typedef gf<refreq> gf_t;
 
   static mesh_t make_mesh(double wmin, double wmax, size_t n_freq, mesh_kind mk) {

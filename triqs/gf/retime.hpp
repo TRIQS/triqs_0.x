@@ -58,25 +58,6 @@ namespace triqs { namespace gf {
   /// Indices
   typedef indices_2_t indices_t;
 
-  /// ---------------------------  evaluator ---------------------------------
-
-  template<typename G>
-   struct evaluator {
-    static const int arity =1;/// Arity (number of argument in calling the function)
-    G const * g; evaluator(G const & g_): g(&g_){}
-    arrays::matrix_view<std::complex<double> >  operator() (double t0)  const {
-     auto & data = g->data_view();
-     auto & mesh = g->mesh();
-     size_t index; double w; bool in;
-     std::tie(in, index, w) = windowing(mesh,t0);
-     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     //return data(arrays::ellipsis(),mesh.index_to_linear(index));
-     arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
-     return res;
-    }
-    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
-   };
-
   /// How to fill a gf from an expression (RHS)
   template<typename D, typename T, typename RHS>
    static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
@@ -86,7 +67,29 @@ namespace triqs { namespace gf {
 
   static std::string h5_name() { return "retime_gf";}
 
-  // -------------------------------   Factories  --------------------------------------------------
+ };
+ /// ---------------------------  evaluator ---------------------------------
+
+ template<typename G>
+  struct evaluator<retime,G> {
+   static const int arity =1;/// Arity (number of argument in calling the function)
+   G const * g; evaluator(G const & g_): g(&g_){}
+   arrays::matrix_view<std::complex<double> >  operator() (double t0)  const {
+    auto & data = g->data_view();
+    auto & mesh = g->mesh();
+    size_t index; double w; bool in;
+    std::tie(in, index, w) = windowing(mesh,t0);
+    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+    //return data(arrays::ellipsis(),mesh.index_to_linear(index));
+    arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+    return res;
+   }
+   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+  };
+
+ // -------------------------------   Factories  --------------------------------------------------
+
+ template<> struct gf_factories<retime> : retime { 
 
   typedef gf<retime> gf_t;
 

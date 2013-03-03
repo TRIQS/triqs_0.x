@@ -12,7 +12,8 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         long size()
         bint operator ==( mesh_imfreq &)
 
-    cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t n_max)
+    cdef mesh_imfreq make_mesh_imfreq "triqs::gf::gf_factories<triqs::gf::imfreq>::make_mesh" (double beta, statistic_enum S, size_t n_max)
+    #cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imfreq> >" :
         gf_imfreq()
@@ -63,7 +64,7 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
         gf_imfreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::block<triqs::gf::imfreq>::make_gf_view" (  vector[gf_imfreq] &) 
+    cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imfreq>>" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
 cdef make_BlockGfImFreq (gf_block_imfreq G) 

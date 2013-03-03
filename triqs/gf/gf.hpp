@@ -34,7 +34,11 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf;         // the value class
  template<typename Descriptor> class gf_view;    // the view class
 
- //template<typename Descriptor> class evaluator;          // Dispatch of all the () call except mesh_point
+ template <typename Descriptor> struct gf_factories;
+ template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
+ template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
+
+ template<typename Descriptor, typename G> struct evaluator;          // Dispatch of all the () call except mesh_point
 
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
@@ -125,8 +129,7 @@ namespace triqs { namespace gf {
    singularity_t singularity;
    symmetry_t _symmetry;
    indices_t _indices;
-   typedef typename Descriptor::template evaluator<gf_impl> evaluator_t;
-   //friend class Descriptor::template evaluator<gf_impl>;// pb on gcc 4.6 and not really needed ...
+   typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
    typedef gf_data_getter<data_t> data_getter_t;
    data_getter_t data_getter;
@@ -138,12 +141,12 @@ namespace triqs { namespace gf {
    // protected, see gf/gf_view later for public one
    gf_impl() : evaluator_(*this) {} // all arrays of zero size (empty) 
   public : //everyone can make a copy (for clef lib in particular, this is needed)
-   gf_impl(gf_impl const & x) : _mesh(x.mesh()), data(utility::factory<data_t>(x.data_view())),
+   gf_impl(gf_impl const & x) : _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
    singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this),data_getter(&data){}
 
    gf_impl(gf_impl && ) = default;
   protected:
-   gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(utility::factory<data_t>(x.data_view())),
+   gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
    singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this),data_getter(&data){}
 
    // from the data directly
@@ -166,14 +169,14 @@ namespace triqs { namespace gf {
     if (data.size() !=r.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
     for (size_t i =0; i<data.size(); ++i) data[i] = r[i];
    }
-  
+
    // data can change size, we need to reset the data_getter
    // This is the only point where the arrays can be reshaped, hence views been invalidated !! 
    template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::true_type){
     data = rhs.data_view(); data_getter = data_getter_t(&data); evaluator_=evaluator_t(*this);
    }
    template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::false_type) {
-    data = factory<data_t>(rhs.data); data_getter = data_getter_t(&data);evaluator_=evaluator_t(*this);
+    data = factory<data_t>(rhs.data_view()); data_getter = data_getter_t(&data);evaluator_=evaluator_t(*this);
    }
    template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::true_type) { data() = rhs; }
    template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::false_type) { for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}

@@ -39,7 +39,7 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-   /// The storage
+  /// The storage
   typedef arrays::array<std::complex<double>,3> storage_t;
   typedef typename storage_t::view_type         storage_view_t;
 
@@ -59,7 +59,7 @@ namespace triqs { namespace gf {
     int i=0;
     for (auto w: mesh) {
      arrays::matrix_view<std::complex<double> >( data(tqa::range(),tqa::range(),w.index)) = rhs(w);
-    ++i;
+     ++i;
     }
     //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
     t = rhs( local::tail::omega(t.shape(),t.size()));
@@ -67,20 +67,27 @@ namespace triqs { namespace gf {
     // it uses the fact that tail_non_view_t can be casted into freq_infty
    }
 
-  /// ---------------------------  evaluator ---------------------------------
-
-  template<typename G>
-   struct evaluator {
-    static const int arity =1;/// Arity (number of argument in calling the function)
-    G const * g; evaluator(G const & g_): g(&g_){}
-    arrays::matrix_view<std::complex<double> >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
-    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
-   };
-
   static std::string h5_name() { return "imfreq_gf";}
 
-  // -------------------------------   Factories  --------------------------------------------------
+ };
 
+ /// ---------------------------  evaluator ---------------------------------
+
+ template<typename G>
+  struct evaluator<imfreq,G> {
+   static const int arity =1;/// Arity (number of argument in calling the function)
+   G const * g; evaluator(G const & g_): g(&g_){}
+   arrays::matrix_view<std::complex<double> >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
+   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+  };
+
+
+ // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
+ template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
+
+ // -------------------------------   Factories  --------------------------------------------------
+
+ template<> struct gf_factories<imfreq> : imfreq { 
   typedef gf<imfreq> gf_t;
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t Nmax = 1025) {
@@ -106,10 +113,6 @@ namespace triqs { namespace gf {
   }
 
  };
-
- // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
- template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
-
 }}
 
 #endif

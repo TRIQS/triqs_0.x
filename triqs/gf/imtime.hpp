@@ -27,8 +27,8 @@
 #include "./meshes/linear.hpp"
 
 namespace triqs { namespace gf {
-
- struct imtime {
+  
+  struct imtime {
 
   /// A tag to recognize the function
   struct tag {};
@@ -63,11 +63,12 @@ namespace triqs { namespace gf {
    }
 
   static std::string h5_name() { return "imtime_gf";}
+  };
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename G>
-   struct evaluator {
+   struct evaluator<imtime,G> {
     static const int arity =1;/// Arity (number of argument in calling the function)
     //ERROR : give a double and interpolate
     G const * g; evaluator(G const & g_): g(&g_){}
@@ -77,8 +78,9 @@ namespace triqs { namespace gf {
 
   // -------------------------------   Factories  --------------------------------------------------
 
+ template<> struct gf_factories< imtime>: imtime { 
   typedef gf<imtime> gf_t;
-  typedef gf_view<imtime> gf_view_t;
+  //typedef gf_view<imtime> gf_view_t;
 
   static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk) {
    return mesh_t(domain_t(beta,S), 0, beta, n_time_slices, mk);
