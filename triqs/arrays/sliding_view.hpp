@@ -37,19 +37,28 @@ namespace triqs { namespace arrays {
   public :
   typedef typename ArrayType::value_type value_type;
   sliding_view (ArrayType const & A_) : A(A_), n(0){}
+  sliding_view()  = delete; // like a view ...
+  sliding_view(sliding_view const & )  = default;
+  sliding_view(sliding_view && )  = default;
+  sliding_view & operator = (sliding_view const & )  = delete;
+  sliding_view & operator = (sliding_view && x)  { swap(A,x.A); std::swap(n,x.n); return *this;} // = default; // icc is buggy again ...
+
+  void rebind(sliding_view const & x) { A.rebind(x.A);}
 
   typedef indexmaps::slicer<typename ArrayType::indexmap_type , range , range,size_t,ellipsis> slicer_t;
   typedef typename slicer_t::r_type indexmap_type;
-  indexmap_type indexmap() const { return slicer_t::invoke(A.indexmap() , range() , range(),n, ellipsis()); }
   typedef typename indexmap_type::domain_type domain_type;
+  indexmap_type indexmap() const { return slicer_t::invoke(A.indexmap() , range() , range(),n, ellipsis()); }
   domain_type domain() const { return indexmap().domain();}
+
   typename ArrayType::storage_type const & storage() const { return A.storage();}
   typename ArrayType::storage_type & storage() { return A.storage();}
+
   size_t size() const { return A.len(2);}
+
   void set(size_t p) { n=p;}
 
-  value_type const * restrict data_start() const { return A.data_start(); }// &storage_[indexmap_.start_shift()];}
-  value_type * restrict data_start() { return A.data_start(); }//	eturn &storage_[indexmap_.start_shift()];}
+  sliding_view & operator[](size_t i) { set(i); return *this;}
 
   template<typename RHS> sliding_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
   TRIQS_DEFINE_COMPOUND_OPERATORS(sliding_view);

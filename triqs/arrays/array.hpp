@@ -61,6 +61,9 @@ namespace triqs { namespace arrays {
 
    array_view () = delete;
 
+   // Move
+   array_view(array_view && X) { this->swap_me(X); }
+
    /// Swap
    friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
 
@@ -72,6 +75,9 @@ namespace triqs { namespace arrays {
 
    ///
    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
+
+   /// Move assignment
+   array_view & operator=(array_view && X) { this->swap_me(X); return *this;}
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };

@@ -28,10 +28,8 @@
 #include <iostream>
 #include <sstream>
 #include <boost/preprocessor/repetition/enum_params.hpp>
-//#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
-//#include <boost/preprocessor/facilities/intercept.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
@@ -107,7 +105,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    }
    template<int r,class KeyType>
     bool key_check_impl (std::integral_constant<int,r>, KeyType const & key, n_uple const & L, std::stringstream & fs ) const {
-     //using boost::tuples::get;
      bool cond = (  ( size_t(std::get<r>(key)) < L[r]));
      if (!cond) fs << "key ["<<r<<"] = "<< std::get<r>(key) <<" is not within [0,"<<L[r]<<"[\n";
      return key_check_impl(std::integral_constant<int,r+1>(), key,L,fs) && cond;
@@ -152,7 +149,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
 #undef AUX0
 #undef AUX1
 #undef AUX3
-//std::cerr  << "in foreech "<< t<< l<<TraversalOrder<<" "<<p0<<std::endl ;
 }
 /// ------------  Pretty Printing : specializing the default behaviour for d=1,2  -------------------------
 namespace PrettyPrint_details {
@@ -160,11 +156,10 @@ namespace PrettyPrint_details {
    struct print_impl {
     std::ostream & out; A const & a; 
     print_impl( std::ostream & out_, A const & a_) : out(out_), a(a_){}  
-    template<typename A0, typename ... Args> void operator()(A0 const & a0, Args const & ... args) const { std::cout << a(a0,args...)<< " ";}
+    template<typename A0, typename ... Args> void operator()(A0 const & a0, Args const & ... args) const { out << a(a0,args...)<< " ";}
     void print() const { out<<"["; 
      indexmaps::cuboid::foreach<permutations::identity(A::domain_type::rank)> (a.domain(), std::cref(*this)); //foreach(a, std::cref(*this)); 
      out<<"]"; }
-     //for (typename D::generator it(d); it; ++it) out<<a[*it]<<" ";
    };
 
  template<typename A>

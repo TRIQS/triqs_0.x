@@ -74,6 +74,9 @@ namespace triqs { namespace arrays {
 
     matrix_view () = delete;
 
+    // Move
+    matrix_view(matrix_view && X) { this->swap_me(X); }
+
     /// Swap
     friend void swap( matrix_view & A, matrix_view & B) { A.swap_me(B);}
 
@@ -84,6 +87,9 @@ namespace triqs { namespace arrays {
     template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
 
     matrix_view & operator=(matrix_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+
+    /// Move assignment
+    matrix_view & operator=(matrix_view && X) { this->swap_me(X); return *this;}
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
     _IMPL_MATRIX_COMMON;
