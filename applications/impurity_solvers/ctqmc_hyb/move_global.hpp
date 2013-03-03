@@ -30,7 +30,7 @@
 class Global_Move { 
   const std::string name;
   Configuration & Config;
-  triqs::mc_tools::random_generator & Random;  
+  //triqs::mc_tools::random_generator & Random;  
   const std::vector<const Hloc::Operator*> mapping;
   std::vector<Configuration::DET_TYPE*> dets_save;
 public :  
@@ -41,7 +41,7 @@ public :
   Global_Move(std::string name_, Configuration & Config_, triqs::mc_tools::random_generator & RNG, 
 	      const std::vector<const Hloc::Operator*> & mapping_ ):
     name(std::string("Global_Move_") + name_),
-    Config(Config_), Random(RNG),
+    Config(Config_), //Random(RNG),
     mapping(mapping_),
     dets_save(Config.Na,(Configuration::DET_TYPE*)NULL)  {
     // build auxiliary determinants (empty)

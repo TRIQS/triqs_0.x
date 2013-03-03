@@ -608,8 +608,12 @@ public:
 	const Hloc::Operator * OP = F[p->Op->Number];
 	bool ok = OpList_save->insert(p->tau, * OP).first; 
       */
-      bool ok = OpList_save->insert(p->tau, * (F[p->Op->Number])).first; 
-      assert (ok); 
+#ifdef NDEBUG
+     OpList_save->insert(p->tau, * (F[p->Op->Number])); 
+#else
+     bool ok = OpList_save->insert(p->tau, * (F[p->Op->Number])).first; 
+     assert (ok); 
+#endif
     }
     
     std::swap(OpList,OpList_save); // save the operator list

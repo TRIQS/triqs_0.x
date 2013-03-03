@@ -128,7 +128,7 @@ ostream & operator<< (ostream & out, const Operator & Op) {
     out<< "  "<< num<< " --> "; 
     if (Bp)  {
       out<<Bp->num;
-      int n1 = Op.BlocMatrixElements[num].size()/Bp->dim;// what a mess !
+      //int n1 = Op.BlocMatrixElements[num].size()/Bp->dim;// what a mess !
       /*
       out <<"  with matrix element :  "<<endl
 	  <<BlocMatrixElement(n1,Op.BlocCorrespondance[num], 
