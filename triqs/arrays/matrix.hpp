@@ -127,7 +127,7 @@ namespace triqs { namespace arrays {
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
      matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)):
-      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation_ignore_const(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.

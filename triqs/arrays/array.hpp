@@ -120,7 +120,7 @@ namespace triqs { namespace arrays {
      */
     template <typename T> 
      array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
-      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation_ignore_const(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.

@@ -119,7 +119,7 @@ namespace triqs { namespace arrays {
     */
    template <typename T> 
     vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
-     IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+     IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation_ignore_const(*this,X); }
 
    /** 
     * Resizes the vector. NB : all references to the storage is invalidated.
