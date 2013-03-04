@@ -4,18 +4,20 @@
 
 .. highlight:: bash
 
-Installation on Ubuntu (12.04 LTS and higher) 
+Installation on Ubuntu (12.04 LTS) 
 ####################################################
 
-TRIQS can be installed on Ubuntu 12.04 LTS and later.
+TRIQS can be installed on Ubuntu 12.04 LTS.
 
+NB : Ubuntu 12.10: there is a bug in Ubuntu 12.10 (hdf5 compiled without hdf5 support).
+On Ubuntu 12.10, you have to recompile hdf5. The problem has been reported and will be fixed in 13.04.
 
 #. Install the following packages which are necessary to build TRIQS and use it::
 
      sudo apt-get install cmake git g++ libgfortran3 gfortran openmpi-bin openmpi-common \
        openmpi-checkpoint libopenmpi-dev libblas-dev liblapack-dev libfftw3-dev libgmp-dev \
        hdf5-tools libhdf5-serial-dev python-h5py libboost1.48-all-dev python-dev \
-       python-numpy python-scipy python-virtualenv python-matplotlib
+       python-numpy python-scipy python-virtualenv python-matplotlib doxygen
   
 #. Download the code::
 
