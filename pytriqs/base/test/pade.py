@@ -23,11 +23,11 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from pytriqs.base.gf_local import GfImFreq, GfReFreq
-from pytriqs.base.gf_local.descriptors import Function
+from pytriqs.base.gf.local import GfImFreq, GfReFreq
+from pytriqs.base.gf.local.descriptors import Function
 
 beta = 100  # Inverse temperature
-L = 101     # Number of Matsubara frequencies used in the Pade approximation
+L = 10      # Number of Matsubara frequencies used in the Pade approximation
 eta = 0.01  # Imaginary frequency shift
 
 ## Test Green's functions ##
@@ -47,12 +47,12 @@ def G(z):
 # Matsubara GF
 gm = GfImFreq(indices = [0], beta = beta, name = "gm")
 gm <<= Function(G)
-gm._tail.zero()
-gm._tail[1] = array([[1.0]])
+gm.tail.zero()
+gm.tail[1] = array([[1.0]])
 
 # Analytic continuation of gm
-g_pade = GfReFreq(indices = [0], beta = beta, mesh_array = arange(-6,6,0.01), name = "g_pade")
-g_pade.set_from_pade(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
+g_pade = GfReFreq(indices = [0], omega_min = -5.995, omega_max = 5.995, n_freq_points = 1200, name = "g_pade")
+g_pade.set_from_pade(gm, n_matsubara_freq = L, freq_offset = eta)
 
 from pytriqs.base.archive import HDFArchive
 R = HDFArchive('pade.output.h5','w')
