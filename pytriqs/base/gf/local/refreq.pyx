@@ -10,8 +10,8 @@ cdef class GfReFreq_cython ( GfGeneric_cython ) :
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)
 
-    #def set_from_pade(self, GfImFreq_cython gw, n_matsubara_freq = 100, freq_offset = 0.0) :
-    #    self._c << lazy_pade(gw._c, n_matsubara_freq, freq_offset)
+    def set_from_pade(self, GfImFreq_cython gw, n_matsubara_freq = 100, freq_offset = 0.0) :
+        pade(self._c, gw._c, n_matsubara_freq, freq_offset)
 
 #----------------  Reading from h5 ---------------------------------------
 

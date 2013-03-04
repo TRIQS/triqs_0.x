@@ -19,3 +19,7 @@ cdef extern from "triqs/gf/local/legendre_matsubara.hpp" :
     gf_legendre lazy_imfreq_legendre  (gf_imfreq &)
     gf_legendre lazy_imtime_legendre  (gf_imtime &)
 
+###############  Pade  #########################
+
+cdef extern from "triqs/gf/local/pade.hpp":
+    void pade(gf_refreq &, gf_imfreq &, int, double)
