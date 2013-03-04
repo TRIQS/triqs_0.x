@@ -35,6 +35,8 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf;         // the value class
  template<typename Descriptor> class gf_view;    // the view class
 
+ // gf_factories regroup all factories (constructors..) for all types of gf.
+ // make_gf and make_gf_view forward any args to them
  template <typename Descriptor> struct gf_factories;
  template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
  template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
@@ -51,7 +53,7 @@ namespace triqs { namespace gf {
  template<typename D, typename Enable=void> struct has_special_h5_read_write                    : std::false_type {};
  template<typename D> struct has_special_h5_read_write<D, typename D::has_special_h5_read_write_tag>: std::true_type {};
 
-//------------------------------------------------------------------------
+ //------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
  template<typename Descriptor,bool IsView> class gf_impl : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), Descriptor::tag {
   public :
@@ -81,7 +83,7 @@ namespace triqs { namespace gf {
    domain_t const & domain() const        { return _mesh.domain();}
    data_t &  data_view()                  { return data;}
    data_t const & data_view() const       { return data;}
-   singularity_t & singularity_view()  { return singularity;}
+   singularity_t & singularity_view()     { return singularity;}
    singularity_t const & singularity_view() const { return singularity;}
 
    symmetry_t const & symmetry() const { return _symmetry;}
@@ -326,12 +328,12 @@ namespace triqs { namespace gf {
 
   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
   template<typename RHS> friend void triqs_clef_auto_assign (gf_view & g, RHS rhs) { 
-    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-    for (auto w: g.mesh()) g(w) = rhs(w);
-    assign_from_expression(g.singularity_view(),rhs);
-    // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
-    // it uses the fact that tail_non_view_t can be casted into freq_infty
-   }
+   // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
+   for (auto w: g.mesh()) g(w) = rhs(w);
+   assign_from_expression(g.singularity_view(),rhs);
+   // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
+   // it uses the fact that tail_non_view_t can be casted into freq_infty
+  }
 
  }; // class gf_view
 

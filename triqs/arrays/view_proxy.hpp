@@ -31,10 +31,44 @@ namespace triqs { namespace arrays {
  template<typename ArrayType,int Pos > class view_proxy;
  template<typename ArrayType,int Pos > class const_view_proxy;
 
+ // to do : separate the array and the matrix case.
+ // generalize with preprocessor (draft below)
+
+ // write concept mutable down and clean it (dim0, dim1, len(i), ...) 
 #ifndef DO_NOT_DEFINE_ME
  // human version of the class, the preprocessor generalisation is next..
- template<typename ArrayType > class view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(MutableMatrix)  {
-  public: 
+ template<typename ArrayType > class const_view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(ImmutableMatrix)   {
+  protected:
+   ArrayType const * A; size_t n;
+  public :
+   typedef typename ArrayType::value_type value_type;
+   const_view_proxy (ArrayType const &  A_, size_t n_=0) : A(&A_), n(n_){}
+   typedef indexmaps::slicer<typename ArrayType::indexmap_type , range , range,size_t,ellipsis> slicer_t;
+   typedef typename slicer_t::r_type indexmap_type;
+   typedef typename indexmap_type::domain_type domain_type;
+   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() , range() , range(),n, ellipsis()); }
+   domain_type domain() const { return indexmap().domain();}
+   size_t len(int i) const { return A->len(i);}
+   size_t dim0() const { return A->len(0);}
+   size_t dim1() const { return A->len(1);}
+   // shape ?
+   typename ArrayType::storage_type const & storage() const { return A->storage();}
+   template< typename A0 , typename A1 , typename ... Args> value_type const & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const
+   { return (*A)( std::forward<A0>(a0) , std::forward<A1>(a1) , n,std::forward<Args>(args)...);}
+ };
+
+ template<typename ArrayType > class view_proxy<ArrayType,2> : public const_view_proxy<ArrayType,2>, TRIQS_MODEL_CONCEPT(MutableMatrix){
+  public :
+  typedef const_view_proxy<ArrayType,2> B;
+  view_proxy (ArrayType & A_, size_t n_=0) : B(A_,n_){}
+  template<typename RHS> view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
+  TRIQS_DEFINE_COMPOUND_OPERATORS(view_proxy);
+  template< typename A0 , typename A1 , typename ... Args> typename B::value_type & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const 
+   { return (*(const_cast<ArrayType*>(this->A)))( std::forward<A0>(a0) , std::forward<A1>(a1) , this->n,std::forward<Args>(args)...);}
+ };
+
+#ifdef RIQS_COMPLETE__
+ template<typename ArrayType > class view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(MutableMatrix),TRIQS_MODEL_CONCEPT(MutableCuboidArray)   {
    ArrayType * A; size_t n;
   public :
   typedef typename ArrayType::value_type value_type;
@@ -45,38 +79,21 @@ namespace triqs { namespace arrays {
   typedef typename indexmap_type::domain_type domain_type;
   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() , range() , range(),n, ellipsis()); }
   domain_type domain() const { return indexmap().domain();}
-
+  size_t len(int i) const { return A->len(i);}
+  size_t dim0() const { return A->len(0);}
+  size_t dim1() const { return A->len(1);}
+  
   typename ArrayType::storage_type const & storage() const { return A->storage();}
-   typename ArrayType::storage_type & storage() { return A->storage();}
 
   template<typename RHS> view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
   TRIQS_DEFINE_COMPOUND_OPERATORS(view_proxy);
 
-  template< typename A0 , typename A1 , typename ... Args> value_type & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args)
-   { return (*A)( std::forward<A0>(a0) , std::forward<A1>(a1) , n,std::forward<Args>(args)...);}
-   template< typename A0 , typename A1 , typename ... Args> value_type const & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const
-  { return (*A)( std::forward<A0>(a0) , std::forward<A1>(a1) , n,std::forward<Args>(args)...);}
- };
-
- template<typename ArrayType > class const_view_proxy<ArrayType,2> : TRIQS_MODEL_CONCEPT(MutableMatrix)  {
-  public: 
-   ArrayType const * A; size_t n;
-  public :
-   typedef typename ArrayType::value_type value_type;
-   const_view_proxy (ArrayType const &  A_, size_t n_=0) : A(&A_), n(n_){}
-
-   typedef indexmaps::slicer<typename ArrayType::indexmap_type , range , range,size_t,ellipsis> slicer_t;
-   typedef typename slicer_t::r_type indexmap_type;
-   typedef typename indexmap_type::domain_type domain_type;
-   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() , range() , range(),n, ellipsis()); }
-   domain_type domain() const { return indexmap().domain();}
-
-   typename ArrayType::storage_type const & storage() const { return A->storage();}
-
-   template< typename A0 , typename A1 , typename ... Args> value_type const & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const
+  template< typename A0 , typename A1 , typename ... Args> value_type & operator() ( A0 &&a0 , A1 &&a1 , Args && ... args) const 
    { return (*A)( std::forward<A0>(a0) , std::forward<A1>(a1) , n,std::forward<Args>(args)...);}
  };
-#else
+#endif
+
+ #else
 #define AUX0(z,P,NNN) std::forward<A##P>(a##P),
 #define AUX1(z,P,NNN) A##P && a##P,
 #define TEXT(z, n, text) text
@@ -114,49 +131,6 @@ namespace triqs { namespace arrays {
 
  template<int Pos, typename ArrayType>
   view_proxy<ArrayType,Pos> make_view_proxy(ArrayType const & A) { return view_proxy<ArrayType,Pos> (A);}
-
- /*
-  * template<typename ArrayType>
-  class view_proxy1 {
-  typedef typename ArrayType::view_type array_view_t;
- // what about Opt and To here ?
- typedef array_view<typename ArrayType::value_type, ArrayType::rank-1>  exposed_array_view_t;
- exposed_array_view_t V;
- typename exposed_array_view_t::indexmap_type * vim;
- //size_t l_max; // for checks
- std::ptrdiff_t shift_, shift_0;
- std::ptrdiff_t & start_shift_ref;
- public :
-
- template<typename ArrayType2, typename ... Args>
- view_proxy1 (ArrayType2 const & A, size_t n, Args && ... args) :
- V(A(std::forward<Args>(args)...)),
- vim (const_cast<typename exposed_array_view_t::indexmap_type *>(&V.indexmap())),
- start_shift_ref(const_cast<std::ptrdiff_t&>(V.indexmap().start_shift())) {
- shift_ = A.indexmap().strides()[n];
- shift_0 = vim->start_shift();
-
- //l_max = A.indexmap().lengths()[n]
- }
-
- void reset() { vim->set_start_shift(shift_0);}
-
- void shift (std::ptrdiff_t delta) { vim->set_start_shift(vim->start_shift() + delta * shift_);}
-
- exposed_array_view_t & operator() (size_t n) { start_shift_ref = shift_0 + n * shift_; return V;}
-
- void operator++() { start_shift_ref += shift_; } //vim->set_start_shift(vim->start_shift() + shift_);}
-
-
- void operator--() { vim->set_start_shift(vim->start_shift() - shift_);}
-
- exposed_array_view_t const & operator()() const { return V;}
- exposed_array_view_t & operator()() { return V;}
- };
-
- template<typename ArrayType, typename ... Args>
- view_proxy1<ArrayType> make_view_proxy1(ArrayType const & A,size_t n,Args && ... args) { return view_proxy1<ArrayType> (A,n,std::forward<Args>(args)...);}
- */
 
 }}
 #endif

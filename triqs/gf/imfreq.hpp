@@ -25,7 +25,6 @@
 #include "./local/tail.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
-
 namespace triqs { namespace gf {
 
  struct imfreq {
@@ -49,7 +48,6 @@ namespace triqs { namespace gf {
   typedef indices_2_t indices_t;
 
   static std::string h5_name() { return "imfreq_gf";}
-
  };
 
  /// ---------------------------  evaluator ---------------------------------
@@ -79,27 +77,20 @@ namespace triqs { namespace gf {
    double m1 = std::acos(-1)/beta;
    return mesh_t( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, without_last);
   }
-
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
    //gf_t::data_non_view_t A(shape.append(m.size()), FORTRAN_LAYOUT); A() =0;
    return gf_t ( m, std::move(A), t, nothing(), indices_t(shape) ) ;
   }
-
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
    return make_gf(make_mesh(beta,S), shape, local::tail(shape));
   }
-
   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
    return make_gf(make_mesh(beta,S,Nmax), shape, local::tail(shape));
   }
-
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
    return make_gf(make_mesh(beta,S,Nmax), shape, t);
   }
-
  };
 }}
-
 #endif
-
