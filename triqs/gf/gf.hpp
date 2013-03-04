@@ -68,6 +68,8 @@ namespace triqs { namespace gf {
   gf_data_getter & operator = (gf_data_getter && x ) {std::swap (slv, x.slv);return *this;}
   //gf_data_getter & operator = (gf_data_getter && x ) = default; // icc is buggy again ...
   typedef slv_t r_type;
+  //slv_t        operator()(size_t i)       { return slv_t(slv.A,i);}
+  //slv_t  operator()(size_t i) const { return slv_t(slv.A,i);}
   slv_t &       operator()(size_t i)       { slv.set(i); return slv;}
   slv_t const & operator()(size_t i) const { slv.set(i); return slv;}
  };
@@ -132,6 +134,7 @@ namespace triqs { namespace gf {
    typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
    typedef gf_data_getter<data_t> data_getter_t;
+  public : // DEBUG
    data_getter_t data_getter;
   public:
    std::integral_constant<bool, arrays::is_array_or_view<data_t>::value> storage_is_array;
@@ -215,8 +218,8 @@ namespace triqs { namespace gf {
     }
 
    /// A direct access to the grid point
-   typename data_getter_t::r_type & operator() (mesh_point_t const & x) 
-   { return data_getter( x.m->index_to_linear(x.index));}
+   //typename data_getter_t::r_type & operator() (mesh_point_t const & x) 
+   //{ return data_getter( x.m->index_to_linear(x.index));}
 
    /// A direct access to the grid point (const version)
    typename data_getter_t::r_type const & operator() (mesh_point_t const & x) const
@@ -241,8 +244,14 @@ namespace triqs { namespace gf {
    _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
 
   public:
+   //typename data_getter_t::r_type        operator[] ( mesh_index_t const & arg)       { return data_getter(_mesh.index_to_linear(arg));}
+   //typename data_getter_t::r_type operator[] ( mesh_index_t const & arg) const { return data_getter(_mesh.index_to_linear(arg));}
    typename data_getter_t::r_type       & operator[] ( mesh_index_t const & arg)       { return data_getter(_mesh.index_to_linear(arg));}
    typename data_getter_t::r_type const & operator[] ( mesh_index_t const & arg) const { return data_getter(_mesh.index_to_linear(arg));}
+
+   /// A direct access to the grid point
+  typename data_getter_t::r_type & operator[] (mesh_point_t const & x) { return data_getter( _mesh.index_to_linear(x.index));}
+  typename data_getter_t::r_type const & operator[] (mesh_point_t const & x) const { return data_getter( _mesh.index_to_linear(x.index));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -250,7 +259,7 @@ namespace triqs { namespace gf {
     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
     clef::result_of::make_expr_call<view_type,Arg>
      >::type     // end of lazy_enable_if
-     operator[](Arg const & arg) const { return  clef::make_expr_call(view_type(*this),arg);}
+     operator[](Arg const & arg) const { return clef::make_expr_call(view_type(*this),arg);}
 
    //----------------------------- HDF5 -----------------------------
 

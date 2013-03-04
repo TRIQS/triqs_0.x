@@ -76,7 +76,7 @@ namespace triqs { namespace gf {
    struct evaluator<block<Target>,G> { 
     static const int arity =1;/// Arity (number of argument in calling the function)
     G const * g; evaluator(G const & g_): g(&g_){}
-    gf_view<Target> operator() (long  n)  const {return g->data_view()[n]; }
+    //gf_view<Target> operator() (long  n)  const {return g->data_view()[n]; }
    };
 
 

@@ -40,8 +40,8 @@ int main() {
  //auto GF = make_gf_view<block<imfreq>> ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
  std::cout  << "Number of blocks " << GF.mesh().size()<<std::endl ;
- auto g0 = GF(0);
- auto g0v = GF_v(0)();
+ auto g0 = GF[0];
+ auto g0v = GF_v[0]();
 
  auto Gv = g0();
 
@@ -65,8 +65,8 @@ int main() {
 
  // Operation
  g0.on_mesh(0) = 3.2;
- TEST( GF(0)(0) ) ;
+ TEST( GF[0](0) ) ;
  GF = GF/2; 
- TEST( GF(0)(0) ) ;
+ TEST( GF[0](0) ) ;
 
 }
