@@ -33,7 +33,7 @@ Suppose I have an object with one array A and a string:
 
 .. compileblock::
 
-  #include <triqs/arrays/h5.hpp>
+  #include <triqs/arrays.hpp>
   #include <string>
   namespace tqa= triqs::arrays;
 
@@ -44,14 +44,14 @@ Suppose I have an object with one array A and a string:
     public :
      MyNiceObject(): A(2,3), x(3), s("wonderful") { A() = 3;}
     
-     friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, MyNiceObject const & obj) { 
+     friend void h5_write (triqs::h5::group fg, std::string subgroup_name, MyNiceObject const & obj) { 
       auto g = fg.create_group(subgroup_name);
       h5_write(g,"A",obj.A); 
       h5_write(g,"x",obj.x); 
       h5_write(g,"s",obj.s);
      }
      
-     friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, MyNiceObject & obj){
+     friend void h5_read  (triqs::h5::group fg, std::string subgroup_name, MyNiceObject & obj){
       auto g = fg.open_group(subgroup_name);
       h5_read(g,"A",obj.A); 
       h5_read(g,"x",obj.x); 
