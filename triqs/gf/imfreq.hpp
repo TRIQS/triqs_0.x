@@ -82,6 +82,7 @@ namespace triqs { namespace gf {
 
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
    gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
+   //gf_t::data_non_view_t A(shape.append(m.size()), FORTRAN_LAYOUT); A() =0;
    return gf_t ( m, std::move(A), t, nothing(), indices_t(shape) ) ;
   }
 
