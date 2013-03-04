@@ -21,10 +21,7 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.base.gf_local.gf_refreq import *
-from pytriqs.base.gf_local.gf_imfreq import *
-from pytriqs.base.gf_local.block_gf import BlockGf
-import pytriqs.base.gf_local.gf_init as gf_init
+from pytriqs.base.gf.local import *
 import numpy
 
 
@@ -32,21 +29,21 @@ import numpy
 h=HDFArchive('gf_init.output.h5','w')
 
 g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 100, name = "egBlock")
-g['eg1','eg1'] <<= gf_init.SemiCircular(half_bandwidth = 1)
-g['eg2','eg2'] <<= gf_init.SemiCircular(half_bandwidth = 2)
+g['eg1','eg1'] <<= SemiCircular(half_bandwidth = 1)
+g['eg2','eg2'] <<= SemiCircular(half_bandwidth = 2)
 
 
 h['g1'] = g
 
-g <<= gf_init.Const(numpy.array([[1,2],[2,3]]))
+g <<= numpy.array([[1,2],[2,3]])
 
 h['g2'] = g
 
 some_mesh = numpy.arange(-5,5,0.1)
-g = GfReFreq(indices = ['eg1','eg2'], beta = 50, mesh_array = some_mesh, name = "egBlock")
+g = GfReFreq(indices = ['eg1','eg2'], omega_min = -5, omega_max = 4.9, n_freq_points = 100, name = "egBlock")
 
-g['eg1','eg1'] <<= gf_init.A_Omega_Plus_B(1.0,-1.0)
-g['eg2','eg2'] <<= gf_init.A_Omega_Plus_B(1.0,1.0)
+g['eg1','eg1'] <<= iOmega_n - 1.0
+g['eg2','eg2'] <<= iOmega_n + 1.0
 
 h['g3'] = g
 
