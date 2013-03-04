@@ -225,7 +225,6 @@ namespace triqs { namespace gf {
    /// A direct access to the grid point
    template<typename... Args>
     typename data_getter_t::r_type & on_mesh (Args&&... args) 
-    //auto on_mesh (Args&&... args) -> decltype(data_getter(_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...))))     
     { return data_getter(_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
    /// A direct access to the grid point (const version)

@@ -37,7 +37,8 @@ struct with_sliding_view {
    //for (int i =0; i<N-1; ++i) { G.data_getter.slv[i](0,0) = fnt(i);}
    //for (int i =0; i<N-1; ++i) { slv.set(i); slv(0,0) = fnt(i);}
    //for (int i =0; i<N-1; ++i) G.data_getter(i)(0,0) = fnt(i);
-  for (int i =0; i<N-1; ++i) G.on_mesh(i)(0,0) = fnt(i);
+  //for (int i =0; i<N-1; ++i) G.on_mesh(i)(0,0) = fnt(i);
+  for (int i =0; i<N-1; ++i) G[i](0,0) = fnt(i);
 
  }
 };

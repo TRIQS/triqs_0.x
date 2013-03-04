@@ -34,9 +34,6 @@ namespace triqs { namespace gf {
    friend std::ostream &operator <<(std::ostream &sout, scalar_wrap const &expr){return sout << expr.s; }
   };
 
-
-#define DECL_AND_RETURN(...)  -> decltype(__VA_ARGS__) { return __VA_ARGS__;}
-
   // Combine the two meshes of LHS and RHS : need to specialize where there is a scalar
   struct combine_mesh {
    template<typename L, typename R> 
