@@ -23,10 +23,11 @@
 #include <triqs/utility/first_include.hpp>
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
-#include "./tools.hpp"
 #include <triqs/arrays/h5.hpp>
 #include <triqs/arrays/view_proxy.hpp>
 #include <vector>
+#include "./tools.hpp"
+#include "./data_proxies.hpp"
 
 namespace triqs { namespace gf {
  using utility::factory;
@@ -39,7 +40,7 @@ namespace triqs { namespace gf {
  template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
 
  template<typename Descriptor, typename G> struct evaluator; // Dispatch of all the () call except mesh_point
- template<typename Descriptor> struct data_proxy;            // 
+ template<typename Descriptor, typename Enable = void> struct data_proxy;            // 
 
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
@@ -50,34 +51,7 @@ namespace triqs { namespace gf {
  template<typename D, typename Enable=void> struct has_special_h5_read_write                    : std::false_type {};
  template<typename D> struct has_special_h5_read_write<D, typename D::has_special_h5_read_write_tag>: std::true_type {};
 
- //------------------------------------------------------------------------
-
- // a little piece of code to get the value of the gf, from a vector, an array 1d, or 3d
- // depending of the descriptor. The call to () is [] is different, so need to specialize
- template<typename T, typename Enable = void> struct gf_data_getter;
-
- template<typename T> struct gf_data_getter<T, ENABLE_IFC( tqa::is_array_or_view<T>::value && (T::rank!=1))> {
-  typedef arrays::view_proxy<T,2> r_type;
-  typedef arrays::const_view_proxy<T,2> cr_type;
-  r_type  operator()(T       & data, size_t i)       { return r_type(data,i); } 
-  cr_type operator()(T const & data, size_t i) const { return cr_type(data,i); } 
- };
-
- template<typename T> struct gf_data_getter<T, ENABLE_IFC( tqa::is_array_or_view<T>::value && (T::rank==1))> {
-  //typedef typename T::value_type & r_type;
-  //typedef typename T::value_type const & cr_type;
-  auto operator()(T       & data,size_t i)       -> decltype(data(i)) { return data(i);}
-  auto operator()(T const & data,size_t i) const -> decltype(data(i)) { return data(i);}
- };
-
- template<typename T> struct gf_data_getter<std::vector<T>, void> {
-  //typedef T       & r_type;
-  //typedef T const & cr_type;
-  T       &  operator()(std::vector<T> &       data, size_t i)  { return data[i];}
-  T const &  operator()(std::vector<T> const & data, size_t i)  { return data[i];}
- };
-
- //------------------------------------------------------------------------
+//------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
  template<typename Descriptor,bool IsView> class gf_impl : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), Descriptor::tag {
   public :
@@ -94,8 +68,9 @@ namespace triqs { namespace gf {
    typedef typename Descriptor::symmetry_t        symmetry_t;
    typedef typename Descriptor::indices_t         indices_t;
 
-   typedef typename Descriptor::storage_t                                  data_non_view_t;
-   typedef typename Descriptor::storage_view_t                             data_view_t;
+   typedef data_proxy<Descriptor>                                                 data_proxy_t;
+   typedef typename data_proxy_t::storage_t                                       data_non_view_t;
+   typedef typename data_proxy_t::storage_view_t                                  data_view_t;
    typedef typename std::conditional<IsView, data_view_t, data_non_view_t>::type  data_t;
 
    typedef typename Descriptor::singularity_t     singularity_non_view_t;
@@ -120,8 +95,7 @@ namespace triqs { namespace gf {
    indices_t _indices;
    typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
-   typedef gf_data_getter<data_t> data_getter_t;
-   data_getter_t data_getter;
+   data_proxy_t data_proxy;
   public:
    std::integral_constant<bool, arrays::is_array_or_view<data_t>::value> storage_is_array;
   protected:
@@ -159,7 +133,7 @@ namespace triqs { namespace gf {
     for (size_t i =0; i<data.size(); ++i) data[i] = r[i];
    }
 
-   // data can change size, we need to reset the data_getter
+   // data can change size, we need to reset the data_proxy
    // This is the only point where the arrays can be reshaped, hence views been invalidated !! 
    template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::true_type){data = rhs.data_view();}
    template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::false_type){data = factory<data_t>(rhs.data_view());}
@@ -200,37 +174,35 @@ namespace triqs { namespace gf {
      return clef::make_expr_call(view_type(*this),arg0, args...);
     }
 
-   /// A direct access to the grid point (const version)
-   //auto operator() (mesh_point_t const & x) const DECL_AND_RETURN(data_getter(data, x.m->index_to_linear(x.index)));
+   typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
+   typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
 
-   typedef typename std::result_of<data_getter_t(data_t       &,size_t)>::type r_type;
-   typedef typename std::result_of<data_getter_t(data_t const &,size_t)>::type cr_type;
-
-   cr_type operator() (mesh_point_t const & x) const { return data_getter(data, x.m->index_to_linear(x.index));}
+   r_type  operator() (mesh_point_t const & x)       { return data_proxy(data, x.m->index_to_linear(x.index));}
+   cr_type operator() (mesh_point_t const & x) const { return data_proxy(data, x.m->index_to_linear(x.index));}
 
    /// A direct access to the grid point
    template<typename... Args>
-    r_type on_mesh (Args&&... args) { return data_getter(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    r_type on_mesh (Args&&... args) { return data_proxy(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
    /// A direct access to the grid point (const version)
    template<typename... Args>
-    cr_type on_mesh (Args&&... args) const { return data_getter(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    cr_type on_mesh (Args&&... args) const { return data_proxy(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
   private:
    struct _on_mesh_wrapper {
     gf_impl const & f; _on_mesh_wrapper (gf_impl const & _f) : f(_f) {}
-    template <typename... Args> typename data_getter_t::cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
-    template <typename... Args> typename data_getter_t::r_type  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> typename data_proxy_t::cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> typename data_proxy_t::r_type  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
    };
    _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
 
   public:
-   r_type  operator[] ( mesh_index_t const & arg)       { return data_getter(data,_mesh.index_to_linear(arg));}
-   cr_type operator[] ( mesh_index_t const & arg) const { return data_getter(data,_mesh.index_to_linear(arg));}
+   r_type  operator[] ( mesh_index_t const & arg)       { return data_proxy(data,_mesh.index_to_linear(arg));}
+   cr_type operator[] ( mesh_index_t const & arg) const { return data_proxy(data,_mesh.index_to_linear(arg));}
 
    /// A direct access to the grid point
-   r_type  operator[] (mesh_point_t const & x) { return data_getter(data, _mesh.index_to_linear(x.index));}
-   cr_type operator[] (mesh_point_t const & x) const { return data_getter(data, _mesh.index_to_linear(x.index));}
+   r_type  operator[] (mesh_point_t const & x)       { return data_proxy(data, _mesh.index_to_linear(x.index));}
+   cr_type operator[] (mesh_point_t const & x) const { return data_proxy(data, _mesh.index_to_linear(x.index));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -244,9 +216,9 @@ namespace triqs { namespace gf {
 
   private : // indirection if descrptor has a special read write
    void __h5_write (h5::group g, std::string const & s, std::false_type) const { h5_write(g,"data",data); }
-   void __h5_write (h5::group g, std::string const & s, std::true_type)  const { Descriptor::h5_data_write(g,s,mesh,data);}
+   void __h5_write (h5::group g, std::string const & s, std::true_type)  const { Descriptor::h5_data_write(g,s,*this);}
    void __h5_read  (h5::group g, std::string const & s, std::false_type) { h5_read(g,"data",data); }
-   void __h5_read  (h5::group g, std::string const & s, std::true_type)  { Descriptor::h5_data_read(g,s,mesh,data);}
+   void __h5_read  (h5::group g, std::string const & s, std::true_type)  { Descriptor::h5_data_read(g,s,*this);}
   public:
 
    /// Write into HDF5

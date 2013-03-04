@@ -47,10 +47,6 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-  /// The storage
-  typedef arrays::array<std::complex<double>,3> storage_t;
-  typedef typename storage_t::view_type         storage_view_t;
-
   /// The tail
   typedef local::tail   singularity_t;
 
@@ -70,25 +66,33 @@ namespace triqs { namespace gf {
   static std::string h5_name() { return "refreq_gf";}
  };
 
-  /// ---------------------------  evaluator ---------------------------------
+ /// ---------------------------  evaluator ---------------------------------
 
-  template<typename G>
-   struct evaluator<refreq,G> {
-    static const int arity =1;/// Arity (number of argument in calling the function)
-    G const * g; evaluator(G const & g_): g(&g_){}
-    arrays::matrix_view<std::complex<double> >  operator() (double w0)  const {
-     auto & data = g->data_view();
-     auto & mesh = g->mesh();
-     size_t index; double w; bool in;
-     std::tie(in, index, w) = windowing(mesh,w0);
-     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-      arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
-     return res;
-    }
-    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
-   };
+ template<typename G>
+  struct evaluator<refreq,G> {
+   static const int arity =1;/// Arity (number of argument in calling the function)
+   G const * g; evaluator(G const & g_): g(&g_){}
+   arrays::matrix_view<std::complex<double> >  operator() (double w0)  const {
+    auto & data = g->data_view();
+    auto & mesh = g->mesh();
+    size_t index; double w; bool in;
+    std::tie(in, index, w) = windowing(mesh,w0);
+    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+    arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+    return res;
+   }
+   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+  };
 
-  // -------------------------------   Factories  --------------------------------------------------
+ /// ---------------------------  data access  ---------------------------------
+
+ template<> struct data_proxy<refreq> : data_proxy_array<std::complex<double>,3> {};
+
+ // -------------------  ImmutableGfFreq identification trait ------------------
+
+ template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename refreq::tag,G> {};
+
+ // -------------------------------   Factories  --------------------------------------------------
 
  template<> struct gf_factories<refreq> : refreq { 
   typedef gf<refreq> gf_t;
@@ -109,8 +113,6 @@ namespace triqs { namespace gf {
 
  };
 
- // A trait to identify objects that have the concept ImmutableGfFreq
- template<typename G> struct ImmutableGfFreq : boost::is_base_of<typename refreq::tag,G> {};
 }}
 #endif
 

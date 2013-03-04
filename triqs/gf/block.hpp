@@ -38,10 +38,6 @@ namespace triqs { namespace gf {
    /// The Mesh
    typedef discrete_mesh<discrete_domain> mesh_t;
 
-   /// The storage
-   typedef std::vector<gf<Target>> storage_t;
-   typedef std::vector<gf_view<Target>> storage_view_t;
-
    ///
    typedef nothing singularity_t;
 
@@ -60,27 +56,32 @@ namespace triqs { namespace gf {
 
   typedef void has_special_h5_read_write_tag;
 
-  static void h5_data_write(h5::group g, std::string const & s, mesh_t const & mesh, storage_t const & data) {
+  template<typename G> 
+  static void h5_data_write(h5::group g, std::string const & s, G const & gf) {
    auto gr =  g.create_group(s);
-   for (size_t i =0; i<mesh.size(); ++i) h5_write(gr,mesh.domain().names()[i],data[i]);
+   for (size_t i =0; i<gf.mesh.size(); ++i) h5_write(gr,gf.mesh.domain().names()[i],gf.data[i]);
   }
 
-  static void h5_data_read(h5::group g, std::string const & s, mesh_t const & mesh, storage_t & data) {
-   auto gr =  g.create_group(s);
-   for (size_t i =0; i<mesh.size(); ++i) h5_write(gr,mesh.domain().names()[i],data[i]);
-  }
+  template<typename G> 
+   static void h5_data_read(h5::group g, std::string const & s, G & gf) {
+    auto gr =  g.create_group(s);
+    for (size_t i =0; i<gf.mesh.size(); ++i) h5_write(gr,gf.mesh.domain().names()[i],gf.data[i]);
+   }
   };
-  /// ---------------------------  evaluator ---------------------------------
+ /// ---------------------------  evaluator ---------------------------------
 
-  template<typename Target, typename G>  
-   struct evaluator<block<Target>,G> { 
-    static const int arity =1;/// Arity (number of argument in calling the function)
-    G const * g; evaluator(G const & g_): g(&g_){}
-    //gf_view<Target> operator() (long  n)  const {return g->data_view()[n]; }
-   };
+ template<typename Target, typename G>  
+  struct evaluator<block<Target>,G> { 
+   static const int arity =1;/// Arity (number of argument in calling the function)
+   G const * g; evaluator(G const & g_): g(&g_){}
+   //gf_view<Target> operator() (long  n)  const {return g->data_view()[n]; }
+  };
 
+ /// ---------------------------  data access  ---------------------------------
 
-  // -------------------------------   Factories  --------------------------------------------------
+ template<typename Target> struct data_proxy<block<Target>> : data_proxy_vector <gf<Target>>{};
+
+ // -------------------------------   Factories  --------------------------------------------------
 
  template<typename Target>
   struct gf_factories<block<Target>> : block<Target> { 
@@ -135,8 +136,8 @@ namespace triqs { namespace gf {
   };
 
 
-  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
-  template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};
+ // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
+ template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};
 
 }}
 

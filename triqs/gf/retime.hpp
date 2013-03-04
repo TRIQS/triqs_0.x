@@ -45,10 +45,6 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-  /// The storage
-  typedef arrays::array<std::complex<double>,3> storage_t;
-  typedef typename storage_t::view_type         storage_view_t;
-
   /// The tail
   typedef local::tail   singularity_t;
 
@@ -87,6 +83,14 @@ namespace triqs { namespace gf {
    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
   };
 
+ /// ---------------------------  data access  ---------------------------------
+
+ template<> struct data_proxy<retime> : data_proxy_array<std::complex<double>,3> {};
+
+ // -------------------  ImmutableGfOneRealTime identification trait ------------------
+
+ template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};
+
  // -------------------------------   Factories  --------------------------------------------------
 
  template<> struct gf_factories<retime> : retime { 
@@ -100,9 +104,6 @@ namespace triqs { namespace gf {
   }
 
  };
-
- // A trait to identify objects that have the concept ImmutableGfOneTime
- template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};
 
 }}
 #endif

@@ -27,8 +27,8 @@
 #include "./meshes/linear.hpp"
 
 namespace triqs { namespace gf {
-  
-  struct imtime {
+
+ struct imtime {
 
   /// A tag to recognize the function
   struct tag {};
@@ -38,10 +38,6 @@ namespace triqs { namespace gf {
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
-
-  /// The storage
-  typedef arrays::array<double,3> storage_t;
-  typedef typename storage_t::view_type         storage_view_t;
 
   /// The tail
   typedef local::tail singularity_t;
@@ -63,20 +59,28 @@ namespace triqs { namespace gf {
    }
 
   static std::string h5_name() { return "imtime_gf";}
+ };
+
+ /// ---------------------------  evaluator ---------------------------------
+
+ template<typename G>
+  struct evaluator<imtime,G> {
+   static const int arity =1;/// Arity (number of argument in calling the function)
+   //ERROR : give a double and interpolate
+   G const * g; evaluator(G const & g_): g(&g_){}
+   arrays::matrix_view<double >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
+   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
   };
 
-  /// ---------------------------  evaluator ---------------------------------
+ /// ---------------------------  data access  ---------------------------------
 
-  template<typename G>
-   struct evaluator<imtime,G> {
-    static const int arity =1;/// Arity (number of argument in calling the function)
-    //ERROR : give a double and interpolate
-    G const * g; evaluator(G const & g_): g(&g_){}
-    arrays::matrix_view<double >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
-    local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
-   };
+ template<> struct data_proxy<imtime> : data_proxy_array<double,3> {};
 
-  // -------------------------------   Factories  --------------------------------------------------
+ // -------------------  ImmutableGfMatsubaraTime identification trait ------------------
+
+ template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename imtime::tag,G> {};
+
+ // -------------------------------   Factories  --------------------------------------------------
 
  template<> struct gf_factories< imtime>: imtime { 
   typedef gf<imtime> gf_t;
@@ -108,9 +112,6 @@ namespace triqs { namespace gf {
   }
 
  };
-
- // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
- template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename imtime::tag,G> {};
 
 }}
 #endif
