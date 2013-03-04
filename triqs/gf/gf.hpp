@@ -25,7 +25,7 @@
 #include <triqs/utility/factory.hpp>
 #include "./tools.hpp"
 #include <triqs/arrays/h5.hpp>
-#include <triqs/arrays/sliding_view.hpp>
+#include <triqs/arrays/view_proxy.hpp>
 #include <vector>
 
 namespace triqs { namespace gf {
@@ -38,7 +38,8 @@ namespace triqs { namespace gf {
  template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
  template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
 
- template<typename Descriptor, typename G> struct evaluator;          // Dispatch of all the () call except mesh_point
+ template<typename Descriptor, typename G> struct evaluator; // Dispatch of all the () call except mesh_point
+ template<typename Descriptor> struct data_proxy;            // 
 
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
@@ -56,38 +57,24 @@ namespace triqs { namespace gf {
  template<typename T, typename Enable = void> struct gf_data_getter;
 
  template<typename T> struct gf_data_getter<T, ENABLE_IFC( tqa::is_array_or_view<T>::value && (T::rank!=1))> {
-  typedef arrays::sliding_view<T,2> slv_t;
-  mutable slv_t slv;
-  gf_data_getter(T* data_) : slv(*data_){} 
-  gf_data_getter() : slv(typename T::non_view_type()){} 
-  gf_data_getter(gf_data_getter const & )  = default;
-  gf_data_getter(gf_data_getter && x ) = default; //  { std::swap(slv,x.slv);}// = default;
-  void rebind( gf_data_getter const & x) { slv.rebind(x.slv);}
-
-  gf_data_getter & operator = (gf_data_getter const & )  = delete;
-  gf_data_getter & operator = (gf_data_getter && x ) {std::swap (slv, x.slv);return *this;}
-  //gf_data_getter & operator = (gf_data_getter && x ) = default; // icc is buggy again ...
-  typedef slv_t r_type;
-  //slv_t        operator()(size_t i)       { return slv_t(slv.A,i);}
-  //slv_t  operator()(size_t i) const { return slv_t(slv.A,i);}
-  slv_t &       operator()(size_t i)       { slv.set(i); return slv;}
-  slv_t const & operator()(size_t i) const { slv.set(i); return slv;}
+  typedef arrays::view_proxy<T,2> r_type;
+  typedef arrays::const_view_proxy<T,2> cr_type;
+  r_type  operator()(T       & data, size_t i)       { return r_type(data,i); } 
+  cr_type operator()(T const & data, size_t i) const { return cr_type(data,i); } 
  };
 
  template<typename T> struct gf_data_getter<T, ENABLE_IFC( tqa::is_array_or_view<T>::value && (T::rank==1))> {
-  T * data; gf_data_getter(T* data_=NULL) : data(data_) {}
-  typedef T r_type;
-  auto operator()(size_t i)       -> decltype((*data)(i)) { return (*data)(i);}
-  auto operator()(size_t i) const -> decltype((*data)(i)) { return (*data)(i);}
-  void rebind( gf_data_getter const & x) { data = x.data;}
+  //typedef typename T::value_type & r_type;
+  //typedef typename T::value_type const & cr_type;
+  auto operator()(T       & data,size_t i)       -> decltype(data(i)) { return data(i);}
+  auto operator()(T const & data,size_t i) const -> decltype(data(i)) { return data(i);}
  };
 
  template<typename T> struct gf_data_getter<std::vector<T>, void> {
-  std::vector<T> * data; gf_data_getter(std::vector<T> * data_=NULL) : data(data_) {}
-  typedef T & r_type;
-  auto operator()(size_t i)       -> decltype((*data)[i]) { return (*data)[i];}
-  auto operator()(size_t i) const -> decltype((*data)[i]) { return (*data)[i];}
-  void rebind( gf_data_getter const & x) { data = x.data;}
+  //typedef T       & r_type;
+  //typedef T const & cr_type;
+  T       &  operator()(std::vector<T> &       data, size_t i)  { return data[i];}
+  T const &  operator()(std::vector<T> const & data, size_t i)  { return data[i];}
  };
 
  //------------------------------------------------------------------------
@@ -134,7 +121,6 @@ namespace triqs { namespace gf {
    typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
    typedef gf_data_getter<data_t> data_getter_t;
-  public : // DEBUG
    data_getter_t data_getter;
   public:
    std::integral_constant<bool, arrays::is_array_or_view<data_t>::value> storage_is_array;
@@ -145,19 +131,19 @@ namespace triqs { namespace gf {
    gf_impl() : evaluator_(*this) {} // all arrays of zero size (empty) 
   public : //everyone can make a copy (for clef lib in particular, this is needed)
    gf_impl(gf_impl const & x) : _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this),data_getter(&data){}
+   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this){}
 
    gf_impl(gf_impl && ) = default;
   protected:
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this),data_getter(&data){}
+   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this){}
 
    // from the data directly
    gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
-    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind),evaluator_(*this),data_getter(&data){}
+    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind),evaluator_(*this){}
 
    gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
-    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind), evaluator_(*this),data_getter(&data) {}
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind), evaluator_(*this) {}
 
    // -------------------------------- assigner -----------------------------------------------
 
@@ -175,14 +161,11 @@ namespace triqs { namespace gf {
 
    // data can change size, we need to reset the data_getter
    // This is the only point where the arrays can be reshaped, hence views been invalidated !! 
-   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::true_type){
-    data = rhs.data_view(); data_getter = data_getter_t(&data); evaluator_=evaluator_t(*this);
-   }
-   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::false_type) {
-    data = factory<data_t>(rhs.data_view()); data_getter = data_getter_t(&data);evaluator_=evaluator_t(*this);
-   }
-   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::true_type) { data() = rhs; }
-   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::false_type) { for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
+   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::true_type){data = rhs.data_view();}
+   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::false_type){data = factory<data_t>(rhs.data_view());}
+
+   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::true_type){ data() = rhs; }
+   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::false_type){for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
 
    // ------------- All the call operators -----------------------------
 
@@ -217,41 +200,37 @@ namespace triqs { namespace gf {
      return clef::make_expr_call(view_type(*this),arg0, args...);
     }
 
-   /// A direct access to the grid point
-   //typename data_getter_t::r_type & operator() (mesh_point_t const & x) 
-   //{ return data_getter( x.m->index_to_linear(x.index));}
-
    /// A direct access to the grid point (const version)
-   typename data_getter_t::r_type const & operator() (mesh_point_t const & x) const
-   { return data_getter( x.m->index_to_linear(x.index));}
+   //auto operator() (mesh_point_t const & x) const DECL_AND_RETURN(data_getter(data, x.m->index_to_linear(x.index)));
+
+   typedef typename std::result_of<data_getter_t(data_t       &,size_t)>::type r_type;
+   typedef typename std::result_of<data_getter_t(data_t const &,size_t)>::type cr_type;
+
+   cr_type operator() (mesh_point_t const & x) const { return data_getter(data, x.m->index_to_linear(x.index));}
 
    /// A direct access to the grid point
    template<typename... Args>
-    typename data_getter_t::r_type & on_mesh (Args&&... args) 
-    { return data_getter(_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    r_type on_mesh (Args&&... args) { return data_getter(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
    /// A direct access to the grid point (const version)
    template<typename... Args>
-    typename data_getter_t::r_type const & on_mesh (Args&&... args) const
-    { return data_getter(_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    cr_type on_mesh (Args&&... args) const { return data_getter(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
   private:
    struct _on_mesh_wrapper {
     gf_impl const & f; _on_mesh_wrapper (gf_impl const & _f) : f(_f) {}
-    template <typename... Args> typename data_getter_t::r_type const &  operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
-    template <typename... Args> typename data_getter_t::r_type       &  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> typename data_getter_t::cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> typename data_getter_t::r_type  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
    };
    _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
 
   public:
-   //typename data_getter_t::r_type        operator[] ( mesh_index_t const & arg)       { return data_getter(_mesh.index_to_linear(arg));}
-   //typename data_getter_t::r_type operator[] ( mesh_index_t const & arg) const { return data_getter(_mesh.index_to_linear(arg));}
-   typename data_getter_t::r_type       & operator[] ( mesh_index_t const & arg)       { return data_getter(_mesh.index_to_linear(arg));}
-   typename data_getter_t::r_type const & operator[] ( mesh_index_t const & arg) const { return data_getter(_mesh.index_to_linear(arg));}
+   r_type  operator[] ( mesh_index_t const & arg)       { return data_getter(data,_mesh.index_to_linear(arg));}
+   cr_type operator[] ( mesh_index_t const & arg) const { return data_getter(data,_mesh.index_to_linear(arg));}
 
    /// A direct access to the grid point
-  typename data_getter_t::r_type & operator[] (mesh_point_t const & x) { return data_getter( _mesh.index_to_linear(x.index));}
-  typename data_getter_t::r_type const & operator[] (mesh_point_t const & x) const { return data_getter( _mesh.index_to_linear(x.index));}
+   r_type  operator[] (mesh_point_t const & x) { return data_getter(data, _mesh.index_to_linear(x.index));}
+   cr_type operator[] (mesh_point_t const & x) const { return data_getter(data, _mesh.index_to_linear(x.index));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -330,7 +309,7 @@ namespace triqs { namespace gf {
 
   friend void swap ( gf & a, gf & b) {
    std::swap(a._mesh, b._mesh); swap(a.data, b.data); std::swap (a.singularity,b.singularity); std::swap(a._symmetry,b._symmetry);
-   std::swap(a._indices,b._indices); std::swap(a.data_getter, b.data_getter);
+   std::swap(a._indices,b._indices); 
   }
 
   void operator = (gf const & rhs) { *this = gf(rhs);} // use move =
@@ -358,7 +337,6 @@ namespace triqs { namespace gf {
   void rebind( gf_view const &X) {
    this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->_indices = X._indices;
    _rebinder(X, this->storage_is_array); // need to change the trait to std::integrall...
-   this->data_getter.rebind(X.data_getter);
    this->singularity.rebind(X.singularity);
   }
 
