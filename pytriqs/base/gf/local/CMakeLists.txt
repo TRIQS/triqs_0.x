@@ -1,22 +1,24 @@
 
 SET(PYTHON_SOURCES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/block_gf.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/descriptors.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_generic.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_imfreq.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_imtime.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_legendre.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_refreq.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/gf_retime.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/impl_plot.py
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/inverse.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/lazy_expressions.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/nothing.py
+  ${CMAKE_CURRENT_SOURCE_DIR}/tools.py
 )
 
 # Install python sources
-install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/gf)
-
-# Build python module
-#SET(SOURCES_WRAP gf_wrap.cpp)
-#python_build_module(GF2 _pytriqs_GF2 base/gf/local ${SOURCES_WRAP})
-
-#if (NOT TRIQS_BUILD_STATIC)
-# target_link_libraries(_pytriqs_GF2 triqs ${TRIQS_LINK_LIBS})
-#endif (NOT TRIQS_BUILD_STATIC)
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/gf/local)
 
 # Build cython module 
-
 cython_module( GF3 gf base/gf/local )
-
-
 
