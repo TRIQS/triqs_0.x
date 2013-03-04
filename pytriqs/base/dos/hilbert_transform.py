@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.gf_local import gf_init
+from pytriqs.base.gf.local import *
 import types, string, inspect, itertools
 from operator import isSequenceType
 from pytriqs.base.dos import DOS, DOSFromFunction
@@ -124,7 +124,7 @@ class HilbertTransform :
 
             # Perform the sum over eps[i]
             tmp, tmp2 = res.copy(), res.copy()
-            tmp <<= gf_init.A_Omega_Plus_B(1, mu + eta * 1j)
+            tmp <<= iOmega_n + mu + eta * 1j
             if not(Sigma_fnt) :
                 tmp -= Sigma
             if field != None : tmp -= field
