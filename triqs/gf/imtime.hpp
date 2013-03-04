@@ -48,16 +48,6 @@ namespace triqs { namespace gf {
   /// Indices
   typedef indices_2_t indices_t;
 
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS>
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
-    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-    for (size_t u=0; u<mesh.size(); ++u)  { arrays::matrix_view<double>( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-    t = rhs( local::tail::omega(t.shape(),t.size()));
-    // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
-    // it uses the fact that tail_non_view_t can be casted into freq_infty
-   }
-
   static std::string h5_name() { return "imtime_gf";}
  };
 

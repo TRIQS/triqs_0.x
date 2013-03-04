@@ -51,13 +51,6 @@ namespace triqs { namespace gf {
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS>
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
-    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t(data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-   }
-
   static std::string h5_name() { return "legendre_gf";}
 
  };

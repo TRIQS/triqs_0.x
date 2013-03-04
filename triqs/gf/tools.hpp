@@ -118,6 +118,7 @@ namespace triqs { namespace gf {
    void serialize(Archive & ar, const unsigned int version) {
    }
   friend nothing operator +( nothing, nothing) { return nothing();}
+  template<typename RHS> friend void assign_from_expression(nothing & ,RHS) {}
 }; 
 
  template<typename T> nothing operator+(nothing, T const &) { return nothing();}

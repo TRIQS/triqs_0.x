@@ -81,8 +81,8 @@ namespace triqs { namespace gf {
    domain_t const & domain() const        { return _mesh.domain();}
    data_t &  data_view()                  { return data;}
    data_t const & data_view() const       { return data;}
-   singularity_view_t singularity_view()  { return singularity;}
-   const singularity_view_t singularity_view() const { return singularity;}
+   singularity_t & singularity_view()  { return singularity;}
+   singularity_t const & singularity_view() const { return singularity;}
 
    symmetry_t const & symmetry() const { return _symmetry;}
    indices_t const & indices() const { return _indices;}
@@ -95,7 +95,7 @@ namespace triqs { namespace gf {
    indices_t _indices;
    typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
-   data_proxy_t data_proxy;
+   data_proxy_t data_proxy_;
   public:
    std::integral_constant<bool, arrays::is_array_or_view<data_t>::value> storage_is_array;
   protected:
@@ -177,32 +177,32 @@ namespace triqs { namespace gf {
    typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
    typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
 
-   r_type  operator() (mesh_point_t const & x)       { return data_proxy(data, x.m->index_to_linear(x.index));}
-   cr_type operator() (mesh_point_t const & x) const { return data_proxy(data, x.m->index_to_linear(x.index));}
+   r_type  operator() (mesh_point_t const & x)       { return data_proxy_(data, x.m->index_to_linear(x.index));}
+   cr_type operator() (mesh_point_t const & x) const { return data_proxy_(data, x.m->index_to_linear(x.index));}
 
    /// A direct access to the grid point
    template<typename... Args>
-    r_type on_mesh (Args&&... args) { return data_proxy(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    r_type on_mesh (Args&&... args) { return data_proxy_(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
    /// A direct access to the grid point (const version)
    template<typename... Args>
-    cr_type on_mesh (Args&&... args) const { return data_proxy(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    cr_type on_mesh (Args&&... args) const { return data_proxy_(data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
   private:
    struct _on_mesh_wrapper {
     gf_impl const & f; _on_mesh_wrapper (gf_impl const & _f) : f(_f) {}
-    template <typename... Args> typename data_proxy_t::cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
-    template <typename... Args> typename data_proxy_t::r_type  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
+    template <typename... Args> r_type  operator ()(Args && ... args)       { return f.on_mesh(std::forward<Args>(args)...);}
    };
    _on_mesh_wrapper friend on_mesh(gf_impl const & f) { return f;}
 
   public:
-   r_type  operator[] ( mesh_index_t const & arg)       { return data_proxy(data,_mesh.index_to_linear(arg));}
-   cr_type operator[] ( mesh_index_t const & arg) const { return data_proxy(data,_mesh.index_to_linear(arg));}
+   r_type  operator[] ( mesh_index_t const & arg)       { return data_proxy_(data,_mesh.index_to_linear(arg));}
+   cr_type operator[] ( mesh_index_t const & arg) const { return data_proxy_(data,_mesh.index_to_linear(arg));}
 
    /// A direct access to the grid point
-   r_type  operator[] (mesh_point_t const & x)       { return data_proxy(data, _mesh.index_to_linear(x.index));}
-   cr_type operator[] (mesh_point_t const & x) const { return data_proxy(data, _mesh.index_to_linear(x.index));}
+   r_type  operator[] (mesh_point_t const & x)       { return data_proxy_(data, _mesh.index_to_linear(x.index));}
+   cr_type operator[] (mesh_point_t const & x) const { return data_proxy_(data, _mesh.index_to_linear(x.index));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -325,8 +325,15 @@ namespace triqs { namespace gf {
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
 
   // Interaction with the CLEF library : auto assignment of the gf (gf(om_) << expression fills the functions by evaluation of expression)
-  template<typename F> friend void triqs_clef_auto_assign (gf_view & x, F f) { Descriptor::assign_from_expression(x._mesh,x.data, x.singularity,f);}
- };
+  template<typename RHS> friend void triqs_clef_auto_assign (gf_view & g, RHS rhs) { 
+    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !)
+    for (auto w: g.mesh()) g(w) = rhs(w);
+    assign_from_expression(g.singularity_view(),rhs);
+    // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty,
+    // it uses the fact that tail_non_view_t can be casted into freq_infty
+   }
+
+ }; // class gf_view
 
  // delegate = so that I can overload it for specific RHS...
  template<typename Descriptor, typename RHS>

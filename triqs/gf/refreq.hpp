@@ -23,6 +23,7 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
+#include "./domains/R.hpp"
 #include "./meshes/linear.hpp"
 
 // Shall we use the same type as for retime : same code, almost ??
@@ -35,14 +36,7 @@ namespace triqs { namespace gf {
   struct tag {};
 
   /// The domain
-  struct domain_t {
-   typedef double point_t;
-   bool operator == (domain_t const & D) const { return true; }
-   friend void h5_write (h5::group fg, std::string subgroup_name, domain_t const & d) {}
-   friend void h5_read  (h5::group fg, std::string subgroup_name, domain_t & d){ }
-   friend class boost::serialization::access;
-   template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
-  };
+  typedef R_domain domain_t;
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
@@ -55,13 +49,6 @@ namespace triqs { namespace gf {
 
   /// Indices
   typedef indices_2_t indices_t;
-
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS>
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) {
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-    t = rhs( local::tail::omega(t.shape(),t.size()));
-   }
 
   static std::string h5_name() { return "refreq_gf";}
  };

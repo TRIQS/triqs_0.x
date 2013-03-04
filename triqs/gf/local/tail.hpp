@@ -210,7 +210,7 @@ namespace triqs { namespace gf { namespace local {
 
   using B::operator(); // import all previously defined operator() for overloading
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
-
+  
   void print_me() const { std::cout  << *this << std::endl ; }
  };
 
@@ -256,7 +256,9 @@ namespace triqs { namespace gf { namespace local {
 
  };
 
- inline void tail_view::rebind( tail const &X) {
+  template<typename RHS> void assign_from_expression(tail_view & t,RHS const & rhs) { t = rhs( tail::omega(t.shape(),t.size())); }
+ 
+  inline void tail_view::rebind( tail const &X) {
    omin = X.omin;
    mask.rebind(X.mask);
    data.rebind(X.data);
