@@ -51,7 +51,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
     }
 
    template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
-    static typename std::enable_if<!((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
+    static typename std::enable_if<((EllipsisLength==1) || (!std::is_base_of<ellipsis, Arg0 >::type::value)), void>::type
     invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
      constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
      one_step<N,P,BoundCheck>(li,si,lo,so,offset, arg0);
@@ -59,7 +59,13 @@ namespace triqs { namespace arrays { namespace indexmaps {
     }
 
    template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
-    static typename std::enable_if<((EllipsisLength>0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type 
+    static typename std::enable_if<((EllipsisLength==0) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type
+    invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
+     invoke<N,P,BoundCheck,EllipsisLength>(li,si,lo,so, offset, args...);
+    }
+
+   template<int N, int P, bool BoundCheck, int EllipsisLength, typename Arg0, typename...  Args>
+    static typename std::enable_if<((EllipsisLength>1) && std::is_base_of<ellipsis, Arg0 >::type::value), void>::type
     invoke(LISILOSO, s_type & offset, Arg0 const & arg0, Args const & ... args ) {
      constexpr bool dP  = (std::is_base_of<range,Arg0>::type::value ? 1 : 0); // Arg0 is range or ellipsis
      one_step<N,P,BoundCheck>(li,si,lo,so,offset, arg0);
@@ -100,7 +106,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
    typename r_type::lengths_type newlengths;
    typename r_type::strides_type newstrides;
    std::ptrdiff_t newstart= X.start_shift();
-   constexpr int EllipsisLength = R - len;
+   constexpr int EllipsisLength = R -len+1;
    cuboid_details::slice_calc::invoke<0,0,flags::bound_check_trait<Opt>::value,EllipsisLength>(&X.lengths()[0],&X.strides()[0],&newlengths[0],&newstrides[0],newstart, args...);
    return r_type(std::move(newlengths),std::move(newstrides),newstart);// use move construction ?
   };
