@@ -275,21 +275,24 @@ class Wien2kConverter:
 
         mpi.report("Reading parproj input from %s..."%self.parproj_file)
 
-        Dens_Mat_below = [ [numpy.zeros([self.shells[ish][3],self.shells[ish][3]],numpy.complex_) for ish in range(self.n_shells)] 
+        dens_mat_below = [ [numpy.zeros([self.shells[ish][3],self.shells[ish][3]],numpy.complex_) for ish in range(self.n_shells)] 
                            for isp in range(self.n_spin_blocs) ]
 
         R = read_fortran_file(self.parproj_file)
         #try:
 
         n_parproj = [int(R.next()) for i in range(self.n_shells)]
+        n_parproj = numpy.array(n_parproj)
                 
         # Initialise P, here a double list of matrices:
-        proj_mat_pc = [ [ [ [numpy.zeros([self.shells[ish][3], self.n_orbitals[ik][isp]], numpy.complex_) 
-                             for ir in range(n_parproj[ish])]
-                            for ish in range (self.n_shells) ]
-                          for isp in range(self.n_spin_blocs) ]
-                        for ik in range(self.n_k) ]
-
+        #proj_mat_pc = [ [ [ [numpy.zeros([self.shells[ish][3], self.n_orbitals[ik][isp]], numpy.complex_) 
+        #                     for ir in range(n_parproj[ish])]
+        #                    for ish in range (self.n_shells) ]
+        #                  for isp in range(self.n_spin_blocs) ]
+        #                for ik in range(self.n_k) ]
+        
+        proj_mat_pc = numpy.zeros([self.n_k,self.n_spin_blocs,self.n_shells,max(n_parproj),max(numpy.array(self.shells)[:,3]),max(self.n_orbitals)],numpy.complex_)
+        
         rot_mat_all = [numpy.identity(self.shells[ish][3],numpy.complex_) for ish in xrange(self.n_shells)]
         rot_mat_all_time_inv = [0 for i in range(self.n_shells)]
 
@@ -302,24 +305,24 @@ class Wien2kConverter:
                                     
                         for i in xrange(self.shells[ish][3]):    # read real part:
                             for j in xrange(self.n_orbitals[ik][isp]):
-                                proj_mat_pc[ik][isp][ish][ir][i,j] = R.next()
+                                proj_mat_pc[ik,isp,ish,ir,i,j] = R.next()
                             
                     for isp in range(self.n_spin_blocs):
                         for i in xrange(self.shells[ish][3]):    # read imaginary part:
                             for j in xrange(self.n_orbitals[ik][isp]):
-                                proj_mat_pc[ik][isp][ish][ir][i,j] += 1j * R.next()
+                                proj_mat_pc[ik,isp,ish,ir,i,j] += 1j * R.next()
                                         
                     
             # now read the Density Matrix for this orbital below the energy window:
             for isp in range(self.n_spin_blocs):
                 for i in xrange(self.shells[ish][3]):    # read real part:
                     for j in xrange(self.shells[ish][3]):
-                        Dens_Mat_below[isp][ish][i,j] = R.next()
+                        dens_mat_below[isp][ish][i,j] = R.next()
             for isp in range(self.n_spin_blocs):
                 for i in xrange(self.shells[ish][3]):    # read imaginary part:
                     for j in xrange(self.shells[ish][3]):
-                        Dens_Mat_below[isp][ish][i,j] += 1j * R.next()
-                if (self.SP==0): Dens_Mat_below[isp][ish] /= 2.0
+                        dens_mat_below[isp][ish][i,j] += 1j * R.next()
+                if (self.SP==0): dens_mat_below[isp][ish] /= 2.0
 
             # Global -> local rotation matrix for this shell:
             for i in xrange(self.shells[ish][3]):    # read real part:
@@ -344,7 +347,7 @@ class Wien2kConverter:
         if not (self.par_proj_subgrp in ar): ar.create_group(self.par_proj_subgrp) 
         # The subgroup containing the data. If it does not exist, it is created.
         # If it exists, the data is overwritten!!!
-        thingstowrite = ['Dens_Mat_below','n_parproj','proj_mat_pc','rot_mat_all','rot_mat_all_time_inv']
+        thingstowrite = ['dens_mat_below','n_parproj','proj_mat_pc','rot_mat_all','rot_mat_all_time_inv']
         for it in thingstowrite: exec "ar['%s']['%s'] = %s"%(self.par_proj_subgrp,it,it)
         del ar
 
@@ -369,16 +372,17 @@ class Wien2kConverter:
             n_k = int(R.next())
 
             # read the list of n_orbitals for all k points
-            n_orbitals = [ [0 for isp in range(self.n_spin_blocs)] for ik in xrange(n_k)]
+            n_orbitals = numpy.zeros([n_k,self.n_spin_blocs],numpy.int)
             for isp in range(self.n_spin_blocs):
                 for ik in xrange(n_k):
-                    n_orbitals[ik][isp] = int(R.next())
+                    n_orbitals[ik,isp] = int(R.next())
 
             # Initialise the projectors:
-            proj_mat = [ [ [numpy.zeros([self.corr_shells[icrsh][3], n_orbitals[ik][isp]], numpy.complex_) 
-                            for icrsh in range (self.n_corr_shells)] 
-                           for isp in range(self.n_spin_blocs)] 
-                         for ik in range(n_k) ]
+            #proj_mat = [ [ [numpy.zeros([self.corr_shells[icrsh][3], n_orbitals[ik][isp]], numpy.complex_) 
+            #                for icrsh in range (self.n_corr_shells)] 
+            #               for isp in range(self.n_spin_blocs)] 
+            #             for ik in range(n_k) ]
+            proj_mat = numpy.zeros([n_k,self.n_spin_blocs,self.n_corr_shells,max(numpy.array(self.corr_shells)[:,3]),max(n_orbitals)],numpy.complex_)
 
             # Read the projectors from the file:
             for ik in xrange(n_k):
@@ -387,33 +391,37 @@ class Wien2kConverter:
                     # first Real part for BOTH spins, due to conventions in dmftproj:
                     for isp in range(self.n_spin_blocs):
                         for i in xrange(no):
-                            for j in xrange(n_orbitals[ik][isp]):
-                                proj_mat[ik][isp][icrsh][i,j] = R.next()
+                            for j in xrange(n_orbitals[ik,isp]):
+                                proj_mat[ik,isp,icrsh,i,j] = R.next()
                     # now Imag part:
                     for isp in range(self.n_spin_blocs):
                         for i in xrange(no):
-                            for j in xrange(n_orbitals[ik][isp]):
-                                proj_mat[ik][isp][icrsh][i,j] += 1j * R.next()
+                            for j in xrange(n_orbitals[ik,isp]):
+                                proj_mat[ik,isp,icrsh,i,j] += 1j * R.next()
 
-            hopping = [ [numpy.zeros([n_orbitals[ik][isp],n_orbitals[ik][isp]],numpy.complex_) 
-                         for isp in range(self.n_spin_blocs)] for ik in xrange(n_k) ]
+            #hopping = [ [numpy.zeros([n_orbitals[ik][isp],n_orbitals[ik][isp]],numpy.complex_) 
+            #             for isp in range(self.n_spin_blocs)] for ik in xrange(n_k) ]
+            hopping = numpy.zeros([n_k,self.n_spin_blocs,max(n_orbitals),max(n_orbitals)],numpy.complex_)
          	    
             # Grab the H
             # we use now the convention of a DIAGONAL Hamiltonian!!!!
             for isp in range(self.n_spin_blocs):
                 for ik in xrange(n_k) :
-                    no = n_orbitals[ik][isp]
+                    no = n_orbitals[ik,isp]
                     for i in xrange(no):
-                        hopping[ik][isp][i,i] = R.next() * self.energy_unit
+                        hopping[ik,isp,i,i] = R.next() * self.energy_unit
 
             # now read the partial projectors:
             n_parproj = [int(R.next()) for i in range(self.n_shells)]
+            n_parproj = numpy.array(n_parproj)
+            
             # Initialise P, here a double list of matrices:
-            proj_mat_pc = [ [ [ [numpy.zeros([self.shells[ish][3], n_orbitals[ik][isp]], numpy.complex_) 
-                                 for ir in range(n_parproj[ish])]
-                                for ish in range (self.n_shells) ]
-                              for isp in range(self.n_spin_blocs) ]
-                            for ik in range(n_k) ]
+            #proj_mat_pc = [ [ [ [numpy.zeros([self.shells[ish][3], n_orbitals[ik][isp]], numpy.complex_) 
+            #                     for ir in range(n_parproj[ish])]
+            #                    for ish in range (self.n_shells) ]
+            #                  for isp in range(self.n_spin_blocs) ]
+            #                for ik in range(n_k) ]
+            proj_mat_pc = numpy.zeros([n_k,self.n_spin_blocs,self.n_shells,max(n_parproj),max(numpy.array(self.shells)[:,3]),max(n_orbitals)],numpy.complex_)
 
 
             for ish in range(self.n_shells):
@@ -423,12 +431,12 @@ class Wien2kConverter:
                         for isp in range(self.n_spin_blocs):
                                     
                             for i in xrange(self.shells[ish][3]):    # read real part:
-                                for j in xrange(n_orbitals[ik][isp]):
-                                    proj_mat_pc[ik][isp][ish][ir][i,j] = R.next()
+                                for j in xrange(n_orbitals[ik,isp]):
+                                    proj_mat_pc[ik,isp,ish,ir,i,j] = R.next()
                             
                             for i in xrange(self.shells[ish][3]):    # read imaginary part:
-                                for j in xrange(n_orbitals[ik][isp]):
-                                    proj_mat_pc[ik][isp][ish][ir][i,j] += 1j * R.next()
+                                for j in xrange(n_orbitals[ik,isp]):
+                                    proj_mat_pc[ik,isp,ish,ir,i,j] += 1j * R.next()
 
         except StopIteration : # a more explicit error if the file is corrupted.
             raise "SumkLDA : reading file HMLT_file failed!"

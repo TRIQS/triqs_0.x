@@ -27,8 +27,9 @@ from pytriqs.dft.sumk_lda_tools import SumkLDATools
 SK = SumkLDATools(hdf_file = 'SrVO3.h5')
 
 dm = SK.density_gf(40)
-
+dm_pc = SK.partial_charges(40)
 
 ar = HDFArchive('sumklda_basic.output.h5','w')
 ar['dm'] = dm
+ar['dm_pc'] = dm_pc
 del ar
