@@ -42,12 +42,21 @@ namespace triqs { namespace utility {
     for (auto & x : v) r.push_back(std::move(x)); 
     return r;
    }
+    template <typename VectorType> static R invoke( VectorType const & v) { 
+//    static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
+    R r; r.reserve(v.size()); 
+//    for (auto & x : v) r.push_back(T(x));
+    for(size_t i=0; i<v.size(); ++i) r.push_back(T(v[i]));
+    return r;
+   }
+/*
    template <typename U> static R invoke( std::vector<U> const & v) { 
     static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
     R r; r.reserve(v.size()); 
     for (auto & x : v) r.push_back(T(x));
     return r;
    }
+*/
   };
 
  template <typename T, typename ... U> T factory(U && ... x) { return factories<T>::invoke(std::forward<U>(x)...);}
