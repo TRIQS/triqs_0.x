@@ -29,14 +29,14 @@ gm.tail.zero()
 gm.tail[1] = numpy.array([[1.0]])
 
 # Real frequency BlockGf(reference)
-gr = GfReFreq(indices = [0], omega_min = -6, omega_max = 6, n_freq_points = 1000, name = "gr")
+gr = GfReFreq(indices = [0], omega_min = -5.995, omega_max = 5.995, n_freq_points = 1200, name = "gr")
 gr <<= Function(G)
 gr.tail.zero()
 gr.tail[1] = numpy.array([[1.0]])
 
 # Analytic continuation of gm
-g_pade = GfReFreq(indices = [0], omega_min = -6, omega_max = 6, n_freq_points = 1000, name = "g_pade")
-g_pade.set_from_pade(gm, N_Matsubara_Frequencies = L, Freq_Offset = eta)
+g_pade = GfReFreq(indices = [0], omega_min = -5.995, omega_max = 5.995, n_freq_points = 1200, name = "g_pade")
+g_pade.set_from_pade(gm, n_matsubara_freq = L, freq_offset = eta)
 
 # Comparison plot
 from pytriqs.base.plot.mpl_interface import oplot

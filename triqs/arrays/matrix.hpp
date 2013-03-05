@@ -25,7 +25,6 @@
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "vector.hpp"
-
 namespace triqs { namespace arrays {
 
  template <typename ValueType, ull_t Opt=0, ull_t TraversalOrder= 0> class matrix_view;
@@ -50,7 +49,7 @@ namespace triqs { namespace arrays {
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::matrix_view > 
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
-  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
+  class matrix_view : Tag::matrix_view,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
    public :
     typedef matrix_view<ValueType,Opt,TraversalOrder> view_type;
     typedef matrix<ValueType,Opt,TraversalOrder>      non_view_type;
@@ -75,6 +74,9 @@ namespace triqs { namespace arrays {
 
     matrix_view () = delete;
 
+    // Move
+    matrix_view(matrix_view && X) { this->swap_me(X); }
+
     /// Swap
     friend void swap( matrix_view & A, matrix_view & B) { A.swap_me(B);}
 
@@ -85,6 +87,9 @@ namespace triqs { namespace arrays {
     template<typename RHS> matrix_view & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }
 
     matrix_view & operator=(matrix_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
+
+    /// Move assignment
+    matrix_view & operator=(matrix_view && X) { this->swap_me(X); return *this;}
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
     _IMPL_MATRIX_COMMON;
@@ -99,7 +104,7 @@ namespace triqs { namespace arrays {
  // ---------------------- matrix --------------------------------
 
  template <typename ValueType, ull_t Opt, ull_t TraversalOrder >
-  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(ImmutableMatrix), public IMPL_TYPE {
+  class matrix: Tag::matrix,  TRIQS_MODEL_CONCEPT(MutableMatrix), public IMPL_TYPE {
    public :
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
@@ -128,7 +133,7 @@ namespace triqs { namespace arrays {
     /// Build a new matrix from X.domain() and fill it with by evaluating X. X can be : 
     template <typename T> 
      matrix(const T & X, TYPE_ENABLE_IF(memory_layout<2>, ImmutableArray<T>) ml = memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)):
-      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation_ignore_const(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
@@ -174,70 +179,6 @@ namespace triqs { namespace arrays {
 #undef _IMPL_MATRIX_COMMON
 #undef IMPL_TYPE
 
- template <typename T, int R> 
-  bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));} 
-
- template <typename T> 
-  bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));} 
-
- // assignment for scalar RHS // write a specific one if it is not a view : plain loop
- // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
-
- template <typename V, typename RHS> struct __looper { 
-  RHS rhs;
-  __looper(const RHS & rhs_): rhs(rhs_) {}
-  //template <typename KeyType> void operator()(V & p, KeyType const & key) const { p = (kronecker(key) ? rhs : RHS() ); }
-  template <typename ... Args> void operator()(V & p, Args const & ... args) const { p = (kronecker(args...) ? rhs : RHS() ); }
- };
-
- template<typename RHS, typename V, ull_t Opt, ull_t To> 
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
-
- template<typename RHS, typename V, ull_t Opt, ull_t To> 
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs) { indexmaps::foreach( __looper<V,RHS>(rhs),lhs); }
-
- // += for scalar RHS // write a specific one if it is not a view : plain loop
- // beware : for matrix, assign to a scalar will make the matrix scalar, as it should
- template <typename V, typename RHS> struct __looper_add {
-  RHS rhs;
-  __looper_add(const RHS & rhs_): rhs(rhs_) {}
-  template <typename KeyType> void operator()(V & p, KeyType const & key) const { p += (kronecker(key) ? rhs : RHS() ); }
- };
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'A'>) { indexmaps::foreach( __looper_add<V,RHS>(rhs),lhs); }
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'S'>) { lhs += (-rhs); }
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename boost::enable_if<is_scalar_for<RHS,matrix_view<V,Opt,To> > >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'S'>) {lhs += (-rhs); }
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'M'>) = delete;
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
-  triqs_arrays_compound_assign_delegation (matrix<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
-
- template<typename RHS, typename V, ull_t Opt, ull_t To>
-  typename std::enable_if<!(is_scalar_for<RHS,matrix_view<V,Opt,To>>::value) >::type
-  triqs_arrays_compound_assign_delegation (matrix_view<V,Opt,To> & lhs, RHS const & rhs, mpl::char_<'D'>) = delete;
-
 }}//namespace triqs::arrays
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
@@ -246,8 +187,6 @@ namespace std {
  template <typename V, triqs::ull_t Opt, triqs::ull_t To >
   void swap( triqs::arrays::matrix_view<V,Opt,To> & a , triqs::arrays::matrix_view<V,Opt,To> & b)= delete;
 }
-
 #include "./expression_template/matrix_algebra.hpp"
-
 #endif
 

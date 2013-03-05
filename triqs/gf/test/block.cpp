@@ -14,6 +14,8 @@ using triqs::gf::block;
 using triqs::gf::Fermion;
 using triqs::gf::imfreq;
 using triqs::gf::imtime;
+using triqs::gf::make_gf;
+using triqs::gf::make_gf_view;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -21,9 +23,9 @@ int main() {
 
  double beta =1;
  
- auto G1 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
- auto G2 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
- auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
+ auto G1 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+ auto G2 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+ auto G3 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
 
  std::vector<gf<imfreq> >  V ;
  V.push_back(G1); V.push_back(G2); V.push_back(G3); 
@@ -31,15 +33,15 @@ int main() {
  Vv.push_back(G1); Vv.push_back(G2); Vv.push_back(G3); 
 
  std::cout <<" Building gf_view of view"<< std::endl ;
- auto GF_v = triqs::gf::block<imfreq>::make_gf_view (Vv);
+ auto GF_v = make_gf_view<block<imfreq>> (Vv);
 
  std::cout <<" Building gf_view of gf"<< std::endl ;
- auto GF =  triqs::gf::block<imfreq>::make_gf_view (V); //{G1,G2,G3});
- //auto GF = triqs::gf::block<imfreq>::make_gf_view ( std::vector<gf_view<imfreq> > {G1,G2,G3});
+ auto GF =  make_gf_view<block<imfreq>> (V); //{G1,G2,G3});
+ //auto GF = make_gf_view<block<imfreq>> ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
  std::cout  << "Number of blocks " << GF.mesh().size()<<std::endl ;
- auto g0 = GF(0);
- auto g0v = GF_v(0)();
+ auto g0 = GF[0];
+ auto g0v = GF_v[0]();
 
  auto Gv = g0();
 
@@ -49,19 +51,22 @@ int main() {
  Gv.on_mesh(0) = 0;
 
  g0v.on_mesh(0) = 3.2;
+ //g0v[0]= 3.2;
 
  // Vv[0](0) = -2.1;
  TEST( Gv( 0) ) ;
  TEST( G1( 0) ) ;
+ //TEST( GF_v(0)( 0) ) ;
+ //TEST( GF_v[0]( 0) ) ;
 
  // bug fixed for this
  gf< block< imfreq> > G9;
- G9 = block<imfreq>::make_gf (2, imfreq::make_gf(beta, Fermion, make_shape(2,2)));
+ G9 = make_gf<block<imfreq>> (2, make_gf<imfreq>(beta, Fermion, make_shape(2,2)));
 
  // Operation
  g0.on_mesh(0) = 3.2;
- TEST( GF(0)(0) ) ;
+ TEST( GF[0](0) ) ;
  GF = GF/2; 
- TEST( GF(0)(0) ) ;
+ TEST( GF[0](0) ) ;
 
 }

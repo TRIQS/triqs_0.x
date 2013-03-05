@@ -26,19 +26,24 @@ using namespace triqs;
 const int N1= 200, N2 = 300;
 namespace tqa=triqs::arrays; namespace tql=triqs::clef;
 
-struct  aux_t { 
-  double operator() (long i, long j) { return i + 2.0*j;}
- }; 
-
 struct plain {
  void operator()() { 
   triqs::arrays::array<double,2> A (N1,N2,FORTRAN_LAYOUT);
   for (int u =0; u<5000; ++u)
   {
-   for (int j=0; j<A.len(1); ++j) 
-    for (int i =0; i<A.len(0); ++i)
+   for (int j=0; j<N2; ++j) 
+    for (int i =0; i<N1; ++i)
      A(i,j) = i+ 2*j;
   }
+ }
+};
+
+struct lazy {
+ void operator()() {
+  tql::placeholder<0> i_;   tql::placeholder<1> j_;  
+  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
+  for (int u =0; u<5000; ++u)
+   A(i_,j_) << i_+ 2*j_;
  }
 };
 
@@ -46,22 +51,8 @@ struct foreach_lambda {
  void operator()() {
   triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
   for (int u =0; u<5000; ++u)
-   indexmaps::foreach_av([](long i, long j) { return i + 2.0*j;} , A);
- }
-};
-
-
-struct lazy {
- void operator()() {
-  tql::placeholder<0> i_;   tql::placeholder<1> j_;  
-  //triqs::arrays::array<double,2> A (N1,N2);
-  triqs::arrays::array<double,2,TRAVERSAL_ORDER_FORTRAN> A (N1,N2,FORTRAN_LAYOUT);
-  auto f = make_function(i_+ 2.0*j_, i_, j_);
-  aux_t aux;
-  for (int u =0; u<5000; ++u)
-   //indexmaps::foreach_av(boost::ref(aux), A);
-   //indexmaps::foreach_av(f, A);
-   A(i_,j_) << i_+ 2*j_;
+   //assign_foreach(A, [](size_t i, size_t j) { return i + 2.0*j;});
+   assign_foreach(A, [](long i, long j) { return i + 2.0*j;});
  }
 };
 

@@ -55,7 +55,7 @@ class Solver(SolverBase):
                 "Keep_Full_MC_Series" : ("(Expert only) Store the Green's function for later analysis", False, BooleanType),
                 "Use_F" : ("(Expert only) Compute F", False, BooleanType),
                 "Eta": ("(Expert only) Value of eta, the minimum value of the det", 0.0, FloatType),
-                "Quantum_Numbers_Selection" : ("(Prototype) A function to select quantum numbers", lambda qn: True, FunctionType),
+                "Quantum_Numbers_Selection" : ("(Prototype) A function to select quantum numbers", lambda qn: True)
                 }
 
     Deprecated = ()

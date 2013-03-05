@@ -84,22 +84,7 @@ namespace triqs { namespace arrays {
  //template <typename IndexMapIterator, typename IndexMap>
  // struct indexmap_iterator_adapter;
 
- /**
-  * Pretty printing : a generic version for any domain. To be specialized.
-  */
- namespace PrettyPrint_details { 
-  template<typename D, typename A>
-   struct print_impl {
-    static void do_it (std::ostream & out,const D & d, A const & a ) { out<<"[";
-     for (typename D::generator it(d); it; ++it) out<<a[*it]<<" ";
-     out<<"]"; }
-   };
- }
-
- template<typename D, typename A>
-  void pretty_print (std::ostream & out,const D & d, A const & a ) { PrettyPrint_details::print_impl<D,A>::do_it(out,d,a);}
-
-}}}//namespace triqs::arrays 
+ }}}//namespace triqs::arrays 
 #endif
 
 

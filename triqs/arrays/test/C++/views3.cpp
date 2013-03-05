@@ -20,6 +20,7 @@
  ******************************************************************************/
 #include "./python_stuff.hpp"
 #define ARRAY_DEBUG_SLICE
+#define TRIQS_ARRAYS_USE_OLD_KEY_EVAL
 
 #include "./src/array.hpp"
 #include <iostream>

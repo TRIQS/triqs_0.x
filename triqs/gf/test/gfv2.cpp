@@ -11,6 +11,7 @@ using triqs::arrays::make_shape;
 using triqs::gf::Fermion;
 using triqs::gf::imfreq;
 using triqs::gf::imtime;
+using triqs::gf::make_gf;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
@@ -19,10 +20,10 @@ int main() {
  triqs::gf::freq_infty inf;
 
  double beta =1;
- auto G =  imfreq::make_gf (beta, Fermion, make_shape(2,2));
- auto Gc = imfreq::make_gf (beta, Fermion, make_shape(2,2));
- auto G3 = imfreq::make_gf (beta, Fermion, make_shape(2,2));
- auto Gt = imtime::make_gf (beta, Fermion, make_shape(2,2));
+ auto G =  make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+ auto Gc = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+ auto G3 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+ auto Gt = make_gf<imtime> (beta, Fermion, make_shape(2,2));
 
  auto Gv = G();
  TEST( G( 0) ) ;
@@ -117,8 +118,7 @@ int main() {
 
  TEST( t(1));
 
- tqa::array<double,9> A(1,2,3,4,5,6,7,8,9);
- A()=0;
+ //tqa::array<double,9> A(1,2,3,4,5,6,7,8,9); A()=0;
  //auto x = local::impl::gf_impl<triqs::gf::meshes::imfreq, true>::wrap_infty (G.tail_view()) + 2.0;
 
  // test hdf5 

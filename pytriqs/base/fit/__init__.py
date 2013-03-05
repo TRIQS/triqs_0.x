@@ -20,6 +20,6 @@
 #
 ################################################################################
 
-from fit import Fit
+from fit import Fit, linear, quadratic
 
-__all__ = ['Fit']
+__all__ = ['Fit', 'linear', 'quadratic']

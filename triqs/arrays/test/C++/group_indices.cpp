@@ -46,7 +46,7 @@ template<triqs::ull_t FLAG> void test() {
 
   TEST(R);
   TEST(A);
-  assert_all_close(R,A,1.e-15);
+  assert_all_close(R,A,5.e-15);
   //TEST(make_array(R-A));
   //TEST( max(abs(R-A)));
  }

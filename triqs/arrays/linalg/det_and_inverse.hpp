@@ -122,7 +122,8 @@ namespace triqs { namespace arrays {
   domain_type domain() const { return a.domain(); } 
   size_t dim0() const { return a.dim0();} 
   size_t dim1() const { return a.dim1();} 
-  value_type operator[] (index_value_type const & key) const { activate();  return _id->M [key]; }
+  //value_type operator[] (index_value_type const & key) const { activate();  return _id->M [key]; }
+  template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->M(k0,k1); }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute

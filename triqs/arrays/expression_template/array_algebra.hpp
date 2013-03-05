@@ -36,7 +36,7 @@ namespace triqs { namespace arrays {
    
    domain_type domain() const  { return combine_domain()(l,r); } 
    
-   template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
+   //template<typename KeyType> value_type operator[](KeyType && key) const { return operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]);}
    template<typename ... Args> value_type operator()(Args && ... args) const { return operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...));}
    friend std::ostream &operator <<(std::ostream &sout, array_expr const &expr){return sout << "("<<expr.l << " "<<operation<Tag>::name << " "<<expr.r<<")" ; }
   };
@@ -53,7 +53,7 @@ namespace triqs { namespace arrays {
    
    domain_type domain() const  { return l.domain(); } 
    
-   template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
+   //template<typename KeyType> value_type operator[](KeyType&& key) const {return -l[key];} 
    template<typename ... Args> value_type operator()(Args && ... args) const { return -l(std::forward<Args>(args)...);}
    friend std::ostream &operator <<(std::ostream &sout, array_unary_m_expr const &expr){return sout << '-'<<expr.l; }
   };

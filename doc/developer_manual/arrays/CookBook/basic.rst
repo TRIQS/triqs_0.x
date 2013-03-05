@@ -129,7 +129,7 @@ Defining through a lazy expression
     int main(){
        tql::placeholder<0> i_;   tql::placeholder<1> j_;
        tqa::array<double,2> A(2,2);  
-       A(i_,j_)= i_ + j_ ;
+       A(i_,j_) <<  i_ + j_ ;
        std::cout << "A = "<<A << std::endl;
     }
 
@@ -150,7 +150,7 @@ Linear algebra
       tql::placeholder<1> j_;
       tqa::matrix<double> A(2,2); 
 
-      A(i_,j_) = i_+j_; 
+      A(i_,j_) << i_+j_;
       tqa::matrix<double> B = inverse(A); 
       double C = determinant(A); 
  

@@ -99,9 +99,11 @@ namespace triqs { namespace gf { namespace local {
      data() = 0;
    }
    tail_impl(data_type const &d, long order_min, mask_type const &om): omin(order_min), mask(om), data(d) {}
-   tail_impl(tail_impl          const & x): omin(x.omin), mask(x.mask), data(x.data){}
+ //  tail_impl(tail_impl          const & x): omin(x.omin), mask(x.mask), data(x.data){}
    tail_impl(tail_impl<!IsView> const & x): omin(x.omin), mask(x.mask), data(x.data){}
-
+ tail_impl(tail_impl const &) = default;
+  tail_impl(tail_impl &&) = default;
+ 
    friend class tail_impl<!IsView>;
   public:
 
@@ -168,6 +170,8 @@ namespace triqs { namespace gf { namespace local {
   public :
   template<bool V> tail_view(tail_impl<V> const & t): B(t){}
   tail_view(B::data_type const &d, long order_min, B::mask_type const &om): B(d, order_min, om){}
+  tail_view(tail_view const &) = default;
+  tail_view(tail_view &&) = default;
   void rebind( tail_view const &X) {
     omin = X.omin;
     mask.rebind(X.mask);
@@ -206,7 +210,7 @@ namespace triqs { namespace gf { namespace local {
 
   using B::operator(); // import all previously defined operator() for overloading
   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, tail_view const & x) { return out<<"tail_view";}
-
+  
   void print_me() const { std::cout  << *this << std::endl ; }
  };
 
@@ -222,6 +226,7 @@ namespace triqs { namespace gf { namespace local {
   tail(shape_type const & sh, size_t size_ = 10, long order_min=-1): B(sh[0],sh[1],size_,order_min) {}
   tail(tail const & g): B(g){}
   tail(tail_view const & g): B(g){}
+  tail(tail &&) = default;
 
   // operator = for values
   tail & operator = (tail_view const & rhs) {
@@ -251,7 +256,9 @@ namespace triqs { namespace gf { namespace local {
 
  };
 
- inline void tail_view::rebind( tail const &X) {
+  template<typename RHS> void assign_from_expression(tail_view & t,RHS const & rhs) { t = rhs( tail::omega(t.shape(),t.size())); }
+ 
+  inline void tail_view::rebind( tail const &X) {
    omin = X.omin;
    mask.rebind(X.mask);
    data.rebind(X.data);

@@ -81,7 +81,7 @@ namespace triqs { namespace arrays { namespace indexmaps {
   static constexpr bool has_ellipsis = (count_type_occurrence<ellipsis,Args...>::value>0);
   static_assert((count_type_occurrence<ellipsis,Args...>::value < 2), "Only one ellipsis is permitted");
   static_assert((len>=R || has_ellipsis), "Too few arguments in slice");
-  static_assert(len<=R, "Too many arguments in slice");
+  static_assert((len<=R+(has_ellipsis ?1:0)), "Too many arguments in slice"); // + one to allow an empty ellipsis
 
   typedef cuboid::map<R,Opt,To> im_t;
   static constexpr int Rf = R - count_type_occurrence_not<range,Args...>::value;

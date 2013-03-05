@@ -45,17 +45,7 @@
 #include <triqs/utility/compiler_details.hpp>
 #include "./tags.hpp"
 #include "./traits.hpp"
-
-// move to TRIQS level
-#define TYPE_ENABLE_IF(Type,...)    typename boost::enable_if < __VA_ARGS__ , Type >::type
-#define TYPE_ENABLE_IFC(Type,...)   typename boost::enable_if_c < __VA_ARGS__ , Type >::type
-#define TYPE_DISABLE_IF(Type,...)   typename boost::disable_if< __VA_ARGS__ , Type >::type
-#define TYPE_DISABLE_IFC(Type,...)  typename boost::disable_if_c< __VA_ARGS__ , Type >::type
-
-#define ENABLE_IF(...)    typename boost::enable_if < __VA_ARGS__ , void >::type
-#define ENABLE_IFC(...)   typename boost::enable_if_c < __VA_ARGS__ , void >::type
-#define DISABLE_IF(...)   typename boost::disable_if< __VA_ARGS__ , void >::type
-#define DISABLE_IFC(...)  typename boost::disable_if_c< __VA_ARGS__ , void >::type
+#include <triqs/utility/macros.hpp>
 
 namespace boost { namespace serialization { class access;}}
 

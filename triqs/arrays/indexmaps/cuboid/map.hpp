@@ -53,6 +53,7 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    static constexpr bool CheckBounds = flags::bound_check_trait<OptionsFlags>::value;
    static constexpr ull_t traversal_order_in_template = TraversalOrder;
    static constexpr ull_t traversal_order = indexmaps::mem_layout::get_traversal_order<Rank, OptionsFlags, TraversalOrder>::value;
+   typedef void has_traversal_order_tag;
    static const unsigned int rank = Rank;
    typedef mini_vector<size_t,rank> lengths_type;
    typedef mini_vector<std::ptrdiff_t, rank> strides_type;

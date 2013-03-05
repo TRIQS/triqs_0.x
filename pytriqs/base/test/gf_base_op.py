@@ -21,8 +21,7 @@
 ################################################################################
 
 from pytriqs.base.archive import *
-from pytriqs.base.gf_local import *
-#import pytriqs.base.gf_local.gf_init as gf_init
+from pytriqs.base.gf.local import *
 import numpy, copy
 from pytriqs.base.utility.my_utils import conjugate
 
@@ -33,7 +32,6 @@ gb = GfImFreq(indices = [1,2], beta = 50, n_matsubara = 100, name = "b1Block")
 
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 
-#G <<= gf_init.A_Omega_Plus_B(1.0,2.0)
 G <<= iOmega_n + 2.0
 h['G1'] = G
 
@@ -45,7 +43,7 @@ dens = G.total_density()
 h['dens'] = dens
 
 # FT:
-f = lambda g,L : GfImTime(indices = g.indices, beta = g.beta, n_time_points =L )
+f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_time_points =L )
 gt = BlockGf(name_block_generator = [ (n,f(g,200) ) for n,g in G], make_copies=False, name='gt')
 for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
 
@@ -67,14 +65,14 @@ h['Gc'] = Gc
 # Some tail stuff:
 tailtempl={}
 for sig,g in G: 
-    tailtempl[sig] = copy.deepcopy(g._tail)
+    tailtempl[sig] = copy.deepcopy(g.tail)
 h['tt'] = tailtempl
 
 
 # tranpose
 g = G['a']
 gt = G['a'].transpose()
-gt._data.array[0,1,3] = 100
-assert g._data.array[1,0,3] == 100
+gt.data[0,1,3] = 100
+assert g.data[1,0,3] == 100
 
 del h

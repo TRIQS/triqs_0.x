@@ -23,18 +23,28 @@
 #include <algorithm>
 #include <functional>
 #include "./functional/fold.hpp"
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #define TRIQS_FIX_CLANG30_linux
 
 namespace triqs { namespace arrays {
 
+ // get_first_element(a) returns .. the first element, i.e. a(0,0,0...)
+#define ZERO(z, n, text) 0
+#define IMPL(z, N, unused)\
+ template<typename ArrayType> typename std::enable_if<ArrayType::domain_type::rank==N,typename ArrayType::value_type>::type get_first_element(ArrayType const & A) \
+ { return A(BOOST_PP_ENUM(N,ZERO,0));}
+ BOOST_PP_REPEAT_FROM_TO(1,ARRAY_NRANK_MAX , IMPL, nil);
+#undef IMPL
+#undef ZERO
+
  template<class A>
   typename A::value_type max_element(A const &a) { 
 #ifdef TRIQS_FIX_CLANG30_linux
    typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, a[typename A::domain_type::index_value_type()]);
+   return fold ( static_cast<T(*)(T,T)>(std::max<T>))  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
 #else  
-   return fold ( std::max<typename A::value_type const & >)  ( a, a[typename A::domain_type::index_value_type()]);
+   return fold ( std::max<typename A::value_type const & >)  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
 #endif
   }
 
@@ -42,9 +52,9 @@ namespace triqs { namespace arrays {
   typename A::value_type min_element(A const &a) { 
 #ifdef TRIQS_FIX_CLANG30_linux
  typedef typename A::value_type const & T;
-   return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, a[typename A::domain_type::index_value_type()]);
+   return fold ( static_cast<T(*)(T,T)>(std::min<T>))  ( a, get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
 #else 
-   return fold ( std::min<typename A::value_type const & >)  ( a, a[typename A::domain_type::index_value_type()]);
+   return fold ( std::min<typename A::value_type const & >)  ( a,  get_first_element(a)); //a[typename A::domain_type::index_value_type()]);
 #endif
   }
 

@@ -10,15 +10,16 @@ using triqs::arrays::make_shape;
 using triqs::gf::Fermion;
 using triqs::gf::refreq;
 using triqs::gf::retime;
+using triqs::gf::make_gf;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
 int main() {
 
  double beta =1;
- auto G =  refreq::make_gf (-10, 10, 1000, make_shape(2,2));
- auto Gt = retime::make_gf (0, 10, 1000, make_shape(2,2));
- auto Gt2 = retime::make_gf (0, 10, 1000, make_shape(2,2));
+ auto G =  make_gf<refreq> (-10, 10, 1000, make_shape(2,2));
+ auto Gt = make_gf<retime> (0, 10, 1000, make_shape(2,2));
+ auto Gt2 = make_gf<retime> (0, 10, 1000, make_shape(2,2));
 
  int i =0;
  for (auto & t : Gt.mesh()) Gt(t) = 1.0*t*t;

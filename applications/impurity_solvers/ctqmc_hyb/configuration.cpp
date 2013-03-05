@@ -65,7 +65,7 @@ Configuration::Configuration(triqs::python_tools::improved_python_dict params, H
     
   // construct the determinants
   int Nmax = params["Nmax_Matrix"];
-  double Eta = params["Eta"];
+  //double Eta = params["Eta"];
   for (int a =0; a<Na;++a) { 
     Delta_tau_proxy[a] = new Delta_Proxy(Delta_tau[a],info);
     dets[a] = new DET_TYPE(*Delta_tau_proxy[a],Nmax);

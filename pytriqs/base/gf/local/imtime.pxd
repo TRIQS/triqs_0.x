@@ -14,7 +14,8 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         double kind()
         bint operator ==( mesh_imtime &)
 
-    cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
+    cdef mesh_imtime make_mesh_imtime "triqs::gf::gf_factories<triqs::gf::imtime>::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
+    #cdef mesh_imtime make_mesh_imtime "triqs::gf::imtime::make_mesh" (double beta, statistic_enum S, size_t n_time_slices, mesh_enum mk)
 
     cdef cppclass gf_imtime "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imtime>>" :
         gf_imtime()
@@ -43,8 +44,8 @@ cdef extern from "triqs/gf/imtime.hpp"  :
     cdef void h5_write (h5_group, char *, gf_imtime &)
     cdef gf_imtime inverse_c "inverse"   (gf_imtime &)
     
-    cdef gf_imtime make_gf_imtime "triqs::gf::imtime::make_gf" (mesh_imtime, array_view[double, THREE], tail) except +
-    cdef gf_imtime clone_gf_imtime "triqs::make_clone" (gf_imtime &) 
+    #cdef gf_imtime make_gf_imtime "triqs::gf::gf_factories<triqs::gf::imtime>::make_gf" (mesh_imtime, array_view[double, THREE], tail) except +
+    #cdef gf_imtime clone_gf_imtime "triqs::make_clone" (gf_imtime &) 
 
 cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (gf_imtime &) 
@@ -65,7 +66,7 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
         gf_imtime & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::block<triqs::gf::imtime>::make_gf_view" (  vector[gf_imtime] &) 
+    cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imtime>>" (  vector[gf_imtime] &) 
 
 cdef gf_block_imtime  as_gf_block_imtime (G) except +
 cdef make_BlockGfImTime (gf_block_imtime G) 

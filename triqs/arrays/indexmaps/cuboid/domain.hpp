@@ -22,11 +22,15 @@
 #define TRIQS_ARRAYS_INDEXMAP_CUBOID_DOMAIN_H
 #include "../common.hpp"
 #include "../range.hpp"
-#include "../permutation.hpp"
+#include "./mem_layout.hpp"
 #include <triqs/utility/mini_vector.hpp>
 #include "../../impl/exceptions.hpp"
 #include <iostream>
 #include <sstream>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/punctuation/comma_if.hpp>
 
 namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
  using namespace triqs::arrays::permutations;
@@ -62,29 +66,29 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    bool operator!=(domain_t const & X) const { return !(this->lengths_ == X.lengths_);}
    n_uple const & lengths() const { return lengths_;}
 
-  /** Generates the value of the indices of a cuboid_domain.  */
+   /** Generates the value of the indices of a cuboid_domain.  */
    static constexpr ull_t iteration_order_default = permutations::identity(Rank);
    template <ull_t IterationOrder= iteration_order_default >
     class gal_generator {
-      typedef index_value_type indices_type;
-      const domain_t * dom;
-      indices_type indices_tuple;
-      bool atend;
+     typedef index_value_type indices_type;
+     const domain_t * dom;
+     indices_type indices_tuple;
+     bool atend;
      public:
-      gal_generator (const domain_t & P, bool atEnd=false): dom(&P), atend(atEnd) {}
-      bool operator==(const gal_generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
-      bool operator!=(const gal_generator & IT2) const { return (!operator==(IT2));}
-      indices_type const & operator *() const { return indices_tuple;}
-      operator bool () const { return !atend;}
-      gal_generator & operator++(){ assert(!atend); atend = advance_impl(std::integral_constant<int,0>()); return *this;}
+     gal_generator (const domain_t & P, bool atEnd=false): dom(&P), atend(atEnd) {}
+     bool operator==(const gal_generator & IT2) const { assert((IT2.dom == dom)); return ((IT2.atend==atend) );}
+     bool operator!=(const gal_generator & IT2) const { return (!operator==(IT2));}
+     indices_type const & operator *() const { return indices_tuple;}
+     operator bool () const { return !atend;}
+     gal_generator & operator++(){ assert(!atend); atend = advance_impl(std::integral_constant<int,0>()); return *this;}
      private:
-      template<int r> bool advance_impl(std::integral_constant<int,r>) {
+     template<int r> bool advance_impl(std::integral_constant<int,r>) {
       constexpr int p = permutations::apply(IterationOrder, r);
       if (indices_tuple[p] < dom->lengths()[p]-1) { ++(indices_tuple[p]); return false;}
       indices_tuple[p] = 0;
       return advance_impl(std::integral_constant<int,r+1>());
-      }
-      bool advance_impl(std::integral_constant<int,rank>) { return true;}
+     }
+     bool advance_impl(std::integral_constant<int,rank>) { return true;}
     };
 
    typedef gal_generator<> generator;
@@ -101,7 +105,6 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    }
    template<int r,class KeyType>
     bool key_check_impl (std::integral_constant<int,r>, KeyType const & key, n_uple const & L, std::stringstream & fs ) const {
-     //using boost::tuples::get;
      bool cond = (  ( size_t(std::get<r>(key)) < L[r]));
      if (!cond) fs << "key ["<<r<<"] = "<< std::get<r>(key) <<" is not within [0,"<<L[r]<<"[\n";
      return key_check_impl(std::integral_constant<int,r+1>(), key,L,fs) && cond;
@@ -112,22 +115,68 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    template<typename ... Args> void assert_key_in_domain_v (Args const & ... args) const { assert_key_in_domain( std::make_tuple(args...));}
 
    friend std::ostream & operator<<(std::ostream & out, domain_t const & x){return out<<"Cuboid of rank "<<x.rank<<" and dimensions "<<x.lengths();}
-  };
 
+   };
+ 
+ template<typename FntType, int R, ull_t TraversalOrder> struct foreach_impl; 
+ /// Call the function F for each element of the domain, traversed in the TraversalOrder
+   template<ull_t TraversalOrder, typename FntType, int Rank>
+    void foreach(domain_t<Rank> const & d, FntType F) { foreach_impl<FntType,Rank,TraversalOrder>::invoke (d,F); }
+
+ // ------------------------- implementation of foreach -----------------------------------------------------
+
+ typedef std::ptrdiff_t foreach_int_type; 
+ // better to be signed here : 1) on some machine/compiler, it is a lot faster !
+ // When used with clef auto assign, e.g. A(i_,j_) = i -2*j, one needs signed arithmetics
+ // The clef adapters would convert, but this requires a conversion at each call....
+ //typedef size_t foreach_int_type;
+
+#define AUX0(z,P,NNN) constexpr int p##P = mem_layout::memory_rank_to_index(TraversalOrder,NNN-P);
+#define AUX1(z,P,unused) for (t[p##P]=0; t[p##P]< l[p##P]; ++t[p##P])
+//#define AUX1(z,P,unused) for (foreach_int_type x##P=0; x##P< dom.lengths()[p##P]; ++x##P)
+#define AUX3(z,p,unused) BOOST_PP_COMMA_IF(p) t[p]  
+#define IMPL(z, RR, unused) \
+ template<typename FntType, ull_t TraversalOrder> struct foreach_impl<FntType,RR,TraversalOrder> {\
+  static void invoke ( domain_t<RR> const & dom, FntType F) { \
+    BOOST_PP_REPEAT(RR,AUX0,BOOST_PP_DEC(RR))\
+   mini_vector<foreach_int_type,RR> t;\
+   const mini_vector<foreach_int_type,RR>  l(dom.lengths());\
+   BOOST_PP_REPEAT(RR,AUX1,nil){\
+    F(BOOST_PP_REPEAT(RR,AUX3,nil));\
+   } }};
+ BOOST_PP_REPEAT_FROM_TO(1,ARRAY_NRANK_MAX , IMPL, nil);
+#undef IMPL
+#undef AUX0
+#undef AUX1
+#undef AUX3
 }
 /// ------------  Pretty Printing : specializing the default behaviour for d=1,2  -------------------------
 namespace PrettyPrint_details {
- // TO BE CLEANED
+ template<int R, typename A>
+   struct print_impl {
+    std::ostream & out; A const & a; 
+    print_impl( std::ostream & out_, A const & a_) : out(out_), a(a_){}  
+    template<typename A0, typename ... Args> void operator()(A0 const & a0, Args const & ... args) const { out << a(a0,args...)<< " ";}
+    void print() const { out<<"["; 
+     indexmaps::cuboid::foreach<permutations::identity(A::domain_type::rank)> (a.domain(), std::cref(*this)); //foreach(a, std::cref(*this)); 
+     out<<"]"; }
+   };
+
  template<typename A>
-  struct print_impl <cuboid::domain_t<1>,A> {
-   static void do_it (std::ostream & out,const cuboid::domain_t<1> & d, A const & a ) { out<<"[";
-    for (size_t i=0; i< d.lengths()[0]; ++i) out<<(i>0 ? ",": "")<<a(i);
-    out<<"]";}
+  struct print_impl <1,A> {
+   std::ostream & out; A const & a; 
+   print_impl( std::ostream & out_, A const & a_) : out(out_), a(a_){}  
+   void print() const {  
+    auto d = a.indexmap().domain();
+    out<<"["; for (size_t i=0; i< d.lengths()[0]; ++i) out<<(i>0 ? ",": "")<<a(i); out<<"]";}
   };
 
  template<typename A>
-  struct print_impl <cuboid::domain_t<2>,A> {
-   static void do_it (std::ostream & out,const cuboid::domain_t<2> & d, A const & a ) {
+  struct print_impl <2,A> {
+   std::ostream & out; A const & a; 
+   print_impl( std::ostream & out_, A const & a_) : out(out_), a(a_){}  
+   void print() const {  
+    auto d = a.indexmap().domain();
     out<<"\n[";
     for (size_t i=0; i< d.lengths()[0]; ++i) {
      out<<(i==0 ? "[" : " [");
@@ -137,6 +186,10 @@ namespace PrettyPrint_details {
     out<<"]";
    }
   };
+
 }
+template<typename A>
+void pretty_print (std::ostream & out, A const & a ) { PrettyPrint_details::print_impl<A::domain_type::rank,A>(out,a).print();}
+
 }}}
 #endif

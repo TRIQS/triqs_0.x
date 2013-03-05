@@ -13,7 +13,8 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
         long size()
         bint operator == (mesh_legendre &)
 
-    cdef mesh_legendre make_mesh_legendre "triqs::gf::legendre::make_mesh" (double beta, statistic_enum S, size_t n_leg)
+    cdef mesh_legendre make_mesh_legendre "triqs::gf::gf_factories<triqs::gf::legendre>::make_mesh" (double beta, statistic_enum S, size_t n_leg)
+    #cdef mesh_legendre make_mesh_legendre "triqs::gf::legendre::make_mesh" (double beta, statistic_enum S, size_t n_leg)
 
     cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::legendre>>" :
         gf_legendre()
@@ -47,7 +48,7 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
         gf_legendre & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_legendre  make_gf_block_legendre "triqs::gf::block<triqs::gf::legendre>::make_gf_view" (  vector[gf_legendre] &) 
+    cdef gf_block_legendre  make_gf_block_legendre "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::legendre>>" (  vector[gf_legendre] &) 
 
 cdef gf_block_legendre  as_gf_block_legendre (G) except +
 cdef make_BlockGfLegendre (gf_block_legendre G) 

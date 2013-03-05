@@ -1,5 +1,5 @@
 
-VersionNumber = "0.8 dev"
+VersionNumber = "1.0"
 
 # if we use a git clone, then tag with the hash, else just the plain number 
 git_hash = "@GIT_HASH@"

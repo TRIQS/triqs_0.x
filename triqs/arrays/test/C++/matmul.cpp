@@ -48,7 +48,7 @@ template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bo
 
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j)
-    M3(i,j) = matmul(M1,M2)[mini_vector<int,2>(i,j)];
+    M3(i,j) = matmul(M1,M2)(i,j); //[mini_vector<int,2>(i,j)];
  }
 
  std::cout<<"M3 = "<<M3<<std::endl<<"----------------"<<std::endl;

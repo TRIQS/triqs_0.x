@@ -36,7 +36,7 @@ namespace triqs { namespace arrays {
  storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view > 
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
-  class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE {   
+  class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
    static_assert( Rank>0, " Rank must be >0");
    public:   
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
@@ -61,6 +61,9 @@ namespace triqs { namespace arrays {
 
    array_view () = delete;
 
+   // Move
+   array_view(array_view && X) { this->swap_me(X); }
+
    /// Swap
    friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
 
@@ -73,13 +76,16 @@ namespace triqs { namespace arrays {
    ///
    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
 
+   /// Move assignment
+   array_view & operator=(array_view && X) { this->swap_me(X); return *this;}
+
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
 
  //------------------------------- array ---------------------------------------------------
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
-  class array: Tag::array,  TRIQS_MODEL_CONCEPT(ImmutableCuboidArray), public IMPL_TYPE { 
+  class array: Tag::array,  TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
    public:
     typedef typename IMPL_TYPE::value_type value_type;
     typedef typename IMPL_TYPE::storage_type storage_type;
@@ -120,7 +126,7 @@ namespace triqs { namespace arrays {
      */
     template <typename T> 
      array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
-      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation_ignore_const(*this,X); }
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.

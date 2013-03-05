@@ -40,6 +40,8 @@ int main(int argc, char **argv) {
   for (int j=0; j<5; ++j)
    A(i,j) = i+2*j+1; 
 
+ //A *=A;; should be rejected by compiler
+
  range R(1,3); 
 
  std::cout<< "A = "<< A<< std::endl;

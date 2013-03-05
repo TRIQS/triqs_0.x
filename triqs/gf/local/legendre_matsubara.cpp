@@ -53,7 +53,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   // I set Nt time bins. This is ugly, one day we must code the direct
   // transformation without going through imaginary time
   long Nt = 50000;
-  auto gt = triqs::gf::imtime::make_gf(gw.domain().beta, gw.domain().statistic,
+  auto gt = triqs::gf::make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
     triqs::arrays::mini_vector<size_t,2>(gw.data_view().shape()[0],gw.data_view().shape()[1]),
     Nt, triqs::gf::half_bins);
 

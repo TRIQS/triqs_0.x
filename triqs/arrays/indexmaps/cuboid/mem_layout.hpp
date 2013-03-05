@@ -53,7 +53,10 @@ namespace triqs { namespace arrays {
   constexpr ull_t fortran_order (int n){ return permutations::identity(n);}
   constexpr ull_t c_order       (int n){ return permutations::ridentity(n);}
  
-  // From the flag in the template definition to the real traversal_order
+  template<int n> struct fortran_order_tr { static constexpr ull_t value = permutations::identity(n);};
+  template<int n> struct c_order_tr       { static constexpr ull_t value = permutations::ridentity(n);};
+
+ // From the flag in the template definition to the real traversal_order
   // 0 -> C order
   // 1 -> Fortran Order
   // Any other number interpreted as a permutation ?
