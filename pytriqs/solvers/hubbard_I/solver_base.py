@@ -21,15 +21,10 @@
 ################################################################################
 
 from types import *
-#from pytriqs.base import DataTestTools
 from pytriqs.solvers import SolverBase
-from pytriqs.base.gf_local.gf_imfreq import *
-from pytriqs.base.gf_local.gf_refreq import *
-from pytriqs.base.gf_local.block_gf import BlockGf
-from pytriqs.base.gf_local import gf_init
+from pytriqs.base.gf.local import *
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
 import copy
-from pytriqs.base.gf_local import inverse
 import pytriqs.base.utility.parameters as parameters
 import pytriqs.base.utility.mpi as mpi
 import numpy
@@ -81,8 +76,8 @@ class SolverBaseHub(SolverBase):
         # for the tails:
         self.tailtempl={}
         for sig,g in self.G: 
-            self.tailtempl[sig] = copy.deepcopy(g._tail)
-            for i in range(11): self.tailtempl[sig][i].array[:] *= 0.0
+            self.tailtempl[sig] = copy.deepcopy(g.tail)
+            for i in range(9): self.tailtempl[sig][i] *= 0.0
     
         self.name=''
 
@@ -134,16 +129,16 @@ class SolverBaseHub(SolverBase):
         for a,al in self.GFStruct:
             isp+=1
             #M[a] = gf[isp*self.Nlm:(isp+1)*self.Nlm,isp*self.Nlm:(isp+1)*self.Nlm,:]
-            M[a] = gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:]
-            for i in range(min(self.Nmoments,10)):
-                self.tailtempl[a][i+1].array[:] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
+            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:])
+            for i in range(min(self.Nmoments,8)):
+                self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
                  
         glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_matsubara = self.Nmsb, data =M[a], tail =self.tailtempl[a]) 
                            for a,al in self.GFStruct]
         self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
             
         # Self energy:
-        self.G0 <<= gf_init.A_Omega_Plus_B(A=1,B=0.0)
+        self.G0 <<= iOmega_n
         
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M
@@ -154,9 +149,9 @@ class SolverBaseHub(SolverBase):
        
         def test_distance(G1,G2, dist) :
             def f(G1,G2) : 
-                print abs(G1._data.array - G2._data.array)
-                dS = max(abs(G1._data.array - G2._data.array).flatten())  
-                aS = max(abs(G1._data.array).flatten())
+                print abs(G1.data - G2.data)
+                dS = max(abs(G1.data - G2.data).flatten())  
+                aS = max(abs(G1.data).flatten())
                 return dS <= aS*dist
             return reduce(lambda x,y : x and y, [f(g1,g2) for (i1,g1),(i2,g2) in izip(G1,G2)])
 
@@ -174,11 +169,9 @@ class SolverBaseHub(SolverBase):
         delta_om = (ommax-ommin)/(1.0*(N_om-1))
             
         omega = numpy.zeros([N_om],numpy.complex_)
-        Mesh = numpy.zeros([N_om],numpy.float_)
 
         for i in range(N_om): 
             omega[i] = ommin + delta_om * i + 1j * broadening
-            Mesh[i] = ommin + delta_om * i
 
         temp = 1.0/self.beta
         gf,tail,self.atocc,self.atmag = gf_hi_fullu(e0f=self.ealmat, ur=self.ur, umn=self.umn, ujmn=self.ujmn, 
@@ -187,7 +180,7 @@ class SolverBaseHub(SolverBase):
         
 
         for sig in self.a_list: 
-            for i in range(11): self.tailtempl[sig][i].array[:] *= 0.0
+            for i in range(9): self.tailtempl[sig][i] *= 0.0
 
         # transfer the data to the GF class:
         if (self.UseSpinOrbit): 
@@ -200,18 +193,18 @@ class SolverBaseHub(SolverBase):
         for a,al in self.GFStruct:
             isp+=1
             #M[a] = gf[isp*self.Nlm:(isp+1)*self.Nlm,isp*self.Nlm:(isp+1)*self.Nlm,:]
-            M[a] = gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:]
-            for i in range(min(self.Nmoments,10)):
-                self.tailtempl[a][i+1].array[:] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
+            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:])
+            for i in range(min(self.Nmoments,8)):
+                self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
 
-        glist = lambda : [ GfReFreq(indices = al, beta = self.beta, mesh_array = Mesh, data =M[a], tail =self.tailtempl[a]) 
+        glist = lambda : [ GfReFreq(indices = al, omega_min = ommin, omega_max = ommax, n_freq_points = N_om, data = M[a], tail = self.tailtempl[a]) 
                            for a,al in self.GFStruct]       # Indices for the upfolded G
         self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
 
         # Self energy:
         self.G0 = self.G.copy()
         self.Sigma = self.G.copy()
-        self.G0 <<= gf_init.A_Omega_Plus_B(A=1,B=1j*broadening)
+        self.G0 <<= iOmega_n + 1j*broadening
         
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M
