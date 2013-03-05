@@ -22,7 +22,7 @@
 #include "./src/array.hpp"
 #include "./src/sliding_view.hpp"
 using namespace std;
-using namespace triqs::arrays;
+namespace tqa = triqs::arrays;
 
 const int N = 1000;
 const int nl_interne = 10000;
@@ -35,7 +35,7 @@ inline VALUE_TYPE fnt(size_t i) { return i;} //*(i+2.0)*(i-8);}
 struct array_code {
  void operator()() {
 
-  array<VALUE_TYPE,3> A (2,2,N);
+  tqa::array<VALUE_TYPE,3> A (2,2,N);
   A() = 0;
   for (int u =0; u<nl_interne; ++u)
    for (int i =0; i<N-1; ++i) A(0,0,i) = fnt(i);
@@ -46,10 +46,10 @@ struct array_code {
 struct with_sliding_view {
  void operator()() {
 
-  array<VALUE_TYPE,3> A (2,2,N);
+  tqa::array<VALUE_TYPE,3> A (2,2,N);
   A() = 0;
 
-  auto slv = make_sliding_view<2>(A);
+  auto slv = tqa::make_sliding_view<2>(A);
 
   for (int u =0; u<nl_interne; ++u)
    for (int i =0; i<N-1; ++i ) {slv.set(i); slv(0,0) = fnt(i);}
@@ -58,12 +58,12 @@ struct with_sliding_view {
 struct with_slices {
  void operator()() {
 
-  array<VALUE_TYPE,3> A (2,2,N);
+  tqa::array<VALUE_TYPE,3> A (2,2,N);
   A() = 0;
 
   for (int u =0; u<nl_interne; ++u)
   {
-   for (int i =0; i<N-1; ++i) {A(range(),range(),i)(0,0) = fnt(i);}
+   for (int i =0; i<N-1; ++i) {A(tqa::range(),tqa::range(),i)(0,0) = fnt(i);}
   }
  }
 };
