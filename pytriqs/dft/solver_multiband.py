@@ -72,6 +72,25 @@ class SolverMultiBand (Solver):
             self.map = {'up' : ['up' for v in range(self.n_orb)], 'down' : ['down' for v in range(self.n_orb)]}
 
         #print gf_struct,self.map
+
+        # define mapping of indices:
+        self.map_ind={}
+        for nm in self.map:
+            bl_names = self.map[nm]
+            block = []
+            for a,al in gf_struct:
+                if a in bl_names: block.append(al)
+                        
+            self.map_ind[nm] = range(n_orb)
+            i = 0
+            for al in block:
+                cnt = 0
+                for a in range(len(al)):
+                    self.map_ind[nm][i] = cnt
+                    i = i+1
+                    cnt = cnt+1
+      
+                
         
         if (use_spinflip==False):
             Hamiltonian = self.__set_hamiltonian_density()
@@ -153,9 +172,9 @@ class SolverMultiBand (Solver):
                 for i in range(self.n_orb):
                     for j in range(self.n_orb):
                         if (sp1==sp2):
-                            Hamiltonian += 0.5 * self.U[self.offset+i,self.offset+j] * N(self.map[sp1][i],i) * N(self.map[sp2][j],j) 
+                            Hamiltonian += 0.5 * self.U[self.offset+i,self.offset+j] * N(self.map[sp1][i],self.map_ind[sp1][i]) * N(self.map[sp2][j],self.map_ind[sp2][j]) 
                         else:
-                            Hamiltonian += 0.5 * self.Up[self.offset+i,self.offset+j] * N(self.map[sp1][i],i) * N(self.map[sp2][j],j) 
+                            Hamiltonian += 0.5 * self.Up[self.offset+i,self.offset+j] * N(self.map[sp1][i],self.map_ind[sp1][i]) * N(self.map[sp2][j],self.map_ind[sp2][j]) 
 
         Hamiltonian -= N(self.map[spinblocs[0]][0],0)      # substract the initializing value
 
@@ -179,7 +198,7 @@ class SolverMultiBand (Solver):
                                 for sp2 in spinblocs:
                                     #print sp1,sp2,m1,m2,m3,m4
                                     Hamiltonian += 0.5 * self.U4ind[self.offset+m1,self.offset+m2,self.offset+m3,self.offset+m4] * \
-                                        Cdag(self.map[sp1][m1],m1) * Cdag(self.map[sp2][m2],m2) * C(self.map[sp2][m4],m4) * C(self.map[sp1][m3],m3)
+                                        Cdag(self.map[sp1][m1],self.map_ind[sp1][m1]) * Cdag(self.map[sp2][m2],self.map_ind[sp2][m2]) * C(self.map[sp2][m4],self.map_ind[sp2][m4]) * C(self.map[sp1][m3],self.map_ind[sp1][m3])
         #print "end..."
         Hamiltonian -= N(self.map[spinblocs[0]][0],0)      # substract the initializing value
                         
@@ -205,7 +224,7 @@ class SolverMultiBand (Solver):
                                 for sp2 in spinblocs:
                                     #print sp1,sp2,m1,m2,m3,m4
                                     Hamiltonian += 0.5 * self.U4ind[self.offset+m1,self.offset+m2,self.offset+m3,self.offset+m4] * \
-                                        Cdag(self.map[sp1][m1],m1) * Cdag(self.map[sp2][m2],m2) * C(self.map[sp2][m4],m4) * C(self.map[sp1][m3],m3)
+                                        Cdag(self.map[sp1][m1],self.map_ind[sp1][m1]) * Cdag(self.map[sp2][m2],self.map_ind[sp2][m2]) * C(self.map[sp2][m4],self.map_ind[sp2][m4]) * C(self.map[sp1][m3],self.map_ind[sp1][m3])
         #print "end..."
         Hamiltonian -= N(self.map[spinblocs[0]][0],0)      # substract the initializing value
                         
@@ -226,23 +245,23 @@ class SolverMultiBand (Solver):
                 for i in range(self.n_orb):
                     for j in range(self.n_orb):
                         if (sp1==sp2):
-                            Hamiltonian += 0.5 * self.U[self.offset+i,self.offset+j] * N(self.map[sp1][i],i) * N(self.map[sp2][j],j) 
+                            Hamiltonian += 0.5 * self.U[self.offset+i,self.offset+j] * N(self.map[sp1][i],self.map_ind[sp1][i]) * N(self.map[sp2][j],self.map_ind[sp2][j]) 
                         else: 
-                            Hamiltonian += 0.5 * self.Up[self.offset+i,self.offset+j] * N(self.map[sp1][i],i) * N(self.map[sp2][j],j) 
+                            Hamiltonian += 0.5 * self.Up[self.offset+i,self.offset+j] * N(self.map[sp1][i],self.map_ind[sp1][i]) * N(self.map[sp2][j],self.map_ind[sp2][j]) 
 
         # spinflip term:
         sp1 = spinblocs[0]
         sp2 = spinblocs[1]
         for i in range(self.n_orb-1):
             for j in range(i+1,self.n_orb):
-                Hamiltonian -= J_hund * ( Cdag(self.map[sp1][i],i) * C(self.map[sp2][i],i) * Cdag(self.map[sp2][j],j) * C(self.map[sp1][j],j) )     # first term
-                Hamiltonian -= J_hund * ( Cdag(self.map[sp2][i],i) * C(self.map[sp1][i],i) * Cdag(self.map[sp1][j],j) * C(self.map[sp2][j],j) )     # second term
+                Hamiltonian -= J_hund * ( Cdag(self.map[sp1][i],self.map_ind[sp1][i]) * C(self.map[sp2][i],self.map_ind[sp2][i]) * Cdag(self.map[sp2][j],self.map_ind[sp2][j]) * C(self.map[sp1][j],self.map_ind[sp1][j]) )     # first term
+                Hamiltonian -= J_hund * ( Cdag(self.map[sp2][i],self.map_ind[sp2][i]) * C(self.map[sp1][i],self.map_ind[sp1][i]) * Cdag(self.map[sp1][j],self.map_ind[sp1][j]) * C(self.map[sp2][j],self.map_ind[sp2][j]) )     # second term
 
         # pairhop terms:
         for i in range(self.n_orb-1):
             for j in range(i+1,self.n_orb):
-                Hamiltonian -= J_hund * ( Cdag(self.map[sp1][i],i) * Cdag(self.map[sp2][i],i) * C(self.map[sp1][j],j) * C(self.map[sp2][j],j) )     # first term
-                Hamiltonian -= J_hund * ( Cdag(self.map[sp2][j],j) * Cdag(self.map[sp1][j],j) * C(self.map[sp2][i],i) * C(self.map[sp1][i],i) )     # second term  
+                Hamiltonian -= J_hund * ( Cdag(self.map[sp1][i],self.map_ind[sp1][i]) * Cdag(self.map[sp2][i],self.map_ind[sp2][i]) * C(self.map[sp1][j],self.map_ind[sp1][j]) * C(self.map[sp2][j],self.map_ind[sp2][j]) )     # first term
+                Hamiltonian -= J_hund * ( Cdag(self.map[sp2][j],self.map_ind[sp2][j]) * Cdag(self.map[sp1][j],self.map_ind[sp1][j]) * C(self.map[sp2][i],self.map_ind[sp2][i]) * C(self.map[sp1][i],self.map_ind[sp1][i]) )     # second term  
 
         Hamiltonian -= N(self.map[spinblocs[0]][0],0)       # substract the initializing value
                         
@@ -256,16 +275,16 @@ class SolverMultiBand (Solver):
 
         # Define the quantum numbers:
         if (self.use_spinflip) :            
-            Ntot = sum_list( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.n_orb) ] )
+            Ntot = sum_list( [ N(self.map[s][i],self.map_ind[s][i]) for s in spinblocs for i in range(self.n_orb) ] )
             QN['NtotQN'] = Ntot
             #QN['Ntot'] = sum_list( [ N(self.map[s][i],i) for s in spinblocs for i in range(self.n_orb) ] )
             if (len(spinblocs)==2):
                 # Assuming up/down structure:
-                Sz = sum_list( [ N(self.map[spinblocs[0]][i],i)-N(self.map[spinblocs[1]][i],i) for i in range(self.n_orb) ] )
+                Sz = sum_list( [ N(self.map[spinblocs[0]][i],self.map_ind[spinblocs[0]][i])-N(self.map[spinblocs[1]][i],self.map_ind[spinblocs[1]][i]) for i in range(self.n_orb) ] )
                 QN['SzQN'] = Sz
                 # new quantum number: works only if there are only spin-flip and pair hopping, not any more complicated things
                 for i in range(self.n_orb):
-                    QN['Sz2_%s'%i] = (N(self.map[spinblocs[0]][i],i)-N(self.map[spinblocs[1]][i],i)) * (N(self.map[spinblocs[0]][i],i)-N(self.map[spinblocs[1]][i],i))
+                    QN['Sz2_%s'%i] = (N(self.map[spinblocs[0]][i],self.map_ind[spinblocs[0]][i])-N(self.map[spinblocs[1]][i],self.map_ind[spinblocs[1]][i])) * (N(self.map[spinblocs[0]][i],self.map_ind[spinblocs[0]][i])-N(self.map[spinblocs[1]][i],self.map_ind[spinblocs[1]][i]))
 
         else :
             for ibl in range(len(gf_struct)):

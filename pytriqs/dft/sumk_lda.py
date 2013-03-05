@@ -494,7 +494,7 @@ class SumkLDA:
 
                 for i in range(NBlocs):
                     blocs[i].sort()
-                    self.gf_struct_solver[ish].append( ('%s%s'%(a,i),blocs[i]) )
+                    self.gf_struct_solver[ish].append( ('%s%s'%(a,i),range(len(blocs[i]))) )
                    
                                
                 # map is the mapping of the blocs from the SK blocs to the CTQMC blocs:
