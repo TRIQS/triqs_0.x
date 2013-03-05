@@ -186,6 +186,11 @@ if (PythonSupport)
 endif (PythonSupport)
 
 #------------------------
+# tests
+#------------------------
+add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
+
+#------------------------
 # copy boost into pytriqs/boost
 #------------------------
 if(NOT BOOST_SOURCE_DIR)

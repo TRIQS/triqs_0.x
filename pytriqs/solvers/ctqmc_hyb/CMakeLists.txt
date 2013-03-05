@@ -10,5 +10,4 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/solvers/ct
 cython_module(ctqmc_hyb ctqmc_solver solvers/ctqmc_hyb)
 target_link_libraries(ctqmc_solver triqs_solver_ctqmc)
 
-add_subdirectory(test)
 

@@ -19,5 +19,3 @@ add_subdirectory(utility)
 add_subdirectory(lattice)
 add_subdirectory(sumk)
 
-add_subdirectory(test)
-

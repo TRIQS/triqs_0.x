@@ -11,8 +11,5 @@ SET(PYTHON_SOURCES
 python_register_dynamic_module(${NickName})
 
 # build the fortran stuff...
-if (Build_${NickName})
-  install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/solvers/hubbard_I)
-  add_subdirectory(test)
-  execute_process(COMMAND ln -fs ${CMAKE_BINARY_DIR}/applications/impurity_solvers/hubbard_I/hubbard_I.so ${CMAKE_CURRENT_BINARY_DIR})
-endif (Build_${NickName})
+install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/solvers/hubbard_I)
+execute_process(COMMAND ln -fs ${CMAKE_BINARY_DIR}/applications/impurity_solvers/hubbard_I/hubbard_I.so ${CMAKE_CURRENT_BINARY_DIR})

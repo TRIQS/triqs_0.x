@@ -7,7 +7,7 @@ endif (TRIQS_BUILD_STATIC)
 
 SET(ExecutableNameForTest ${RUN_TEST})
  
-# runs python_with_DMFT script > output 
+# runs pytriqs script > output 
 # and compares output with script.output
 # Example: 
 #   add_triqs_test_script(ExampleTest)

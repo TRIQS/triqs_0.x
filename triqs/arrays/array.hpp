@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_ARRAY_H
 #define TRIQS_ARRAYS_ARRAY_H
+#include<triqs/utility/first_include.hpp>
 #include "indexmaps/cuboid/map.hpp"
 #include "indexmaps/cuboid/slice.hpp"
 #include "impl/indexmap_storage_pair.hpp"

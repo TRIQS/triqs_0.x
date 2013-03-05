@@ -20,6 +20,7 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_ALGORITHMS_H
 #define TRIQS_ARRAYS_ALGORITHMS_H
+#include<triqs/utility/first_include.hpp>
 #include <algorithm>
 #include <functional>
 #include "./functional/fold.hpp"
