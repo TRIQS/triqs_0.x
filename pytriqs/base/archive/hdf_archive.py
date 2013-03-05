@@ -155,7 +155,6 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     def __delitem__(self,key) :
         key= self._key_cipher(key)
         self._clean_key(key,True) 
-        self._cached_keys = None
  
     #-------------------------------------------------------------------------
     def __setitem__(self,key,val) :
@@ -168,12 +167,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
         # Transform list, dict, etc... into a wrapped type that will allow HDF reduction
         if type(val) in self._wrappedType: val = self._wrappedType[type(val)](val)
 
-        # old way : deprecated
-        def write_attributes1(g) : 
-           g.write_attr("PythonClass",  val.__class__.__name__)
-           g.write_attr("PythonModule",  val.__module__)
-        
-        # new way : preferred...
+        # write the attributes
         def write_attributes(g) : 
            """Use the _hdf5_data_scheme_ if it exists otherwise the class name"""
            ds = val._hdf5_data_scheme_ if hasattr(val,"_hdf5_data_scheme_") else val.__class__.__name__  
@@ -183,7 +177,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
              err = """
                You are trying to store an object of type "%s", with the TRIQS_HDF5_data_scheme "%s". 
                But that data_scheme is not registered, so you will not be able to reread the class.
-               Didn't you forget to register your class in pytriqs.base.archive.hdf_archive_schemes ?
+               Didn't you forget to register your class in pytriqs.base.archive.hdf_archive_schemes?
                """ %(val.__class__.__name__,ds)
              raise IOError,err 
            g.write_attr("TRIQS_HDF5_data_scheme", ds)
@@ -200,8 +194,6 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             SUB = HDFArchiveGroup(self,key)
             for n,v in d.items() : SUB[n] = v
             write_attributes(SUB)
-            #out.write("%s/@PythonClass"%path2,  val.__class__.__name__)
-            #out.write("%s/@PythonModule"%path2,  val.__module__)
         elif type(val)== numpy.ndarray : # it is a numpy
             try :
                self._write_array( key, numpy.array(val,copy=1,order='C') ) 
@@ -218,18 +210,17 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
             except:
                raise #ValueError, "Value %s\n is not of a type suitable to storage in HDF file"%val
         self._flush()
-        self._cached_keys = None
 
     #-------------------------------------------------------------------------
     def get_raw (self,key):
         """Similar to __getitem__ but it does NOT reconstruct the python object, 
         it presents it as a subgroup"""
         return self.__getitem1__(key,False)
+
     #-------------------------------------------------------------------------
     def __getitem__(self,key) :
         """Return the object key, possibly reconstructed as a python object if
-        it has been properly tagged with the PythonClass and PythonModule
-        attributes"""
+        it has been properly set up"""
         return self.__getitem1__(key,self._reconstruct_python_objects)
 
     #-------------------------------------------------------------------------
@@ -250,27 +241,18 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
               try : 
                   sch = hdf_scheme_access(hdf_data_scheme)
               except :
-                  # to decide : do we want an error or a warning ??
-                  #raise IOError, "The TRIQS_HDF5_data_scheme %s is not recognized"%hdf_data_scheme
                   print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group"%hdf_data_scheme
                   return SUB
               r_class_name  = sch.classname
               r_module_name = sch.modulename
               r_readfun = sch.read_fun
-            else:  # for backward compatibility
-              r_class_name  = SUB.read_attr("PythonClass") 
-              r_module_name = SUB.read_attr("PythonModule")
-            #print  "%s  : python object of type %s.%s "%(path2,r_module_name,r_class_name)
             if not (r_class_name and r_module_name) : return SUB
             try :
-                #r_class = getattr(my_import(r_module_name),r_class_name)
                 exec("from %s import %s as r_class" %(r_module_name,r_class_name)) in globals(), locals()
             except KeyError : 
                 raise RuntimeError, "I can not find the class %s to reconstruct the object !"%r_class_name
             if r_readfun :
                 res = r_readfun(self._group,key) 
-            #elif "__factory_from_hdf5__" in dir(r_class) : 
-            #    res = r_class.__factory_from_hdf5__(self)
             elif "__factory_from_dict__" in dir(r_class) : 
                 f = lambda K : SUB.__getitem1__(K,reconstruct_python_object) if SUB.is_group(K) else SUB._read(K)
                 values = dict( (self._key_decipher(K),f(K)) for K in SUB )
@@ -287,16 +269,9 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
     def __str__(self) :
         def pr(name) : 
             if self.is_group(name) :
-                try :
-                    # This is a python class
-                    r_class_name  = self.read_attr("PythonClass") 
-                    r_module_name = self.read_attr("PythonModule")
-                    return "%s  : python object of type %s.%s "%(name,r_module_name,r_class_name)
-                except : 
-                    # this is an ordinary group
-                    return "%s  : subgroup"%name
+                return "%s : subgroup"%name
             elif self.is_data(name) : # can be an array of a number
-                return "%s : Data "%(name)
+                return "%s : data "%(name)
             else :
                 raise ValueError, "oopps %s"%(name)
 
