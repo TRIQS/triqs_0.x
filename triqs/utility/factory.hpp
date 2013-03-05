@@ -22,65 +22,72 @@
 #define TRIQS_UTILITY_FACTORY_H
 #include <type_traits>
 #include <vector>
+#include "./macros.hpp"
+#include "./std_vector_expr_template.hpp"
 
-namespace triqs { namespace utility {  
+namespace triqs { namespace utility {
 
- template <typename T> 
+ template <typename T>
   struct factories {
    template < typename U>  static T invoke( U && x) { return T(std::forward<U>(x));}
   };
 
- template <typename T> 
+ template <typename T>
   struct factories <std::vector<T>>{
    typedef std::vector<T> R;
+
    static R invoke(R && x)      { return R(std::move(x));}
+
    static R invoke(R const & x) { return R(x);}
+
    static R invoke(R & x) { return R(x);}
-   template <typename U> static R invoke( std::vector<U> && v) { 
+
+   template <typename U> static R invoke( std::vector<U> && v) {
     static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
-    R r; r.reserve(v.size()); 
-    for (auto & x : v) r.push_back(std::move(x)); 
+    R r; r.reserve(v.size());
+    for (auto & x : v) r.push_back(std::move(x));
     return r;
    }
-    template <typename VectorType> static R invoke( VectorType const & v) { 
-//    static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
-    R r; r.reserve(v.size()); 
-//    for (auto & x : v) r.push_back(T(x));
-    for(size_t i=0; i<v.size(); ++i) r.push_back(T(v[i]));
-    return r;
-   }
-/*
-   template <typename U> static R invoke( std::vector<U> const & v) { 
-    static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
-    R r; r.reserve(v.size()); 
-    for (auto & x : v) r.push_back(T(x));
-    return r;
-   }
-*/
+
+   template <typename VectorType>
+    static TYPE_ENABLE_IF(R,ImmutableStdVector<VectorType>) invoke( VectorType const & v) {
+     static_assert(std::is_constructible<T,decltype(v[0])>::value, "Can not make std::vector<T> from the proposed type");
+     R r; r.reserve(v.size());
+     for(size_t i=0; i<v.size(); ++i) r.push_back(T(v[i]));
+     return r;
+    }
+   /*
+      template <typename U> static R invoke( std::vector<U> const & v) {
+      static_assert(std::is_constructible<T,U>::value, "Can not make std::vector<T> from std::vector<U>");
+      R r; r.reserve(v.size());
+      for (auto & x : v) r.push_back(T(x));
+      return r;
+      }
+      */
   };
 
  template <typename T, typename ... U> T factory(U && ... x) { return factories<T>::invoke(std::forward<U>(x)...);}
 
  // redondant : done with x =factory<T>(x)
  //
-/* template <typename T> 
+ /* template <typename T>
     struct gal_assign {
     template < typename U> static void invoke(T & x, U && y) { x = std::forward<U>(y);}
     };
 
-    template <typename T> 
+    template <typename T>
     struct gal_assign<std::vector<T>> {
     typedef std::vector<T> R;
-    static void invoke(R & x, R && y) { x=std::move(y);} 
-    static void invoke(R & x, R const & y) { x=y;} 
-    template <typename U> static R invoke( R &r, std::vector<U> && v) { 
+    static void invoke(R & x, R && y) { x=std::move(y);}
+    static void invoke(R & x, R const & y) { x=y;}
+    template <typename U> static R invoke( R &r, std::vector<U> && v) {
     static_assert(std::is_constructible<T,U>::value, "Can not assign std::vector<U> && -> std::vector<T>");
-    r.clear(); r.reserve(v.size()); 
+    r.clear(); r.reserve(v.size());
     for (auto & x : v) r.push_back(std::move(x));
     }
-    template <typename U> static R invoke( R &r, std::vector<U> const & v) { 
+    template <typename U> static R invoke( R &r, std::vector<U> const & v) {
     static_assert(std::is_constructible<T,U>::value, "Can not assign std::vector<U> const & -> std::vector<T>");
-    r.clear(); r.reserve(v.size()); 
+    r.clear(); r.reserve(v.size());
     for (auto & x : v) r.push_back(x);
     }
     };

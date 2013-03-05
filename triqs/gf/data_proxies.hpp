@@ -60,9 +60,9 @@ namespace triqs { namespace gf {
   typedef std::vector<Tv> storage_view_t;
 
   /// The data access 
-  T       &  operator()(std::vector<T> &       data, size_t i) const { return data[i];}
-  T const &  operator()(std::vector<T> const & data, size_t i) const { return data[i];}
-  Tv       &  operator()(std::vector<Tv> &       data, size_t i) const { return data[i];}
+  T        &  operator()(std::vector<T>  &       data, size_t i)       { return data[i];}
+  T  const &  operator()(std::vector<T>  const & data, size_t i) const { return data[i];}
+  Tv       &  operator()(std::vector<Tv> &       data, size_t i)       { return data[i];}
   Tv const &  operator()(std::vector<Tv> const & data, size_t i) const { return data[i];}
  };
 

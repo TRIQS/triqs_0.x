@@ -23,7 +23,6 @@
 #include <triqs/utility/expression_template_tools.hpp>
 #include <triqs/utility/concept_tools.hpp>
 #include <triqs/utility/exceptions.hpp>
-#include <triqs/utility/factory.hpp>
 #include <vector>
 namespace triqs { namespace utility {  
 
