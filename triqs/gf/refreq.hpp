@@ -55,20 +55,20 @@ namespace triqs { namespace gf {
 
  /// ---------------------------  evaluator ---------------------------------
 
- template<typename G>
-  struct evaluator<refreq,G> {
-   static const int arity =1;/// Arity (number of argument in calling the function)
-   G const * g; evaluator(G const & g_): g(&g_){}
-   arrays::matrix_view<std::complex<double> >  operator() (double w0)  const {
-    auto & data = g->data_view();
-    auto & mesh = g->mesh();
-    size_t index; double w; bool in;
-    std::tie(in, index, w) = windowing(mesh,w0);
-    if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-    arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
-    return res;
-   }
-   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+ template<>
+  struct evaluator<refreq> {
+   template<typename G>
+    arrays::matrix_view<std::complex<double> >  operator() (G const * g,double w0)  const {
+     auto & data = g->data_view();
+     auto & mesh = g->mesh();
+     size_t index; double w; bool in;
+     std::tie(in, index, w) = windowing(mesh,w0);
+     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+     arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+     return res;
+    }
+   template<typename G>
+    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity_view();}
   };
 
  /// ---------------------------  data access  ---------------------------------

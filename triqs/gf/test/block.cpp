@@ -68,5 +68,7 @@ int main() {
  TEST( GF[0](0) ) ;
  GF = GF/2; 
  TEST( GF[0](0) ) ;
+ //TEST( g0("3.2") ) ;
+ //TEST( GF(0)(0) ) ;
 
 }

@@ -52,12 +52,12 @@ namespace triqs { namespace gf {
 
  /// ---------------------------  evaluator ---------------------------------
 
- template<typename G>
-  struct evaluator<imfreq,G> {
-   static const int arity =1;/// Arity (number of argument in calling the function)
-   G const * g; evaluator(G const & g_): g(&g_){}
-   arrays::matrix_view<std::complex<double> >  operator() (long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
-   local::tail_view operator()(freq_infty const &) const {return g->singularity_view();}
+ template<>
+  struct evaluator<imfreq> {
+   template<typename G>
+    arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
+   template<typename G>
+    local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity_view();}
   };
 
  /// ---------------------------  data access  ---------------------------------
@@ -65,7 +65,7 @@ namespace triqs { namespace gf {
  template<> struct data_proxy<imfreq> : data_proxy_array<std::complex<double>,3> {};
 
  // -------------------  ImmutableGfMatsubaraFreq identification trait ------------------
- 
+
  template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
 
  // -------------------------------   Factories  --------------------------------------------------

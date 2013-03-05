@@ -41,7 +41,7 @@ namespace triqs { namespace gf {
  template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
  template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
 
- template<typename Descriptor, typename G> struct evaluator; // Dispatch of all the () call except mesh_point
+ template<typename Descriptor> struct evaluator{};// Dispatch of all the () call except mesh_point
  template<typename Descriptor, typename Enable = void> struct data_proxy;            // 
 
  // The trait that "marks" the Green function
@@ -69,6 +69,7 @@ namespace triqs { namespace gf {
    typedef typename mesh_t::index_t               mesh_index_t;
    typedef typename Descriptor::symmetry_t        symmetry_t;
    typedef typename Descriptor::indices_t         indices_t;
+   typedef evaluator<Descriptor>          evaluator_t;
 
    typedef data_proxy<Descriptor>                                                 data_proxy_t;
    typedef typename data_proxy_t::storage_t                                       data_non_view_t;
@@ -88,6 +89,7 @@ namespace triqs { namespace gf {
 
    symmetry_t const & symmetry() const { return _symmetry;}
    indices_t const & indices() const { return _indices;}
+   evaluator_t const & evaluator() const { return evaluator_;}
 
   protected:
    mesh_t _mesh;
@@ -95,7 +97,6 @@ namespace triqs { namespace gf {
    singularity_t singularity;
    symmetry_t _symmetry;
    indices_t _indices;
-   typedef evaluator<Descriptor,gf_impl> evaluator_t;
    evaluator_t evaluator_;
    data_proxy_t data_proxy_;
   public:
@@ -104,23 +105,31 @@ namespace triqs { namespace gf {
 
    // --------------------------------Constructors -----------------------------------------------
    // protected, see gf/gf_view later for public one
-   gf_impl() : evaluator_(*this) {} // all arrays of zero size (empty) 
+   gf_impl() {} // all arrays of zero size (empty) 
   public : //everyone can make a copy (for clef lib in particular, this is needed)
    gf_impl(gf_impl const & x) : _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this){}
+   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(x.evaluator_){}
 
    gf_impl(gf_impl && ) = default;
+
   protected:
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(x.singularity_view()), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(*this){}
+   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()), evaluator_(x.evaluator()){}
 
    // from the data directly
-   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
-    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind),evaluator_(*this){}
+ /*  gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
+    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind){}
 
    gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
-    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind), evaluator_(*this) {}
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind){}
+*/
+   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind, evaluator_t const &e ) :
+    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind),evaluator_(e){}
 
+   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind, evaluator_t const &e  ) :
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind), evaluator_(e) {}
+
+ 
    // -------------------------------- assigner -----------------------------------------------
 
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
@@ -156,12 +165,12 @@ namespace triqs { namespace gf {
     boost::mpl::or_< // starting condition [OR]
     boost::is_base_of< typename std::remove_reference<Arg0>::type, mesh_point_t>,  // Arg0 is (a & or a &&) to a mesh_point_t
     clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
-     >,                                                       // end of OR
-    std::result_of<evaluator_t(Arg0, Args...)> // what is the result type of call
+    //has_no_call<std::result_of<evaluator_t(gf_impl*,Arg0, Args...)>> 
+    >,                                                       // end of OR
+    std::result_of<evaluator_t(gf_impl*,Arg0, Args...)> // what is the result type of call
      >::type     // end of lazy_disable_if
      >::type // end of add_Const
-     operator() (Arg0&& arg0, Args&&... args) const { return evaluator_(std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
-   //operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(_mesh, data, singularity, std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
+     operator() (Arg0&& arg0, Args&&... args) const { return evaluator_(this,std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg0, typename ...Args>
@@ -172,7 +181,6 @@ namespace triqs { namespace gf {
     //clef::result_of::make_expr_call<view_type,Args...>
     //>::type     // end of lazy_enable_if
     operator()(Arg0 arg0, Args... args) const {
-     static_assert(sizeof...(Args) == evaluator_t::arity-1, "Incorrect number of variable in call");
      return clef::make_expr_call(view_type(*this),arg0, args...);
     }
 
@@ -203,8 +211,8 @@ namespace triqs { namespace gf {
    cr_type operator[] ( mesh_index_t const & arg) const { return data_proxy_(data,_mesh.index_to_linear(arg));}
 
    /// A direct access to the grid point
-   r_type  operator[] (mesh_point_t const & x)       { return data_proxy_(data, _mesh.index_to_linear(x.index));}
-   cr_type operator[] (mesh_point_t const & x) const { return data_proxy_(data, _mesh.index_to_linear(x.index));}
+   //r_type  operator[] (mesh_point_t const & x)       { return data_proxy_(data, _mesh.index_to_linear(x.index));}
+   //cr_type operator[] (mesh_point_t const & x) const { return data_proxy_(data, _mesh.index_to_linear(x.index));}
 
    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
    template<typename Arg>
@@ -278,12 +286,14 @@ namespace triqs { namespace gf {
      DATA_VIEW_TYPE const & dat,
      typename B::singularity_view_t const & si,
      typename B::symmetry_t const & s ,
-     typename B::indices_t const & ind = typename B::indices_t () ) :
-    B(m,factory<typename B::data_t>(dat),si,s, ind) {}
+     typename B::indices_t const & ind = typename B::indices_t (),
+     typename B::evaluator_t const & eval = typename B::evaluator_t ()
+     ) :
+    B(m,factory<typename B::data_t>(dat),si,s, ind,eval) {}
 
   friend void swap ( gf & a, gf & b) {
    std::swap(a._mesh, b._mesh); swap(a.data, b.data); std::swap (a.singularity,b.singularity); std::swap(a._symmetry,b._symmetry);
-   std::swap(a._indices,b._indices); 
+   std::swap(a._indices,b._indices); std::swap(a.evaluator_,b.evaluator_); 
   }
 
   void operator = (gf const & rhs) { *this = gf(rhs);} // use move =
@@ -304,8 +314,8 @@ namespace triqs { namespace gf {
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
   // a little function to specialize the rebind a vector of views (false) or arrays (true)
-  void _rebinder( gf_view const &X, std::true_type)  { this->data.rebind(X.data); }
-  void _rebinder( gf_view const &X, std::false_type) { this->data.clear(); for (auto & x : X.data) this->data.push_back(x);}
+  void _rebinder(gf_view const &X, std::true_type)  { this->data.rebind(X.data); }
+  void _rebinder(gf_view const &X, std::false_type) { this->data.clear(); for (auto & x : X.data) this->data.push_back(x);}
   public :
 
   void rebind( gf_view const &X) {
@@ -317,10 +327,17 @@ namespace triqs { namespace gf {
   gf_view(gf_view const & g): B(g){}
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
 
-  template<typename D, typename T>
+ /* template<typename D, typename T>
    gf_view (typename B::mesh_t const & m,
      D const & dat,T const & t,typename B::symmetry_t const & s,
      typename B::indices_t const & ind = typename B::indices_t () ) : B(m,factory<typename B::data_t>(dat),t,s,ind) {}
+*/
+  template<typename D, typename T>
+   gf_view (typename B::mesh_t const & m,
+     D const & dat,T const & t,typename B::symmetry_t const & s,
+     typename B::indices_t const & ind= typename B::indices_t (), 
+     typename B::evaluator_t const &e = typename B::evaluator_t ()  ) :
+    B(m,factory<typename B::data_t>(dat),t,s,ind,e) {}
 
   void operator = (gf_view const & rhs)  { triqs_gf_view_assign_delegation(*this,rhs);}
 
