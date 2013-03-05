@@ -89,7 +89,7 @@ namespace triqs { namespace gf {
 
    symmetry_t const & symmetry() const { return _symmetry;}
    indices_t const & indices() const { return _indices;}
-   evaluator_t const & evaluator() const { return evaluator_;}
+   evaluator_t const & _evaluator() const { return evaluator_;}
 
   protected:
    mesh_t _mesh;
@@ -114,7 +114,7 @@ namespace triqs { namespace gf {
 
   protected:
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()), evaluator_(x.evaluator()){}
+   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()), evaluator_(x._evaluator()){}
 
    // from the data directly
  /*  gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind ) :
