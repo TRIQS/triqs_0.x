@@ -4,7 +4,7 @@ import numpy
 from tools import get_indices_in_dict
 import impl_plot
 
-class GfImTime ( GfImTime_cython, GfGeneric ) :
+class GfImTime ( GfGeneric, GfImTime_cython ) :
     def __init__(self, **d):
         """
         The constructor have two variants : you can either provide the mesh in

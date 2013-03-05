@@ -4,7 +4,7 @@ import numpy
 from tools import get_indices_in_dict
 import impl_plot
 
-class GfReFreq ( GfReFreq_cython, GfGeneric ) :
+class GfReFreq ( GfGeneric, GfReFreq_cython ) :
     def __init__(self, **d):
         """
         The constructor have two variants : you can either provide the mesh in

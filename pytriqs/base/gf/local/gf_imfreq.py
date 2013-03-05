@@ -5,7 +5,7 @@ from scipy.optimize import leastsq
 from tools import get_indices_in_dict
 import impl_plot
 
-class GfImFreq ( GfImFreq_cython, GfGeneric ) :
+class GfImFreq ( GfGeneric, GfImFreq_cython ) :
     def __init__(self, **d):
         """
         The constructor have two variants : you can either provide the mesh in

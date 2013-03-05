@@ -5,7 +5,7 @@ from tools import get_indices_in_dict
 from nothing import Nothing
 import impl_plot
 
-class GfLegendre ( GfLegendre_cython, GfGeneric ) :
+class GfLegendre ( GfGeneric, GfLegendre_cython ) :
     def __init__(self, **d):
         """
         The constructor have two variants : you can either provide the mesh in
