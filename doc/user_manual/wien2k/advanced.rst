@@ -102,7 +102,7 @@ previous section, with some additional refinement::
             # Init the DC term and the real part of Sigma, if no previous run was found:
             dm = S.G.density()
             SK.set_dc( dm, U_interact = U, J_hund = J, orb = 0, use_dc_formula = dc_type)
-            S.Sigma <<= gf_init.Const(SK.dc_imp[0]['up'][0,0])
+            S.Sigma <<= SK.dc_imp[0]['up'][0,0]
         
         # now calculate new G0:
         if (mpi.is_master_node()):

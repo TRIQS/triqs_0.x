@@ -127,7 +127,7 @@ class GfGeneric:
 
     def __ilshift__(self, A):
         """ A can be two things:
-          * G <<= any_gf_init will init the GFBloc with the initializer
+          * G <<= any_init will init the GFBloc with the initializer
           * G <<= g2 where g2 is a GFBloc will copy g2 into self
         """
         if isinstance(A, self.__class__):

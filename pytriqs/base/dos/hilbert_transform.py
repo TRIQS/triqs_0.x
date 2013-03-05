@@ -146,8 +146,8 @@ class HilbertTransform :
 
         def test_distance(G1, G2, dist) :
             def f(G1, G2) : 
-                dS = max(abs(G1._data.array - G2._data.array).flatten())  
-                aS = max(abs(G1._data.array).flatten())
+                dS = max(abs(G1.data - G2.data).flatten())
+                aS = max(abs(G1.data).flatten())
                 return dS <= aS*dist
             #return reduce(lambda x, y : x and y, [f(g1, g2) for (i1, g1), (i2, g2) in izip(G1, G2)])
             return f(G1, G2) # for block function, the previous one is for GF functions

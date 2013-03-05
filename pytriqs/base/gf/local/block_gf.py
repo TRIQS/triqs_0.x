@@ -232,7 +232,7 @@ class BlockGf(object):
 
     def __ilshift__(self, A): 
         """ A can be 2 things :
-          * G <<= any_gf_init will init all the BlockGf with the initializer
+          * G <<= any_init will init all the BlockGf with the initializer
           * G <<= g2 where g2 is a BlockGf will copy g2 into self
           """
         if isinstance(A, self.__class__):
