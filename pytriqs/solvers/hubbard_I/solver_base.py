@@ -204,7 +204,7 @@ class SolverBaseHub(SolverBase):
         # Self energy:
         self.G0 = self.G.copy()
         self.Sigma = self.G.copy()
-        self.G0 <<= iOmega_n + 1j*broadening
+        self.G0 <<= Omega + 1j*broadening
         
         M = [ self.ealmat[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot] for isp in range((2*self.Nlm)/nlmtot) ] 
         self.G0 -= M
