@@ -20,10 +20,6 @@
  *
  ******************************************************************************/
 
-
 // Compiler independant call to Fortran names
-// TO BE REMOVED
-#define MYFORTRAN( id ) id##_
-
 #define TRIQS_FORTRAN_MANGLING( id ) id##_
 
