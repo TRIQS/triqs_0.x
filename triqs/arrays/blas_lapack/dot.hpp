@@ -23,7 +23,7 @@
 #include "./tools.hpp"
 //#include "./qcache.hpp"
 
-namespace triqs { namespace arrays { namespace blas { 
+namespace triqs { namespace arrays { namespace blas {
 
  namespace f77 { // overload
 
@@ -36,17 +36,18 @@ namespace triqs { namespace arrays { namespace blas {
   inline double dot (const int & M, const double* x, const int & incx, const double* Y, const int & incy)  { 
    return TRIQS_FORTRAN_MANGLING(ddot)(M, x, incx, Y, incy);
   }
-  inline std::complex<double> dot (const int & M, const std::complex<double>* x, const int & incx, const std::complex<double>* Y, const int & incy)  { 
-   return TRIQS_FORTRAN_MANGLING(zdotu)(M, x, incx, Y, incy);
-  }
+  //inline std::complex<double> dot (const int & M, const std::complex<double>* x, const int & incx, const std::complex<double>* Y, const int & incy)  {
+  // return TRIQS_FORTRAN_MANGLING(zdotu)(M, x, incx, Y, incy);
+  // }
+
  }
 
  /**
   * Calls dot product of 2 vectors.
   * Takes care of making temporary copies if necessary
   */
- template< typename VTX, typename VTY> 
-  typename std::enable_if< is_blas_lapack_type<typename VTX::value_type>::value && have_same_value_type< VTX, VTY>::value, typename VTX::value_type >::type 
+ template< typename VTX, typename VTY>
+  typename std::enable_if< std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value, typename VTX::value_type >::type
   dot (VTX const & X, VTY const & Y) { 
    static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
    static_assert( is_amv_value_or_view_class<VTY>::value, "blas1 bindings only take vector and vector_view");
@@ -55,6 +56,31 @@ namespace triqs { namespace arrays { namespace blas {
    //const_qcache<VTY> Cy(Y); // mettre la condition a la main
    return f77::dot(X.size(), X.data_start(), X.stride(), Y.data_start(), Y.stride());
    //return f77::dot(X.size(), Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride());
+  }
+
+ /**
+  * Calls dot product of 2 vectors.
+  * Takes care of making temporary copies if necessary
+  * general case. Also for complex since there is a bug on some machines (os X, weiss...) for zdotu, zdotc...
+  * a transcription from netlib zdotu
+  */
+ template< typename VTX, typename VTY>
+  typename std::enable_if< (!std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value),
+	   decltype(std::declval<VTX>()(0)* std::declval<VTY>()(0)) >::type
+	   //decltype(std::declval<typename VTX::value_type>()* std::declval<typename VTY::value_type>()) >::type
+  dot (VTX const & X, VTY const & Y) {
+   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot : X : "<<X().shape()<<" and Y : "<<Y().shape();
+   //const_qcache<VTX> Cx(X); // mettre la condition a la main
+   //const_qcache<VTY> Cy(Y); // mettre la condition a la main
+   size_t N= X.size(), incx = X.stride(), incy = Y.stride();
+   decltype(X(0)*Y(0)) res = 0;
+   if ((incx==1) && (incy==1)) {
+    for (size_t i=0; i<N; ++i) res += X(i) * Y(i);
+   }
+   else { // code for unequal increments or equal increments  not equal to 1
+    for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) res += X(ix) * Y(iy);
+   }
+   return res;
   }
 
 }}}// namespace
