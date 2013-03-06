@@ -42,10 +42,6 @@ Usage
 
 In the current version, when compiling with clang, say (provided clang++ is your path of course) ::
 
-   CXX=clang++ cmake path_to_TRIQS_source_directory -DCMAKE_COMPILER_IS_GNUCXX=1 .... others options ...
-
-NB : DCMAKE_COMPILER_IS_GNUCXX is because of obsolete blitz++ lib, which is scheduled for removal soon ...
-
-
+   CXX=clang++ cmake path_to_TRIQS_source_directory .... others options ...
 
 

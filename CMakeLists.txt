@@ -11,7 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/INSTALL_DIR" CACHE PATH "TRIQS ins
 MESSAGE(STATUS "Installation directory is ${CMAKE_INSTALL_PREFIX}")
 
 # Forbid compilation in the source dir... to force good practice
-# and because I have not checked it (copy of various file before compilation may mess it up), blitz in particular....
+# and because I have not checked it (copy of various file before compilation may mess it up)
 IF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
  MESSAGE(FATAL_ERROR "I am sorry, the on-site compilation is disabled at the moment. Use another directory")
 ENDIF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
@@ -140,14 +140,9 @@ endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 ##------------------------
 option(Build_Documentation "Build the documentation ?" OFF)
 
-# Built blitz and get corresponding variables
-add_subdirectory(${TRIQS_SOURCE_DIR}/foreignlibs/blitz blitz)
-add_definitions( -DUSE_BLITZ)
-
 # remove the possible horrible pthread bug on os X !!
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 
-# since _REENTRANT is mysteriously set and blitz++ compiles in thread_safe mode
-# and this leads to random stalling of the code....
+# since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  add_definitions( -pthread )
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -155,15 +150,13 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # General include header
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
-include_directories(SYSTEM  ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
-#include_directories(SYSTEM ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
+include_directories(SYSTEM ${FFTW_INCLUDE_DIR})
 
 #------------------------
 # link libs for shared libs or for pytriqs 
 #------------------------
 
 SET(TRIQS_LINK_LIBS 
- ${BLITZ_LIBRARY}
  ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} 
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}

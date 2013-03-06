@@ -56,7 +56,7 @@ The `range` type
      A(range (0,3), 0)  // means  A(0,0), A(1,0), A(2,0)
 
     .. warning::
-       the second element is excluded : range(0,3) is 0,1,2, like in Python. This is different from Blitz++, e.g.
+       the second element is excluded : range(0,3) is 0,1,2, like in Python.
 
   * three arguments  : a range with a step ::
 
