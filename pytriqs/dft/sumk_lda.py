@@ -24,10 +24,7 @@ from types import *
 from pytriqs.dft.symmetry import *
 import numpy
 import pytriqs.base.utility.dichotomy as dichotomy
-from pytriqs.base.gf_local.block_gf import BlockGf
-from pytriqs.base.gf_local.gf_imfreq import GfImFreq
-from pytriqs.base.gf_local.gf_refreq import GfReFreq
-from pytriqs.base.gf_local import gf_init
+from pytriqs.base.gf.local import *
 from pytriqs.solvers.operators import *
 from pytriqs.base.archive import *
 import pytriqs.base.utility.mpi as mpi
@@ -265,7 +262,7 @@ class SumkLDA:
 
         if (with_Sigma): 
             stmp = self.add_dc()
-            beta = self.Sigma_imp[0].beta        #override beta if Sigma is present
+            beta = self.Sigma_imp[0].mesh.beta        #override beta if Sigma is present
             
         if (self.Gupf is None):
             # first setting up of Gupf
@@ -283,7 +280,7 @@ class SumkLDA:
         unchangedsize = all( [ self.n_orbitals[ik,ntoi[bln[ib]]]==GFsize[ib] 
                                for ib in range(self.n_spin_blocks_gf[self.SO]) ] )
 
-        if ((not unchangedsize)or(self.Gupf.beta!=beta)):
+        if ((not unchangedsize)or(self.Gupf.mesh.beta!=beta)):
             BS = [ range(self.n_orbitals[ik,ntoi[ib]]) for ib in bln ]
             gf_struct = [ (bln[ib], BS[ib]) for ib in range(self.n_spin_blocks_gf[self.SO]) ]
             a_list = [a for a,al in gf_struct]                                 
@@ -298,7 +295,7 @@ class SumkLDA:
         idmat = [numpy.identity(self.n_orbitals[ik,ntoi[bl]],numpy.complex_) for bl in bln]  
         #for ibl in range(self.n_spin_blocks_gf[self.SO]): mupat[ibl] *= mu
 
-        self.Gupf <<= gf_init.A_Omega_Plus_B(A=1,B=0)
+        self.Gupf <<= iOmega_n
         M = copy.deepcopy(idmat)
         for ibl in range(self.n_spin_blocks_gf[self.SO]): 
             ind = ntoi[bln[ibl]]
@@ -811,11 +808,10 @@ class SumkLDA:
 
        
         # init self.Sigma_imp:
-        if (Sigma_imp[0].note=='ReFreq'):
+        if type(Sigma_imp[0]) == GfReFreq:
             # Real frequency Sigma:
             self.Sigma_imp = [ BlockGf( name_block_generator = [ (a,GfReFreq(indices = al, mesh = Sigma_imp[0].mesh)) for a,al in self.gf_struct_corr[i] ],
                                   make_copies = False) for i in xrange(self.n_corr_shells) ]
-            self.Sigma_imp[0].note = 'ReFreq'
         else:
             # Imaginary frequency Sigma:
             self.Sigma_imp = [ BlockGf( name_block_generator = [ (a,GfImFreq(indices = al, mesh = Sigma_imp[0].mesh)) for a,al in self.gf_struct_corr[i] ],
@@ -1094,8 +1090,8 @@ class SumkLDA:
             f.write("%.14f\n"%(self.chemical_potential/self.energy_unit))
             if (self.SP!=0): f1.write("%.14f\n"%(self.chemical_potential/self.energy_unit))
             # write beta in ryderg-1
-            f.write("%.14f\n"%(S.beta*self.energy_unit))
-            if (self.SP!=0): f1.write("%.14f\n"%(S.beta*self.energy_unit))
+            f.write("%.14f\n"%(S.mesh.beta*self.energy_unit))
+            if (self.SP!=0): f1.write("%.14f\n"%(S.mesh.beta*self.energy_unit))
             if (self.SP==0):
                 for ik in range(self.n_k):
                     f.write("%s\n"%self.n_orbitals[ik,0])

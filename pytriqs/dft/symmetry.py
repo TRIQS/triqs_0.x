@@ -24,7 +24,7 @@
 import copy,numpy
 import string
 from types import *
-from pytriqs.base.gf_local.block_gf import BlockGf
+from pytriqs.base.gf.local import *
 from pytriqs.base.archive import *
 import pytriqs.base.utility.mpi as mpi
 
