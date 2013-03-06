@@ -28,6 +28,8 @@ from pytriqs.base.plot.protocol import clip_array
 from types import IntType, SliceType, StringType
 from tools import LazyCTX, IndicesConverter, get_indices_in_dict, py_deserialize
 from impl_plot import PlotWrapperPartialReduce
+from nothing import Nothing
+from gf import TailGf
 
 class GfGeneric:
 
@@ -202,65 +204,90 @@ class GfGeneric:
         return c
 
     def __imul__(self, arg):
-        """ If arg is a scalar, simple scalar multiplication
-            If arg is a BlockGf(any object with data and tail as in GF), they it is a matrix multiplication, slice by slice
-        """
-        if type(self) == type(arg):
-            d, d2 = self.data, arg.data
-            assert d.shape == d2.shape, " Green function block multiplication with arrays of different size !"
-            for om in range (d.shape[-1]):
-                d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
-            self.tail = arg.tail * self.tail
-        elif descriptors.is_scalar(arg):
-            self.data *= arg
-            self.tail *= arg
-        else:
-            raise RuntimeError, " argument type not recognized in *= for %s"%arg
+
+        assert descriptors.is_scalar(arg), "rhs must be a scalar"
+        self.data *= arg
+        self.tail *= arg
         return self
 
-    def __mul__(self, arg):
-        if descriptors.is_lazy(arg): return lazy_expressions.make_lazy(self) * arg
-        res = self.copy()
-        res *= arg
-        return res
+    def __mul__(self, x):
+
+        if descriptors.is_lazy(x):
+
+          return lazy_expressions.make_lazy(self) * x
+
+        elif descriptors.is_scalar(x):
+
+          res = self.copy()
+          res *= x
+          return res
+
+        elif type(x) == type(self):
+
+          res = self.copy()
+          d, d2 = res.data, x.data
+          assert d.shape == d2.shape, "Green's function must have the same shape"
+          for om in range (d.shape[-1]):
+            d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
+          res.tail = self.tail * x.tail
+          return res
+
+        else:
+          raise RuntimeError, "rhs in multiplication not of a valid type"
 
     def __rmul__(self, x):
-        assert descriptors.is_scalar(x), "lhs must be a scalar but I found %s"%x
-        return self.__mul__(x)
+
+        if descriptors.is_lazy(x):
+          return x * lazy_expressions.make_lazy(self)
+        elif descriptors.is_scalar(x):
+          return self.__mul__(x)
 
     def imatmul_L(self, L):
-        dot = numpy.dot
-        assert type(L).__name__ in  ['ndarray', 'matrix']
-        A = self.data
-        for i in range(A.shape[-1]):
-            A[:,:, i] = dot(L, A[:,:, i])
-        return self
+
+      assert type(L).__name__ in  ['ndarray', 'matrix']
+      d = self.data
+      t = self.tail
+      assert d.shape[0] == L.shape[1]
+      N1 = L.shape[0]
+      N2 = d.shape[1]
+      nd = numpy.zeros((N1,N2,d.shape[-1]), d.dtype)
+      nt = Nothing() if type(t) == Nothing else TailGf(shape=(N1,N2), size=t.size, order_min=t.order_min)
+      for om in range(d.shape[-1]):
+        nd[:,:,om] = numpy.dot(L, d[:,:,om])
+      for o in range(t.order_min, t.order_max+1):
+        nt[o] = numpy.dot(L, t[o])
+      return self.__class__(indicesL=range(N1), indicesR=range(N2), mesh=self.mesh, data=nd, tail=nt)
 
     def imatmul_R(self, R):
-        dot = numpy.dot
-        assert type(R).__name__ in  ['ndarray', 'matrix']
-        A = self.data
-        for i in range(A.shape[-1]):
-            A[:,:, i] = dot(A[:,:, i], R)
-        return self
 
-    def imatmul_LR(self, L, R):
-        dot = numpy.dot
-        assert type(R).__name__ in  ['ndarray', 'matrix']
-        assert type(L).__name__ in  ['ndarray', 'matrix']
-        A = self.data
-        for i in range(A.shape[-1]):
-            A[:,:, i] = dot(L, dot(A[:,:, i], R))
-        return self
+      assert type(R).__name__ in  ['ndarray', 'matrix']
+      d = self.data
+      t = self.tail
+      assert d.shape[1] == R.shape[0]
+      N1 = d.shape[0]
+      N2 = R.shape[1]
+      nd = numpy.zeros((N1,N2,d.shape[-1]), d.dtype)
+      nt = Nothing() if type(t) == Nothing else TailGf(shape=(N1,N2), size=t.size, order_min=t.order_min)
+      for om in range(d.shape[-1]):
+        nd[:,:,om] = numpy.dot(d[:,:,om], R)
+      for o in range(t.order_min, t.order_max+1):
+        nt[o] = numpy.dot(t[o], R)
+      return self.__class__(indicesL=range(N1), indicesR=range(N2), mesh=self.mesh, data=nd, tail=nt)
 
     # RENAME THIS !
     def from_L_G_R(self, L, G, R):
-        """ For all argument, replace the matrix by L *matrix * R"""
-        d, dg = self.data, G.data
-        for om in range (d.shape[-1]):
-            d[:,:,om] = numpy.dot(numpy.dot(L, dg[:,:,om]), R)
-        for order in range(G.tail.data.shape[-1]):
-          self.tail.data[:,:,order] = numpy.dot(numpy.dot(L, G.tail.data[:,:,order]), R)
+
+      assert L.shape[0] == self.data.shape[0]
+      assert L.shape[1] == G.data.shape[0]
+      assert R.shape[0] == G.data.shape[1]
+      assert R.shape[1] == self.data.shape[1]
+
+      d = self.data
+      t = self.tail
+      for om in range(d.shape[-1]):
+        d[:,:,om] = numpy.dot(L, numpy.dot(G.data[:,:,om], R))
+      for o in range(t.order_min, t.order_max+1):
+        t[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
 
     def __idiv__(self, arg):
         """ If arg is a scalar, simple scalar multiplication
