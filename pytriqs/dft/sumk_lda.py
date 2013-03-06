@@ -456,13 +456,14 @@ class SumkLDA:
         if (dm==None): dm = self.simple_point_dens_mat()
         
         dens_mat = [dm[self.invshellmap[ish]] for ish in xrange(self.n_inequiv_corr_shells) ]
-
+               
         if include_shells is None: include_shells=range(self.n_inequiv_corr_shells)
         for ish in include_shells:
 
             #self.gf_struct_solver.append([])
             self.gf_struct_solver[ish] = []
-
+            gf_struct_temp = []
+            
             a_list = [a for a,al in self.gf_struct_corr[self.invshellmap[ish]] ]
             for a in a_list:
                 
@@ -492,6 +493,7 @@ class SumkLDA:
                 for i in range(NBlocs):
                     blocs[i].sort()
                     self.gf_struct_solver[ish].append( ('%s%s'%(a,i),range(len(blocs[i]))) )
+                    gf_struct_temp.append( ('%s%s'%(a,i),blocs[i]) )
                    
                                
                 # map is the mapping of the blocs from the SK blocs to the CTQMC blocs:
@@ -504,7 +506,7 @@ class SumkLDA:
 
             # now calculate degeneracies of orbitals:
             dm = {}
-            for bl in self.gf_struct_solver[ish]:
+            for bl in gf_struct_temp:
                 bln = bl[0]
                 ind = bl[1]
                 # get dm for the blocks:
@@ -513,8 +515,8 @@ class SumkLDA:
                     for j in range(len(ind)):
                         dm[bln][i,j] = dens_mat[ish][self.map_inv[ish][bln]][ind[i],ind[j]]
 
-            for bl in self.gf_struct_solver[ish]:
-                for bl2 in self.gf_struct_solver[ish]:
+            for bl in gf_struct_temp:
+                for bl2 in gf_struct_temp:
                     if (dm[bl[0]].shape==dm[bl2[0]].shape) :
                         if ( ( (abs(dm[bl[0]]-dm[bl2[0]])<threshold).all() ) and (bl[0]!=bl2[0]) ):
                             # check if it was already there:
@@ -635,37 +637,8 @@ class SumkLDA:
     def set_lichtenstein_dc(self,Sigma_imp):
         """Sets a double counting term according to Lichtenstein et al. PRL2001"""
 
-        assert isinstance(Sigma_imp,list), "Sigma_imp has to be a list of impurity self energies for the correlated shells, even if it is of length 1!"
-        assert len(Sigma_imp)==self.n_inequiv_corr_shells, "give exactly one Sigma for each inequivalent corr. shell!"
-
-        for i in xrange(self.n_corr_shells):
-            l = (self.corr_shells[i][4]+1) * self.corr_shells[i][3]
-            for j in xrange(len(self.gf_struct_corr[i])):
-                self.dc_imp[i]['%s'%self.gf_struct_corr[i][j][0]] = numpy.identity(l,numpy.float_)
- 
-        # transform the CTQMC blocks to the full matrix:
-        for icrsh in xrange(self.n_corr_shells):
-            s = self.shellmap[icrsh]    # s is the index of the inequivalent shell corresponding to icrsh
-            for ibl in range(len(self.gf_struct_solver[s])):
-                for i in range(len(self.gf_struct_solver[s][ibl][1])):
-                    for j in range(len(self.gf_struct_solver[s][ibl][1])):
-                        bl   = self.gf_struct_solver[s][ibl][0]
-                        ind1 = self.gf_struct_solver[s][ibl][1][i]
-                        ind2 = self.gf_struct_solver[s][ibl][1][j]
-                        self.dm_imp[icrsh][self.map_inv[s][bl]][ind1,ind2] = Sigma_imp[s][bl]._data.array[i,j,0].real 
-                        # self energy at smallest matsubara, could be done better
-
-
-        for icrsh in xrange(self.n_corr_shells):
-            # trace:
-            Sigtr = 0.0
-            a_list = [a for a,al in self.gf_struct_corr[icrsh]]
-            for bl in a_list: Sigtr += self.dm_imp[icrsh][bl].trace()
-            for bl in a_list: self.dc_imp[icrsh][bl] *= (Sigtr / (self.corr_shells[icrsh][3] * 2.0))
-
-            #self.dc_imp[icrsh]['up'][:,:] += self.dc_imp[icrsh]['down'][:,:]
-            #self.dc_imp[icrsh]['up'][:,:] /= 2.0
-            #self.dc_imp[icrsh]['down'][:,:] = self.dc_imp[icrsh]['up'][:,:]
+        assert 0,"Lichtenstein DC not supported any more!"
+               
 
             
 
@@ -692,27 +665,22 @@ class SumkLDA:
 
             if (iorb==orb):
                 # do this orbital
-
+                Ncr = {}
                 l = self.corr_shells[icrsh][3] #*(1+self.corr_shells[icrsh][4])
+                
                 for j in xrange(len(self.gf_struct_corr[icrsh])):
                     self.dc_imp[icrsh]['%s'%self.gf_struct_corr[icrsh][j][0]] = numpy.identity(l,numpy.float_)
-
-
-                # transform the CTQMC blocks to the full matrix:
-                for ibl in range(len(self.gf_struct_solver[iorb])):
-                    for i in range(len(self.gf_struct_solver[iorb][ibl][1])):
-                        for j in range(len(self.gf_struct_solver[iorb][ibl][1])):
-                            bl   = self.gf_struct_solver[iorb][ibl][0]
-                            ind1 = self.gf_struct_solver[iorb][ibl][1][i]
-                            ind2 = self.gf_struct_solver[iorb][ibl][1][j]
-                            dm[icrsh][self.map_inv[iorb][bl]][ind1,ind2] = dens_mat[bl][i,j].real    # only real part relevant for trace
+                    blname = self.gf_struct_corr[icrsh][j][0]
+                    Ncr[blname] = 0.0
+                    for bl in self.map[iorb][blname]:
+                        Ncr[blname] += dens_mat[bl].real.trace()
+                    
 
                 M = self.corr_shells[icrsh][3]
-                Ncr = {}
+               
                 Ncrtot = 0.0
                 a_list = [a for a,al in self.gf_struct_corr[icrsh]]
                 for bl in a_list:
-                    Ncr[bl] = dm[icrsh][bl].trace()
                     Ncrtot += Ncr[bl]
 
                 # average the densities if there is no SP:
@@ -820,13 +788,30 @@ class SumkLDA:
         # transform the CTQMC blocks to the full matrix:
         for icrsh in xrange(self.n_corr_shells):
             s = self.shellmap[icrsh]    # s is the index of the inequivalent shell corresponding to icrsh
+
+            # setting up the index map:
+            map_ind={}
+            cnt = {}
+            for blname in self.map[s]:
+                cnt[blname] = 0
+    
+            for a,al in self.gf_struct_solver[s]:
+                blname = self.map_inv[s][a]
+                map_ind[a] = range(len(al))
+                for i in al:
+                    map_ind[a][i] = cnt[blname]
+                    cnt[blname]+=1
+            
+            
             for ibl in range(len(self.gf_struct_solver[s])):
                 for i in range(len(self.gf_struct_solver[s][ibl][1])):
                     for j in range(len(self.gf_struct_solver[s][ibl][1])):
                         bl   = self.gf_struct_solver[s][ibl][0]
                         ind1 = self.gf_struct_solver[s][ibl][1][i]
                         ind2 = self.gf_struct_solver[s][ibl][1][j]
-                        self.Sigma_imp[icrsh][self.map_inv[s][bl]][ind1,ind2] <<= Sigma_imp[s][bl][ind1,ind2]
+                        ind1_imp = map_ind[bl][ind1]
+                        ind2_imp = map_ind[bl][ind2]
+                        self.Sigma_imp[icrsh][self.map_inv[s][bl]][ind1_imp,ind2_imp] <<= Sigma_imp[s][bl][ind1,ind2]
 
         # rotation from local to global coordinate system:
         if (self.use_rotations):
@@ -996,12 +981,13 @@ class SumkLDA:
             
         Gloc = [ self.Sigma_imp[icrsh].copy() for icrsh in xrange(self.n_corr_shells) ]   # this list will be returned  
         for icrsh in xrange(self.n_corr_shells): Gloc[icrsh].zero()                # initialize to zero
-
+        beta = Gloc[0].mesh.beta
+        
         ikarray=numpy.array(range(self.n_k))
         
         for ik in mpi.slice_array(ikarray):
             
-            S = self.lattice_gf_matsubara(ik=ik,mu=mu,with_Sigma = with_Sigma) 
+            S = self.lattice_gf_matsubara(ik=ik,mu=mu,with_Sigma = with_Sigma, beta = beta) 
             S *= self.bz_weights[ik]
 
                 
@@ -1029,13 +1015,30 @@ class SumkLDA:
         Glocret = [ BlockGf( name_block_generator = [ (a,GfImFreq(indices = al, mesh = Gloc[0].mesh)) for a,al in self.gf_struct_solver[i] ],
                         make_copies = False) for i in xrange(self.n_inequiv_corr_shells)  ]
         for ish in xrange(self.n_inequiv_corr_shells):
+
+            # setting up the index map:
+            map_ind={}
+            cnt = {}
+            for blname in self.map[ish]:
+                cnt[blname] = 0
+    
+            for a,al in self.gf_struct_solver[ish]:
+                blname = self.map_inv[ish][a]
+                map_ind[a] = range(len(al))
+                for i in al:
+                    map_ind[a][i] = cnt[blname]
+                    cnt[blname]+=1
+            
+            
             for ibl in range(len(self.gf_struct_solver[ish])):
                 for i in range(len(self.gf_struct_solver[ish][ibl][1])):
                     for j in range(len(self.gf_struct_solver[ish][ibl][1])):
                         bl   = self.gf_struct_solver[ish][ibl][0]
                         ind1 = self.gf_struct_solver[ish][ibl][1][i]
                         ind2 = self.gf_struct_solver[ish][ibl][1][j]
-                        Glocret[ish][bl][ind1,ind2] <<= Gloc[self.invshellmap[ish]][self.map_inv[ish][bl]][ind1,ind2]
+                        ind1_imp = map_ind[bl][ind1]
+                        ind2_imp = map_ind[bl][ind2]
+                        Glocret[ish][bl][ind1,ind2] <<= Gloc[self.invshellmap[ish]][self.map_inv[ish][bl]][ind1_imp,ind2_imp]
 
 
         # return only the inequivalent shells:
