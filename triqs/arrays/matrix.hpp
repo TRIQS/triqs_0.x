@@ -180,13 +180,6 @@ namespace triqs { namespace arrays {
 #undef IMPL_TYPE
 
 }}//namespace triqs::arrays
-
-// The std::swap is WRONG for a view because of the copy/move semantics of view.
-// Use swap instead (the correct one, found by ADL).
-namespace std { 
- template <typename V, triqs::ull_t Opt, triqs::ull_t To >
-  void swap( triqs::arrays::matrix_view<V,Opt,To> & a , triqs::arrays::matrix_view<V,Opt,To> & b)= delete;
-}
 #include "./expression_template/matrix_algebra.hpp"
 #endif
 
