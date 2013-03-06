@@ -205,42 +205,34 @@ class GfGeneric:
 
     def __imul__(self, arg):
 
-        assert descriptors.is_scalar(arg), "rhs must be a scalar"
-        self.data *= arg
-        self.tail *= arg
+        if type(self) == type(arg):
+            d, d2 = self.data, arg.data
+            assert d.shape == d2.shape, " Green function block multiplication with arrays of different size !"
+            for om in range (d.shape[-1]):
+                d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
+            self.tail = self.tail * arg.tail
+        elif descriptors.is_scalar(arg):
+            self.data *= arg
+            self.tail *= arg
+        else:
+            raise RuntimeError, " argument type not recognized in *= for %s"%arg
         return self
 
-    def __mul__(self, x):
+    def __mul__(self, arg):
 
-        if descriptors.is_lazy(x):
-
-          return lazy_expressions.make_lazy(self) * x
-
-        elif descriptors.is_scalar(x):
-
-          res = self.copy()
-          res *= x
-          return res
-
-        elif type(x) == type(self):
-
-          res = self.copy()
-          d, d2 = res.data, x.data
-          assert d.shape == d2.shape, "Green's function must have the same shape"
-          for om in range (d.shape[-1]):
-            d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
-          res.tail = self.tail * x.tail
-          return res
-
+        if descriptors.is_lazy(arg):
+          return lazy_expressions.make_lazy(self) * arg
         else:
-          raise RuntimeError, "rhs in multiplication not of a valid type"
+          res = self.copy()
+          res *= arg
+          return res
 
-    def __rmul__(self, x):
+    def __rmul__(self, arg):
 
-        if descriptors.is_lazy(x):
-          return x * lazy_expressions.make_lazy(self)
-        elif descriptors.is_scalar(x):
-          return self.__mul__(x)
+        if descriptors.is_lazy(arg):
+          return arg * lazy_expressions.make_lazy(self)
+        elif descriptors.is_scalar(arg):
+          return self.__mul__(arg)
 
     def imatmul_L(self, L):
 
@@ -277,17 +269,23 @@ class GfGeneric:
     # RENAME THIS !
     def from_L_G_R(self, L, G, R):
 
-      assert L.shape[0] == self.data.shape[0]
+      N1 = self.data.shape[0]
+      N2 = self.data.shape[1]
+      assert L.shape[0] == N1
       assert L.shape[1] == G.data.shape[0]
       assert R.shape[0] == G.data.shape[1]
-      assert R.shape[1] == self.data.shape[1]
+      assert R.shape[1] == N2
 
+      # this is a bit slow, maybe better to introduce a set_omega_max
+      t = TailGf(shape=(N1,N2), size=G.tail.order_max-G.tail.order_min+1, order_min=G.tail.order_min)
       d = self.data
-      t = self.tail
+
       for om in range(d.shape[-1]):
         d[:,:,om] = numpy.dot(L, numpy.dot(G.data[:,:,om], R))
       for o in range(t.order_min, t.order_max+1):
         t[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
+
+      self.tail = t
 
     def __idiv__(self, arg):
         """ If arg is a scalar, simple scalar multiplication

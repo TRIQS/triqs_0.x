@@ -64,8 +64,10 @@ cdef class GfGeneric_cython :
             if type(t) == TailGf:
               assert (self.N1, self.N2) == (t.N1, t.N2)
               self._singularity.copy_from (t)
-            if type(t) == Nothing:
+            elif type(t) == Nothing:
               self._singularity = Nothing()
+            else:
+              raise RuntimeError, "invalid rhs for tail assignment"
 
     property data : 
         """Access to the data array"""
