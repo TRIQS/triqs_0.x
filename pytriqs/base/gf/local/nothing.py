@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-class Nothing:
+class Nothing (object):
 
     def __init__(self): pass
     def __getitem__(self, key): return Nothing()
