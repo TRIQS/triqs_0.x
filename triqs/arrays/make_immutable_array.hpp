@@ -25,7 +25,8 @@ namespace triqs { namespace arrays {
 
  // 2 generalization : N dim for array with preproc and matrix/vector.....
  // after rethinking a bit...
- 
+// USE VARIADIC AND CLEAN THIS 
+//
  template<typename Expr, int ph_n1, int ph_n2>
   class immutable_array_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
 
@@ -37,7 +38,6 @@ namespace triqs { namespace arrays {
     typedef typename std::result_of<function_type(size_t,size_t)>::type value_type;
     typedef indexmaps::cuboid::domain_t<2> domain_type;
     domain_type domain() const { return dom_;} 
-    template<typename KeyType> value_type operator[] (KeyType const & key) const { return f(key[0],key[1]);}
     template<typename ... Args> value_type operator() (Args const &  ... args) const { return f(args...); } 
 
     friend std::ostream & operator<<(std::ostream & out, immutable_array_impl const & x){return out<<" immutable_array on domain : "<<x.domain();}

@@ -39,13 +39,19 @@ namespace triqs { namespace arrays {
   void triqs_arrays_assign_delegation_ignore_const (LHS & lhs, const RHS & rhs )  { assignment::impl<LHS,RHS,'F'>(lhs,rhs).invoke();}
 
  template<typename LHS, typename RHS, char OP>
- void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { assignment::impl<LHS,RHS,OP>(lhs,rhs).invoke();}
+  void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { assignment::impl<LHS,RHS,OP>(lhs,rhs).invoke();}
 
- #define TRIQS_DEFINE_COMPOUND_OPERATORS(MYTYPE)\
-  template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'A'>()); return *this;}\
-  template<typename RHS> MYTYPE & operator -=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'S'>()); return *this;}\
-  template<typename RHS> MYTYPE & operator *=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'M'>()); return *this;}\
-  template<typename RHS> MYTYPE & operator /=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'D'>()); return *this;}
+#define TRIQS_DEFINE_COMPOUND_OPERATORS(MYTYPE)\
+ template<typename RHS> MYTYPE & operator +=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'A'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator -=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'S'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator *=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'M'>()); return *this;}\
+ template<typename RHS> MYTYPE & operator /=(RHS const & rhs) { triqs_arrays_compound_assign_delegation (*this,rhs, mpl::char_<'D'>()); return *this;}
+
+#define TRIQS_DELETE_COMPOUND_OPERATORS(MYTYPE)\
+ template<typename RHS> MYTYPE & operator +=(RHS const & rhs) = delete;\
+ template<typename RHS> MYTYPE & operator -=(RHS const & rhs) = delete;\
+ template<typename RHS> MYTYPE & operator *=(RHS const & rhs) = delete;\
+ template<typename RHS> MYTYPE & operator /=(RHS const & rhs) = delete;
 
  // -------- IMPLEMENTATION ----------------------------
 
@@ -67,8 +73,8 @@ namespace triqs { namespace arrays {
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
   static_assert( (!std::is_const<typename LHS::value_type>::value || (OP =='F')), "Assignment : The value type of the LHS is const and can not be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
-     static_assert( (!((OP=='M' || OP=='D') && MutableMatrix<LHS>::value && (!is_scalar_for<RHS,LHS>::value))),\
-       "*= and /= operator for non scalar RHS are deleted for a type modeling MutableMatrix (e.g. matrix, matrix_view) matrix, because this is ambiguous");
+  static_assert( (!((OP=='M' || OP=='D') && MutableMatrix<LHS>::value && (!is_scalar_for<RHS,LHS>::value))),\
+    "*= and /= operator for non scalar RHS are deleted for a type modeling MutableMatrix (e.g. matrix, matrix_view) matrix, because this is ambiguous");
 
   // -----------------    standard assignment for indexmap_storage_pair --------------------------------------------------
   template<typename LHS, typename RHS, char OP>
@@ -91,89 +97,89 @@ namespace triqs { namespace arrays {
      static typename boost::disable_if_c< ( storages::raw_copy_possible<S1,S2>::value), bool >::type
      rcp_impl(S1 & s1, S2 const & s2) { return false;}
 
-     template<typename ... Args> void operator()(Args const & ... args) const {
-//    void operator()(value_type & p, index_value_type const & key) {
+    template<typename ... Args> void operator()(Args const & ... args) const {
+     //    void operator()(value_type & p, index_value_type const & key) {
      _ops_<typename std::remove_cv<value_type>::type, typename RHS::value_type, OP>::invoke(lhs(args...), rhs(args...)) ;}
 
-    void invoke ()  {
+     void invoke ()  {
 #ifdef TRIQS_ARRAYS_DEBUG
-     if (!indexmaps::compatible_for_assignment(lhs.indexmap(), rhs.indexmap())) TRIQS_RUNTIME_ERROR<< "Size mismatch in operation "<<OP <<" : LHS "<< lhs << " \n RHS = "<< rhs;
+      if (!indexmaps::compatible_for_assignment(lhs.indexmap(), rhs.indexmap())) TRIQS_RUNTIME_ERROR<< "Size mismatch in operation "<<OP <<" : LHS "<< lhs << " \n RHS = "<< rhs;
 #endif
-     if (( ((OP=='E')||(OP=='F')) && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap())) &&
-       (lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {}
-     else {
+      if (( ((OP=='E')||(OP=='F')) && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap())) &&
+	(lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {}
+      else {
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-      foreach(lhs,*this);
-      //indexmaps::foreach_v(*this,lhs);
+       foreach(lhs,*this);
+       //indexmaps::foreach_v(*this,lhs);
 #else
-      typename RHS::const_iterator it_rhs = rhs.begin();
-      typedef typename RHS::const_iterator::indexmap_iterator_type RHS_mapit;
-      typedef typename LHS::indexmap_type::iterator IT;
-      iterator_adapter<false, IT, typename LHS::storage_type > it_lhs(lhs.indexmap(),lhs.storage());
-      for (;it_lhs; ++it_lhs, ++it_rhs) { assert(it_rhs);  _ops_<value_type, typename RHS::value_type, OP>::invoke(*it_lhs , *it_rhs); }
+       typename RHS::const_iterator it_rhs = rhs.begin();
+       typedef typename RHS::const_iterator::indexmap_iterator_type RHS_mapit;
+       typedef typename LHS::indexmap_type::iterator IT;
+       iterator_adapter<false, IT, typename LHS::storage_type > it_lhs(lhs.indexmap(),lhs.storage());
+       for (;it_lhs; ++it_lhs, ++it_rhs) { assert(it_rhs);  _ops_<value_type, typename RHS::value_type, OP>::invoke(*it_lhs , *it_rhs); }
 #endif
-     }
-    }
-   };
-
-  // -----------------   assignment for expressions RHS --------------------------------------------------
-   template<typename LHS, typename RHS, char OP>
-    struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)) > {
-     TRIQS_REJECT_ASSIGN_TO_CONST;
-     TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
-     typedef typename LHS::value_type value_type;
-     typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
-     LHS & lhs; const RHS & rhs; 
-     //value_type & restrict p;
-     impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
-     template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
-     ///     void operator()(value_type & p, index_value_type const & key) const {  _ops_<value_type, typename RHS::value_type, OP>::invoke(p,rhs[key]);}
-     void invoke() {
-#ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-      foreach(lhs,*this);
-#else
-      typename LHS::storage_type & S(lhs.storage());
-      for (auto it= lhs.indexmap();it; ++it)  _ops_<value_type, typename RHS::value_type, OP>::invoke(S[*it] , rhs[it.indices()] );
-#endif
+      }
      }
     };
 
-   // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------
-   template<typename LHS, typename RHS, char OP>
-    struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (!(MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F') ))) >{
-     TRIQS_REJECT_ASSIGN_TO_CONST;
-     typedef typename LHS::value_type value_type;
-     LHS & lhs; const RHS & rhs; 
-     //value_type & restrict p;
-     impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){}//, p(*(lhs_.data_start())) {}
-     template<typename ... Args> void operator()(Args const & ...args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), rhs);}
-     void invoke() {
+    // -----------------   assignment for expressions RHS --------------------------------------------------
+    template<typename LHS, typename RHS, char OP>
+     struct impl<LHS,RHS,OP, ENABLE_IFC( ImmutableArray<RHS>::value && (!is_scalar_for<RHS,LHS>::value) && (!is_isp<RHS,LHS>::value)) > {
+      TRIQS_REJECT_ASSIGN_TO_CONST;
+      TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR;
+      typedef typename LHS::value_type value_type;
+      typedef typename LHS::indexmap_type::domain_type::index_value_type index_value_type;
+      LHS & lhs; const RHS & rhs; 
+      //value_type & restrict p;
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} //, p(*(lhs_.data_start())) {}
+      template<typename ... Args> void operator()(Args const & ... args) const { _ops_<value_type, typename RHS::value_type, OP>::invoke(lhs(args...),rhs(args...));}
+      ///     void operator()(value_type & p, index_value_type const & key) const {  _ops_<value_type, typename RHS::value_type, OP>::invoke(p,rhs[key]);}
+      void invoke() {
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
-      foreach(lhs,*this);  // if contiguous : plain loop else foreach...
+       foreach(lhs,*this);
 #else
-      typename LHS::storage_type & S(lhs.storage());
-      for (auto it = lhs.indexmap();it; ++it) _ops_<value_type, RHS, OP>::invoke(S[*it], rhs);
+       typename LHS::storage_type & S(lhs.storage());
+       for (auto it= lhs.indexmap();it; ++it)  _ops_<value_type, typename RHS::value_type, OP>::invoke(S[*it] , rhs[it.indices()] );
 #endif
-     }
-    };
+      }
+     };
 
-   // -----------------   assignment for scalar RHS for Matrices --------------------------------------------------
+    // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------
+    template<typename LHS, typename RHS, char OP>
+     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (!(MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F') ))) >{
+      TRIQS_REJECT_ASSIGN_TO_CONST;
+      typedef typename LHS::value_type value_type;
+      LHS & lhs; const RHS & rhs; 
+      //value_type & restrict p;
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){}//, p(*(lhs_.data_start())) {}
+      template<typename ... Args> void operator()(Args const & ...args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), rhs);}
+      void invoke() {
+#ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
+       foreach(lhs,*this);  // if contiguous : plain loop else foreach...
+#else
+       typename LHS::storage_type & S(lhs.storage());
+       for (auto it = lhs.indexmap();it; ++it) _ops_<value_type, RHS, OP>::invoke(S[*it], rhs);
+#endif
+      }
+     };
 
-   template <typename T, int R> bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));}
-   template <typename T> bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));}
+    // -----------------   assignment for scalar RHS for Matrices --------------------------------------------------
 
-   // Specialisation for Matrix Classes : scalar is a unity matrix, and operation is E, A, S, but NOT M, D
-   template<typename LHS, typename RHS, char OP>
-    struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F')))> {
-     TRIQS_REJECT_ASSIGN_TO_CONST;
-     typedef typename LHS::value_type value_type;
-     LHS & lhs; const RHS & rhs; 
-     //value_type & restrict p;
-     impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){} //, p(*(lhs_.data_start())) {}
-     template<typename ... Args>
-      void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS()));}
-     void invoke() { foreach(lhs,*this); }
-    };
+    template <typename T, int R> bool kronecker(mini_vector<T,R> const & key) { return ( (R==2) && (key[0]==key[1]));}
+    template <typename T> bool kronecker(T const & x0, T const & x1) { return ( (x0==x1));}
+
+    // Specialisation for Matrix Classes : scalar is a unity matrix, and operation is E, A, S, but NOT M, D
+    template<typename LHS, typename RHS, char OP>
+     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F')))> {
+      TRIQS_REJECT_ASSIGN_TO_CONST;
+      typedef typename LHS::value_type value_type;
+      LHS & lhs; const RHS & rhs; 
+      //value_type & restrict p;
+      impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_){} //, p(*(lhs_.data_start())) {}
+      template<typename ... Args>
+       void operator()(Args const & ... args) const {_ops_<value_type, RHS, OP>::invoke(lhs(args...), (kronecker(args...) ? rhs : RHS()));}
+      void invoke() { foreach(lhs,*this); }
+     };
 
 #undef TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR
 #undef TRIQS_REJECT_ASSIGN_TO_CONST

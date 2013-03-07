@@ -24,7 +24,6 @@
 #include <triqs/utility/std_vector_expr_template.hpp>
 #include <triqs/utility/factory.hpp>
 #include <triqs/arrays/h5.hpp>
-#include <triqs/arrays/view_proxy.hpp>
 #include <vector>
 #include "./tools.hpp"
 #include "./data_proxies.hpp"

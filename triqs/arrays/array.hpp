@@ -55,7 +55,7 @@ namespace triqs { namespace arrays {
    template<typename ISP> array_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-   /// Build from a numpy.array : throws if X is not a numpy.array 
+   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array 
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 

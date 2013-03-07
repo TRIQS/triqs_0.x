@@ -32,6 +32,7 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
 
    discrete_mesh (domain_t && dom) : _dom(dom){}
+   discrete_mesh (domain_t const & dom) : _dom(dom){} //icc has a bug 
    discrete_mesh () : _dom(){}
  
    domain_t const & domain() const { return _dom;}

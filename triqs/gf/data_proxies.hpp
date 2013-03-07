@@ -23,6 +23,7 @@
 #include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <triqs/arrays.hpp>
+#include <triqs/arrays/matrix_view_proxy.hpp>
 
 namespace triqs { namespace gf {
 
@@ -34,10 +35,10 @@ namespace triqs { namespace gf {
   typedef typename storage_t::view_type  storage_view_t;
 
   /// The data access 
-  arrays::view_proxy<storage_t,2>       operator()(storage_t       & data, size_t i)       { return arrays::view_proxy<storage_t,2>(data,i); } 
-  arrays::const_view_proxy<storage_t,2> operator()(storage_t const & data, size_t i) const { return arrays::const_view_proxy<storage_t,2>(data,i); } 
-  arrays::view_proxy<storage_view_t,2>       operator()(storage_view_t       & data, size_t i)       { return arrays::view_proxy<storage_view_t,2>(data,i); } 
-  arrays::const_view_proxy<storage_view_t,2> operator()(storage_view_t const & data, size_t i) const { return arrays::const_view_proxy<storage_view_t,2>(data,i); } 
+  arrays::matrix_view_proxy<storage_t,2>       operator()(storage_t       & data, size_t i)       { return arrays::matrix_view_proxy<storage_t,2>(data,i); } 
+  arrays::const_matrix_view_proxy<storage_t,2> operator()(storage_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_t,2>(data,i); } 
+  arrays::matrix_view_proxy<storage_view_t,2>       operator()(storage_view_t       & data, size_t i)       { return arrays::matrix_view_proxy<storage_view_t,2>(data,i); } 
+  arrays::const_matrix_view_proxy<storage_view_t,2> operator()(storage_view_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_view_t,2>(data,i); } 
  };
 
  template<typename T> struct data_proxy_array<T,1>{ 
