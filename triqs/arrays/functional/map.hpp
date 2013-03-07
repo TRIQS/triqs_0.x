@@ -30,15 +30,21 @@ namespace triqs { namespace arrays {
   * Given a function f : arg_type -> result_type, map(f) is the function promoted to arrays
   * map(f) : array<arg_type, N, Opt> --> array<result_type, N, Opt> 
   */
- template<class F> map_impl<F,1> map (F const & f) { return map_impl<F,1>(f); }
- template<class F> map_impl<F,2> map2 (F const & f) { return map_impl<F,2>(f); }
+ template<class F> map_impl<F,1> map (F const & f) { return map_impl<F,1>(f,true); }
+ template<class F> map_impl<F,2> map2 (F const & f) { return map_impl<F,2>(f,true); }
 
  // ----------- implementation  -------------------------------------
 
+ // NB The bool is to make constructor not ambiguous
+ // clang on os X with lib++ has a pb otherwise (not clear what the pb is)
  template<class F> class map_impl<F,1>  { 
   F f;
   public :   
-  map_impl(F const & f_):f(f_) {}
+//  map_impl(F const & f_):f(f_) {}
+  map_impl(F const & f_, bool):f(f_) {}
+  map_impl(F && f_, bool):f(f_) {}
+  map_impl(map_impl const &) = default;
+  map_impl(map_impl &&) = default;
 
   template<typename A, typename Enable = void> class m_result;
 
@@ -98,8 +104,11 @@ namespace triqs { namespace arrays {
  template<class F> class map_impl<F,2>  { 
   F f;
   public : 
-  map_impl(F const & f_):f(f_) {}
-  
+  map_impl(F const & f_, bool):f(f_) {}
+  map_impl(F && f_, bool):f(f_) {}
+  map_impl(map_impl const &) = default;
+  map_impl(map_impl &&) = default;
+
   template<class A, class B> class m_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
     static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
    public:
