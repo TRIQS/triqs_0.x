@@ -23,29 +23,21 @@
 #include "./array.hpp"
 namespace triqs { namespace arrays { 
 
- // 2 generalization : N dim for array with preproc and matrix/vector.....
- // after rethinking a bit...
-// USE VARIADIC AND CLEAN THIS 
-//
- template<typename Expr, int ph_n1, int ph_n2>
+ template<typename Expr, int ... ph>
   class immutable_array_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
-
+   template<int I> struct _si { typedef size_t type;};
    public : 
-    immutable_array_impl(Expr e_, clef::pair<ph_n1,range> p1, clef::pair<ph_n2,range> p2): 
-     f(clef::make_function(e_, clef::placeholder<ph_n1>(),clef::placeholder<ph_n2>())), dom_(make_shape(p1.rhs().size(), p2.rhs().size())) {};
-
-    typedef typename triqs::clef::result_of::make_function<Expr,clef::placeholder<ph_n1>,clef::placeholder<ph_n2> >::type function_type;
-    typedef typename std::result_of<function_type(size_t,size_t)>::type value_type;
-    typedef indexmaps::cuboid::domain_t<2> domain_type;
+    immutable_array_impl(Expr e_, clef::pair<ph,range> ... p): 
+     f(clef::make_function(e_, clef::placeholder<ph>()...)), dom_(make_shape(p.rhs().size()...)) {};
+    typedef typename triqs::clef::result_of::make_function<Expr,clef::placeholder<ph>... >::type function_type;
+    typedef typename std::result_of<function_type(typename _si<ph>::type...)>::type value_type;
+    typedef indexmaps::cuboid::domain_t<sizeof...(ph)> domain_type;
     domain_type domain() const { return dom_;} 
     template<typename ... Args> value_type operator() (Args const &  ... args) const { return f(args...); } 
-
     friend std::ostream & operator<<(std::ostream & out, immutable_array_impl const & x){return out<<" immutable_array on domain : "<<x.domain();}
-
    protected:
     function_type f;
     domain_type dom_;
-
   };
 
  /** 
