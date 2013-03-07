@@ -46,9 +46,9 @@ namespace triqs { namespace arrays {
   * \param i_=R i_ is a placeholder, R a range. The i_=R produce a pair of i_ and R , which is the parameter.
   * \return A lazy object implementing the ImmutableCuboidArray concept with the domain built from the ranges. 
   */
- template<typename Expr, int ph_n1, int ph_n2>
-  immutable_array_impl<Expr,ph_n1,ph_n2> make_immutable_array( Expr const & expr, clef::pair<ph_n1,range> p1, clef::pair<ph_n2,range> p2) {
-   return immutable_array_impl<Expr,ph_n1,ph_n2> (expr, p1, p2);
+ template<typename Expr, int ... ph>
+  immutable_array_impl<Expr,ph...> make_immutable_array( Expr const & expr, clef::pair<ph,range> ... p) {
+   return immutable_array_impl<Expr,ph...> (expr, p...);
   }
 
 }}//namespace triqs::arrays
