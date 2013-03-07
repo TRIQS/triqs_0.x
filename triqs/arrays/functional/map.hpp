@@ -44,7 +44,7 @@ namespace triqs { namespace arrays {
   map_impl(F const & f_, bool):f(f_) {}
   map_impl(F && f_, bool):f(f_) {}
   map_impl(map_impl const &) = default;
-  map_impl(map_impl &&) = default;
+  //map_impl(map_impl &&) = default;
 
   template<typename A, typename Enable = void> class m_result;
 
@@ -107,7 +107,7 @@ namespace triqs { namespace arrays {
   map_impl(F const & f_, bool):f(f_) {}
   map_impl(F && f_, bool):f(f_) {}
   map_impl(map_impl const &) = default;
-  map_impl(map_impl &&) = default;
+  //map_impl(map_impl &&) = default;
 
   template<class A, class B> class m_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
     static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
