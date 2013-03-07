@@ -3,29 +3,9 @@
 #link_libraries(${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} )
 include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 
-function (python_build_module NickName ModuleName ModuleDest  )
-MESSAGE(STATUS "Preparing python module  ${NickName} ")
-set_property (GLOBAL APPEND PROPERTY Modules_actually_compiled ${NickName} )
-STRING(REGEX REPLACE "^_" "" MODNAME ${ModuleName})
-SET(ModuleIncludeFile pytriqs/${ModuleDest}/${MODNAME}.py)
-MESSAGE (STATUS "Making ${ModuleIncludeFile}")
-set_property (GLOBAL APPEND PROPERTY PYTHON_DYNAMIC_MODULES_LIST ${ModuleName})
-add_library(${ModuleName} MODULE ${ARGN}  )
-set_target_properties(${ModuleName}  PROPERTIES PREFIX "") #eliminate the lib in front of the module name 
-target_link_libraries(${ModuleName} ${TRIQS_LINK_LIBS} triqs)
-install (TARGETS ${ModuleName} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest}  )
-set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
-STRING(REPLACE "/" "." MODPATH ${ModuleDest})
-file (WRITE ${CMAKE_BINARY_DIR}/${ModuleIncludeFile}  "from pytriqs.${MODPATH}._${MODNAME} import *\n")
-install( FILES ${CMAKE_BINARY_DIR}/${ModuleIncludeFile} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/${ModuleDest})
-endfunction (python_build_module ModuleName)
-
 function (python_register_dynamic_module NickName)
- option( Build_${NickName} "Should I build ${NickName} ?" ON) #OFF)
- if (Build_${NickName})
   set_property (GLOBAL APPEND PROPERTY DEPENDANCE_TO_ADD triqs_${NickName} )
   set_property (GLOBAL APPEND PROPERTY Modules_actually_compiled ${NickName} )
- endif (Build_${NickName})
 endfunction (python_register_dynamic_module NickName)
 
 # This function add the target to build a python module

@@ -121,9 +121,6 @@ add_definitions( -DBOOST_PP_VARIADICS=1 )
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
  add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
-
- # Tool to help to include the wrappers in main and declare the built-in module
- Find_package(PythonModuleEmbeddingTool)
 endif (PythonSupport)
 
 enable_testing()
