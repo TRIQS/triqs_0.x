@@ -20,12 +20,8 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_MAP_H
 #define TRIQS_ARRAYS_EXPRESSION_MAP_H
-#include <boost/utility/enable_if.hpp>
-#include <boost/utility/result_of.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/function.hpp>
 #include "../impl/common.hpp"
+#include <functional>
 namespace triqs { namespace arrays { 
  
  template<class F, int arity=F::arity> class map_impl;
@@ -34,7 +30,8 @@ namespace triqs { namespace arrays {
   * Given a function f : arg_type -> result_type, map(f) is the function promoted to arrays
   * map(f) : array<arg_type, N, Opt> --> array<result_type, N, Opt> 
   */
- template<class F> map_impl<F> map (F const & f) { return map_impl<F>(f); }
+ template<class F> map_impl<F,1> map (F const & f) { return map_impl<F,1>(f); }
+ template<class F> map_impl<F,2> map2 (F const & f) { return map_impl<F,2>(f); }
 
  // ----------- implementation  -------------------------------------
 
@@ -47,7 +44,7 @@ namespace triqs { namespace arrays {
 
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableCuboidArray<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
@@ -59,7 +56,7 @@ namespace triqs { namespace arrays {
   
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableMatrix<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
@@ -73,7 +70,7 @@ namespace triqs { namespace arrays {
 
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableVector<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableVector) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
@@ -104,9 +101,9 @@ namespace triqs { namespace arrays {
   map_impl(F const & f_):f(f_) {}
   
   template<class A, class B> class m_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
-    static_assert( (boost::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
+    static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
    public:
-    typedef typename boost::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
+    typedef typename std::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
     typedef typename A::domain_type domain_type;
     A const & a; B const & b; F f;
     m_result(F const & f_, A const & a_, B const & b_):a(a_),b(b_),f(f_) {

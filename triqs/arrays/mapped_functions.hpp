@@ -22,6 +22,7 @@
 #define TRIQS_ARRAYS_MAPPED_FNT_H
 #include "./functional/map.hpp"
 #include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/utility/result_of.hpp>
 
 namespace triqs { namespace arrays {
 
@@ -35,10 +36,10 @@ namespace triqs { namespace arrays {
  };
 
  template <typename A>
-  typename boost::result_of<map_impl<abs_wrap>(A)>::type abs(A const & a) { return map(abs_wrap())(a); }
+  typename std::result_of<map_impl<abs_wrap>(A)>::type abs(A const & a) { return map(abs_wrap())(a); }
 
  using std::pow;
- template<typename T> TYPE_ENABLE_IF(T, boost::is_integral<T>) pow(T x, int n) { return (n==0 ? 1 : pow(x,n-1)*x);}
+ template<typename T> TYPE_ENABLE_IF(T, std::is_integral<T>) pow(T x, int n) { return (n==0 ? 1 : pow(x,n-1)*x);}
  struct pow_wrap { 
    template<typename Sig> struct result;
    template<typename This, typename A> struct result<This(A)> { typedef A type;};

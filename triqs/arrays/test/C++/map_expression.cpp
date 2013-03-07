@@ -41,11 +41,14 @@ int main(int argc, char **argv) {
   for (int j=0; j<3; ++j)
   { A(i,j) = i+2*j+1; B(i,j) = i-j;}
 
- auto Abs = map( boost::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) );
- auto Max = map( boost::function<double(double,double)>(mmax<double>) );
+ auto Abs = map( std::function< double (double)> ( static_cast< double (*)(double)> (std::abs)) );
+ auto Max = map2( std::function<double(double,double)>(mmax<double>) );
+
+ auto sqr = map( [](double x){return x*x;});
 
  std::cout<< " A " << A<<std::endl<<std::endl;
  std::cout<< " B " << B<<std::endl<<std::endl;
+ std::cerr<< " Sqr(A) " << make_matrix(sqr(A))<<std::endl<<std::endl;
  std::cout<<" abs(B+B) = "<<make_matrix(Abs(B+B)) <<std::endl<<std::endl;
  std::cout<<" A+10*B = "<<make_matrix(A+10*B) <<std::endl<<std::endl;
  std::cout<<" Abs(A+10*B) = "<<make_matrix(Abs(A+10*B)) <<std::endl<<std::endl;
