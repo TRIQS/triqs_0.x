@@ -8,6 +8,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         array_view[dcomplex,THREE] data_view()
         array_view[long,TWO] mask_view()
         void operator << (tail &)
+        void operator << (dcomplex &)
         long order_min()
         long order_max()
         size_t size() 
@@ -28,9 +29,6 @@ cdef extern from "triqs/gf/local/tail.hpp" :
     cdef tail operator /( dcomplex, tail &) except + 
     cdef tail operator /( tail &, dcomplex) except + 
     cdef tail inverse_c "inverse" ( tail &) except +
-
-    cdef tail operator *( matrix_view[dcomplex] &, tail &) except + 
-    cdef tail operator *( tail &, matrix_view[dcomplex]&) except + 
 
     cdef void h5_write (h5_group, char *, tail &)
 

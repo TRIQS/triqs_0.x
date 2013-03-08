@@ -44,20 +44,8 @@ cdef class TailGf:
         def __get__(self) :
             return self._c.data_view().to_python()
 
-        def __set__ (self, value) :
-            cdef object a = self._c.data_view().to_python()
-            if hasattr(value,'shape') : 
-                if a.shape[:2] != value.shape[:2] : 
-                    raise RuntimeError, "shape mismatch"
-                m = min(value.shape[2],a.shape[2]) 
-                if a.shape[2] > value.shape[2] : 
-                    a[:,:,m:] =0
-                a[:,:, 0:m] = value[:,:, 0:m]
-            else : 
-                a[...] = value
-
     property mask:
-        """Access to the data array"""
+        """Access to the mask"""
         def __get__(self) :
             return self._c.mask_view().to_python()
 
@@ -73,10 +61,10 @@ cdef class TailGf:
         def __get__(self) : return self._c.order_max()
 
     property N1 : 
-        def __get__(self): return self._c.data_view().shape(0)
+        def __get__(self): return self.shape[0]
 
     property N2 : 
-        def __get__(self): return self._c.data_view().shape(1)
+        def __get__(self): return self.shape[1]
 
     property size : 
         """Length of the expansion"""
@@ -85,7 +73,6 @@ cdef class TailGf:
     def copy(self) : 
         return self.__class__(data = self.data.copy(), order_min = self.order_min, mask = self.mask.copy())
 
-    # Should I do more compatibility checks?
     def copy_from(self, TailGf T) :
         self._c << T._c
 
@@ -114,9 +101,6 @@ cdef class TailGf:
           val += self[n] * x**(-n)
         return val
 
-    def __reduce__(self):
-        return (lambda cls, d : cls(**d)) , (self.__class__,self.__reduce_to_dict__())
-  
     def invert(self) :
         self._c << inverse_c (self._c)
 
@@ -141,9 +125,6 @@ cdef class TailGf:
         return c
 
     def __imul__(self,arg):
-        """ If arg is a scalar, simple scalar multiplication
-            If arg is a GF (any object with _data and _tail as in GF), they it is a matrix multiplication, slice by slice
-        """
         n = type(arg).__name__
         if n == 'TailGf' :
             self._c << self._c * (<TailGf?>arg)._c
@@ -153,45 +134,28 @@ cdef class TailGf:
             raise RuntimeError, " argument type not recognized in imul for %s"%arg
         return self
 
-    def __mul_impl__(self, arg, s) : 
-        cdef TailGf res = self.copy()
-        n = type(arg).__name__
-        cdef matrix_view [dcomplex] a 
-        if n == 'TailGf' :
-            res._c <<  self._c * (<TailGf?>arg)._c
-        elif descriptors.is_scalar(arg):
-            res._c << as_dcomplex(arg) * self._c
-        else : 
-            a= matrix_view[dcomplex](matrix[dcomplex](numpy.array(arg, self.dtype)))
-        return res
-
     def __mul__(self,arg):
-        s = type(self).__name__ != 'TailGf' 
-        return self.__mul_impl__(arg, s) if not s else arg.__mul_impl__(self, s)
+        c = self.copy()
+        c *= arg
+        return c
 
     def __idiv__(self,arg):
-        cdef TailGf me = self
-        me._c << me._c / as_dcomplex(arg)
+        if descriptors.is_scalar(arg):
+          self._c << self._c / as_dcomplex(arg)
+        else:
+          raise RuntimeError, "rhs must be a scalar"
         return self
 
-    def __div_impl_(self, arg, s):
-        if s : raise RuntimeError, "Can not divide by a TailGf"
-        cdef TailGf res = self.copy()
-        if descriptors.is_scalar(arg):
-            res._c << self._c / as_dcomplex(arg)
-        else : 
-            raise RuntimeError, " argument type not recognized for %s"%arg
-        return res
-
     def __div__(self,arg):
-        assert type(self).__name__ == 'GfImFreq' 
-        s = type(self).__name__ != 'GfImFreq' 
-        return self.__div_impl_(arg, s) if not s else arg.__div_impl_(self, s)
+        c = self.copy()
+        c /= arg
+        return c
     
     #---- other operations ----
+
     def zero(self) : 
         """Sets the expansion to 0"""
-        self.data[:,:,:] =0
+        self._c << as_dcomplex(0.0)
 
     def transpose (self) : 
         """Transpose the array : new view as in numpy"""
@@ -216,10 +180,6 @@ register_class (TailGf, read_fun = h5_read_TailGf)
 # C -> Python 
 #-----------------------------------------------------
 
-#cdef inline make_TailGf ( tail x) : 
-#    return TailGf( data = x.data_view().to_python(), order_min = x.order_min() ) #encapsulated_c_object = encapsulate (&x))
 cdef inline make_TailGf ( tail x) : 
     return TailGf(encapsulated_c_object = encapsulate (&x))
-
-
 
