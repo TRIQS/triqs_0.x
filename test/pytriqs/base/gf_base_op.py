@@ -51,7 +51,7 @@ h['gt'] = gt
 
 # Matrix operations:
 ga2 = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 100, name = "a1Block")
-mat = numpy.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]])
+mat = numpy.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], numpy.complex)
 
 ga2.from_L_G_R(mat.transpose(),ga,mat)
 
