@@ -21,4 +21,5 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/base/gf/lo
 
 # Build cython module 
 cython_module( GF3 gf base/gf/local )
+cython_module( MS matrix_stack base/gf/local )
 

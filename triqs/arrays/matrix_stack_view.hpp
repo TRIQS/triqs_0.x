@@ -64,10 +64,16 @@ namespace triqs { namespace arrays {
 
    void invert() {for (size_t i=0; i<size(); ++i) { auto v = view(i); v = inverse(v);} }
 
-   friend matrix_stack_view matmul_R_L ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) { 
+   friend matrix_stack_view matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
     matrix_stack_view res (typename array_view_t::non_view_type (L.dim0(), R.dim1(),M.size()));
     for (size_t i=0; i<M.size(); ++i)  { res.view(i) = L * M.view(i) * R; }
     return res;
+   }
+
+   void onsite_matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
+    if ((dim0() != L.dim0()) || (dim1() != R.dim1()) || (L.dim1() != R.dim0()))
+      TRIQS_RUNTIME_ERROR << "dimensions do not match!";
+    for (size_t i=0; i<M.size(); ++i)  { view(i) = L * M.view(i) * R; }
    }
 
   private:
