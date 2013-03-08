@@ -30,6 +30,7 @@ from tools import LazyCTX, IndicesConverter, get_indices_in_dict, py_deserialize
 from impl_plot import PlotWrapperPartialReduce
 from nothing import Nothing
 from gf import TailGf
+from matrix_stack import MatrixStack
 
 class GfGeneric:
 
@@ -158,11 +159,11 @@ class GfGeneric:
             d[:,:,:] += arg.data
             t += arg.tail
         elif isinstance(arg, numpy.ndarray): # an array considered as a constant function
-            for om in range (d.shape[-1]): d[:,:, om ] += arg
+            MatrixStack(self.data).add(arg)
             t[0][:,:] += arg
         elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
-            for om in range (d.shape[-1]): d[:,:, om ] += arg
+            MatrixStack(self.data).add(arg)
             t[0][:,:] += arg
         else:
             raise RuntimeError, " argument type not recognized in += for %s"%arg
@@ -182,11 +183,11 @@ class GfGeneric:
             d[:,:,:] -= arg.data
             t -= arg.tail
         elif isinstance(arg, numpy.ndarray): # an array considered as a constant function
-            for om in range (d.shape[-1]): d[:,:, om ] -= arg
+            MatrixStack(self.data).sub(arg)
             t[0][:,:] -= arg
         elif descriptors.is_scalar(arg): # just a scalar
             arg = arg*numpy.identity(self.N1)
-            for om in range (d.shape[-1]): d[:,:, om ] -= arg
+            MatrixStack(self.data).sub(arg)
             t[0][:,:] -= arg
         else:
             raise RuntimeError, " argument type not recognized in -= for %s"%arg
@@ -234,39 +235,6 @@ class GfGeneric:
         elif descriptors.is_scalar(arg):
           return self.__mul__(arg)
 
-    def imatmul_L(self, L):
-
-      assert type(L).__name__ in  ['ndarray', 'matrix']
-      d = self.data
-      t = self.tail
-      assert d.shape[0] == L.shape[1]
-      N1 = L.shape[0]
-      N2 = d.shape[1]
-      nd = numpy.zeros((N1,N2,d.shape[-1]), d.dtype)
-      nt = Nothing() if type(t) == Nothing else TailGf(shape=(N1,N2), size=t.size, order_min=t.order_min)
-      for om in range(d.shape[-1]):
-        nd[:,:,om] = numpy.dot(L, d[:,:,om])
-      for o in range(t.order_min, t.order_max+1):
-        nt[o] = numpy.dot(L, t[o])
-      return self.__class__(indicesL=range(N1), indicesR=range(N2), mesh=self.mesh, data=nd, tail=nt)
-
-    def imatmul_R(self, R):
-
-      assert type(R).__name__ in  ['ndarray', 'matrix']
-      d = self.data
-      t = self.tail
-      assert d.shape[1] == R.shape[0]
-      N1 = d.shape[0]
-      N2 = R.shape[1]
-      nd = numpy.zeros((N1,N2,d.shape[-1]), d.dtype)
-      nt = Nothing() if type(t) == Nothing else TailGf(shape=(N1,N2), size=t.size, order_min=t.order_min)
-      for om in range(d.shape[-1]):
-        nd[:,:,om] = numpy.dot(d[:,:,om], R)
-      for o in range(t.order_min, t.order_max+1):
-        nt[o] = numpy.dot(t[o], R)
-      return self.__class__(indicesL=range(N1), indicesR=range(N2), mesh=self.mesh, data=nd, tail=nt)
-
-    # RENAME THIS !
     def from_L_G_R(self, L, G, R):
 
       N1 = self.data.shape[0]
@@ -276,15 +244,12 @@ class GfGeneric:
       assert R.shape[0] == G.data.shape[1]
       assert R.shape[1] == N2
 
-      # this is a bit slow, maybe better to introduce a set_omega_max
-      t = TailGf(shape=(N1,N2), size=G.tail.order_max-G.tail.order_min+1, order_min=G.tail.order_min)
-      d = self.data
+      MatrixStack(self.data).matmul_L_R(L, G.data, R)
 
-      for om in range(d.shape[-1]):
-        d[:,:,om] = numpy.dot(L, numpy.dot(G.data[:,:,om], R))
+      # this might be a bit slow
+      t = TailGf(shape=(N1,N2), size=G.tail.order_max-G.tail.order_min+1, order_min=G.tail.order_min)
       for o in range(t.order_min, t.order_max+1):
         t[o] = numpy.dot(L, numpy.dot(G.tail[o], R))
-
       self.tail = t
 
     def __idiv__(self, arg):
@@ -313,9 +278,7 @@ class GfGeneric:
 
     def invert(self):
         """Invert the matrix for all arguments"""
-        d = self.data
-        for om in range (d.shape[-1]):
-            d[:,:, om ] = numpy.linalg.inv(d[:,:, om])
+        MatrixStack(self.data).invert()
         self.tail.invert()
 
     #---------------------------------------------------
