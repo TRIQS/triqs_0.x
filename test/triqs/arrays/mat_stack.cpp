@@ -81,7 +81,7 @@ int main() {
 
   std::cout  << S(0) << S(1)<< S(2) << std::endl ;
 
-  auto Sb = matmul_R_L(L,S,R);
+  auto Sb = matmul_L_R(L,S,R);
   std::cout  << Sb(0) << Sb(1)<< Sb(2)<< std::endl ;
   std::cout  << S(0) << std::endl ;
  }
