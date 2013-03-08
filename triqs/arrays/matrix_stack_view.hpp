@@ -33,7 +33,12 @@ namespace triqs { namespace arrays {
 
    matrix_stack_view( typename array_view_t::view_type const & a_):a(a_) {}
    matrix_stack_view( array_view_t && a_):a(std::move(a_)) {}
-   
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array
+   explicit matrix_stack_view (PyObject * X):a(typename array_view_t::view_type (X)){}
+#endif
+
    matrix_view_proxy      <array_view_t,2> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,2>(a,i);}
    const_matrix_view_proxy<array_view_t,2> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,2>(a,i);}
  
