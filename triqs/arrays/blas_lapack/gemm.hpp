@@ -71,13 +71,16 @@ namespace triqs { namespace arrays { namespace blas {
     if (!(Ca().dim0() == Cb().dim1())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
     char trans_a= get_trans(Ca(), true); 
     char trans_b= get_trans(Cb(), true); 
+    int m = (trans_a == 'N' ? get_n_rows(Ca()) : get_n_cols(Ca()));
+    int n = (trans_b == 'N' ? get_n_cols(Cb()) : get_n_rows(Cb()));
+    int k = (trans_a == 'N' ? get_n_cols(Ca()) : get_n_rows(Ca()));
     //std::cerr<< " about to call GEMM"<< std::endl ;
     //std::cerr<< "A = "<< Ca().shape()<< Ca()<< std::endl;
     //std::cerr<< "B = "<< Cb().shape()<< Cb()<< std::endl;
     //std::cerr<< "C c" << Cc().shape() << Cc().indexmap().strides() << std::endl;
     //std::cerr<<Ca().memory_layout_is_c() <<Ca().memory_layout_is_fortran()<<std::endl;
     //std::cerr<< get_n_rows(Ca())<<get_n_cols(Cb())<<get_n_cols(Ca()) << std::endl ;
-    f77::gemm(trans_a,trans_b,get_n_rows(Ca()),get_n_cols(Cb()),get_n_cols(Ca()),
+    f77::gemm(trans_a,trans_b,m,n,k,
       alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cc()));
     //std::cerr << " gemm ok "<< std::endl ; 
    }
@@ -87,7 +90,10 @@ namespace triqs { namespace arrays { namespace blas {
     if (!(Ca().dim1() == Cb().dim0())) TRIQS_RUNTIME_ERROR << "Dimension mismatch in gemm : A : "<< Ca().shape() <<" while B : "<<Cb().shape();
     char trans_a= get_trans(Ca(), false); 
     char trans_b= get_trans(Cb(), false); 
-    f77::gemm(trans_a,trans_b,get_n_rows(Ca()),get_n_cols(Cb()),get_n_cols(Ca()),
+    int m = (trans_a == 'N' ? get_n_rows(Ca()) : get_n_cols(Ca()));
+    int n = (trans_b == 'N' ? get_n_cols(Cb()) : get_n_rows(Cb()));
+    int k = (trans_a == 'N' ? get_n_cols(Ca()) : get_n_rows(Ca()));
+    f77::gemm(trans_a,trans_b,m,n,k,
       alpha, Ca().data_start(), get_ld(Ca()) , Cb().data_start(), get_ld(Cb()), beta, Cc().data_start(), get_ld(Cc()));
    }
   }

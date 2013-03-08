@@ -20,44 +20,53 @@
  ******************************************************************************/
 #include "./common.hpp"
 #include "./src/matrix.hpp"
+#include "./src/asserts.hpp"
 #include "./src/linalg/matmul.hpp"
 #include <iostream>
-
-using std::cout; using std::endl;
 using namespace triqs::arrays;
 
 template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bool all =false)  { 
- matrix<double> M1(2,2, o1);
- matrix<double> M2(2,2, o2);
- matrix<double> M3(o3);
+ matrix<double> M1(2,3, o1);
+ matrix<double> M2(3,4, o2);
+ matrix<double> M3(o3), M4;
  for (int i =0; i<2; ++i)
-  for (int j=0; j<2; ++j)
-  { M1(i,j) = i+j; M2(i,j) = 1 + i -j ; }
+  for (int j=0; j<3; ++j)
+  { M1(i,j) =  i +j ; }
+ for (int i =0; i<3; ++i)
+  for (int j=0; j<4; ++j)
+  { M2(i,j) = 1 + i -j ; }
 
  // The central instruction : note that matmul returns a lazy object 
  // that has ImmutableArray interface, and defines a specialized version assignment
  // As a result this is equivalent to matmul_with_lapack(M1,M2,M3) : there is NO intermediate copy.
  M3 = matmul(M1,M2);
 
+ M4 = M3; 
+ M4() = 0;
+ for (int i =0; i<2; ++i)
+  for (int k=0; k<3; ++k)
+  for (int j=0; j<4; ++j)
+   M4(i,j) += M1(i,k)*M2(k,j);
+
+ assert_all_close(M4,M3, 1.e-13,false);
+
  if (all) { 
-  std::cout<<"M1 = "<<M1<<std::endl;
-  std::cout<<"M2 = "<<M2<<std::endl;
-  std::cout<<"M3 = "<<M3<<std::endl;
-  std::cout<<"M4 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
-  std::cout<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
+  std::cerr<<"M1 = "<<M1<<std::endl;
+  std::cerr<<"M2 = "<<M2<<std::endl;
+  std::cerr<<"M3 = "<<M3<<std::endl;
+  std::cerr<<"M4 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
+  std::cerr<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
 
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j)
     M3(i,j) = matmul(M1,M2)(i,j); //[mini_vector<int,2>(i,j)];
  }
 
- std::cout<<"M3 = "<<M3<<std::endl<<"----------------"<<std::endl;
+ std::cerr<<"M3 = "<<M3<<std::endl<<"----------------"<<std::endl;
 
 }
 
 int main(int argc, char **argv) {
-
- 
 
  test(C_LAYOUT      , C_LAYOUT      , C_LAYOUT      , true);
  test(C_LAYOUT      , C_LAYOUT      , FORTRAN_LAYOUT);
