@@ -25,10 +25,10 @@
 #include <iostream>
 using namespace triqs::arrays;
 
-template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bool all =false)  { 
- matrix<double> M1(2,3, o1);
- matrix<double> M2(3,4, o2);
- matrix<double> M3(o3), M4;
+template<typename T, typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bool all =false)  { 
+ matrix<T> M1(2,3, o1);
+ matrix<T> M2(3,4, o2);
+ matrix<T> M3(o3), M4;
  for (int i =0; i<2; ++i)
   for (int j=0; j<3; ++j)
   { M1(i,j) =  i +j ; }
@@ -47,15 +47,18 @@ template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bo
   for (int k=0; k<3; ++k)
   for (int j=0; j<4; ++j)
    M4(i,j) += M1(i,k)*M2(k,j);
+ assert_all_close(M4,M3, 1.e-13,false);
 
+ // recheck gemm_generic 
+ blas::gemm_generic(1, M1, M2, 0, M4);
  assert_all_close(M4,M3, 1.e-13,false);
 
  if (all) { 
   std::cerr<<"M1 = "<<M1<<std::endl;
   std::cerr<<"M2 = "<<M2<<std::endl;
   std::cerr<<"M3 = "<<M3<<std::endl;
-  std::cerr<<"M4 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
-  std::cerr<<"M5 = "<< matrix<double>(matmul(M1,M2)) <<std::endl;
+  std::cerr<<"M4 = "<< matrix<T>(matmul(M1,M2)) <<std::endl;
+  std::cerr<<"M5 = "<< matrix<T>(matmul(M1,M2)) <<std::endl;
 
   for (int i =0; i<2; ++i)
    for (int j=0; j<2; ++j)
@@ -66,15 +69,22 @@ template<typename O1, typename O2, typename O3> void test(O1 o1, O2 o2, O3 o3,bo
 
 }
 
-int main(int argc, char **argv) {
+template<typename T> void all_tests() { 
+ test<T>(C_LAYOUT      , C_LAYOUT      , C_LAYOUT      , true);
+ test<T>(C_LAYOUT      , C_LAYOUT      , FORTRAN_LAYOUT);
+ test<T>(C_LAYOUT      , FORTRAN_LAYOUT, FORTRAN_LAYOUT);
+ test<T>(C_LAYOUT      , FORTRAN_LAYOUT, C_LAYOUT      );
+ test<T>(FORTRAN_LAYOUT, FORTRAN_LAYOUT, FORTRAN_LAYOUT);
+ test<T>(FORTRAN_LAYOUT, C_LAYOUT      , FORTRAN_LAYOUT);
+ test<T>(FORTRAN_LAYOUT, FORTRAN_LAYOUT, C_LAYOUT      );
+ test<T>(FORTRAN_LAYOUT, C_LAYOUT      , C_LAYOUT      );
+}
 
- test(C_LAYOUT      , C_LAYOUT      , C_LAYOUT      , true);
- test(C_LAYOUT      , C_LAYOUT      , FORTRAN_LAYOUT);
- test(C_LAYOUT      , FORTRAN_LAYOUT, FORTRAN_LAYOUT);
- test(C_LAYOUT      , FORTRAN_LAYOUT, C_LAYOUT      );
- test(FORTRAN_LAYOUT, FORTRAN_LAYOUT, FORTRAN_LAYOUT);
- test(FORTRAN_LAYOUT, C_LAYOUT      , FORTRAN_LAYOUT);
- test(FORTRAN_LAYOUT, FORTRAN_LAYOUT, C_LAYOUT      );
- test(FORTRAN_LAYOUT, C_LAYOUT      , C_LAYOUT      );
+int main(int argc, char **argv) {
+ all_tests<double>();
+ all_tests<std::complex<double>>();
+ all_tests<long>();
  return 0;
 }
+
+

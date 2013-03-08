@@ -98,25 +98,27 @@ namespace triqs { namespace arrays { namespace blas {
    }
   }
 
- /*
+ // make the generic version for non lapack types or more complex types
+ // largely suboptimal 
+ template<typename MT1, typename MT2, typename MTOut> 
+  void gemm_generic  (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
+   // first resize if necessary and possible 
+   resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
+   if (A.dim1() != B.dim0()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< A.shape() << B.shape();
+   C() = 0;
+   for (int i=0; i<A.dim0(); ++i)
+    for (int k=0; k<A.dim1(); ++k)
+     for (int j=0; j<B.dim1(); ++j)
+      C(i,j) += A(i,k)*B(k,j);
+  }
+
  // generic version for non lapack 
  template<typename MT1, typename MT2, typename MTOut> 
- typename std::enable_if< !(is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value) >::type 
- gemm (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
- gemm_generic(alpha,A,B,beta,C);
- }
+  typename std::enable_if< !(is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value) >::type 
+  gemm (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
+   gemm_generic(alpha,A,B,beta,C);
+  }
 
- // make the generic version for non lapack 
- template<typename MT, typename MTOut> 
- void gemm_generic  (typename MT::value_type alpha, MT const & A, MT const & B, typename MT::value_type beta, MTOut & C) { 
-
- // first resize if necessary and possible 
- resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
-
- // ecrire a la main 
- }
-
-*/
 }}}// namespace
 
 
