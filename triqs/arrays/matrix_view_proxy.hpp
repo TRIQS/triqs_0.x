@@ -99,6 +99,7 @@ namespace triqs { namespace arrays {
   template<BOOST_PP_ENUM_PARAMS(POS,typename A) BOOST_PP_COMMA_IF(POS) typename ... Args>\
   value_type const & operator() (BOOST_PP_REPEAT(POS,AUX1,nil)  Args && ... args) const \
   { return (*A)(BOOST_PP_REPEAT(POS,AUX0,nil) n,std::forward<Args>(args)...);}\
+  friend std::ostream & operator <<(std::ostream & out, const_matrix_view_proxy const & x) { return out << matrix_view<value_type>(x);}\
  };\
 \
  template<typename ArrayType > class matrix_view_proxy<ArrayType,POS> : TRIQS_MODEL_CONCEPT(MutableMatrix)   {\
@@ -121,6 +122,7 @@ namespace triqs { namespace arrays {
    template<BOOST_PP_ENUM_PARAMS(POS,typename A) BOOST_PP_COMMA_IF(POS) typename ... Args>\
    value_type & operator() (BOOST_PP_REPEAT(POS,AUX1,nil) Args && ... args) const\
    { return (*A)(BOOST_PP_REPEAT(POS,AUX0,nil) n,std::forward<Args>(args)...);}\
+   friend std::ostream & operator <<(std::ostream & out, matrix_view_proxy const & x) { return out << matrix_view<value_type>(x);}\
 };
 
  BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil);

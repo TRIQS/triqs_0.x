@@ -146,8 +146,9 @@ namespace triqs { namespace clef {
  TRIQS_CLEF_OPERATION(divides,    /);
  TRIQS_CLEF_OPERATION(greater,    >);
  TRIQS_CLEF_OPERATION(less,       <);
- TRIQS_CLEF_OPERATION(geq,        >=);
  TRIQS_CLEF_OPERATION(leq,        <=);
+ TRIQS_CLEF_OPERATION(geq,        >=);
+ TRIQS_CLEF_OPERATION(eq,        ==);
 #undef TRIQS_CLEF_OPERATION
 
  // all unary operators....
