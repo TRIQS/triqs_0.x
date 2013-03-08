@@ -107,8 +107,11 @@ class HDFArchiveGroupBasicLayer :
         if c : self._group[key].attrs["__complex__"]= 1
         self.cached_keys.append(key)
   
-    def _flush(self) : 
+    def _flush(self):
         self._group.file.flush()
+
+    def _close(self):
+        self._group.file.close()
   
     def create_group (self,key):
         self._group.create_group(key)

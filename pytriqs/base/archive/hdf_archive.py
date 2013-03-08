@@ -383,6 +383,13 @@ class HDFArchive(HDFArchiveGroup):
         self.is_top_level = True
         for k,v in init : self[k]=v
 
+    # These two methods are necessary for "with"
+    def __enter__(self): return self
+
+    def __exit__(self, type, value, traceback):
+      self._flush()
+      self._close()
+
 #--------------------------------------------------------------------------------
 
 class HDFArchiveInert:
