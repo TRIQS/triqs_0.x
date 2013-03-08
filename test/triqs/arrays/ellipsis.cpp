@@ -52,7 +52,6 @@ int main(int argc, char **argv) {
  std::cerr<< B(0, ellipsis(), 2, 3 ) <<std::endl;
  std::cerr<< B( ellipsis(), 2, 3 ) <<std::endl;
 
-
  assert_all_close (B(0, ellipsis(), 3 ) , B(0, range(),range(), 3 ) , 1.e-15);
  assert_all_close (B(0, ellipsis(),2, 3 ) , B(0, range(), 2, 3 ) , 1.e-15);
  assert_all_close (B( ellipsis(),2, 3 ) , B( range(),range(),  2, 3 ) , 1.e-15);
@@ -64,8 +63,8 @@ int main(int argc, char **argv) {
  ///.....
 
  {
- array<double,2> A(5,2); 
- array<double,3> B(5,2,3); 
+ array<double,2> A(5,2); A() =2; 
+ array<double,3> B(5,2,3); B() = 3;
  std::cerr<< sum0(A) << sum0(B) <<std::endl;
  }
 
