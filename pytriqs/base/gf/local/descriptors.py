@@ -113,10 +113,10 @@ class Omega_(Base):
         if G.mesh.__class__.__name__ not in ['MeshImFreq', 'MeshReFreq']:
             raise TypeError, "This initializer is only correct in frequency"
 
-        t,Id  = G.tail, numpy.identity(G.N1)
-        G.tail = TailGf(shape = t.shape, size = t.size, order_min=-1)
+        Id = numpy.identity(G.N1)
+        G.tail.zero()
         G.tail[-1][:,:] = Id
-        Function(lambda om: om*numpy.identity(G.N1), None)(G)
+        for n,om in enumerate(G.mesh): G.data[:,:,n] = om*Id
         return G
 
 Omega = Omega_()
