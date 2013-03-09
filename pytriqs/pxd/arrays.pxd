@@ -1,10 +1,5 @@
-cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::arrays" : 
-    ctypedef int ONE   "1" 
-    ctypedef int TWO   "2" 
-    ctypedef int THREE "3" 
-    ctypedef int FOUR  "4" 
-    ctypedef int FIVE  "5" 
-    ctypedef int SIX   "6" 
+from clef cimport *
+cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::arrays" :
 
     cdef cppclass array "triqs::arrays::array" [T,R] : 
         array()
@@ -25,6 +20,16 @@ cdef extern from "<triqs/python_tools/array_interface.hpp>" namespace "triqs::ar
         void operator << (array_view &)
         object to_python()
         int shape(int)
+        # bug in cython
+        #_lazy_expr operator()(_lazy_expr&)
+        #_lazy_expr operator()(_lazy_expr&, _lazy_expr&)
+        #_lazy_expr operator()(_lazy_expr&, _lazy_expr&, _lazy_expr&)
+        #_lazy_expr operator()(_lazy_expr&, _lazy_expr&, _lazy_expr&, _lazy_expr&)
+        _lazy_expr call "operator()" (_lazy_expr&)
+        _lazy_expr call "operator()" (_lazy_expr&, _lazy_expr&)
+        _lazy_expr call "operator()" (_lazy_expr&, _lazy_expr&, _lazy_expr&)
+        _lazy_expr call "operator()" (_lazy_expr&, _lazy_expr&, _lazy_expr&, _lazy_expr&)
+        _lazy_expr call "operator()" (_lazy_expr&, _lazy_expr&, _lazy_expr&, _lazy_expr&, _lazy_expr&)
 
     cdef cppclass matrix_view "triqs::arrays::matrix_c" [T] :
         matrix_view() 
