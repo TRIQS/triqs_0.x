@@ -275,6 +275,8 @@ class SumkLDA:
                 glist = lambda : [ GfImFreq(indices = al, beta = beta) for a,al in gf_struct]
             self.Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
             self.Gupf.zero()
+            self.Gupf_id = self.Gupf.copy()
+            self.Gupf_id <<= iOmega_n
 
         GFsize = [ gf.N1 for sig,gf in self.Gupf]  
         unchangedsize = all( [ self.n_orbitals[ik,ntoi[bln[ib]]]==GFsize[ib] 
@@ -290,12 +292,14 @@ class SumkLDA:
                 glist = lambda : [ GfImFreq(indices = al, beta = beta) for a,al in gf_struct]    
             self.Gupf = BlockGf(name_list = a_list, block_list = glist(),make_copies=False)
             self.Gupf.zero()
+            self.Gupf_id = self.Gupf.copy()
+            self.Gupf_id <<= iOmega_n
 
         
         idmat = [numpy.identity(self.n_orbitals[ik,ntoi[bl]],numpy.complex_) for bl in bln]  
         #for ibl in range(self.n_spin_blocks_gf[self.SO]): mupat[ibl] *= mu
 
-        self.Gupf <<= iOmega_n
+        self.Gupf <<= self.Gupf_id
         M = copy.deepcopy(idmat)
         for ibl in range(self.n_spin_blocks_gf[self.SO]): 
             ind = ntoi[bln[ibl]]
@@ -304,10 +308,8 @@ class SumkLDA:
         self.Gupf -= M
 
         if (with_Sigma):
-            tmp = self.Gupf.copy()    # init temporary storage
             for icrsh in xrange(self.n_corr_shells):
-                for sig,gf in tmp: tmp[sig] <<= self.upfold(ik,icrsh,sig,stmp[icrsh][sig],gf)
-                self.Gupf -= tmp      # adding to the upfolded GF
+                for sig,gf in self.Gupf: gf -= self.upfold(ik,icrsh,sig,stmp[icrsh][sig],gf)
 
         self.Gupf.invert()
 
