@@ -28,12 +28,7 @@ namespace triqs { namespace python_tools {
  template<typename T, typename U> struct inserter_in_map {
   T * p;
   inserter_in_map(T & x) : p(&x) {} 
-  void operator()(std::string const & key, U const & x) { 
-   std::cout  << "inseting " << x << std::endl ;
-   (*p)[key] = x;
-   //std::forward<U>(x);
-   //(*p)[key] = std::forward<U>(x);
-  }
+  void operator()(std::string const & key, U const & x) { (*p)[key] = x; }
  };
 
  template<typename T, typename U> struct inserter_in_map2 {

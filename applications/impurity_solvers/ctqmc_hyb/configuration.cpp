@@ -21,7 +21,7 @@
  ******************************************************************************/
 
 #include "ctqmc.hpp"
-#include <triqs/python_tools/iterator_python_sequence.hpp>
+#include "./iterator_python_sequence.hpp"
 
 using namespace std;
 using namespace boost;

@@ -172,7 +172,7 @@ Map and fold
     double f(int i) { return i*10;}
 
     int main() {
-      auto F = tqa::map(boost::function<double(int)>(f));
+      auto F = tqa::map(std::function<double(int)>(f));
       tqa::array<int,2> A(2,2); A() =2;
  
       tqa::array<double,2> B,C;
