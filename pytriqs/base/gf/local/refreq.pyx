@@ -13,6 +13,9 @@ cdef class GfReFreq_cython ( GfGeneric_cython ) :
     def set_from_pade(self, GfImFreq_cython gw, n_matsubara_freq = 100, freq_offset = 0.0) :
         pade(self._c, gw._c, n_matsubara_freq, freq_offset)
 
+    def __dealloc__ (self):
+        pass
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfReFreq ( gr, std_string key) : 

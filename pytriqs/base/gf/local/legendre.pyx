@@ -24,6 +24,9 @@ cdef class GfLegendre_cython ( GfGeneric_cython ) :
     def enforce_discontinuity(self, disc):
         enforce_discontinuity(self._c, array_view[double,TWO](disc))
 
+    def __dealloc__ (self):
+        pass
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfLegendre ( gr, std_string key) : 

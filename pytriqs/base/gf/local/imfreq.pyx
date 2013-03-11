@@ -21,6 +21,9 @@ cdef class GfImFreq_cython ( GfGeneric_cython ) :
     def density(self):
         return density(self._c).to_python()
 
+    def __dealloc__ (self):
+        pass
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImFreq ( gr, std_string key) : 

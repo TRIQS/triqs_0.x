@@ -10,6 +10,9 @@ cdef class GfReTime_cython ( GfGeneric_cython ) :
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)
 
+    def __dealloc__ (self):
+        pass
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfReTime ( gr, std_string key) : 

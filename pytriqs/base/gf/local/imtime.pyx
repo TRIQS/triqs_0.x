@@ -18,6 +18,9 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
         """Fills self with the Legendre transform of gl"""
         self._c << lazy_legendre_imtime(gl._c)
 
+    def __dealloc__ (self):
+        pass
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfImTime ( gr, std_string key) : 
