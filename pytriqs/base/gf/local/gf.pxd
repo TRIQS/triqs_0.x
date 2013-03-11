@@ -56,5 +56,6 @@ include "tail.pxd"
 include "imfreq.pxd"
 include "imtime.pxd"
 include "refreq.pxd"
+include "retime.pxd"
 include "legendre.pxd"
 
