@@ -4,3 +4,5 @@ add_triqs_test_txt(array_cython )
 
 cython_module( expr_cython expr base/test_expr )
 
+cython_module( bug bug base/test_bug )
+
