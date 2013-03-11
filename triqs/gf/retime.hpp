@@ -51,6 +51,7 @@ namespace triqs { namespace gf {
   static std::string h5_name() { return "retime_gf";}
 
  };
+
  /// ---------------------------  evaluator ---------------------------------
 
  template<>
@@ -62,7 +63,6 @@ namespace triqs { namespace gf {
      size_t index; double w; bool in;
      std::tie(in, index, w) = windowing(mesh,t0);
      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     //return data(arrays::ellipsis(),mesh.index_to_linear(index));
      arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
      return res;
     }
@@ -81,13 +81,20 @@ namespace triqs { namespace gf {
  // -------------------------------   Factories  --------------------------------------------------
 
  template<> struct gf_factories<retime> : retime { 
-
   typedef gf<retime> gf_t;
 
+  static mesh_t make_mesh(double tmin, double tmax, size_t n_time_points, mesh_kind mk) {
+   return mesh_t(domain_t(), tmin, tmax, n_time_points, mk);
+  }
+
   static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) {
-   retime::mesh_t m(retime::domain_t(), tmin, tmax, n_time_points, full_bins);
-   gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
+   gf_t::data_non_view_t A(shape.append(n_time_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_time_points, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+  }
+
+  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
+   gf_t::data_non_view_t A(shape.append(n_time_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_time_points, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
  };

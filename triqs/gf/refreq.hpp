@@ -26,8 +26,6 @@
 #include "./domains/R.hpp"
 #include "./meshes/linear.hpp"
 
-// Shall we use the same type as for retime : same code, almost ??
-
 namespace triqs { namespace gf {
 
  struct refreq {
@@ -51,6 +49,7 @@ namespace triqs { namespace gf {
   typedef indices_2_t indices_t;
 
   static std::string h5_name() { return "refreq_gf";}
+
  };
 
  /// ---------------------------  evaluator ---------------------------------
