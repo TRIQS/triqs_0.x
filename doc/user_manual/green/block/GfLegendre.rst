@@ -23,7 +23,7 @@ function in imaginary time <GfImTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf.local.GfLegendre
+.. autoclass:: pytriqs.gf.local.GfLegendre
   :members: density, enforce_discontinuity
  
 

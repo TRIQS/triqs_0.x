@@ -20,13 +20,13 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-from pytriqs.base.gf.local import BlockGf, GfImFreq, inverse
-from pytriqs.base.lattice.super_lattice import TBSuperLattice
-from pytriqs.base.lattice.tight_binding import TBLattice
-from pytriqs.base.sumk import *
-from pytriqs.base.dmft import DMFTLoopGeneric
-import pytriqs.base.utility.mpi as mpi
+from pytriqs.archive import *
+from pytriqs.gf.local import BlockGf, GfImFreq, inverse
+from pytriqs.lattice.super_lattice import TBSuperLattice
+from pytriqs.lattice.tight_binding import TBLattice
+from pytriqs.sumk import *
+from pytriqs.dmft import DMFTLoopGeneric
+import pytriqs.utility.mpi as mpi
 
 #
 # A plaquette calculation with CDMFT, and a basic Riemann sum over BZ
@@ -41,7 +41,7 @@ Field_AF, Field_F = 0.0, 0.0
 #
 #  Solver
 #
-from pytriqs.solvers.ctqmc_hyb.models import Solver_2x2_Para_Hubbard
+from pytriqs.applications.impurity_solvers.ctqmc_hyb.models import Solver_2x2_Para_Hubbard
 S = Solver_2x2_Para_Hubbard(Beta = Beta, U_interact = 4.0)
 # I can change some parameter in the S. namespace, overruling the defaults
 # I could even change them from iteration to iteration in the loop below.

@@ -1,6 +1,6 @@
-from pytriqs.base.gf.local import *
-from pytriqs.solvers.operators import *
-from pytriqs.solvers.ctqmc_hyb import Solver
+from pytriqs.gf.local import *
+from pytriqs.applications.impurity_solvers.operators import *
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
 
 D, V, U = 1.0, 0.2, 4.0
 e_f, Beta = -U/2.0, 50
@@ -32,8 +32,8 @@ for spin, g0 in S.G0 :
 S.Solve()
 
 # Save the results in an hdf5 file (only on the master node)
-from pytriqs.base.archive import HDFArchive
-import pytriqs.base.utility.mpi as mpi
+from pytriqs.archive import HDFArchive
+import pytriqs.utility.mpi as mpi
 
 if mpi.is_master_node():
   Results = HDFArchive("global_moves.h5",'w')

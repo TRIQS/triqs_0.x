@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
+from pytriqs.archive import *
 from numpy import *
 
 

@@ -20,8 +20,8 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-from pytriqs.solvers.hubbard_I.solver import Solver
+from pytriqs.archive import *
+from pytriqs.applications.impurity_solvers.hubbard_I.solver import Solver
 import numpy
 
 S = Solver(beta = 200, U_int = 6.0, J_hund=0.6, l=2, use_spin_orbit=False)

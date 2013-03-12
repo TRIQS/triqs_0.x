@@ -17,7 +17,7 @@ Before doing the calculation, we have to intialize all the objects that we will 
 :class:`SumkLDA` class. It contains all basic routines that are necessary to perform a summation in k-space 
 to get the local quantities used in DMFT. It is initialized by::
 
-  from pytriqs.dft.sumk_lda import *
+  from pytriqs.applications.dft.sumk_lda import *
   SK = SumkLDA(hdf_file = filename)
 
 The only necessary parameter is the filename of the hdf5 archive. In addition, there are some optional parameters:
@@ -40,7 +40,7 @@ Setting up the Multi-Band Solver
 
 There is a module that helps setting up the multiband CTQMC solver. It is loaded and initialized by::
 
-  from pytriqs.dft.solver_multiband import *
+  from pytriqs.applications.dft.solver_multiband import *
   S = SolverMultiBand(Beta, U_interact, J_Hund, Norb)
 
 The necessary parameters are the inverse temperature `beta`, the Coulomb interaction `U_interact`, the Hund's rule coupling `J_hund`,
@@ -109,8 +109,8 @@ Coulomb interaction, Hund's rule coupling, and the type of double-counting that 
 
 At the end of the calculation, we can save the Greens function and self energy into a file::
 
-  from pytriqs.base.archive import HDFArchive
-  import pytriqs.base.utility.mpi as mpi
+  from pytriqs.archive import HDFArchive
+  import pytriqs.utility.mpi as mpi
   if mpi.is_master_node():
       R = HDFArchive("single_site_bethe.h5",'w')
       R["G"] = S.G

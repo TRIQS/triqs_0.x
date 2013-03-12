@@ -20,9 +20,9 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import HDFArchive
-from pytriqs.base.gf.local import *
-from pytriqs.base.dmft import DMFTLoopGeneric
+from pytriqs.archive import HDFArchive
+from pytriqs.gf.local import *
+from pytriqs.dmft import DMFTLoopGeneric
 
 #
 #  Example of DMFT single site solution with CTQMC
@@ -36,8 +36,8 @@ Chemical_Potential = U/2.0
 Beta = 100
 
 # Construct a CTQMC solver
-from pytriqs.solvers.operators import *        # imports the class manipulating C, C_dagger and N = C_dagger C
-from pytriqs.solvers.ctqmc_hyb import Solver   # imports the solver class
+from pytriqs.applications.impurity_solvers.operators import *        # imports the class manipulating C, C_dagger and N = C_dagger C
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver   # imports the solver class
 S = Solver(Beta = Beta,                                                      # inverse temperature
            GFstruct = [ ('up',[1]), ('down',[1]) ],                          # Structure of the Green function
            H_Local = U * N('up',1) * N('down',1),                            # Local Hamiltonian

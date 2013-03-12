@@ -20,10 +20,10 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-from pytriqs.base.gf.local import *
+from pytriqs.archive import *
+from pytriqs.gf.local import *
 import numpy, copy
-from pytriqs.base.utility.my_utils import conjugate
+from pytriqs.utility.my_utils import conjugate
 
 h=HDFArchive('gf_base_op.output.h5','w')
 

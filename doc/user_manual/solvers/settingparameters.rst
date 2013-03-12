@@ -6,8 +6,8 @@ Take the time to go through this little guide as it can help you avoid doing
 simple mistakes. At first you need to create an instance of the CTQMC solver
 class. This is done with::
 
-    from pytriqs.solvers.operators import *
-    from pytriqs.solvers.ctqmc_hyb import Solver
+    from pytriqs.applications.impurity_solvers.operators import *
+    from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
 
     # Create a solver instance
     S = Solver( Beta = invT, parameters )

@@ -1,4 +1,4 @@
-from pytriqs.solvers.operators import *
+from pytriqs.applications.impurity_solvers.operators import *
 
 H = C('up',1) * Cdag('up',2) + C('up',2) * Cdag('up',1)
 print H

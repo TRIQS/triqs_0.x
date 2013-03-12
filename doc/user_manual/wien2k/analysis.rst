@@ -14,7 +14,7 @@ This section explains how to use some tools of the package in order to analyse t
 The analysing tools can be found in an extension of the :class:`SumkLDA` class, they are
 loaded by::
 
-  from pytriqs.dft.sumk_lda_tools import *
+  from pytriqs.applications.dft.sumk_lda_tools import *
 
 This import the module ``SumkLDATools``. There are two practical tools, for which you don't
 need a self energy on the real axis:

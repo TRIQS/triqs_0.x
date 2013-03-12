@@ -23,8 +23,8 @@
 from numpy import array, arange
 from math import pi
 from cmath import sqrt, log
-from pytriqs.base.gf.local import GfImFreq, GfReFreq
-from pytriqs.base.gf.local.descriptors import Function
+from pytriqs.gf.local import GfImFreq, GfReFreq
+from pytriqs.gf.local.descriptors import Function
 
 beta = 100  # Inverse temperature
 L = 10      # Number of Matsubara frequencies used in the Pade approximation
@@ -54,6 +54,6 @@ gm.tail[1] = array([[1.0]])
 g_pade = GfReFreq(indices = [0], omega_min = -5.995, omega_max = 5.995, n_freq_points = 1200, name = "g_pade")
 g_pade.set_from_pade(gm, n_matsubara_freq = L, freq_offset = eta)
 
-from pytriqs.base.archive import HDFArchive
+from pytriqs.archive import HDFArchive
 R = HDFArchive('pade.output.h5','w')
 R['g_pade'] = g_pade

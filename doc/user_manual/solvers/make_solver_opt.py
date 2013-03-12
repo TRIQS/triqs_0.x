@@ -1,4 +1,4 @@
-from pytriqs.solvers.ctqmc_hyb import Solver
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
 import string
 import textwrap
 

@@ -21,9 +21,9 @@
 #
 ################################################################################
 
-from pytriqs.dft.sumk_lda import *
-from pytriqs.dft.converters.wien2k_converter import *
-from pytriqs.base.archive import *
+from pytriqs.applications.dft.sumk_lda import *
+from pytriqs.applications.dft.converters.wien2k_converter import *
+from pytriqs.archive import *
 
 #=====================================================
 #Basic input parameters:
@@ -49,7 +49,7 @@ Norb = SK.corr_shells[0][3]
 l = SK.corr_shells[0][2]
 
 
-from pytriqs.dft.solver_multiband import *
+from pytriqs.applications.dft.solver_multiband import *
 S=SolverMultiBand(beta=Beta,U_interact=U,J_hund=J,n_orb=Norb,use_matrix=useMatrix, T=SK.T[0] ,gf_struct=SK.gf_struct_solver[0],
                   map=SK.map[0], l=l, deg_orbs=SK.deg_shells[0])
 

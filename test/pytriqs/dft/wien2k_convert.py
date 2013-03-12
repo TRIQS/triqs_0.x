@@ -20,8 +20,8 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-from pytriqs.dft.converters import Wien2kConverter
+from pytriqs.archive import *
+from pytriqs.applications.dft.converters import Wien2kConverter
 
 
 

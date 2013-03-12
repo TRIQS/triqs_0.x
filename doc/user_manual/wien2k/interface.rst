@@ -22,7 +22,7 @@ were written by the band structure package :program:`Wien2k/dmftproj`.
 For this purpose we
 use the python module :class:`Wien2kConverter`. It is initialised as::
 
-  from pytriqs.dft.converters.wien2k_converter import *
+  from pytriqs.applications.dft.converters.wien2k_converter import *
   Converter = Wien2kConverter(filename = material_of_interest)
 
 The only necessary parameter to this construction is the parameter `filename`.

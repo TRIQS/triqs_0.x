@@ -20,8 +20,8 @@
 #
 ################################################################################
 
-from pytriqs.base.archive import *
-from pytriqs.base.gf.local import *
+from pytriqs.archive import *
+from pytriqs.gf.local import *
 import numpy
 
 

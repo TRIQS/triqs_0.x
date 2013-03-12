@@ -1,7 +1,7 @@
 import numpy
 
-from pytriqs.base.gf.local import *
-from pytriqs.solvers import SolverBase
+from pytriqs.gf.local import *
+from pytriqs.applications.impurity_solvers import SolverBase
 
 class Solver(SolverBase):
     """A simple IPT solver for the symmetric one band Anderson model"""

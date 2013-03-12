@@ -25,7 +25,7 @@ We solve this model using the hybridization expansion Continuous Time Quantum Mo
 proposed by `P. Werner et al. <http://link.aps.org/doi/10.1103/PhysRevLett.97.076405>`_
 
 To this end we first initialize the ``Solver`` class of the TRIQS CT-Hyb implementaion 
-``pytriqs.solvers.ctqmc_hyb``.
+``pytriqs.applications.impurity_solvers.ctqmc_hyb``.
 Then, after having constructed the non-interacting Green's function :math:`G^{-1}_{0,\sigma}`, 
 we launch the CT-Hyb calculations by calling the ``Solve`` method of the ``Solver`` class. 
 Finally, the resulting interacting Green's function as well as average impurity occupancy 

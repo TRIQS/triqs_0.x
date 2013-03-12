@@ -1,6 +1,6 @@
-from pytriqs.base.gf.local import *
-from pytriqs.solvers.operators import *
-from pytriqs.solvers.ctqmc_hyb import Solver
+from pytriqs.gf.local import *
+from pytriqs.applications.impurity_solvers.operators import *
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
 
 D, V, U = 1.0, 0.2, 4.0
 e_f, Beta = -U/2.0, 50
@@ -20,8 +20,8 @@ S = Solver(Beta = Beta,                             # inverse temperature
                (0.05, lambda (a,alpha,dag) : ( {'up':'down','down':'up'}[a],alpha,dag ) ) ], 
            )
 
-from pytriqs.base.archive import HDFArchive
-import pytriqs.base.utility.mpi as mpi
+from pytriqs.archive import HDFArchive
+import pytriqs.utility.mpi as mpi
 
 for random_name in ['mt11213b','lagged_fibonacci607']:
 

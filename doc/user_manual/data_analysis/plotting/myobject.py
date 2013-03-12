@@ -13,5 +13,5 @@ class myObject(object):
 
 X = myObject()
 
-from pytriqs.base.plot.mpl_interface import oplot
+from pytriqs.plot.mpl_interface import oplot
 oplot(X,'-o')

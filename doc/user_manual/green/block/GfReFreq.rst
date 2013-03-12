@@ -18,7 +18,7 @@ where :math:`G(t)` is the :ref:`Green function in real time <GfReTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf.local.GfReFreq
+.. autoclass:: pytriqs.gf.local.GfReFreq
   :members: density, set_from_fourier, transpose, conjugate, set_from_pade
  
 

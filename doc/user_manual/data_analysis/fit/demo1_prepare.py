@@ -1,10 +1,10 @@
 import numpy as np
-from pytriqs.base.plot.mpl_interface import oplot
-from pytriqs.base.gf.local import *
-from pytriqs.base.gf.local.descriptors import iOmega_n
+from pytriqs.plot.mpl_interface import oplot
+from pytriqs.gf.local import *
+from pytriqs.gf.local.descriptors import iOmega_n
 g = GfImFreq(indices = [1], beta = 300, n_matsubara = 1000, name = "g")
 
-from pytriqs.base.archive import HDFArchive
+from pytriqs.archive import HDFArchive
 R = HDFArchive('myfile.h5', 'w')
 
 for n, Z0 in enumerate( np.arange (1,0, -0.1) ) :
