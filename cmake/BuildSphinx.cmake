@@ -36,4 +36,4 @@ MARK_AS_ADVANCED( SPHINXBUILD_EXECUTABLE )
 
 SET(sphinx_top ${CMAKE_CURRENT_BINARY_DIR}/html/contents.html)
 add_custom_command(OUTPUT ${sphinx_top} DEPENDS ${SOURCES} COMMAND ${SPHINXBUILD_EXECUTABLE} -c . -b html ${DOC_SOURCE} html)
-add_custom_target(docs_sphinx${DOC_EXT} ALL DEPENDS ${sphinx_top})
+add_custom_target(docs_sphinx${DOC_EXT} ALL DEPENDS ${sphinx_top} ${DOC_SOURCE})

@@ -3,6 +3,7 @@
 option(Sphinx_Math_Generator_MathJax " " OFF)
 if (Sphinx_Math_Generator_MathJax)
  SET(SPHINX_MATH_GENERATOR "mathjax")
+ SET(MATHJAX_PATH "MathJax" CACHE STRING "Path to the MathJax directory") 
 else (Sphinx_Math_Generator_MathJax)
  SET(SPHINX_MATH_GENERATOR "pngmath")
 endif (Sphinx_Math_Generator_MathJax)

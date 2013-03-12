@@ -1,13 +1,11 @@
 
 SET(PYTHON_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/injector.py
   ${CMAKE_CURRENT_SOURCE_DIR}/dichotomy.py
   ${CMAKE_CURRENT_SOURCE_DIR}/dist_on_nodes.py
   ${CMAKE_CURRENT_SOURCE_DIR}/mpi.py
   ${CMAKE_CURRENT_SOURCE_DIR}/my_utils.py
   ${CMAKE_CURRENT_SOURCE_DIR}/parameters.py
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_diff.py
   ${CMAKE_CURRENT_SOURCE_DIR}/redirect.py
 )
 
