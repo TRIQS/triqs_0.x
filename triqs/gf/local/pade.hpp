@@ -28,7 +28,7 @@
 
 namespace triqs { namespace gf {
 
-  void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_matsubara, double freq_offset);
+  void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset);
 
   //namespace tags { struct pade{}; }
 

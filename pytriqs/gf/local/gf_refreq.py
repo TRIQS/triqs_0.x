@@ -11,11 +11,12 @@ class GfReFreq ( GfGeneric, GfReFreq_cython ) :
         Matsubara frequencies yourself, or give the parameters to build it.
         All parameters must be given with keyword arguments.
 
-        GfReFreq(indices, omega_min, omega_max, n_time_points, data, tail, name)
+        GfReFreq(indices, window, n_points, data, tail, name)
 
               * ``indices``:  a list of indices names of the block
-              * ``n_freq_points``  : Number of time points in the mesh
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh.
+              * ``window``:  a tuple (omega_min, omega_max)
+              * ``n_points``  : Number of frequency points in the mesh
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -23,7 +24,7 @@ class GfReFreq ( GfGeneric, GfReFreq_cython ) :
 
               * ``indices``:  a list of indices names of the block
               * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Imaginary_Time
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh.
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -34,9 +35,10 @@ class GfReFreq ( GfGeneric, GfReFreq_cython ) :
         """
         mesh = d.pop('mesh',None)
         if mesh is None :
-            omega_min = d.pop('omega_min')
-            omega_max = d.pop('omega_max')
-            n_max = d.pop('n_freq_points',10000)
+            window = d.pop('window')
+            omega_min = window[0]
+            omega_max = window[1]
+            n_max = d.pop('n_points',10000)
             kind = d.pop('kind','F')
             mesh = MeshReFreq(omega_min, omega_max, n_max, kind)
 

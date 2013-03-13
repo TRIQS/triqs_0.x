@@ -12,13 +12,13 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
         Matsubara frequencies yourself, or give the parameters to build it.
         All parameters must be given with keyword arguments.
 
-        GfImFreq(indices, beta, statistic, n_matsubara, data, tail, name)
+        GfImFreq(indices, beta, statistic, n_points, data, tail, name)
 
               * ``indices``:  a list of indices names of the block
               * ``beta``:  Inverse Temperature
               * ``statistic``:  'F' or 'B'
-              * ``n_matsubara``:  Number of Matsubara frequencies
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_matsubara) representing the value of the Green function on the mesh.
+              * ``n_points``:  Number of Matsubara frequencies
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -26,7 +26,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
 
               * ``indices``:  a list of indices names of the block
               * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Imaginary_Frequency
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_matsubara) representing the value of the Green function on the mesh.
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),:) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -39,7 +39,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
         if mesh is None :
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d.pop('beta'))
-            n_max = d.pop('n_matsubara',1025)
+            n_max = d.pop('n_points',1025)
             stat = d.pop('statistic','F')
             sh = 1 if stat== 'F' else 0
             mesh = MeshImFreq(beta,'F',n_max)

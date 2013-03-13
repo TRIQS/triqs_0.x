@@ -11,11 +11,12 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
         Matsubara frequencies yourself, or give the parameters to build it.
         All parameters must be given with keyword arguments.
 
-        GfReTime(indices, t_min, t_max, n_time_points, data, tail, name)
+        GfReTime(indices, window, n_points, data, tail, name)
 
               * ``indices``:  a list of indices names of the block
-              * ``n_time_points``  : Number of time points in the mesh
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh.
+              * ``window``:  a tuple (t_min, t_max)
+              * ``n_points``  : Number of time points in the mesh
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -23,7 +24,7 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
 
               * ``indices``:  a list of indices names of the block
               * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Imaginary_Time
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh.
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail
               * ``name``:  a name of the GF
 
@@ -34,9 +35,10 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
         """
         mesh = d.pop('mesh',None)
         if mesh is None :
-            t_min = d.pop('time_min')
-            t_max = d.pop('time_max')
-            n_max = d.pop('n_time_points',10000)
+            window = d.pop('window')
+            t_min = window[0]
+            t_max = window[1]
+            n_max = d.pop('n_points',10000)
             kind = d.pop('kind','F')
             mesh = MeshReTime(t_min, t_max, n_max, kind)
 
@@ -58,7 +60,7 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
         import gf_refreq
         om0 = 2*pi/(self.mesh.t_max - self.mesh.t_min)
         N = len(self.mesh)
-        gw = gf_refreq.GfReFreq(indices = self.indices, omega_min = -(N/2) * om0, omega_max =  (N/2) * om0, n_freq_points = N)
+        gw = gf_refreq.GfReFreq(indices = self.indices, window = (-(N/2) * om0, (N/2) * om0), n_points = N)
         gw.set_from_fourier(self)
         return gw
 

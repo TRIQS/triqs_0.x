@@ -2,7 +2,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import GfImFreq
 
 # Define a Green function 
-G = GfImFreq ( indices = [1], beta = 10, n_matsubara = 1000) 
+G = GfImFreq ( indices = [1], beta = 10, n_points = 1000)
       
 # Opens the file myfile.h5, in read/write mode
 R = HDFArchive('myfile.h5', 'w')

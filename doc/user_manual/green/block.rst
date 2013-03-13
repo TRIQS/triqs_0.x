@@ -53,7 +53,7 @@ Just like numpy arrays, the Green's function can be sliced, *when the indices ar
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
   >>> from pytriqs.gf.local import *
-  >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 1000, name = "imp")
+  >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_points = 1000, name = "imp")
   >>> g[1:3:,1:3]
   GfImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
 
@@ -89,7 +89,7 @@ the = sign is possible and equivalent to the `<<=` operator.
   
     from pytriqs.gf.local import *
     # Create the Matsubara-frequency Green's function 
-    g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "imp")
+    g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
     
     g    <<= inverse( Omega + 0.5 )   # correct 
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
@@ -190,7 +190,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
 * Tails can be accessed with the ``tail`` property. Moreover, in order
   to have access to :math:`M_i`, one uses the bracket. For example::
 
-   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
+   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
    >>> g <<= 2.0
    >>> print g.tail[0]
 
@@ -208,7 +208,7 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
   So you have to set the tail properly yourself (or be sure that you will not need it later).
   For example::
 
-   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
+   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
    g <<= Function(lambda x: 3/x)
    g.tail.zero()
    g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )

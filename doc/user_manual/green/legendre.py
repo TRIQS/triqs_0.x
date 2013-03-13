@@ -7,6 +7,6 @@ gw <<= SemiCircular(half_bandwidth = 1)
 
 # Create a Legendre Green's function with 40 coefficients
 # initialize it from gw and plot it
-gl = GfLegendre(indices = [1], beta = 50, n_legendre_points = 40)
+gl = GfLegendre(indices = [1], beta = 50, n_points = 40)
 gl <<= MatsubaraToLegendre(gw)
 oplot(gl, '-o')

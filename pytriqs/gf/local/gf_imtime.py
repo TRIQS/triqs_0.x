@@ -11,13 +11,13 @@ class GfImTime ( GfGeneric, GfImTime_cython ) :
         Matsubara frequencies yourself, or give the parameters to build it.
         All parameters must be given with keyword arguments.
 
-        GfImTime(indices, beta, statistic, n_time_points, data, tail, name)
+        GfImTime(indices, beta, statistic, n_points, data, tail, name)
 
               * ``indices``:  a list of indices names of the block
               * ``beta``:  Inverse Temperature 
               * ``statistic``:  'F' or 'B'
-              * ``n_time_points``  : Number of time points in the mesh
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
+              * ``n_points``  : Number of time points in the mesh
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail 
               * ``name``:  a name of the GF
 
@@ -25,7 +25,7 @@ class GfImTime ( GfGeneric, GfImTime_cython ) :
            
               * ``indices``:  a list of indices names of the block
               * ``mesh``:  a MeshGf object, such that mesh.TypeGF== GF_Type.Imaginary_Time 
-              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_time_points) representing the value of the Green function on the mesh. 
+              * ``data``:   A numpy array of dimensions (len(indices),len(indices),n_points) representing the value of the Green function on the mesh.
               * ``tail``:  the tail 
               * ``name``:  a name of the GF
 
@@ -39,7 +39,7 @@ class GfImTime ( GfGeneric, GfImTime_cython ) :
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d.pop('beta'))
             stat = d.pop('statistic','F') 
-            n_max = d.pop('n_time_points',10000)
+            n_max = d.pop('n_points',10000)
             kind = d.pop('kind','H') 
             mesh = MeshImTime(beta,stat,n_max,kind)
 

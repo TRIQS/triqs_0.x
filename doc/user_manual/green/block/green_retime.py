@@ -1,10 +1,11 @@
-import numpy
-from pytriqs.gf.local import GfReFreq,SemiCircular
-from pytriqs.plot.mpl_interface import oplot
+from pytriqs.gf.local import GfReTime
 
-gf = GfReFreq(indices = [0], omega_min = -30, omega_max = 30, n_freq_points = 1000, name = "my_block")
-gf <<= SemiCircular(half_bandwidth = 2)
+g = GfReTime(indices = ['eg1', 'eg2'], window = (-5, 5), n_points = 1000, name = "egBlock")
 
-oplot(gf.imag, '-o')
+#Example to be written with fourier transform!
+
+#from pytriqs.plot.mpl_interface import oplot
+#oplot(g['eg1','eg1'], '-o', RI = 'S')
+#oplot(g['eg2','eg2'], '-x', RI = 'S')
 
 

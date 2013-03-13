@@ -28,7 +28,7 @@ namespace triqs { namespace gf {
 
  typedef std::complex<double> dcomplex;
 
- void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_matsubara, double freq_offset) {
+ void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset) {
 
   // make sure the GFs have the same structure
   assert(gw.shape() == gr.shape());
@@ -41,12 +41,12 @@ namespace triqs { namespace gf {
   for (int n1=0; n1<N1; n1++) {
     for (int n2=0; n2<N2; n2++) {
 
-      arrays::vector<dcomplex> z_in(n_matsubara); // complex points
-      arrays::vector<dcomplex> u_in(n_matsubara); // values at these points
-      arrays::vector<dcomplex> a(n_matsubara);    // corresponding Pade coefficients
+      arrays::vector<dcomplex> z_in(n_points); // complex points
+      arrays::vector<dcomplex> u_in(n_points); // values at these points
+      arrays::vector<dcomplex> a(n_points);    // corresponding Pade coefficients
 
-      for (int i=0; i < n_matsubara; ++i) z_in(i) = gw.mesh()[i];
-      for (int i=0; i < n_matsubara; ++i) u_in(i) = gw.on_mesh(i)(n1,n2);
+      for (int i=0; i < n_points; ++i) z_in(i) = gw.mesh()[i];
+      for (int i=0; i < n_points; ++i) u_in(i) = gw.on_mesh(i)(n1,n2);
 
       triqs::utility::pade_approximant PA(z_in,u_in);
 

@@ -2,7 +2,7 @@ from pytriqs.plot.mpl_interface import oplot
 from pytriqs.fit.fit import Fit, linear, quadratic
 from pytriqs.gf.local import *
 from pytriqs.gf.local.descriptors import iOmega_n
-g = GfImFreq(indices = [1], beta = 300, n_matsubara = 1000, name = "g")
+g = GfImFreq(indices = [1], beta = 300, n_points = 1000, name = "g")
 g <<= inverse( iOmega_n + 0.5 )
 
 print " van plot"

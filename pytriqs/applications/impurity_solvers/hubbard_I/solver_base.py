@@ -64,7 +64,7 @@ class SolverBaseHub(SolverBase):
 
         # construct Greens functions:
         self.a_list = [a for a,al in self.GFStruct]
-        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_matsubara = self.Nmsb) for a,al in self.GFStruct]
+        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_points = self.Nmsb) for a,al in self.GFStruct]
         self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
         self.G_Old = self.G.copy()
         self.G0 = self.G.copy()
@@ -133,7 +133,7 @@ class SolverBaseHub(SolverBase):
             for i in range(min(self.Nmoments,8)):
                 self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
                  
-        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_matsubara = self.Nmsb, data =M[a], tail =self.tailtempl[a]) 
+        glist = lambda : [ GfImFreq(indices = al, beta = self.beta, n_points = self.Nmsb, data =M[a], tail =self.tailtempl[a])
                            for a,al in self.GFStruct]
         self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
             
@@ -197,7 +197,7 @@ class SolverBaseHub(SolverBase):
             for i in range(min(self.Nmoments,8)):
                 self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
 
-        glist = lambda : [ GfReFreq(indices = al, omega_min = ommin, omega_max = ommax, n_freq_points = N_om, data = M[a], tail = self.tailtempl[a]) 
+        glist = lambda : [ GfReFreq(indices = al, window = (ommin, ommax), n_points = N_om, data = M[a], tail = self.tailtempl[a])
                            for a,al in self.GFStruct]       # Indices for the upfolded G
         self.G = BlockGf(name_list = self.a_list, block_list = glist(),make_copies=False)
 

@@ -27,8 +27,8 @@ from pytriqs.utility.my_utils import conjugate
 
 h=HDFArchive('gf_base_op.output.h5','w')
 
-ga = GfImFreq(indices = [1,2], beta = 50, n_matsubara = 100, name = "a1Block")
-gb = GfImFreq(indices = [1,2], beta = 50, n_matsubara = 100, name = "b1Block")
+ga = GfImFreq(indices = [1,2], beta = 50, n_points = 100, name = "a1Block")
+gb = GfImFreq(indices = [1,2], beta = 50, n_points = 100, name = "b1Block")
 
 G = BlockGf(name_list = ('a','b'), block_list = (ga,gb), make_copies = False)
 
@@ -43,14 +43,14 @@ dens = G.total_density()
 h['dens'] = dens
 
 # FT:
-f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_time_points =L )
+f = lambda g,L : GfImTime(indices = g.indices, beta = g.mesh.beta, n_points =L )
 gt = BlockGf(name_block_generator = [ (n,f(g,200) ) for n,g in G], make_copies=False, name='gt')
 for (i,gtt) in gt : gtt.set_from_inverse_fourier(G[i])
 
 h['gt'] = gt
 
 # Matrix operations:
-ga2 = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 100, name = "a1Block")
+ga2 = GfImFreq(indices = [1,2,3], beta = 50, n_points = 100, name = "a1Block")
 mat = numpy.array([[1.0,0.0,1.0],[-1.0,1.0,0.0]], numpy.complex)
 
 ga2.from_L_G_R(mat.transpose(),ga,mat)

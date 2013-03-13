@@ -51,8 +51,8 @@ gm.tail.zero()
 gm.tail[1] = array([[1.0]])
 
 # Analytic continuation of gm
-g_pade = GfReFreq(indices = [0], omega_min = -5.995, omega_max = 5.995, n_freq_points = 1200, name = "g_pade")
-g_pade.set_from_pade(gm, n_matsubara_freq = L, freq_offset = eta)
+g_pade = GfReFreq(indices = [0], window = (-5.995, 5.995), n_points = 1200, name = "g_pade")
+g_pade.set_from_pade(gm, n_points = L, freq_offset = eta)
 
 from pytriqs.archive import HDFArchive
 R = HDFArchive('pade.output.h5','w')

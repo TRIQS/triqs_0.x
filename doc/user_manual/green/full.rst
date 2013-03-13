@@ -30,8 +30,8 @@ corresponding block Green's functions (in Matsubara frequencies for example)
 and group these blocks into a full Green's function `G` with::
 
   from pytriqs.gf.local import *
-  g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
-  g2 = GfImFreq(indices = ['t2g1','t2g2','t2g3'], beta = 50, n_matsubara = 1000, name = "t2gBlock") 
+  g1 = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
+  g2 = GfImFreq(indices = ['t2g1','t2g2','t2g3'], beta = 50, n_points = 1000, name = "t2gBlock")
   G = BlockGf(name_list = ('eg','t2g'), block_list = (g1,g2), make_copies = False)
 
 where:

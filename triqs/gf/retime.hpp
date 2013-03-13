@@ -83,18 +83,18 @@ namespace triqs { namespace gf {
  template<> struct gf_factories<retime> : retime { 
   typedef gf<retime> gf_t;
 
-  static mesh_t make_mesh(double tmin, double tmax, size_t n_time_points, mesh_kind mk) {
-   return mesh_t(domain_t(), tmin, tmax, n_time_points, mk);
+  static mesh_t make_mesh(double tmin, double tmax, size_t n_points, mesh_kind mk) {
+   return mesh_t(domain_t(), tmin, tmax, n_points, mk);
   }
 
-  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) {
-   gf_t::data_non_view_t A(shape.append(n_time_points)); A() =0;
-   return gf_t(make_mesh(tmin, tmax, n_time_points, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+  static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {
+   gf_t::data_non_view_t A(shape.append(n_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_points, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
-  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
-   gf_t::data_non_view_t A(shape.append(n_time_points)); A() =0;
-   return gf_t(make_mesh(tmin, tmax, n_time_points, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+  static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
+   gf_t::data_non_view_t A(shape.append(n_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_points, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
  };
