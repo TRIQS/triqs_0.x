@@ -22,21 +22,21 @@
 #define TRIQS_APPLY_ON_TUPLE_H
 #include<triqs/utility/macros.hpp>
 #include <tuple>
-namespace triqs { 
+namespace triqs {
 
- template<int pos,  typename T> struct apply_on_tuple_impl { 
+ template<int pos,  typename T> struct apply_on_tuple_impl {
   template<typename F, typename ... Args>
-   static auto invoke(F && f, T const & t, Args && ... args) 
-   DECL_AND_RETURN( apply_on_tuple_impl<pos-1,T>::invoke(std::forward<F>(f),t, std::get<pos>(t), std::forward<Args>(args)...));
+   auto operator()(F && f, T const & t, Args && ... args)
+   DECL_AND_RETURN( apply_on_tuple_impl<pos-1,T>()(std::forward<F>(f),t, std::get<pos>(t), std::forward<Args>(args)...));
  };
 
- template<typename T> struct apply_on_tuple_impl<-1,T> { 
+ template<typename T> struct apply_on_tuple_impl<-1,T> {
   template<typename F, typename ... Args>
-   static auto invoke(F && f, T const & t, Args && ... args) DECL_AND_RETURN( std::forward<F>(f)(args...));
+   auto operator()(F && f, T const & t, Args && ... args) DECL_AND_RETURN( std::forward<F>(f)(args...));
  };
 
- template<typename F, typename T> 
-  auto apply_on_tuple (F && f, T const & t) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<T>::value-1,T>::invoke(std::forward<F>(f),t));
+ template<typename F, typename T>
+  auto apply_on_tuple (F && f, T const & t) DECL_AND_RETURN( apply_on_tuple_impl<std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t));
 }
 
 #endif

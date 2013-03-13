@@ -22,6 +22,7 @@
 //#include <functional>
 #include <iostream>
 #include <cmath>
+#include <stdexcept>
 
 //double f(int i, double x, double y, int k) { std::cout   << i << x << y <<k <<std::endl ; return k + i+ x + 2*y;}
 struct fun { 

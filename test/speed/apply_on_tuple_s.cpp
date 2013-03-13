@@ -28,6 +28,7 @@ const int nl_interne = 1000000;
 
 struct with_unpack {
   double s;
+ ~with_unpack() { std::cout  << s<< std::endl ;}
  void operator()() {
   //std::function<double(int,double,double,int)> F(f);
   fun F;
@@ -38,6 +39,7 @@ struct with_unpack {
 
 struct manual_code {
   double s;
+ ~manual_code() { std::cout  << s<< std::endl ;}
  void operator()() {
  // std::function<double(int,double,double,int)> F(f);
   fun F;
