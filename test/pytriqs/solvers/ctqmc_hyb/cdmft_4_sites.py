@@ -25,7 +25,6 @@ from pytriqs.gf.local import BlockGf, GfImFreq, inverse
 from pytriqs.lattice.super_lattice import TBSuperLattice
 from pytriqs.lattice.tight_binding import TBLattice
 from pytriqs.sumk import *
-from pytriqs.dmft import DMFTLoopGeneric
 import pytriqs.utility.mpi as mpi
 
 #
@@ -34,7 +33,6 @@ import pytriqs.utility.mpi as mpi
 
 # A few variables
 Beta = 10
-Density_Required = None #0.85 #None
 Chemical_potential  =  2.0
 Field_AF, Field_F = 0.0, 0.0
 
@@ -75,28 +73,16 @@ Sigma = G.copy()
 # Init Sigma
 for n, B in S.Sigma : B <<= 2.0
 
-# Now I write my DMFT loop...
-class myloop (DMFTLoopGeneric) :
-   def Self_Consistency(self) :
-      S.Transform_SymmetryBasis_toRealSpace (IN= S.Sigma, OUT = Sigma) # Embedding
+S.Transform_SymmetryBasis_toRealSpace (IN= S.Sigma, OUT = Sigma) # Embedding
 
-      # Computes sum over BZ and returns density
-      F = lambda mu : SK(mu = mu, Sigma = Sigma, field = None , result = G).total_density()/4
+# Computes sum over BZ and returns density
+dens = (SK(mu = Chemical_potential, Sigma = Sigma, field = None , result = G).total_density()/4)
+mpi.report("Total density  = %.3f"%dens)
 
-      if Density_Required :
-         self.Chemical_potential = dichotomy.dichotomy(function = F,
-                                                       x_init = self.Chemical_potential, y_value =Density_Required,
-                                                       precision_on_y = 0.01, delta_x=0.5,  max_loops = 100,
-                                                       x_name="Chemical_Potential", y_name= "Total Density",
-                                                       verbosity = 3)[0]
-      else:
-         mpi.report("Total density  = %.3f"%F(self.Chemical_potential))
+S.Transform_RealSpace_to_SymmetryBasis (IN = G, OUT = S.G)       # Extraction
+S.G0 = inverse(S.Sigma + inverse(S.G))                           # Finally get S.G0
 
-      S.Transform_RealSpace_to_SymmetryBasis (IN = G, OUT = S.G)       # Extraction
-      S.G0 = inverse(S.Sigma + inverse(S.G))                           # Finally get S.G0
-
-# Construct an instance and run.
-myloop(solver_list = S, Chemical_potential  = 2.0).run(n_loops = 1)
+S.Solve()
 
 # Opens the results shelve
 if mpi.is_master_node():
