@@ -21,6 +21,7 @@
 #ifndef TRIQS_ARRAYS_MATRIX_VIEW_PROXY_H
 #define TRIQS_ARRAYS_MATRIX_VIEW_PROXY_H
 #include "./array.hpp"
+#include "./matrix.hpp"
 #include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/preprocessor/repetition/enum_trailing.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
@@ -89,12 +90,13 @@ namespace triqs { namespace arrays {
    typedef indexmaps::slicer<typename ArrayType::indexmap_type BOOST_PP_ENUM_TRAILING(POS, TEXT, range),size_t,ellipsis> slicer_t;\
    typedef typename slicer_t::r_type indexmap_type;\
    typedef typename indexmap_type::domain_type domain_type;\
-  indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
+   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
    domain_type domain() const { return indexmap().domain();}\
    size_t len(int i) const { return A->len(i);}\
    size_t dim0() const { return A->len(0);}\
    size_t dim1() const { return A->len(1);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
+   matrix_view<value_type> operator()() const {return *this;}\
    TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_view_proxy);\
   template<BOOST_PP_ENUM_PARAMS(POS,typename A) BOOST_PP_COMMA_IF(POS) typename ... Args>\
   value_type const & operator() (BOOST_PP_REPEAT(POS,AUX1,nil)  Args && ... args) const \
@@ -117,6 +119,7 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return A->len(0);}\
    size_t dim1() const { return A->len(1);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
+   matrix_view<value_type> operator()() const {return *this;}\
    template<typename RHS> matrix_view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }\
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view_proxy);\
    template<BOOST_PP_ENUM_PARAMS(POS,typename A) BOOST_PP_COMMA_IF(POS) typename ... Args>\

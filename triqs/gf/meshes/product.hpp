@@ -22,85 +22,78 @@
 #define TRIQS_GF_MESH_PRODUCT_H
 #include "./mesh_tools.hpp"
 #include "../domains/product.hpp"
+#include <triqs/utility/tuple_tools.hpp>
 namespace triqs { namespace gf {
 
- template<typename... Meshes> 
-  struct mesh_product {
+ template<typename... Meshes> struct mesh_product : tag::composite {
    typedef domain_product<typename Meshes::domain_t ... >  domain_t;
-   typedef std::tuple<typename Meshes::index_t ... >       index_t; 
+   typedef std::tuple<typename Meshes::index_t ... >       index_t;
    typedef std::tuple<Meshes...>                           m_tuple_t;
+   typedef std::tuple<typename Meshes::mesh_point_t ...>   m_pt_tuple_t;
    typedef typename domain_t::point_t                      domain_pt_t;
 
    static constexpr int dim = sizeof...(Meshes);
 
-   mesh_product (Meshes const & ... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
    mesh_product () {}
+   mesh_product (Meshes const & ... meshes) : m_tuple(meshes...), _dom(meshes.domain()...) {}
 
-   domain_t const & domain() const { return _dom;}
-
-   size_t size() const {return _size(std::integral_constant<int,dim-1>());}
-   private: // implementation of size computation
-   template<int N> size_t _size(std::integral_constant<int,N> n) const { return _size(std::integral_constant<int,N-1>()) * component(n).size();}
-   size_t _size(std::integral_constant<int,-1>) const { return 1;}
-   public : 
-
-   /// Each component of the mesh : mesh.component(one), mesh.component(zero)
+   domain_t  const & domain()     const { return _dom;}
    m_tuple_t const & components() const { return m_tuple;}
-   
-   template<int N> typename std::tuple_element<N,m_tuple_t>::type const & component(std::integral_constant<int,N>) const { return std::get<N>(m_tuple);}
-   template<int N> typename std::tuple_element<N,m_tuple_t>::type & component(std::integral_constant<int,N>)             { return std::get<N>(m_tuple);}
+
+   /// size of the mesh is the product of size
+   struct _aux0 { template<typename M> size_t operator()(M const & m, size_t R) { return R*m.size();}};
+   size_t size() const { return triqs::tuple::fold(_aux0(), m_tuple, 1);}
 
    /// Conversions point <-> index <-> linear_index
-   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; index_to_point_impl(res, ind, std::integral_constant<int,dim-1>()); return res; }
-   private: // implementation
-   template<int N> void index_to_point_impl( domain_pt_t & P, index_t const & ind, std::integral_constant<int,N> n) const { 
-    std::get<N>(P) = component(n).index_to_point(std::get<N>(ind));
-    index_to_point_impl(P,ind,std::integral_constant<int,N-1>());
-   }
-   void index_to_point_impl( domain_pt_t & P, index_t const & ind, std::integral_constant<int,-1>) const {} 
-
-   public:
+   struct _aux1 { template<typename P, typename M, typename I> void operator()(P & p, M const & m, I const& i) {p = m.index_to_point(i);}};
+   typename domain_t::point_t index_to_point(index_t const & ind) const { domain_pt_t res; triqs::tuple::apply_on_zip3(_aux1(), res,m_tuple,ind); return res;}
 
    // index[0] + component[0].size * (index[1] + component[1].size* (index[2] + ....))
-   size_t index_to_linear(index_t const & ind) const { size_t R=0; index_to_linear_impl(R,ind, std::integral_constant<int,dim-1>()); return R; }
-   private: // implementation
-   template<int N> void index_to_linear_impl( size_t & R, index_t const & ind, std::integral_constant<int,N> n) const { 
-    R = component(n).index_to_linear(std::get<N>(ind)) + R * component(n).size();
-    index_to_linear_impl(R,ind,std::integral_constant<int,N-1>());
-   }
-   void index_to_linear_impl( size_t & R, index_t const & ind, std::integral_constant<int,-1>) const {} 
+   struct _aux2 { template<typename I, typename M> size_t operator()(M const & m, I const & i,size_t R) {return m.index_to_linear(i) + R * m.size();}};
+   size_t index_to_linear(index_t const & ii) const { return triqs::tuple::fold_on_zip(_aux2(), m_tuple, ii, size_t(0)); }
 
-   public:
+   // Same but a tuple of mesh_point_t
+   struct _aux3 { template<typename P, typename M> size_t operator()(M const & m, P const & p,size_t R) {return p.linear_index() + R * m.size();}};
+   size_t mp_to_linear(m_pt_tuple_t const & mp) const { return triqs::tuple::fold_on_zip(_aux3(), m_tuple, mp, size_t(0)); }
+
+   // Same but a variadic list of mesh_point_t
+   template<typename ... MP> size_t mesh_pt_components_to_linear(MP const &  ... mp) const {
+    static_assert(std::is_same< std::tuple<MP...>, m_pt_tuple_t>::value, "Call incorrect ");
+    //static_assert(std::is_same< std::tuple<typename std::remove_cv<typename std::remove_reference<MP>::type>::type...>, m_pt_tuple_t>::value, "Call incorrect ");
+    return mp_to_linear(std::forward_as_tuple(mp...));
+   } // speed test ? or make a variadic fold...
 
    /// The wrapper for the mesh point
-   struct mesh_point_t { 
-    const mesh_product * m; 
-    index_t index;
-
-    /// The wrapper for one component of the mesh point
-    template<int N, typename CastType> struct component : arith_ops_by_cast<component<N,CastType>, CastType>  { 
-     mesh_point_t const * p; 
-     component (mesh_point_t const & p_):p(&p_){}
-     operator CastType() const { return std::get<N>(p->m->m_tuple).index_to_point(std::get<N>(p->index));}
-    };
-    template<int N> component<N,typename std::tuple_element<N,m_tuple_t>::type::domain_t::point_t> operator[](std::integral_constant<int,N>) const { return *this;}
-
-    mesh_point_t(mesh_product const & m_, index_t index_ ) : m(&m_), index(index_) {} 
-    mesh_point_t(mesh_product const & m_)                  : m(&m_), index()    {} 
+   class mesh_point_t : tag::mesh_point{
+    const mesh_product * m;
+    m_pt_tuple_t _c; bool _atend;
+    struct F2 { template<typename M> typename M::mesh_point_t operator()(M const & m, typename M::index_t const & i) const { return m[i];}};
+    struct F1 { template<typename M> typename M::mesh_point_t operator()(M const & m) const { return m[typename M::index_t()];}};
+    public :
+    mesh_point_t(mesh_product const & m_, index_t index_ ) : m(&m_), _c (triqs::tuple::apply_on_zip(F2(), m_.m_tuple, index_)), _atend(false) {}
+    mesh_point_t(mesh_product const & m_)                  : m(&m_), _c (triqs::tuple::apply(F1(), m_.m_tuple)), _atend(false)    {}
+    m_pt_tuple_t const & components_tuple() const { return _c;}
+    size_t linear_index() const { return m->mp_to_linear(_c);}
 
     typedef domain_pt_t cast_t;
     operator cast_t() const { return m->index_to_point(index);}
 
     // index[0] +=1; if index[0]==m.component[0].size() { index[0]=0; index[1] +=1; if  ....}  and so on until dim
-    void advance() { advance_impl(std::integral_constant<int,0>());}
-    private: // implementation
-    template<int N> void advance_impl(std::integral_constant<int,N> n) { auto & i=std::get<N>(index); ++i; if (i==m->component(n).size()) {i=0;advance_impl(std::integral_constant<int,N+1>());} }
-    void advance_impl(std::integral_constant<int,dim>) {}  
-   };
+    struct _aux1 { template<typename P> bool operator()(P & p, bool done)
+     {if (done) return true; p.advance(); if (p.at_end()) {p.reset(); return false;} return true;}
+    };
+    void advance() { triqs::tuple::fold(_aux1(), _c, false);}
+
+    //index_t index() const { return _index;} // not implemented yet
+    bool at_end() const { return _atend;}
+
+    struct _aux{ template<typename M> size_t operator()(M & m,size_t ) { m.reset(); return 0;}};
+    void reset() { _atend = false; triqs::tuple::fold(_aux(), _c,0);}
+   };// end mesh_point_t
 
    /// Accessing a point of the mesh
-   mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}
-   mesh_point_t operator()(typename Meshes::index_t ... i) const { return mesh_point_t (*this, std::make_tuple(i...));}
+   mesh_point_t operator[](index_t i) const { return mesh_point_t(*this, i);}
+   mesh_point_t operator()(typename Meshes::index_t ... i) const { return (*this)[std::make_tuple(i...)];}
 
    /// Iterating on all the points...
    typedef  mesh_pt_generator<mesh_product> iterator;
@@ -111,55 +104,47 @@ namespace triqs { namespace gf {
    friend bool operator == (mesh_product const & M1, mesh_product const & M2) { return M1.m_tuple==M2.m_tuple; }
 
    /// Write into HDF5
+   struct _auxh5w {
+    h5::group & gr; _auxh5w( h5::group gr_) : gr(gr_) {} //icc has yet another bug on new initialization form with {}...
+    template<typename P, typename M> size_t operator()(M const & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_write(gr,fs.str(), m); return N+1; }
+   };
    friend void h5_write (h5::group fg, std::string subgroup_name, mesh_product const & m) {
     h5::group gr =  fg.create_group(subgroup_name);
     h5_write(gr,"domain",m.domain());
-    m.h5_write_impl(gr,std::integral_constant<int,0>());
+    triqs::tuple::fold(_auxh5w(gr), m.components(), size_t(0));
    }
 
-   private:
-   template<int N> void h5_write_impl (h5::group gr, std::integral_constant<int,N> n) {
-     std::stringstream fs;fs <<"MeshComponent"<< N; 
-     h5_write(gr,fs.str(), this->component(n));
-     h5_write_impl(gr,std::integral_constant<int,N+1>());
-    }
-   void h5_write_impl (h5::group gr, std::integral_constant<int,dim>) {}
-
    /// Read from HDF5
+   struct _auxh5r {
+    h5::group gr;_auxh5r( h5::group gr_) : gr(gr_) {}
+    template<typename P, typename M> size_t operator()(M & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_read(gr,fs.str(), m); return N+1; }
+   };
    friend void h5_read  (h5::group fg, std::string subgroup_name, mesh_product & m){
     h5::group gr = fg.open_group(subgroup_name);
     h5_read(gr,"domain",m._dom);
-    m.h5_read_impl(gr,std::integral_constant<int,0>());
+    triqs::tuple::fold(_auxh5r(gr), m.components(), size_t(0));
    }
 
-   private:
-   template<int N> void h5_read_impl (h5::group gr, std::integral_constant<int,N> n) {
-     std::stringstream fs; fs <<"MeshComponent"<< N; 
-     h5_read(gr,fs.str(), this->component(n));
-     h5_read_impl(gr,std::integral_constant<int,N+1>());
-    }
-   void h5_read_impl (h5::group gr, std::integral_constant<int,dim>) {}
- 
    //  BOOST Serialization
    friend class boost::serialization::access;
+   template<typename Archive> struct _aux_ser {
+    Archive & ar;_aux_ser( Archive & ar_) : ar(ar_) {}
+    template<typename P, typename M> size_t operator()(M & m, size_t N) {
+     std::stringstream fs;fs <<"MeshComponent"<< N;
+     ar & boost::serialization::make_nvp(fs.str(),m);
+     return N+1;
+    }
+   };
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("domain",_dom);
-    ser_impl(ar,version,std::integral_constant<int,0>());
+     triqs::tuple::fold(_aux_ser<Archive>(ar), components(), size_t(0));
     }
 
-   private:
-   template<class Archive, int N> void ser_impl (Archive & ar, const unsigned int version, std::integral_constant<int,N> n) {
-     std::stringstream fs; fs <<"MeshComponent"<< N; 
-     ar & boost::serialization::make_nvp(fs.str(),this->component(n));
-     ser_impl(ar,version,std::integral_constant<int,N+1>());
-    }
-   template<class Archive> void ser_impl (Archive & ar, const unsigned int version, std::integral_constant<int,dim>) {}
-
-   private:
+ private:
    m_tuple_t  m_tuple;
    domain_t _dom;
-  }; 
+};
 
 }}
 #endif

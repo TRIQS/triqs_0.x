@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/utility/apply_on_tuple.hpp>
+#include <triqs/utility/tuple_tools.hpp>
 //#include <functional>
 #include <iostream>
 #include <cmath>
@@ -29,13 +29,46 @@ struct fun {
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
 };
 
+struct fun2 { 
+ double operator()(double x, double y) {  return x+y;}
+};
+
 int main(int argc, char **argv) {
- //std::function<double(int,double,double,int)> F(f);
+
  auto t = std::make_tuple(1,2.3,4.3,8);
- fun F;
- std::cerr  << " f(t) =" << triqs::apply_on_tuple(F,t)<< std::endl ;
- if ( std::abs((triqs::apply_on_tuple(F,t) -  F(1,2.3,4.3,8))) > 1.e-13) throw std::runtime_error(" ");
+ auto t2 = std::make_tuple(1,2,3,4);
+ auto t1 = std::make_tuple(1,2.3,4.3,8);
+  
+ {
+  auto res = triqs::tuple::apply(fun(),t);
+  std::cerr  << " f(t) =" << res << std::endl ;
+  if ( std::abs((res -  fun()(1,2.3,4.3,8))) > 1.e-13) throw std::runtime_error(" ");
+ }
+
+ {
+ auto r = triqs::tuple::apply_on_zip(fun2(),t1,t2);
+  std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" 
+   << std::get<0>(r) << " "
+   << std::get<1>(r) << " "
+   << std::get<2>(r) << " "
+   << std::get<3>(r) << std::endl;
+ }
+
+ {
+  auto res = triqs::tuple::fold([](double x,double r) { return x+r;}, t, 0);
+  std::cerr  << " " << res << std::endl ;
+  if ( std::abs((res -  15.6)) > 1.e-13) throw std::runtime_error(" ");
+ }
+
+ {
+  auto res = triqs::tuple::fold_on_zip([](double x, double y, double r) { return x+ 2*y +r;}, t1,t2, 0);
+  std::cerr  << " " << res << std::endl ;
+  if ( std::abs((res -  35.6)) > 1.e-13) throw std::runtime_error(" ");
+ }
+
+
 }
+
 
 
 

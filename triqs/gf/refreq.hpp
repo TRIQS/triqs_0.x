@@ -56,6 +56,7 @@ namespace triqs { namespace gf {
 
  template<>
   struct evaluator<refreq> {
+   static constexpr int arity = 1;
    template<typename G>
     arrays::matrix_view<std::complex<double> >  operator() (G const * g,double w0)  const {
      auto & data = g->data_view();

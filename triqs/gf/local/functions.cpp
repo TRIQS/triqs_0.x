@@ -78,7 +78,7 @@ namespace triqs { namespace gf {
    res() = 0.0;
 
    for (auto l : gl.mesh()) {
-     res -= sqrt(2*l.index+1) * gl(l);
+     res -= sqrt(2*l.index()+1) * gl(l);
    }
    res /= gl.domain().beta;
 
@@ -96,7 +96,7 @@ namespace triqs { namespace gf {
 
    for (int p=1; p<=t.order_max(); p++)
      for (auto l : gl.mesh())
-       t(p) += (triqs::utility::legendre_t(l.index,p)/pow(gl.domain().beta,p)) * gl(l);
+       t(p) += (triqs::utility::legendre_t(l.index(),p)/pow(gl.domain().beta,p)) * gl(l);
 
    return t;
 
@@ -114,12 +114,12 @@ namespace triqs { namespace gf {
 
    tqa::array<double,2> corr(disc.shape()); corr() = 0;
    for (auto l : gl.mesh()) {
-     corr += t(l.index) * gl(l);
+     corr += t(l.index()) * gl(l);
    }
 
    tqa::range R;
    for (auto l : gl.mesh()) {
-     gl.data_view()(R,R,l.index) += (disc - corr) * t(l.index) / norm;
+     gl.data_view()(R,R,l.index()) += (disc - corr) * t(l.index()) / norm;
    }
 
  }

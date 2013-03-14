@@ -158,11 +158,19 @@ MeshPoint concept
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | mesh_point_t( mesh_t const &, index_t const &) | Constructor                                                                 |
 +------------------------------------------------+-----------------------------------------------------------------------------+
+| mesh_t::index_t [const &|] index() const       | The index corresponding to the point                                        |
++------------------------------------------------+-----------------------------------------------------------------------------+
+| size_t linear_index() const                    | The linear index of the point (same as m->index_to_linear(index())          |
++------------------------------------------------+-----------------------------------------------------------------------------+
 | void advance()                                 | Advance to the next point on the mesh (used by iterators).                  |
++------------------------------------------------+-----------------------------------------------------------------------------+
+| void at_end()                                  | Is the point at the end of the grid                                         |
++------------------------------------------------+-----------------------------------------------------------------------------+
+| void reset()                                   | Reset the mesh point to the first point                                     |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 | operator mesh_t::domain_t::point_t() const     | cast to the corresponding domain point                                      |
 +------------------------------------------------+-----------------------------------------------------------------------------+
-| Implements the basic operations on the domain  |                                                                             |
+| Implements the basic operations on the domain  | Only for non composite mesh                                                 |
 | by using the cast operation                    |                                                                             |
 +------------------------------------------------+-----------------------------------------------------------------------------+
 
@@ -242,9 +250,6 @@ Descriptor concept
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
 | storage_t                                                                          | The type of the storage of the data (array, vector, etc....)                  |
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| target_t                                                                           | The value to be stored for each mesh point to store the gf. It can be e.g. a  |
-|                                                                                    | matrix, a scalar, an 3d array, another object.                                |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
 | singularity_t                                                                      | Type of object storing the singularities of the gf. It is used e.g. in the    |
 |                                                                                    | Fourier transformation, density computation, etc... For a simple g(omega),    |
 |                                                                                    | g(t), it is typically a high frequency tail. For a more complex function      |
@@ -262,12 +267,6 @@ Descriptor concept
 | struct evaluator { auto operator()( mesh_t const &, DATA_t const &, S_t const &,   | All the permitted const call of the gf !  (DATA_t defined below) with the     |
 | Args&&... args) .... as many overload as necessary }                               | parenthesis operator The gf<...> function create such a struct, so it can     |
 |                                                                                    | hold some data ...                                                            |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| struct bracket_evaluator { auto operator()( mesh_t const &, DATA_t const &, S_t    | All the permitted const call of the gf !  (DATA_t defined below) with the     |
-| const &, Args&& args) .... as many overload as necessary }                         | operator [] The gf<...> function create such a struct, so it can hold some    |
-|                                                                                    | data ...                                                                      |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| static void assign_from_expression (mesh_t const &, DATA_t & data, S_t &, RHS rhs) | Given an expression RHS, how to fill the data of the function from RHS        |
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
 | static std::string h5_name()                                                       | Name for hdf5 naming (attribute of the tree in which the gf is stored).       |
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+

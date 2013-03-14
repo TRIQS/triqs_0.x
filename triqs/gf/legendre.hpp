@@ -58,6 +58,7 @@ namespace triqs { namespace gf {
 
  template<>
   struct evaluator<legendre> {
+   static constexpr int arity = 1;
    //ERROR : give a double and interpolate
    template<typename G>
    arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }

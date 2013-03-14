@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/utility/apply_on_tuple.hpp>
+#include <triqs/utility/tuple_tools.hpp>
 #include <functional>
 #include <iostream>
 
@@ -33,7 +33,7 @@ struct with_unpack {
   //std::function<double(int,double,double,int)> F(f);
   fun F;
   auto t = std::make_tuple(1,2.3,4.3,8);
-  for (int u =0; u<nl_interne; ++u) { s += triqs::apply_on_tuple(F,t);}
+  for (int u =0; u<nl_interne; ++u) { s += triqs::tuple::apply(F,t);}
  }
 };
 

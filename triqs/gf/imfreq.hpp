@@ -54,6 +54,7 @@ namespace triqs { namespace gf {
 
  template<>
   struct evaluator<imfreq> {
+   static constexpr int arity = 1;
    template<typename G>
     arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
    template<typename G>

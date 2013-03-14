@@ -43,13 +43,18 @@ namespace triqs { namespace gf {
    size_t  index_to_linear(index_t ind) const {return ind;}   
 
    /// The wrapper for the mesh point
-   struct mesh_point_t : arith_ops_by_cast<mesh_point_t, size_t> {
+   class mesh_point_t :  tag::mesh_point,public arith_ops_by_cast<mesh_point_t, size_t> {
     discrete_mesh const * m;  
-    index_t index; 
-    mesh_point_t( discrete_mesh const & mesh, index_t const & index_=0): m(&mesh), index(index_) {}
-    void advance() { ++index;}
-    operator size_t () const { return m->index_to_point(index);} 
-   };
+    index_t _index;
+    public:
+    mesh_point_t( discrete_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
+    void advance() { ++_index;}
+    operator size_t () const { return m->index_to_point(_index);} 
+    size_t linear_index() const { return _index;}
+    size_t index() const { return _index;}
+    bool at_end() const { return (_index == m->size());}
+    void reset() {_index =0;}
+    };
 
    /// Accessing a point of the mesh
    mesh_point_t operator[](index_t i) const { return mesh_point_t (*this,i);}

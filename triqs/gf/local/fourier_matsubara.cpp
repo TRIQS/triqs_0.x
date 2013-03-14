@@ -66,11 +66,11 @@ namespace triqs { namespace gf {
 
     if (gw.domain().statistic == Fermion){
      for (auto & t : gt.mesh())  
-      g_in(t.index) = exp(I*Pi*t/Beta)*( gt(t)(n1,n2) - ( oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) ) );
+      g_in(t.index()) = exp(I*Pi*t/Beta)*( gt(t)(n1,n2) - ( oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) ) );
     }
     else { 
      for (auto & t : gt.mesh()) 
-      g_in(t.index) =  gt(t)(n1,n2) -  ( oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );  
+      g_in(t.index()) =  gt(t)(n1,n2) -  ( oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );  
     }
 
     g_in *= Beta/numberTimeSlices;
@@ -78,7 +78,7 @@ namespace triqs { namespace gf {
     details::fourier_base(g_in, g_out, L, true);
 
     for (auto & w : gw.mesh()) {
-     gw(w)(n1,n2) = g_out(w.index)*exp(2*I*w.index*shift*Pi/Beta*gt.mesh().delta()) + a1/(w-b1) + a2/(w-b2) + a3/(w-b3); 
+     gw(w)(n1,n2) = g_out(w.index())*exp(2*I*w.index()*shift*Pi/Beta*gt.mesh().delta()) + a1/(w-b1) + a2/(w-b2) + a3/(w-b3); 
     }
 
     // set tail
@@ -123,7 +123,7 @@ namespace triqs { namespace gf {
     g_in() = 0;
 
     for (auto & w: gw.mesh()) {
-     g_in(w.index) =  exp(-I*2*w.index*shift*Pi/Beta*gt.mesh().delta()) * ( gw(w)(n1,n2) - (a1/(w-b1) + a2/(w-b2) + a3/(w-b3)) );
+     g_in(w.index()) =  exp(-I*2*w.index()*shift*Pi/Beta*gt.mesh().delta()) * ( gw(w)(n1,n2) - (a1/(w-b1) + a2/(w-b2) + a3/(w-b3)) );
     }
     // for bosons GF(w=0) is divided by 2 to avoid counting it twice
     if (gw.domain().statistic == Boson && !Green_Function_Are_Complex_in_time ) g_in(0) *= 0.5; 
@@ -142,12 +142,12 @@ namespace triqs { namespace gf {
 
     if (gw.domain().statistic == Fermion){
      for (auto & t : gt.mesh()) 
-       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)*exp(-I*Pi*t/Beta)
+       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index())*exp(-I*Pi*t/Beta)
                          + oneFermion(a1,b1,t,Beta) + oneFermion(a2,b2,t,Beta)+ oneFermion(a3,b3,t,Beta) );
     }
     else {
      for (auto & t : gt.mesh()) 
-       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index)
+       gt(t)(n1,n2) = convert_green<gt_result_type> (g_out(t.index())
                          + oneBoson(a1,b1,t,Beta) + oneBoson(a2,b2,t,Beta) + oneBoson(a3,b3,t,Beta) );
     }
 

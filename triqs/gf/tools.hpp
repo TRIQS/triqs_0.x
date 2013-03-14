@@ -36,6 +36,8 @@ namespace triqs { namespace gf {
  namespace tqa= triqs::arrays;
  namespace mpl=boost::mpl;
 
+ namespace tag  { struct composite{}; struct mesh_point{};} 
+ 
  //------------------------------------------------------
 
  typedef std::complex<double> dcomplex; 
