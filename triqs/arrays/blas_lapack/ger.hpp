@@ -31,14 +31,14 @@ namespace triqs { namespace arrays { namespace blas {
 
   extern "C" { 
    void TRIQS_FORTRAN_MANGLING(dger)(const int &M, const int &N, const double &, const double [], const int &, const double [], const int &, double [], const int &);
-   void TRIQS_FORTRAN_MANGLING(zgerc)(const int &M, const int &N, const dcomplex &, const dcomplex [], const int &, const dcomplex [], const int &, dcomplex [], const int &);
+   void TRIQS_FORTRAN_MANGLING(zgeru)(const int &M, const int &N, const dcomplex &, const dcomplex [], const int &, const dcomplex [], const int &, dcomplex [], const int &);
   }
 
   inline void ger (const int & M, const int & N, const double & alpha, const double* x, const int & incx, const double* Y, const int & incy, double* A, const int & LDA)  { 
    TRIQS_FORTRAN_MANGLING(dger)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
   inline void ger (const int & M, const int & N, const dcomplex & alpha, const dcomplex* x, const int & incx, const dcomplex* Y, const int & incy, dcomplex* A, const int & LDA)  { 
-   TRIQS_FORTRAN_MANGLING(zgerc)(M, N, alpha, x, incx, Y, incy, A, LDA);
+   TRIQS_FORTRAN_MANGLING(zgeru)(M, N, alpha, x, incx, Y, incy, A, LDA);
   }
  }
 
