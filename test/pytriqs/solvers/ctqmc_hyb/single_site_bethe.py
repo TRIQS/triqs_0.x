@@ -31,23 +31,11 @@ from pytriqs.gf.local import *
 Half_Bandwidth= 1.0
 U = 2.5
 Chemical_Potential = U/2.0
-Beta = 100
+beta = 100
 
 # Construct a CTQMC solver
-from pytriqs.applications.impurity_solvers.operators import *        # imports the class manipulating C, C_dagger and N = C_dagger C
-from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver   # imports the solver class
-S = Solver(Beta = Beta,                                                      # inverse temperature
-           GFstruct = [ ('up',[1]), ('down',[1]) ],                          # Structure of the Green function
-           H_Local = U * N('up',1) * N('down',1),                            # Local Hamiltonian
-           Quantum_Numbers = { 'Nup' : N('up',1), 'Ndown' : N('down',1) },   # Quantum Numbers (operators commuting with H_Local)
-           N_Cycles  = 5000,
-           Length_Cycle = 500,
-           N_Warmup_Cycles = 5000,
-           N_Time_Slices_Delta= 10000,
-           N_Time_Slices_Gtau = 1000,
-           Random_Generator_Name = "",
-           N_Legendre_Coeffs = 30,
-           Use_Segment_Picture = True)
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
+S = Solver(beta = beta, gf_struct = [ ('up',[1]), ('down',[1]) ])
 
 # init the Green function
 S.G <<= SemiCircular(Half_Bandwidth)
@@ -61,7 +49,17 @@ for sig,g0 in S.G0 :
   g0 <<= inverse( iOmega_n + Chemical_Potential - (Half_Bandwidth/2.0)**2  * S.G[sig] )
 
 # Solve
-S.Solve()
+from pytriqs.applications.impurity_solvers.operators import *
+S.solve(H_local = U * N('up',1) * N('down',1),
+        quantum_numbers = { 'Nup' : N('up',1), 'Ndown' : N('down',1) },
+        n_cycles  = 5000,
+        length_cycle = 500,
+        n_warmup_cycles = 5000,
+        n_time_slices_delta = 10000,
+        n_time_slices_gtau = 1000,
+        random_name = "",
+        n_legendre = 30,
+        use_segment_picture = True)
 
 # Calculation is done. Now save a few things
 # Save into the shelve

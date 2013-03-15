@@ -51,7 +51,6 @@ protected:
   Configuration Config;
   const bool TimeAccumulation;
   const bool LegendreAccumulation;
-  const int N_Frequencies_Accu,Freq_Fit_Start;
   triqs::mc_tools::mc_generic<SignType> QMC;
 
 public : 

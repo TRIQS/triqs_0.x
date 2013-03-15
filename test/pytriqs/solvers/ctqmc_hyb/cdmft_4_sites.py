@@ -39,14 +39,10 @@ Field_AF, Field_F = 0.0, 0.0
 #
 #  Solver
 #
-from pytriqs.applications.impurity_solvers.ctqmc_hyb.models import Solver_2x2_Para_Hubbard
-S = Solver_2x2_Para_Hubbard(Beta = Beta, U_interact = 4.0)
+from pytriqs.applications.impurity_solvers.ctqmc_hyb.models import Solver2By2
+S = Solver2By2(beta = Beta, U_interact = 4.0)
 # I can change some parameter in the S. namespace, overruling the defaults
 # I could even change them from iteration to iteration in the loop below.
-S.N_Cycles = 3000
-S.N_Warmup_Cycles = 0
-S.Length_Cycle = 10
-S.N_Legendre_Coeffs = 30
 
 # Lattice and Super-Lattice
 t   = -1.00             # First neighbour Hopping
@@ -73,16 +69,17 @@ Sigma = G.copy()
 # Init Sigma
 for n, B in S.Sigma : B <<= 2.0
 
-S.Transform_SymmetryBasis_toRealSpace (IN= S.Sigma, OUT = Sigma) # Embedding
+S.symm_to_real(gf_in = S.Sigma, gf_out = Sigma) # Embedding
 
 # Computes sum over BZ and returns density
 dens = (SK(mu = Chemical_potential, Sigma = Sigma, field = None , result = G).total_density()/4)
 mpi.report("Total density  = %.3f"%dens)
 
-S.Transform_RealSpace_to_SymmetryBasis (IN = G, OUT = S.G)       # Extraction
+S.real_to_symm(gf_in = G, gf_out = S.G)       # Extraction
 S.G0 = inverse(S.Sigma + inverse(S.G))                           # Finally get S.G0
 
-S.Solve()
+# Solve the impurity problem
+S.solve(n_cycles = 3000, n_warmup_cycles = 0, length_cycle = 10, n_legendre = 30)
 
 # Opens the results shelve
 if mpi.is_master_node():

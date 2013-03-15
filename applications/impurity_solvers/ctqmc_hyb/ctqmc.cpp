@@ -73,18 +73,17 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  params(p),
  G_tau(gt), F_tau(ft), Delta_tau(dt), OpCorrToAverage(opcorr), G_legendre(gl),
  Config(params, hloc, Delta_tau),
- TimeAccumulation (params["Time_Accumulation"]),
- LegendreAccumulation (params["Legendre_Accumulation"]),
- N_Frequencies_Accu (params["N_Frequencies_Accumulated"]),
- Freq_Fit_Start (params["Fitting_Frequency_Start"]),
- QMC(params)
+ TimeAccumulation (params["time_accumulation"]),
+ LegendreAccumulation (params["legendre_accumulation"]),
+ QMC(params["n_cycles"], params["length_cycle"], params["n_warmup_cycles"],
+     params["random_name"], params["random_seed"], params["verbosity"])
 {
 
- const bool UseSegmentPicture (params["Use_Segment_Picture"]);
+ const bool UseSegmentPicture (params["use_segment_picture"]);
 
  // register the moves
- double p_ir = params["Proba_Insert_Remove"];
- double p_mv = params["Proba_Move"];
+ double p_ir = params["prob_insert_remove"];
+ double p_mv = params["prob_move"];
 
  typedef triqs::mc_tools::move_set<SignType> move_set_type;
  boost::shared_ptr<move_set_type> AllInserts(new move_set_type(QMC.RandomGenerator));
@@ -106,7 +105,7 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  QMC.add_move(new Move_C_Delta(Config, QMC.RandomGenerator), "Move C Delta", p_mv);
 
  // Register the Global moves
- python::list GM_List = python::extract<python::list>(params.dict()["Global_Moves_Mapping_List"]);
+ python::list GM_List = python::extract<python::list>(params.dict()["global_moves_mapping_list"]);
  for (triqs::python_tools::IteratorOnPythonListOf3Tuples<double,python::dict,string> g(GM_List); !g.atEnd(); ++g) {
   assert (python::len(g->x2)== Config.H.N_Operators());
   // transform a python dict : name_of_operator -> name_of_operator into a  
@@ -128,8 +127,6 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
      QMC.add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
-     //if (bool(params["Keep_Full_MC_Series"])) 
-      //QMC.add_measure(new Measure_G_Legendre_all(Config, a, G_legendre[a]), make_string("G Legendre (all) ",a));
    } else if (TimeAccumulation) {
      QMC.add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
@@ -139,19 +136,19 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
 
 
  // register the measure of F
- if (bool(params["Use_F"]))
+ if (bool(params["use_f"]))
    for (int a =0; a<Config.Na;++a) 
      QMC.add_measure(new Measure_F_tau(Config, a, F_tau[a] ), make_string("F(tau) ",a));
 
  // register the measures of the average of some operators
- python::dict opAv_results = python::extract<python::dict>(params.dict()["Measured_Operators_Results"]);
- python::list opAv_List = python::extract<python::list>(params.dict()["Operators_To_Average_List"]);
+ python::dict opAv_results = python::extract<python::dict>(params.dict()["measured_operators_results"]);
+ python::list opAv_List = python::extract<python::list>(params.dict()["operators_av_list"]);
  for (triqs::python_tools::IteratorOnPythonList<string> g(opAv_List); !g.atEnd(); ++g) {
   QMC.add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
  }
 
  // register the measures for the time correlators:
- python::list opCorr_List = python::extract<python::list>(params.dict()["OpCorr_To_Average_List"]);
+ python::list opCorr_List = python::extract<python::list>(params.dict()["opcorr_av_list"]);
  int a = 0;
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
@@ -170,7 +167,7 @@ void ctqmc_hyb::solve() {
   boost::mpi::communicator c;
 
   // run!! The empty configuration has sign = 1
-  QMC.start(1.0, triqs::utility::clock_callback(params.value_or_default("MAX_TIME",-1)));
+  QMC.start(1.0, triqs::utility::clock_callback(params["max_time"]));
   QMC.collect_results(c);
 
 }

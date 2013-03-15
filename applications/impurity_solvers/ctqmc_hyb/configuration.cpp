@@ -35,18 +35,18 @@ Configuration::Configuration(triqs::python_tools::improved_python_dict params, H
   H(*hloc),
   Beta(dt[0].domain().beta),
   DT(H,Beta), 
-  Na(python::len(params.dict()["C_Cdag_Ops"])),
+  Na(python::len(params.dict()["c_cdag_ops"])),
   dets(Na,(DET_TYPE *) NULL),
   COps(Na),CdagOps(Na),
   Delta_tau_proxy(Na,(Delta_Proxy*) NULL), 
   info (H.N_Operators()),
-  RecordStatisticConfigurations(params["Record_Statistics_Configurations"]),
+  RecordStatisticConfigurations(params["record_stat"]),
   CurrentSign(1),
   OldSign(1)
 {
-  // C_Cdag_Ops is expected to be a list of list of NAMES of operators (C,C_dag)
+  // c_cdag_ops is expected to be a list of list of NAMES of operators (C,C_dag)
   // prepared in the python solver
-  python::list BOL = python::extract<python::list>(params.dict()["C_Cdag_Ops"]);
+  python::list BOL = python::extract<python::list>(params.dict()["c_cdag_ops"]);
   int a=0;
   for (triqs::python_tools::IteratorOnPythonList<python::list> g(BOL); !g.atEnd(); ++g, ++a) {
     int alpha=0;
@@ -64,8 +64,7 @@ Configuration::Configuration(triqs::python_tools::improved_python_dict params, H
   }
     
   // construct the determinants
-  int Nmax = params["Nmax_Matrix"];
-  //double Eta = params["Eta"];
+  int Nmax = params["n_max_matrix"];
   for (int a =0; a<Na;++a) { 
     Delta_tau_proxy[a] = new Delta_Proxy(Delta_tau[a],info);
     dets[a] = new DET_TYPE(*Delta_tau_proxy[a],Nmax);

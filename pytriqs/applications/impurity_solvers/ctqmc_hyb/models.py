@@ -33,11 +33,18 @@ from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
 #
 #########################################
 
-class Solver_2x2_Para_Hubbard (Solver) : 
-   def __init__(self,Beta,U_interact, **kw) : 
+class Solver2By2 (Solver) : 
+
+   def __init__(self, beta, U_interact) : 
       
+      Solver.__init__(self, beta=beta, gf_struct=[ ('+1-up',[1]), ('-1-up',[1]), ('+i-up',[1]), ('-i-up',[1]),
+                                           ('+1-down',[1]), ('-1-down',[1]), ('+i-down',[1]), ('-i-down',[1]) ])
+
+      self.U_interact = U_interact
       self.P = numpy.array([[1,1,-1,-1], [1,-1,1j,-1j],[1,-1,-1j,1j],[1,1,1,1]])/2
       self.Pinv = numpy.linalg.inv(self.P)
+
+   def solve(self, **params):
 
       def Cdiag(s):
          s= '-%s'%s
@@ -61,35 +68,33 @@ class Solver_2x2_Para_Hubbard (Solver) :
       symm('up'); symm('down')
 
       # NB : the Hamiltonian should NOT contain the quadratic part which is in G0
-      Hamiltonian = U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
+      Hamiltonian = self.U_interact* sum_list( [ Nnat['up-%d'%(i+1)]* Nnat['down-%d'%(i+1)]  for i in range (4)]) #!!
 
       N_u = sum_list( [ Nnat['up-%d'%(i+1)] for i in range(4) ] )
       N_d = sum_list( [ Nnat['down-%d'%(i+1)] for i in range(4) ] )
 
       Quantum_Numbers = { 'Z4' : 'Z4', 'N_u' : N_u, 'N_d' : N_d }
 
-      Solver.__init__(self,Beta=Beta,GFstruct=[ ('+1-up',[1]), ('-1-up',[1]), ('+i-up',[1]), ('-i-up',[1]),
-                                           ('+1-down',[1]), ('-1-down',[1]), ('+i-down',[1]), ('-i-down',[1]) ], 
-                      H_Local = Hamiltonian,Quantum_Numbers= Quantum_Numbers )
-      self.N_Cycles  = 10
+      nc = params.pop('n_cycles',10)
+      Solver.solve(self, H_local = Hamiltonian, quantum_numbers = Quantum_Numbers, n_cycles = nc, **params)
 
-   def Transform_RealSpace_to_SymmetryBasis(self,IN, OUT = None):
-      """ IN[i,j] in real space --> OUT into the symmetry basis"""
-      OUT = OUT if OUT else BlockGf(G)
-      for sig,B in IN:
+   def real_to_symm(self, gf_in, gf_out = None):
+      """ gf_in[i,j] in real space --> gf_out into the symmetry basis"""
+      gf_out = gf_out if gf_out else BlockGf(G)
+      for sig,B in gf_in:
          for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) : 
-            OUT[ind+sig] = sum_list ( [ sum_list ( [ B[i,j]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
-      return OUT
+            gf_out[ind+sig] = sum_list ( [ sum_list ( [ B[i,j]* self.P[j,k] * self.Pinv[k,i] for j in range(4) ] ) for i in range(4) ] ) 
+      return gf_out
 
-   def Transform_SymmetryBasis_toRealSpace(self,IN, OUT = None):
-      """  IN : in symmetry cluster indices. Returns OUT to real space"""
-      OUT = OUT if OUT else BlockGf(G)
-      for sig,B in OUT : 
+   def symm_to_real(self, gf_in, gf_out = None):
+      """  gf_in : in symmetry cluster indices. Returns gf_out to real space"""
+      gf_out = gf_out if gf_out else BlockGf(G)
+      for sig,B in gf_out : 
          for i in range(4):
             for j in range(4):
-               B[i,j]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* IN[ind+sig] 
+               B[i,j]  = sum_list( [ self.P[i,k]* self.Pinv[k,j]* gf_in[ind+sig] 
                                     for k,ind in enumerate(['+1-', '-1-','+i-', '-i-']) ])
-      return OUT
+      return gf_out
 
 #########################################
 #
