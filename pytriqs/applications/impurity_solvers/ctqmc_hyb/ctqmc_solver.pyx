@@ -48,7 +48,7 @@ class Solver:
         self.G = BlockGf(name_block_generator = self.G0, make_copies=True, name="G")
         self.F = BlockGf(name_block_generator = self.G0, make_copies=True, name="F")
         self.Sigma = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma")
-        self.Sigma_Old = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma_Old")
+        self.Sigma_old = BlockGf(name_block_generator = self.G0, make_copies=True, name="Sigma_old")
 
     #--------------------------------------------------
 
@@ -137,7 +137,7 @@ class Solver:
 
         # Add the operators to be averaged in OPdict and prepare the list for the C-code
         self.measured_operators_results = {}
-        self.twice_defined_Ops = {}
+        self.twice_defined_ops = {}
         self.operators_av_list = []
         for name, op in self.measured_operators.items():
           opn = mysearch(op)
@@ -147,7 +147,7 @@ class Solver:
               self.operators_av_list.append(name)
           else:
               mpi.report("Operator %s already defined as %s, using this instead for measuring"%(name,opn))
-              self.twice_defined_Ops[name] = opn
+              self.twice_defined_ops[name] = opn
               self.measured_operators_results[opn] = 0.0
               if opn not in self.operators_av_list: self.operators_av_list.append(opn)
 
@@ -165,9 +165,9 @@ class Solver:
         Nops = len(self.opcorr_av_list)
         f = lambda L : GfImTime(indices = [0], beta = self.beta, n_points =L )
         if (Nops>0):
-            self.measured_time_correlators_Results = BlockGf(name_block_generator = [ ( n,f(self.measured_time_correlators[n][1]) ) for n in self.measured_time_correlators], make_copies=False)
+            self.measured_time_correlators_results = BlockGf(name_block_generator = [ ( n,f(self.measured_time_correlators[n][1]) ) for n in self.measured_time_correlators], make_copies=False)
         else:
-            self.measured_time_correlators_Results = BlockGf(name_block_generator = [ ( 'OpCorr',f(2) ) ], make_copies=False)
+            self.measured_time_correlators_results = BlockGf(name_block_generator = [ ( 'OpCorr',f(2) ) ], make_copies=False)
 
         # Take care of the global moves
 
@@ -261,7 +261,7 @@ class Solver:
             self.G_Legendre = BlockGf(name_block_generator = [ (n,GfLegendre(indices =[1], beta =g.mesh.beta, n_points =1) ) for n,g in self.G], make_copies=False, name='Gl') # G_Legendre must not be empty but is not needed in this case. So I make it as small as possible.
 
         # Starting the C++ code
-        self.Sigma_Old <<= self.Sigma
+        self.Sigma_old <<= self.Sigma
 
         # C++ solver
         solver_c(boost_object(self.__dict__),
@@ -270,7 +270,7 @@ class Solver:
                  as_gf_block_imtime(self.G_tau),
                  as_gf_block_imtime(self.F_tau),
                  as_gf_block_imtime(self.Delta_tau),
-                 as_gf_block_imtime(self.measured_time_correlators_Results),
+                 as_gf_block_imtime(self.measured_time_correlators_results),
                  as_gf_block_legendre(self.G_Legendre)).solve()
 
         # Compute G on Matsubara axis possibly fitting the tail
@@ -304,9 +304,9 @@ class Solver:
         mpi.report("Solver %(name)s has ended."%self.__dict__)
 
         # for operator averages: if twice defined operator, rename output:
-        for op1,op2 in self.twice_defined_Ops.items():
+        for op1,op2 in self.twice_defined_ops.items():
             self.measured_operators_results[op1] = self.measured_operators_results[op2]
-        for op1,op2 in self.twice_defined_Ops.items():
+        for op1,op2 in self.twice_defined_ops.items():
             if op2 in self.measured_operators_results.keys(): del self.measured_operators_results[op2]
 
         if self.use_f :
