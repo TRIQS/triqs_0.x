@@ -1,10 +1,10 @@
 import numpy
 
 from pytriqs.gf.local import *
-from pytriqs.applications.impurity_solvers import SolverBase
 
-class Solver(SolverBase):
+class Solver:
     """A simple IPT solver for the symmetric one band Anderson model"""
+
     def __init__(self, **params):
         self.name = 'Iterated Perturbation Theory'
 

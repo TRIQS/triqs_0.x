@@ -20,33 +20,7 @@
 #
 ################################################################################
 
-__add__ =[] 
+import ctqmc_hyb
+import hubbard_I
 
-from types import *
-from pytriqs.utility.my_utils import *
-
-class SolverBase(object, PrettyPrint):
-    """
-        - GFstruct : structure of the Green function in the format
-                         (  ( name_of_the_bloc , [list of names for the bloc components]), ...)
-                        e.g.( ("up" , [1,2,3,4]), ("down", [1,2,3,4]) ) 
-    """
-
-    def __init__(self,GFstruct,param):
-        """ GFstruct : the Green function structure as list of tuple"""
-        from copy import deepcopy
-        self.__param_at_init = deepcopy(param)
-        self.__dict__.update(param)
-        self.GFStruct = GFstruct[:]
-        
-        # Name grabbed by the solver
-        if type(self.GFStruct[0][1][0])==type(()):
-          self.GF_Names   = [ (cle, ["%s-%s"%s for s in val])  for cle,val in self.GFStruct]
-        elif [s for s in [1,'1'] if type(self.GFStruct[0][1][0])==type(s) ]:
-          self.GF_Names   = [ (cle, ["%s"%s for s in val])  for cle,val in self.GFStruct]
-        else: raise TypeError,"Solver indices must be a tuple, int, or string"
-        self.Converged = False
-        self.name =''
-
-    def need_special_last_iter(self) : return False
-
+__all__ = ['ctqmc_hyb','hubbard_I']
