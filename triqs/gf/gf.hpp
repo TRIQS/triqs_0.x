@@ -158,7 +158,7 @@ namespace triqs { namespace gf {
     boost::mpl::or_< // starting condition [OR]
     boost::is_base_of< tag::mesh_point, typename std::remove_reference<Arg0>::type>,  // Arg0 is (a & or a &&) to a mesh_point_t
     clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
-    , boost::mpl::bool_<(sizeof...(Args)!= evaluator_t::arity -1 )>
+    , boost::mpl::bool_<(sizeof...(Args)!= evaluator_t::arity -1 ) && (evaluator_t::arity !=-1)> // if -1 : no check
     >,                                                       // end of OR
     std::result_of<evaluator_t(gf_impl*,Arg0, Args...)> // what is the result type of call
      >::type     // end of lazy_disable_if

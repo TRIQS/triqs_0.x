@@ -244,8 +244,6 @@ Descriptor concept
 +====================================================================================+===============================================================================+
 | struct tag {};                                                                     | A tag for the gf                                                              |
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
-| domain_t                                                                           | Domain modeling Domain concept                                                |
-+------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
 | mesh_t                                                                             | Mesh for the gf, modeling Mesh concept                                        |
 +------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+
 | storage_t                                                                          | The type of the storage of the data (array, vector, etc....)                  |
@@ -278,15 +276,6 @@ Descriptor concept
 
 * S_t is singularity_t or its corresponding view type (if it exists).
   
-* DATA_t is the storage of the gf on the mesh. It is expected to be : 
-
-  * If target_t is a array of rank R, a matrix (R=2), a vector (R=1) of T :
-    an array<T,N> or an array_view<T,N> 
-
-  * If target_t is another type,
-    vector_storage ... 
-    an array<target_t,1> or an array_view<target_t,1> 
-
 
 The gf/gf_view class
 =======================================
