@@ -65,23 +65,6 @@ namespace triqs { namespace mc_tools {
      sign_av(0) {}
 
    /** 
-     * Constructor from a dictionnary
-     * \param[in] P  dictionnary parameters
-     * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
-     */
-   template<typename ParameterDictType>
-   mc_generic(ParameterDictType const & P, boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
-    RandomGenerator(P.value_or_default("Random_Generator_Name",""), P.value_or_default("Random_Seed",1)),
-    report(&std::cout,int(P["Verbosity"])),
-    AllMoves(RandomGenerator), 
-    AllMeasures(),
-    Length_MC_Cycle(P["Length_Cycle"]),
-    NWarmIterations(P["N_Warmup_Cycles"]),
-    NCycles(P["N_Cycles"]),
-    after_cycle_duty(AfterCycleDuty),
-    sign_av(0) {}
-
-   /** 
     * Register move M with its probability of being proposed.
     * NB : the PropositionProbability needs to be >0 but does not need to be 
     * normalized. Normalization is automatically done with all the added moves
