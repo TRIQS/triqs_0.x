@@ -24,5 +24,6 @@ DOC
 
 """
 from ctqmc_solver import Solver
+from old_solver import SolverOld
 
-__all__ = ['Solver']
+__all__ = ['Solver','SolverOld']
