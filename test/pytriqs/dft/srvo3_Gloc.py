@@ -50,9 +50,8 @@ l = SK.corr_shells[0][2]
 
 
 from pytriqs.applications.dft.solver_multiband import *
-S=SolverMultiBand(beta=Beta,U_interact=U,J_hund=J,n_orb=Norb,use_matrix=useMatrix, T=SK.T[0] ,gf_struct=SK.gf_struct_solver[0],
-                  map=SK.map[0], l=l, deg_orbs=SK.deg_shells[0])
 
+S=SolverMultiBand(beta=Beta,n_orb=Norb,gf_struct=SK.gf_struct_solver[0],map=SK.map[0])
 
 SK.put_Sigma([S.Sigma])
 Gloc=SK.extract_G_loc()

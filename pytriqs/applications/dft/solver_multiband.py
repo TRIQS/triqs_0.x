@@ -54,24 +54,28 @@ class SolverMultiBand (Solver):
                
     """
     
-    def __init__(self, beta, n_orb, U_interact=None, J_hund=None, gf_struct=False, map=False, use_spinflip=False,
-                 use_matrix = True, l=2, T=None, dim_reps=None, irep=None, deg_orbs = [], sl_int = None):
-    
-        self.offset = 0
-        self.use_spinflip = use_spinflip
-        self.n_orb = n_orb
-       
-        self.U, self.Up, self.U4ind, self.offset = set_U_matrix(U_interact,J_hund,n_orb,l,use_matrix,T,sl_int,use_spinflip,dim_reps,irep) 
+    def __init__(self, beta, n_orb, gf_struct = False, map = False):
 
+        self.n_orb = n_orb
+
+        # either get or construct gf_struct
         if (gf_struct):
             assert map, "give also the mapping!"
             self.map = map
         else:
             # standard gf_struct and map
             gf_struct = [ ('%s'%(ud),[n for n in range(n_orb)]) for ud in ['up','down'] ]
-            self.map = {'up' : ['up' for v in range(self.n_orb)], 'down' : ['down' for v in range(self.n_orb)]}
+            self.map = {'up' : ['up' for v in range(n_orb)], 'down' : ['down' for v in range(n_orb)]}
 
-        #print gf_struct,self.map
+        # now initialize the solver with the stuff given above:
+        Solver.__init__(self, beta = beta, gf_struct = gf_struct)
+
+
+    def solve(self, U_interact=None, J_hund=None, use_spinflip=False,
+                 use_matrix = True, l=2, T=None, dim_reps=None, irep=None, deg_orbs = [], sl_int = None, **params):
+
+        self.use_spinflip = use_spinflip
+        self.U, self.Up, self.U4ind, self.offset = set_U_matrix(U_interact,J_hund,self.n_orb,l,use_matrix,T,sl_int,use_spinflip,dim_reps,irep) 
 
         # define mapping of indices:
         self.map_ind={}
@@ -89,9 +93,8 @@ class SolverMultiBand (Solver):
                     self.map_ind[nm][i] = cnt
                     i = i+1
                     cnt = cnt+1
-      
-                
         
+        # set the Hamiltonian
         if (use_spinflip==False):
             Hamiltonian = self.__set_hamiltonian_density()
         else:
@@ -101,6 +104,7 @@ class SolverMultiBand (Solver):
             else:
                 Hamiltonian = self.__set_full_hamiltonian_kanamori(J_hund = J_hund)
 
+        # set the Quantum numbers
         Quantum_Numbers = self.__set_quantum_numbers(gf_struct)
     
         # Determine if there are only blocs of size 1:
@@ -108,26 +112,15 @@ class SolverMultiBand (Solver):
         for ib in gf_struct:
             if (len(ib[1])>1): self.blocssizeone = False
 
-       
-        # now initialize the solver with the stuff given above:
-        Solver.__init__(self,
-                        Beta = beta,
-                        GFstruct = gf_struct,
-                        H_Local = Hamiltonian,
-                        Quantum_Numbers = Quantum_Numbers )
-
-        #self.set_global_moves(deg_orbs)
-
-        self.N_Cycles  = 10000
-        self.Nmax_Matrix = 100
-        self.N_Time_Slices_Delta= 10000
-        #if ((len(gf_struct)==2*n_orb) and (use_spinflip==False)): 
-        if ((self.blocssizeone) and (use_spinflip==False)):
-            self.Use_Segment_Picture = True
+        nc = params.pop("n_cycles",10000)
+        if ((self.blocssizeone) and (self.use_spinflip==False)):
+            use_seg = True
         else:
-            self.Use_Segment_Picture = False
-        # check what all these parameters do!!!
-   
+            use_seg = False
+        #gm = self.set_global_moves(deg_orbs)
+
+        Solver.solve(H_local = Hamiltonian, quantum_numbers = Quantum_Numbers, n_cycles = nc, use_segment_picture = use_seg, **params)
+
 
     def set_global_moves(self, deg_orbs, factor=0.05):
         # Sets some global moves given orbital degeneracies:
@@ -155,9 +148,11 @@ class SolverMultiBand (Solver):
                 
 
         if len(deg_orbs)>0:
-            str = 'self.Global_Moves = [ (%s, lambda (a,alpha,dag) : ({ '%factor + strbl + ' }[a], {' + strind + '}[alpha], dag) )]'
+            str = 'Global_Moves = [ (%s, lambda (a,alpha,dag) : ({ '%factor + strbl + ' }[a], {' + strind + '}[alpha], dag) )]'
             exec str
-    
+            return Global_Moves
+        else:
+            return []
         
 
     def __set_hamiltonian_density(self):
