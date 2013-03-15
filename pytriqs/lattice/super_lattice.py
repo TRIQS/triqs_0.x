@@ -140,7 +140,7 @@ class TBSuperLattice(TBLattice):
         for nsite, CS in enumerate(self.__cluster_sites):
             for disp, t in D1.items():
                 R, alpha = self.change_coordinates_L_to_SL(numpy.array(CS)+numpy.array(disp))
-                if R not in Res: Res[R] = create_zero() if create_zero else numpy.zeros((self.Norb, self.Norb), dtype = numpy.complex_)
+                if R not in Res: Res[R] = create_zero() if create_zero else numpy.zeros((self.Norb, self.Norb), dtype = type(t[0,0]))
                 if not(remove_internal) or R!= self.tb_lattice.dim*(0, ):
                     for orb1 in range(norb):
                         for orb2 in range(norb):

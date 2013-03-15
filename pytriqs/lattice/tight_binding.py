@@ -69,7 +69,6 @@ class TBLattice:
         self.Units = units
         self.OrbitalPositions = orbital_positions 
         self.OrbitalNames = orbital_names
-        print "self.bl.n_orbitals", self.bl.n_orbitals()
         self.MuPattern = numpy.identity(self.NOrbitalsInUnitCell)
 
     def latt_to_real_x(self, p) : 
