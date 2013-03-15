@@ -21,18 +21,19 @@
 ################################################################################
 
 from pytriqs.archive import *
-from pytriqs.applications.impurity_solvers.hubbard_I.solver import Solver
+from pytriqs.applications.impurity_solvers.hubbard_I import Solver
 import numpy
 
-S = Solver(beta = 200, U_int = 6.0, J_hund=0.6, l=2, use_spin_orbit=False)
+S = Solver(beta = 200, l=2)
+
 eal={}
 eal['up'] = -1*numpy.identity(5)
 eal['down'] = -1*numpy.identity(5)
 S.set_atomic_levels(eal=eal)
 
-S.Solve()
+S.solve(U_int = 6.0, J_hund=0.6)
 
-ar=HDFArchive('hubbard.output.h5')
+ar = HDFArchive('hubbard.output.h5')
 ar['G'] = S.G
 ar['Sigma'] = S.Sigma
 del ar

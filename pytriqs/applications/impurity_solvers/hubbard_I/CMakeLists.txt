@@ -3,8 +3,8 @@ set(NickName "HubbardI")
 # install the python sources 
 SET(PYTHON_SOURCES 
  ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
- ${CMAKE_CURRENT_SOURCE_DIR}/solver.py 
- ${CMAKE_CURRENT_SOURCE_DIR}/solver_base.py 
+ ${CMAKE_CURRENT_SOURCE_DIR}/hubbard_solver.py 
+ ${CMAKE_CURRENT_SOURCE_DIR}/old_solver.py 
  )
 
 # 
