@@ -37,7 +37,7 @@ import numpy
 #########################################
 
 
-class SolverMultiBand (Solver):
+class SolverMultiBand(Solver):
     """ 
     This is a general solver for a multiband local Hamiltonian. 
     Calling arguments: 
@@ -334,6 +334,48 @@ class SolverMultiBand (Solver):
                 sig.fitTail(fixed_coef = known_coeff, order_max = 3, fit_start = fit_start, fit_stop = fit_stop)
 
 		
+
+
+class SolverMultiBandOld(SolverMultiBand):
+    """ 
+    Old MultiBand Solver construct
+    """
+    
+    def __init__(self, Beta, Norb, U_interact=None, J_Hund=None, GFStruct=False, map=False, use_spinflip=False,
+                 useMatrix = True, l=2, T=None, dimreps=None, irep=None, deg_orbs = [], Sl_Int = None):
+
+        SolverMultiBand.__init__(self, beta=Beta, n_orb=Norb, gf_struct=GFStruct, map=map)
+        self.U_interact = U_interact
+        self.J_Hund = J_Hund
+        self.use_spinflip = use_spinflip
+        self.useMatrix = useMatrix
+        self.l = l
+        self.T = T
+        self.dimreps = dimreps
+        self.irep = irep
+        self.deg_orbs = deg_orbs
+        self.Sl_Int = Sl_Int
+        self.gen_keys = copy.deepcopy(self.__dict__)
+
+        msg = """
+**********************************************************************************
+ Warning: You are using the old constructor for the solver. Beware that this will
+ be deprecated in future versions. Please check the documentation.
+**********************************************************************************
+"""
+        mpi.report(msg)
+
+
+    def Solve(self):
+
+        params = copy.deepcopy(self.__dict__)
+        for i in self.gen_keys: self.params.pop(i)
+        self.params.pop("gen_keys")
+        self.solve(self, U_interact=self.U_interact, J_hund=self.J_Hund, use_spinflip=self.use_spinflip,
+                   use_matrix = self.useMatrix, l=self.l, T=self.T, dim_reps=self.dimreps, irep=self.irep,
+                   deg_orbs = self.deg_orbs, sl_int = self.Sl_Int, **params)
+
+
 
 
 	
