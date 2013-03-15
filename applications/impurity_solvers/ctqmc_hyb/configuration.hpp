@@ -22,7 +22,7 @@
 #ifndef CONFIGURATION_H_37j3hrf
 #define CONFIGURATION_H_37j3hrf
 
-#include <triqs/python_tools/improved_python_dict.hpp>
+#include "improved_python_dict.hpp"
 #include <triqs/gf/block.hpp>
 #include <triqs/gf/imtime.hpp>
 #include "dynamic_trace.hpp"
