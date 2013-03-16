@@ -43,6 +43,7 @@ namespace triqs { namespace arrays {
 #define BOUND_CHECK              triqs::arrays::BoundCheck
 #define TRAVERSAL_ORDER_C        triqs::arrays::TraversalOrderC
 #define TRAVERSAL_ORDER_FORTRAN  triqs::arrays::TraversalOrderFortran
+#define DEFAULT_INIT             triqs::arrays::DefaultInit
 
  // NB : flags MUST be insensitive to slicing ...
  // i.e. when I slice, the flags does not change.

@@ -1,6 +1,4 @@
 #include "triqs/clef.hpp"
-#include "triqs/clef/io.hpp"
-#include <iostream>
 
 namespace tql = triqs::clef;
 // This macro just prints its argument literaly, and then its value
@@ -12,9 +10,9 @@ int main() {
  tql::placeholder <2> y_; 
 
  PRINT ( x_  + 2*y_ );
- PRINT (tql::eval(x_  + 2*y_ , x_ = 1, y_ = 2));
- PRINT (tql::eval(x_  + 2*y_ , x_ = 1));
- PRINT (tql::eval(x_  + 2*y_ , x_ = x_ + y_));
+ PRINT (eval(x_  + 2*y_ , x_ = 1, y_ = 2));
+ PRINT (eval(x_  + 2*y_ , x_ = 1));
+ PRINT (eval(x_  + 2*y_ , x_ = x_ + y_));
 
 }
 

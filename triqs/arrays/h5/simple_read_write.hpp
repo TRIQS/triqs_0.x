@@ -28,11 +28,14 @@
 namespace triqs { namespace arrays { 
  namespace h5_impl {
 
-  template <typename T, int R> const void * get_data_cptr ( array_view<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
-  template <typename T, int R> const void * get_data_cptr ( array<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
-  template <typename T, int R> void * get_data_ptr ( array_view<T,R> & A) { return h5::get_data_ptr(&(A.storage()[0]));}
-  template <typename T, int R> void * get_data_ptr ( array<T,R> & A) { return h5::get_data_ptr(&(A.storage()[0]));}
- 
+  template <typename T, int R> const void * get_array_data_cptr ( array_view<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
+  template <typename T, int R> const void * get_array_data_cptr ( array<T,R> const & A) { return h5::get_data_ptr(&(A.storage()[0]));}
+  //template <typename T, int R> void * get_array_data_ptr ( array_view<T,R> & A) { return h5::get_data_ptr(&(A.storage()[0]));}
+  //template <typename T, int R> void * get_array_data_ptr ( array<T,R> & A) { return h5::get_data_ptr(&(A.storage()[0]));}
+
+  template <typename A> ENABLE_IF(is_amv_value_or_view_class<A>)  * 
+   get_array_data_ptr (A & x) { return h5::get_data_ptr(&(x.storage()[0]));}
+  
   // the dataspace corresponding to the array. Contiguous data only...
   template <typename ArrayType >
    H5::DataSpace data_space ( ArrayType const & A) { 
@@ -77,7 +80,7 @@ namespace triqs { namespace arrays {
     if (C_reorder) { write_array(g,name, make_const_cache(A).view(),false);}
     try {
      H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space(A) );
-     ds.write( get_data_cptr(A), h5::data_type_memory<T>(), data_space(A) );
+     ds.write( get_array_data_cptr(A), h5::data_type_memory<T>(), data_space(A) );
      // if complex, to be python compatible, we add the __complex__ attribute
      if (boost::is_complex<T>::value)  h5::write_string_attribute(&ds,"__complex__","1");
     }
@@ -113,8 +116,9 @@ namespace triqs { namespace arrays {
      dataspace.getSimpleExtentDims( &dims_out[0], NULL);
      mini_vector<size_t,ArrayType::rank > d2; for (size_t u=0; u<ArrayType::rank ; ++u) d2[u] = dims_out[u];
      resize_or_check(A, d2 );
-     if (C_reorder) { read_array(g,name, make_cache(A).view(),false);}
-     ds.read( get_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A) , dataspace );
+     if (C_reorder) { read_array(g,name, cache<ArrayType,typename ArrayType::non_view_type>(A).view(),false);}
+     //if (C_reorder) { read_array(g,name, make_cache(A).view(),false);}
+     ds.read( get_array_data_ptr(A), h5::data_type_memory<typename ArrayType::value_type>(), data_space(A) , dataspace );
     }
     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
    }
@@ -146,7 +150,7 @@ namespace triqs { namespace arrays {
   */
  template <typename ArrayType>
   ENABLE_IF(is_amv_value_or_view_class_no_string<ArrayType>)
-  h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, A);}
+  h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, array_view<typename ArrayType::value_type, ArrayType::rank>(A));}
 
 
  inline void h5_write (h5::group f, std::string const & name, vector_view<std::string> const & V) {
