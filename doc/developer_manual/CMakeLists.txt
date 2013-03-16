@@ -48,7 +48,7 @@ find_package(Doxygen REQUIRED)
 
 get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
 string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
-#message( "Doxygen sources are ${DOXYGEN_SOURCES}") 
+message( "Doxygen sources are ${DOXYGEN_SOURCES}") 
 
 # Prepare the Doxyfile
 configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)

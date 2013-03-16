@@ -16,13 +16,42 @@ NB: You can install triqs on previous OS X, but only if you install clang (via A
 Installation of the dependencies
 ________________________________
 
-#. Install macports (from a binary)
-#. Install XCode 4.3 (directly from the Mac store). In Preferences/Downloads, install "Command Line tools"
-#. Install the **full** Enthought Python Distribution (EPD) (from a binary)
-#. Download the `sources of boost <http://ipht.cea.fr/triqs/download/boost_src.tar.bz2>`_ (1.49) and untar them into a given directory ``BOOST_SRC``
-#. Install cmake, git, gfortran, openmpi and fftw::
+The only supported solution for the mac is homebrew.
 
-      sudo port install cmake git-core gcc46 openmpi fftw-3
+#. Install homebrew 
+#. Install XCode (directly from the Mac store). In Preferences/Downloads, install "Command Line tools".
+
+#. Install several packages which are needed :: 
+         
+     brew install cmake
+     brew install gfortran
+     brew install  --enable-cxx hdf5 
+     brew install gsl
+     brew install fftw
+     brew install open-mpi
+     brew install zmq
+     brew install python
+     brew install doxygen
+
+#. Now install a virtualenv [EXPL. NEEDED] and install python packages ::
+    
+    pip install h5py
+    pip install numpy
+    pip install scipy
+    pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
+    pip install tornado
+    pip install pyzmq
+    pip install ipython
+
+#. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax:: 
+  
+     pip install sphinx
+     easy_install pyparsing==1.5.7
+     git clone git://github.com/mathjax/MathJax.git MathJax
+
+   NB : you need pyparsing <1.5.7 since apparently v.2.0 works only for python 3.
+
+#. Download the latest `sources of boost <http://www.boost.org/users/download/>`_  and untar them into a given directory ``BOOST_SRC``
 
 
 TRIQS installation
@@ -34,14 +63,11 @@ __________________
 
 #. Generate a Makefile using cmake::
 
-      cmake TRIQS_src -DCMAKE_Fortran_COMPILER=/opt/local/bin/gfortran-mp-4.6 \
-          -DPYTHON_INTERPRETER=/Library/Frameworks/EPD64.framework/Versions/7.2/bin/python \
-          -DBOOST_SOURCE_DIR=BOOST_SRC -DMPI_CXX_COMPILER=openmpic++  \
-          -DCMAKE_COMPILER_IS_GNUCXX=1
+      cmake TRIQS_src -DBOOST_SOURCE_DIR=BOOST_SRC 
 
-#. Compile TRIQS, its tests and install it into INSTALL_DIR (default)::
+#. Compile TRIQS, its tests and install it into INSTALL_DIR (default) (N is the number of core of your mac)::
 
-      make -j4 && make test && make install 
+      make -jN && make test && make install 
 
 #. If you use Wien2TRIQS, please complete the installation as described :ref:`here <wien2k_inst>`.
 

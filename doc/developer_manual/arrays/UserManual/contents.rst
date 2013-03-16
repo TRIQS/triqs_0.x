@@ -1,30 +1,32 @@
-User Manual : the complete (?) reference 
+User Manual 
 *******************************************
-
-.. warning::
-    This library is beta.
-
-    This manual is not finished: work in progress.
-
 
 .. highlight:: c
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :numbered:
 
    view_or_not_view
    basic_classes
-   slicing
+   construct
+   views
+   move_swap
    shape
+   element_acces
+   slicing
+   lazy 
+   call 
    debug 
    assignment
    algebras
-   foreach
-   functional
-   STL
+   blas_lapack
+   mapped_fnt
    H5
    Interop_Python
    IO
-   blas_lapack
+   foreach
+   STL
+   map
+   group_indices
    FAQ
