@@ -43,9 +43,9 @@ namespace triqs { namespace mc_tools {
 
    // Couple of traits to check arguments of add_move and add_measure
    template <typename T> struct is_fine : boost::false_type {};
-   template <typename T> struct is_fine<T * &&> : boost::true_type {};
-   template <typename T> struct is_fine<boost::shared_ptr<T> > : boost::true_type {};
-   template <typename T> struct is_fine<std::shared_ptr<T> > : boost::true_type {};
+   //template <typename T> struct is_fine<T * &&> : boost::true_type {};
+   //template <typename T> struct is_fine<boost::shared_ptr<T> > : boost::true_type {};
+   //template <typename T> struct is_fine<std::shared_ptr<T> > : boost::true_type {};
 
   public:
 
@@ -54,13 +54,13 @@ namespace triqs { namespace mc_tools {
      */
    mc_generic(int N_Cycles, int Length_Cycle, int N_Warmup_Cycles, std::string Random_Name, int Random_Seed, int Verbosity,
               boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
-     NCycles(N_Cycles),
-     Length_MC_Cycle(Length_Cycle),
-     NWarmIterations(N_Warmup_Cycles),
      RandomGenerator(Random_Name, Random_Seed),
      AllMoves(RandomGenerator),
      AllMeasures(),
      report(&std::cout, Verbosity),
+     Length_MC_Cycle(Length_Cycle),
+     NWarmIterations(N_Warmup_Cycles),
+     NCycles(N_Cycles),
      after_cycle_duty(AfterCycleDuty),
      sign_av(0) {}
 
@@ -94,7 +94,7 @@ namespace triqs { namespace mc_tools {
 
    template <typename T>
    void add_move (T M, std::string name, double PropositionProbability = 1.0) {
-     BOOST_STATIC_ASSERT_MSG(is_fine<T>::value, "Add moves with the folloing syntax: add_move(new mymove(...), name, probability) or provide a shared_ptr to a move as the first argument");
+    static_assert (is_fine<T>::value, "Add moves with the folloing syntax: add_move(new mymove(...), name, probability) or provide a shared_ptr to a move as the first argument");
    }
 
    /**
@@ -200,9 +200,9 @@ namespace triqs { namespace mc_tools {
 
   protected:
 
-   triqs::utility::report_stream report;
    move_set<MCSignType> AllMoves;
    measure_set<MCSignType> AllMeasures;
+   triqs::utility::report_stream report;
    uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
    uint64_t NWarmIterations, NCycles;
    uint64_t nmeasures;
