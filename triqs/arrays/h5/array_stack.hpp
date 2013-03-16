@@ -147,7 +147,7 @@ namespace triqs { namespace arrays {
     H5::DataSpace fspace1 = dataset.getSpace (), mspace = h5_impl::data_space(buffer); 
     fspace1.selectHyperslab( H5S_SELECT_SET, buffer_dim.ptr(), offset.ptr() );
     mspace.selectHyperslab(  H5S_SELECT_SET, buffer_dim.ptr(), zero.ptr() );
-    try { dataset.write( h5_impl::get_data_ptr(buffer), h5::data_type_memory<T>(), mspace, fspace1 ); }
+    try { dataset.write( h5_impl::get_array_data_ptr(buffer), h5::data_type_memory<T>(), mspace, fspace1 ); }
     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
     offset [0] += step;
    }

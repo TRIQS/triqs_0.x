@@ -19,14 +19,13 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_LATTICE_FUNCTORS_H
 #define TRIQS_LATTICE_FUNCTORS_H
 
-#include <triqs/utility/mathlib.hpp>
-//#include <boost/ref.hpp> add this...
-
 namespace triqs { namespace lattice_tools { 
+
+ const double pi = acos(-1.0);
+ const std::complex<double> I(0,1);
 
  template<typename F> struct minus_chech_impl {
   typedef typename F::arg_type arg_type;

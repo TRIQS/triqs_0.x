@@ -22,7 +22,6 @@
 
 // include first because of a namespace clash.. to be fixed...
 #include "ctqmc.hpp"
-#include <triqs/arrays/h5/array_stack.hpp>
 #include "./iterator_python_sequence.hpp"
 #include <triqs/utility/callbacks.hpp>
  
