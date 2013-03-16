@@ -58,8 +58,6 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return x.size();} 
    size_t dim1() const { return y.size();} 
 
-   //template<typename ... Args> value_type operator[] (Args const & ... args) const { return a * x(key[0]) * y(key[1]); }
-   //template<typename KeyType> value_type operator[] (KeyType const & key) const { return a * x(key[0]) * y(key[1]); }
    template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { return a * x(k0) * y(k1); }
 
    // Optimized implementation of =

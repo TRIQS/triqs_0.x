@@ -65,7 +65,6 @@ namespace triqs { namespace arrays {
     size_t dim0() const { return a.dim0();} 
     size_t dim1() const { return b.dim1();} 
 
-    //template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
     template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->R(k0,k1); }
 
     // Optimized implementation of =, +=, -=

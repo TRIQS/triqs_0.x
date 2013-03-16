@@ -86,6 +86,12 @@ namespace triqs { namespace arrays {
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
 
+   // to make interface similar to std::vector : forward [] to ()
+   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
+   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
+   // gcc 4.6 does not like this one...
+   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
   };
 
  template < class V, int R,  ull_t OptionFlags, ull_t To > struct ViewFactory< V, R,OptionFlags,To, Tag::vector_view> { typedef vector_view<V,OptionFlags> type; };
@@ -109,6 +115,10 @@ namespace triqs { namespace arrays {
 
     ///
     vector(size_t dim):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) {}
+
+    /// to mimic std vector
+    template<typename Arg>
+    vector(size_t dim, Arg && arg):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) { (*this)() = std::forward<Arg>(arg);}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
@@ -167,6 +177,12 @@ namespace triqs { namespace arrays {
     std::ptrdiff_t stride() const { return this->indexmap().strides()[0];}
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
+
+    // to make interface similar to std::vector : forward [] to ()
+   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
+   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
+   //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
+   //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
 
   };//vector class
 }}//namespace triqs::arrays
