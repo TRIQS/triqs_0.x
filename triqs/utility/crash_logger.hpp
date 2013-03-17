@@ -70,7 +70,7 @@ class crash_logger {
     using triqs::h5::h5_write; // to have the proper overload for scalar type !!
     try { h5_write( h5::group(H5::H5File(this->filename_.c_str(),H5F_ACC_RDWR)), name, obj); }
     catch(H5::Exception const & e) { std::cerr  << "An hdf5 exception has occurred in crash_logger : I can not recover : error is " <<std::endl ; e.printError();}
-    catch(...) { std::cerr  << "An exception has occurred in crash_logger for an object of type " << typeid_name<Obj>() << " named " << name<< std::endl ; }
+    catch(...) { std::cerr  << "An exception has occurred in crash_logger for an object of type " << typeid_name(obj) << " named " << name<< std::endl ; }
     }); //end lambda
   return *this;
  }
