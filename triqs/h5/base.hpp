@@ -115,12 +115,17 @@ namespace triqs {
    }
 
 #define TRIQS_ARRAYS_H5_CATCH_EXCEPTION \
-  catch( triqs::runtime_error error)  { throw triqs::runtime_error() << error.what();}\
-  catch( H5::FileIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 File error"; }\
-  catch( H5::DataSetIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataSet error"; }\
-  catch( H5::DataSpaceIException error ) { error.printError();  TRIQS_RUNTIME_ERROR<<"H5 DataSpace error"; }\
-  catch( H5::DataTypeIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataType error";  }\
-  catch( H5::AttributeIException error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 Attribute error";  }\
+  catch( triqs::runtime_error const & error)  { throw triqs::runtime_error() << error.what();}\
+  catch( H5::AttributeIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 Attribute error";  }\
+  catch( H5::DataSetIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataSet error"; }\
+  catch( H5::DataSpaceIException const & error ) { error.printError();  TRIQS_RUNTIME_ERROR<<"H5 DataSpace error"; }\
+  catch( H5::DataTypeIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 DataType error";  }\
+  catch( H5::FileIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 File error"; }\
+  catch( H5::GroupIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 Group error"; }\
+  catch( H5::IdComponentException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 IdComponentException error"; }\
+  catch( H5::LibraryIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 LibraryIException error"; }\
+  catch( H5::PropListIException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 PropListIException error"; }\
+  catch( H5::ReferenceException const & error ) { error.printError(); TRIQS_RUNTIME_ERROR<<"H5 ReferenceException error"; }\
   catch(...) { TRIQS_RUNTIME_ERROR<<"H5 unknown error";} 
 
   /****************** Write string attribute *********************************************/
