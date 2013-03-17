@@ -82,7 +82,7 @@ namespace triqs { namespace mc_tools {
 //--------------------------------------------------------------------
 
 template<typename MCSignType>
-class measure_set : public std::map<std::string, mcmeasure<MCSignType> > {
+class measure_set : std::map<std::string, mcmeasure<MCSignType> > {
  typedef std::map<std::string, mcmeasure<MCSignType> > BaseType;
  typedef mcmeasure<MCSignType> measure_type;
  public : 
@@ -107,7 +107,7 @@ class measure_set : public std::map<std::string, mcmeasure<MCSignType> > {
 
  bool has(std::string const & name) const { return BaseType::find(name) != BaseType::end(); }
 
- measure_type & operator[](std::string const & name) {
+ /*measure_type & operator[](std::string const & name) {
   if (!has(name)) throw std::out_of_range("No result found with the name: " + name);
   return BaseType::find(name)->second;
  }
@@ -116,7 +116,7 @@ class measure_set : public std::map<std::string, mcmeasure<MCSignType> > {
   if (!has(name)) throw std::out_of_range("No result found with the name: " + name);
   return BaseType::find(name)->second;
  }
-
+*/
  ///
  void accumulate( MCSignType & signe) { for (iterator it= this->begin(); it != this->end(); ++it) it->second.accumulate(signe); }
 
