@@ -25,7 +25,6 @@ import numpy
 import pytriqs.utility.dichotomy as dichotomy
 from pytriqs.gf.local import *
 from pytriqs.applications.impurity_solvers.operators import *
-from pytriqs.utility.my_utils import sum_list
 import pytriqs.utility.mpi as mpi
 from datetime import datetime
 

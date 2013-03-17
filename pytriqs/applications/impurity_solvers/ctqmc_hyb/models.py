@@ -23,9 +23,12 @@
 from math import *
 import numpy
 from pytriqs.gf.local import BlockGf
-from pytriqs.utility.my_utils import sum_list
 from pytriqs.applications.impurity_solvers.operators import *
 from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
+
+def sum_list(L):
+    """ Can sum any list"""
+    return reduce(lambda x, y: x+y, L) if len(L)>0 else []
 
 #########################################
 #

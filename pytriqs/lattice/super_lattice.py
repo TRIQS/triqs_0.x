@@ -21,10 +21,20 @@
 ################################################################################
 
 import numpy
-from pytriqs.utility.my_utils import nint_strict
 from tight_binding import TBLattice
 
 __all__ = ['TBSuperLattice']
+
+
+def nint_strict(x, precision=1.e-9):
+    """ Round array x to the closest integer and asserts that its distance to this integer is less than precision.
+        precision must satisfy :  precision >0 and precision <0.5
+    """
+    assert precision >0 and precision <0.5, "nint_strict : precision makes no sense !"
+    i = numpy.floor(x+0.5)
+    assert abs(i-x).max() < precision, repr(i) + "\n "+repr(x) + "\n The Float is not close enough to the integer "
+    return i.astype(numpy.int)
+
 
 class TBSuperLattice(TBLattice):
     """

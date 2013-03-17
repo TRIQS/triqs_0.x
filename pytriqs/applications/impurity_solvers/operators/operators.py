@@ -22,7 +22,6 @@
 
 import string
 from copy import deepcopy
-from pytriqs.utility.my_utils import conjugate
 """
  State : represented by a dict : n-> lambda_n
  n = binary decomposition is the occupation number as usual
@@ -149,7 +148,7 @@ class Operator:
     def dagger(self) :
         res = Operator()
         for coef,vl,mono in self.L :
-            res.L.append([conjugate(coef),vl[:],[ o.dagger() for o in reversed(mono)]])
+            res.L.append([coef.conjugate(),vl[:],[ o.dagger() for o in reversed(mono)]])
         res.__redu()
         return res
 

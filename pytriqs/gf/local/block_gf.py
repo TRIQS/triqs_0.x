@@ -22,8 +22,11 @@
 
 from itertools import izip
 import operator
-from pytriqs.utility.my_utils import call_factory_from_dict
 from impl_plot import PlotWrapperPartialReduce
+
+def call_factory_from_dict (cl,dic) :
+    """Given a class cl and a dict dic, it calls cl.__factory_from_dict__(dic)"""
+    return cl.__factory_from_dict__(dic)
 
 class BlockGf(object):
     """

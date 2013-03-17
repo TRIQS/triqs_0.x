@@ -22,7 +22,6 @@
 
 import numpy
 import lazy_expressions, descriptors
-import pytriqs.utility.my_utils
 from gf import MeshImFreq
 from pytriqs.plot.protocol import clip_array
 from types import IntType, SliceType, StringType

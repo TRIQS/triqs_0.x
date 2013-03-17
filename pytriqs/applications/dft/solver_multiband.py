@@ -24,11 +24,13 @@
 from pytriqs.applications.dft.U_matrix import *
 from pytriqs.applications.impurity_solvers.operators import *
 from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver
-from pytriqs.utility.my_utils import sum_list
 import pytriqs.utility.mpi as mpi
 from types import *
 import numpy
 
+def sum_list(L):
+    """ Can sum any list"""
+    return reduce(lambda x, y: x+y, L) if len(L)>0 else []
 
 #########################################
 #
