@@ -19,9 +19,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef TYPE_ID_NAME_H
-#define TYPE_ID_NAME_H
+#ifndef TRIQS_TYPE_ID_NAME_H
+#define TRIQS_TYPE_ID_NAME_H
 
 #include <string>
 #include <sstream>
@@ -58,6 +57,9 @@ namespace triqs { namespace utility {
  
  template<typename T>
   std::string typeid_name(T const & A) { return demangle(typeid(A).name());}
+
+ template<typename T>
+  std::string typeid_name() { return demangle(typeid(std::declval<T>()).name());}
 
 }}
 #endif
