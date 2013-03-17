@@ -4,9 +4,8 @@ from types import *
 from pytriqs.gf.local import *
 from pytriqs.gf.local.descriptors import A_Omega_Plus_B
 from pytriqs.applications.impurity_solvers.operators import *
-from pytriqs.utility.my_utils import *
-import pytriqs.utility.parameters as parameters
 import pytriqs.utility.mpi as mpi
+import numpy
 
 cdef extern from "applications/impurity_solvers/ctqmc_hyb/hloc.hpp":
 
@@ -118,7 +117,7 @@ class Solver:
         for a,alpha_list in  self.gf_struct :
             for mu, amu in enumerate(alpha_list) :
                 for nu, anu in enumerate(alpha_list) :
-                    H += real(self.G0[a].tail[2][mu,nu]) * Cdag(a,amu)*C(a,anu)
+                    H += (self.G0[a].tail[2][mu,nu]).real * Cdag(a,amu)*C(a,anu)
 
         OPdict = {"Hamiltonian": H}
         mpi.report("Hamiltonian with Eps0 term  : ",H)

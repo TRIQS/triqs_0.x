@@ -24,7 +24,6 @@ from types import *
 from pytriqs.applications.dft.U_matrix import Umatrix
 from pytriqs.gf.local import *
 from hubbard_I import gf_hi_fullu, sigma_atomic_fullu
-import pytriqs.utility.parameters as parameters
 import pytriqs.utility.mpi as mpi
 from itertools import izip
 import numpy
