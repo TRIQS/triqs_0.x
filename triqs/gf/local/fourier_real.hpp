@@ -18,41 +18,41 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_MATSU_H 
-#define TRIQS_GF_LOCAL_FOURIER_MATSU_H
+#ifndef TRIQS_GF_LOCAL_FOURIER_REAL_H 
+#define TRIQS_GF_LOCAL_FOURIER_REAL_H
 
 #include "fourier_base.hpp"
-#include <triqs/gf/imfreq.hpp> 
-#include <triqs/gf/imtime.hpp> 
+#include <triqs/gf/refreq.hpp> 
+#include <triqs/gf/retime.hpp> 
 
 namespace triqs { namespace gf { 
 
  // First the implementation of the fourier transform
- void fourier_impl         (gf_view<imfreq> &gw , gf_view<imtime> const & gt);
- void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw);
+ void fourier_impl         (gf_view<refreq> &gw , gf_view<retime> const & gt);
+ void inverse_fourier_impl (gf_view<retime> &gt,  gf_view<refreq> const & gw);
 
  // Then a good old function make a new gf 
  /*
- gf<imfreq> fourier (gf_view<imtime> const & gt) { 
-  auto gw = imfreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
+ gf<refreq> fourier (gf_view<retime> const & gt) { 
+  auto gw = refreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
   auto V = gw();
   fourier_impl(V,gt);
   return gw;
  }
 
- gf<imtime> inverse_fourier (gf_view<imfreq> const & gw) { 
-  auto gt = imtime::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
+ gf<retime> inverse_fourier (gf_view<refreq> const & gw) { 
+  auto gt = retime::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
   auto V = gt();
   inverse_fourier_impl(V,gw);
   return gt;
  }
  */
 
- gf_keeper<tags::fourier,imtime> lazy_fourier         (gf_view<imtime> const & g);
- gf_keeper<tags::fourier,imfreq> lazy_inverse_fourier (gf_view<imfreq> const & g);
+ gf_keeper<tags::fourier,retime> lazy_fourier         (gf_view<retime> const & g);
+ gf_keeper<tags::fourier,refreq> lazy_inverse_fourier (gf_view<refreq> const & g);
 
- void triqs_gf_view_assign_delegation( gf_view<imfreq> &g, gf_keeper<tags::fourier,imtime> const & L);
- void triqs_gf_view_assign_delegation( gf_view<imtime> &g, gf_keeper<tags::fourier,imfreq> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<refreq> &g, gf_keeper<tags::fourier,retime> const & L);
+ void triqs_gf_view_assign_delegation( gf_view<retime> &g, gf_keeper<tags::fourier,refreq> const & L);
 
 }}
 #endif

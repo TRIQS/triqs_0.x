@@ -18,8 +18,8 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
+
 #include "fourier_matsubara.hpp"
-#include "fourier_base.hpp"
 #include <fftw3.h>
 
 namespace triqs { namespace gf { 

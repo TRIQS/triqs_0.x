@@ -11,6 +11,10 @@ cdef extern from "triqs/gf/local/fourier_matsubara.hpp" :
     gf_imfreq lazy_fourier          (gf_imtime & )
     gf_imtime lazy_inverse_fourier  (gf_imfreq & )
 
+cdef extern from "triqs/gf/local/fourier_real.hpp" :
+    gf_refreq lazy_fourier          (gf_retime & )
+    gf_retime lazy_inverse_fourier  (gf_refreq & )
+
 ###############  Legendre  #########################
 
 cdef extern from "triqs/gf/local/legendre_matsubara.hpp" : 

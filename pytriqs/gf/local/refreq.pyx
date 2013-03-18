@@ -10,6 +10,10 @@ cdef class GfReFreq_cython ( GfGeneric_cython ) :
     def __write_hdf5__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)
 
+    def set_from_fourier(self, GfReTime_cython gt) :
+        """Fills self with the Fourier transform of gt"""
+        self._c << lazy_fourier( gt._c )
+
     def set_from_pade(self, GfImFreq_cython gw, n_points = 100, freq_offset = 0.0) :
         pade(self._c, gw._c, n_points, freq_offset)
 
