@@ -25,8 +25,6 @@
 namespace triqs { namespace gf { 
 
   namespace impl_local_real {
-    dcomplex I(0,1);
-    double pi = std::acos(-1);
     inline dcomplex th_expo(double t, double a ) { return (t < 0 ? 0 : -I * exp(-a*t)); }
     inline dcomplex th_expo_neg(double t, double a ) { return (t > 0 ? 0 : I * exp(a*t)); }
   }
@@ -37,13 +35,7 @@ namespace triqs { namespace gf {
 
     using namespace impl_local_real;
 
-    size_t L;
-    switch(gt.mesh().kind()) {
-      case half_bins: L = gt.mesh().size(); break;
-      case full_bins: L = gt.mesh().size()-1; break;
-      case without_last: L = gt.mesh().size(); break;
-    }
-
+    size_t L = gt.mesh().size();
     if (gw.mesh().size() != gt.mesh().size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
     double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
@@ -52,7 +44,7 @@ namespace triqs { namespace gf {
     const double wmin = gw.mesh().x_min() + (gw.mesh().kind() == half_bins ? 0.5 : 0.0) * gw.mesh().delta();
 
     auto ta = gt(freq_infty());
-    tqa::vector<dcomplex> g_in(gt.mesh().size()), g_out(gw.mesh().size());
+    tqa::vector<dcomplex> g_in(L), g_out(L);
 
     for (size_t n1=0; n1<gw.data_view().shape()[0];n1++) {
       for (size_t n2=0; n2<gw.data_view().shape()[1];n2++) {
@@ -69,7 +61,8 @@ namespace triqs { namespace gf {
         details::fourier_base(g_in, g_out, L, true);
 
         for (auto & w : gw.mesh()) {
-          gw(w)(n1,n2) = gt.mesh().delta() * std::exp(I*w*tmin) * std::exp(-I*wmin*tmin) * g_out(w.index()) + (a1/(w+I) + a2/(w-I));
+          gw(w)(n1,n2) = gt.mesh().delta() * std::exp(I*w*tmin) * std::exp(-I*wmin*tmin) * g_out(w.index())
+                         + (a1/(w+I) + a2/(w-I));
         }
       }
     }
@@ -85,13 +78,7 @@ namespace triqs { namespace gf {
 
     using namespace impl_local_real;
 
-    size_t L;
-    switch(gw.mesh().kind()) {
-      case half_bins: L = gw.mesh().size(); break;
-      case full_bins: L = gw.mesh().size()-1; break;
-      case without_last: L = gw.mesh().size(); break;
-    }
-
+    size_t L = gw.mesh().size();
     if (gw.mesh().size() != gt.mesh().size()) TRIQS_RUNTIME_ERROR << "Meshes are different";
     double test = std::abs(gt.mesh().delta() * gw.mesh().delta() * L / (2*pi) -1);
     if (test > 1.e-10) TRIQS_RUNTIME_ERROR << "Meshes are not compatible";
@@ -100,7 +87,7 @@ namespace triqs { namespace gf {
     const double wmin = gw.mesh().x_min() + (gw.mesh().kind() == half_bins ? 0.5 : 0.0) * gw.mesh().delta();
 
     auto ta = gw(freq_infty());
-    tqa::vector<dcomplex> g_in(gw.mesh().size()), g_out(gt.mesh().size());
+    tqa::vector<dcomplex> g_in(L), g_out(L);
 
     for (size_t n1=0; n1<gt.data_view().shape()[0];n1++) {
       for (size_t n2=0; n2<gt.data_view().shape()[1];n2++) {
@@ -118,7 +105,7 @@ namespace triqs { namespace gf {
         const double corr = 1.0/(gt.mesh().delta()*L);
         for (auto & t : gt.mesh()) {
           gt(t)(n1,n2) = corr * std::exp(I*wmin*tmin) * std::exp(-I*wmin*t) *
-                                g_out(t.index()) + (a1*th_expo(t,1) + a2*th_expo_neg(t,1));
+                                g_out(t.index()) + a1*th_expo(t,1) + a2*th_expo_neg(t,1);
         }
       }
     }

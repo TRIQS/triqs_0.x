@@ -14,6 +14,9 @@ cdef class GfReFreq_cython ( GfGeneric_cython ) :
         """Fills self with the Fourier transform of gt"""
         self._c << lazy_fourier( gt._c )
 
+    def inverse_fourier(self):
+        return make_GfReTime(inverse_fourier(self._c))
+
     def set_from_pade(self, GfImFreq_cython gw, n_points = 100, freq_offset = 0.0) :
         pade(self._c, gw._c, n_points, freq_offset)
 

@@ -53,17 +53,6 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
 
         GfReTime_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
 
-    #--------------   FOURIER   ---------------------------------------
-
-    def fourier(self):
-        """Returns a GfReFreq containing the Fourier transform of self"""
-        import gf_refreq
-        om0 = 2*pi/(self.mesh.t_max - self.mesh.t_min)
-        N = len(self.mesh)
-        gw = gf_refreq.GfReFreq(indices = self.indices, window = (-(N/2) * om0, (N/2) * om0), n_points = N)
-        gw.set_from_fourier(self)
-        return gw
-
     #--------------   PLOT   ---------------------------------------
 
     def _plot_(self, OptionsDict):

@@ -27,26 +27,34 @@
 
 namespace triqs { namespace gf { 
 
+ namespace impl_local_real {
+   dcomplex I(0,1);
+   double pi = std::acos(-1);
+ }
+
  // First the implementation of the fourier transform
  void fourier_impl         (gf_view<refreq> &gw , gf_view<retime> const & gt);
  void inverse_fourier_impl (gf_view<retime> &gt,  gf_view<refreq> const & gw);
 
- // Then a good old function make a new gf 
- /*
- gf<refreq> fourier (gf_view<retime> const & gt) { 
-  auto gw = refreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
-  auto V = gw();
-  fourier_impl(V,gt);
-  return gw;
+ gf_view<refreq> fourier (gf_view<retime> const & gt) { 
+   size_t L = gt.mesh().size();
+   double wmin = -impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
+   double wmax =  impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
+   auto gw = gf_factories<refreq>::make_gf(wmin, wmax, L, gt.data_view().shape().pop());
+   auto V = gw();
+   fourier_impl(V, gt);
+   return gw;
  }
 
- gf<retime> inverse_fourier (gf_view<refreq> const & gw) { 
-  auto gt = retime::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
-  auto V = gt();
-  inverse_fourier_impl(V,gw);
-  return gt;
+ gf_view<retime> inverse_fourier (gf_view<refreq> const & gw) { 
+   size_t L = gw.mesh().size();
+   double tmin = -impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
+   double tmax =  impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
+   auto gt = gf_factories<retime>::make_gf(tmin, tmax, L, gw.data_view().shape().pop());
+   auto V = gt();
+   inverse_fourier_impl(V, gw);
+   return gt;
  }
- */
 
  gf_keeper<tags::fourier,retime> lazy_fourier         (gf_view<retime> const & g);
  gf_keeper<tags::fourier,refreq> lazy_inverse_fourier (gf_view<refreq> const & g);
