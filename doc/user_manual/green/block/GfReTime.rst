@@ -17,7 +17,7 @@ Reference
 ---------------
 
 .. autoclass:: pytriqs.gf.local.GfReTime
-  :members: density, set_from_inverse_fourier, transpose, conjugate
+  :members: set_from_inverse_fourier, fourier, transpose, conjugate
  
 
 HDF5 data scheme
