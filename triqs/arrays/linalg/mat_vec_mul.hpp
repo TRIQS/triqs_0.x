@@ -55,7 +55,7 @@ namespace triqs { namespace arrays {
 
    struct internal_data {
     vector_type R;
-    internal_data(mat_vec_mul_lazy const & P): R( P.a.size(), P.b.dim1()) { blas::gemv(1,P.M,P.V,0,R); }
+    internal_data(mat_vec_mul_lazy const & P): R(P.M.dim0()) { blas::gemv(1,P.M,P.V,0,R); }
    };
    friend struct internal_data;
    mutable boost::shared_ptr<internal_data> _id;
