@@ -46,7 +46,7 @@ namespace triqs { namespace arrays { namespace blas {
   * Calls dot product of 2 vectors.
   * Takes care of making temporary copies if necessary
   */
- template< typename VTX, typename VTY>
+ template<bool Star, typename VTX, typename VTY>
   typename std::enable_if< std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value, typename VTX::value_type >::type
   dot (VTX const & X, VTY const & Y) { 
    static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
@@ -58,13 +58,21 @@ namespace triqs { namespace arrays { namespace blas {
    //return f77::dot(X.size(), Cx().data_start(), Cx().stride(), Cy().data_start(), Cy().stride());
   }
 
+ template< bool Star, typename T>
+  typename std::enable_if<boost::is_complex<T>::value && Star,T>::type
+  _conj(T && x) { return conj(std::forward<T>(x));}
+
+ template< bool Star, typename T>
+  typename std::enable_if<!( boost::is_complex<T>::value && Star),T>::type
+  _conj(T && x) { return std::forward<T>(x);}
+
  /**
   * Calls dot product of 2 vectors.
   * Takes care of making temporary copies if necessary
   * general case. Also for complex since there is a bug on some machines (os X, weiss...) for zdotu, zdotc...
   * a transcription from netlib zdotu
   */
- template< typename VTX, typename VTY>
+ template< bool Star, typename VTX, typename VTY>
   typename std::enable_if< (!std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value),
 	   decltype(std::declval<VTX>()(0)* std::declval<VTY>()(0)) >::type
 	   //decltype(std::declval<typename VTX::value_type>()* std::declval<typename VTY::value_type>()) >::type
@@ -75,15 +83,19 @@ namespace triqs { namespace arrays { namespace blas {
    size_t N= X.size(), incx = X.stride(), incy = Y.stride();
    decltype(X(0)*Y(0)) res = 0;
    if ((incx==1) && (incy==1)) {
-    for (size_t i=0; i<N; ++i) res += X(i) * Y(i);
+    for (size_t i=0; i<N; ++i) res += _conj<Star>(X(i)) * Y(i);
    }
    else { // code for unequal increments or equal increments  not equal to 1
-    for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) res += X(ix) * Y(iy);
+    for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) res += _conj<Star>(X(ix)) * Y(iy);
    }
    return res;
   }
+}
 
-}}}// namespace
+template <typename VTX,typename VTY> auto dot  (VTX const & X, VTY const & Y) DECL_AND_RETURN( blas::dot<false>(X,Y));
+template <typename VTX,typename VTY> auto dotc (VTX const & X, VTY const & Y) DECL_AND_RETURN( blas::dot<true>(X,Y));
+
+}}// namespace
 
 #endif
 

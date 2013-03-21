@@ -26,7 +26,7 @@ namespace triqs { namespace lattice_tools {
 
  using namespace tqa;
  using namespace std;
- using triqs::arrays::blas::dot;
+ //using triqs::arrays::blas::dot;
  const double almost_zero(1E-10);
 
  bravais_lattice::bravais_lattice( units_type const & units__) : units_(3,3), dim_(units__.len(0)) { 

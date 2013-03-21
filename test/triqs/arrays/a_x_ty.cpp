@@ -64,8 +64,8 @@ int main(int argc, char **argv) {
  std::cout<<" full A"<< A<<std::endl<<std::endl;
 
 
- std::cout<< " MB, MC, dot "<< MB << MC << blas::dot(MB,MC)<<std::endl;
- std::cout<< " MC, MC, dot "<< MB << MC << blas::dot(MC,MC)<<std::endl;
+ std::cout<< " MB, MC, dot "<< MB << MC << dot(MB,MC)<<std::endl;
+ std::cout<< " MC, MC, dot "<< MB << MC << dot(MC,MC)<<std::endl;
 
 }
 
