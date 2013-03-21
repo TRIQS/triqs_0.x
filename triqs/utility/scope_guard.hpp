@@ -36,7 +36,7 @@ class scope_guard {
  scope_guard() = delete;
  scope_guard(const scope_guard&) = delete;
  scope_guard& operator=(const scope_guard&) = delete;
- scope_guard& operator=(scope_guard&& rhs) { using std::swap; swap(f_,rhs.f_); swap(active_, rhs.active_);}
+ scope_guard& operator=(scope_guard&& rhs) { using std::swap; swap(f_,rhs.f_); swap(active_, rhs.active_); return *this;}
  scope_guard(scope_guard&& rhs) : f_(std::move(rhs.f_)) , active_(rhs.active_) { rhs.dismiss(); }
 };
 
