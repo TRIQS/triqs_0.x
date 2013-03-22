@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,7 +18,6 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_TOOLS_MC_GENERIC_H
 #define TRIQS_TOOLS_MC_GENERIC_H
 
@@ -32,17 +30,15 @@
 #include "mc_basic_step.hpp"
 #include "random_generator.hpp"
 
-namespace triqs { namespace mc_tools { 
+namespace triqs { namespace mc_tools {
 
  /**
-  * 
+  *
   */
  template<typename MCSignType, typename MCStepType = Step::Metropolis<MCSignType> >
  class mc_generic {
 
   public:
-
-   // Constructor sur Param class....
 
    /**
      * Constructor from a set of parameters
@@ -59,9 +55,9 @@ namespace triqs { namespace mc_tools {
      after_cycle_duty(AfterCycleDuty),
      sign_av(0) {}
 
-   /** 
+   /**
     * Register move M with its probability of being proposed.
-    * NB : the PropositionProbability needs to be >0 but does not need to be 
+    * NB : the PropositionProbability needs to be >0 but does not need to be
     * normalized. Normalization is automatically done with all the added moves
     * before starting the run
     */
@@ -72,7 +68,7 @@ namespace triqs { namespace mc_tools {
     }
 
    /**
-    * Register the Measure M 
+    * Register the Measure M
     */
    template<typename MeasureType>
     void add_measure (MeasureType && M, std::string name) {
@@ -138,11 +134,11 @@ namespace triqs { namespace mc_tools {
    }
 
    // do not use direcly, use the free function it is simpler to call...
-   template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get<MeasureType> (name); } 
-   template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get<MeasureType> (name); } 
+   template<typename MeasureType> MeasureType       & get_measure(std::string const & name)       { return AllMeasures.template get<MeasureType> (name); }
+   template<typename MeasureType> MeasureType const & get_measure(std::string const & name) const { return AllMeasures.template get<MeasureType> (name); }
 
-   template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get<MoveType> (name); } 
-   template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get<MoveType> (name); } 
+   template<typename MoveType> MoveType       & get_move (std::string const & name)       { return AllMoves.template get<MoveType> (name); }
+   template<typename MoveType> MoveType const & get_move (std::string const & name) const { return AllMoves.template get<MoveType> (name); }
 
   private:
    move_set<MCSignType> AllMoves;
@@ -157,19 +153,19 @@ namespace triqs { namespace mc_tools {
    boost::function<bool()> after_cycle_duty;
    MCSignType sign, sign_av;
    uint64_t NC,done_percent;// NC = number of the cycle
-   
+
    bool thermalized() const { return (NC>= NWarmIterations);}
    bool converged() const { return false;}
  };
 
 
- /// Retrieve a Measure given name and type. NB : the type is checked at runtime 
- template<typename M,typename T1, typename T2> M       & get_measure(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure<M> (name); } 
- template<typename M,typename T1, typename T2> M const & get_measure(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure<M> (name); } 
- 
- /// Retrieve a Move given name and type. NB : the type is checked at runtime 
- template<typename M,typename T1, typename T2> M & get_move(mc_generic<T1,T2> & s, std::string const & name)             { return s.template get_move<M> (name); } 
- template<typename M,typename T1, typename T2> M const & get_move(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_move<M> (name); } 
+ /// Retrieve a Measure given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M       & get_measure(mc_generic<T1,T2> & s, std::string const & name)       { return s.template get_measure<M> (name); }
+ template<typename M,typename T1, typename T2> M const & get_measure(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_measure<M> (name); }
+
+ /// Retrieve a Move given name and type. NB : the type is checked at runtime
+ template<typename M,typename T1, typename T2> M & get_move(mc_generic<T1,T2> & s, std::string const & name)             { return s.template get_move<M> (name); }
+ template<typename M,typename T1, typename T2> M const & get_move(mc_generic<T1,T2> const & s, std::string const & name) { return s.template get_move<M> (name); }
 
 }}// end namespace
 #endif
