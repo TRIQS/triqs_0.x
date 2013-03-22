@@ -63,9 +63,9 @@ public :
 
   //---------------------
 
-  mc_weight_type Try() {
+  mc_weight_type attempt() {
 #ifdef DEBUG
-   std::cout << "I AM IN Try for Insert_Cdag_C_Delta" << std::endl;
+   std::cout << "I AM IN attempt for Insert_Cdag_C_Delta" << std::endl;
    std::cout << "CONFIG BEFORE: " << Config.DT << std::endl;
    // for (int a = 0; a<Config.Na; ++a) print_det(Config.dets[a]);
 #endif
@@ -116,7 +116,7 @@ public :
 
   //----------------
 
-  mc_weight_type Accept() { 
+  mc_weight_type accept() { 
    Config.DT.confirm_insertTwoOperators();
    det->complete_operation(); 
    if (Config.RecordStatisticConfigurations) {
@@ -128,7 +128,7 @@ public :
 
   //----------------
 
-  void Reject() {
+  void reject() {
    if (no_trivial_reject) { 
     Config.DT.undo_insertTwoOperators(); //nothing to be done for the det 
    }
@@ -164,10 +164,10 @@ class Remove_Cdag_C_Delta {
 
  //----------------
 
- mc_weight_type Try() {
+ mc_weight_type attempt() {
 
 #ifdef DEBUG
-  std::cout << "I AM IN Try for Remove_Cdag_C_Delta" << std::endl;
+  std::cout << "I AM IN attempt for Remove_Cdag_C_Delta" << std::endl;
   std::cout << "CONFIG BEFORE: " << Config.DT << std::endl;
   //for (int a = 0; a<Config.Na; ++a) print_det(Config.dets[a]);
 #endif
@@ -204,7 +204,7 @@ class Remove_Cdag_C_Delta {
 
  //----------------
 
- mc_weight_type Accept() { 
+ mc_weight_type accept() { 
   Config.DT.confirm_removeTwoOperators(); 
   det->complete_operation(); 
   Config.update_Sign();
@@ -213,7 +213,7 @@ class Remove_Cdag_C_Delta {
 
  //----------------
 
- void Reject() { 
+ void reject() { 
   Config.DT.undo_removeTwoOperators(); //nothing to be done for the det 
  }
 

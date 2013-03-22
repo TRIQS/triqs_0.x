@@ -50,10 +50,10 @@ public:
 
   //----------------
   
-  mc_weight_type Try() {
+  mc_weight_type attempt() {
     
 #ifdef DEBUG
-    std::cout << "I AM IN Try for Move" << std::endl;
+    std::cout << "I AM IN attempt for Move" << std::endl;
     std::cout << "CONFIG BEFORE: " << Config.DT << std::endl;
     for (int a = 0; a < Config.Na; ++a) print_det(Config.dets[a]);
 #endif
@@ -147,7 +147,7 @@ public:
 
   //----------------
   
-  mc_weight_type Accept() { 
+  mc_weight_type accept() { 
     Config.DT.confirm_insert_and_remove_One_Operator();
     det->complete_operation(); 
 
@@ -163,7 +163,7 @@ public:
   
   //----------------
   
-  void Reject() { 
+  void reject() { 
     Config.DT.undo_insert_and_remove_One_Operator();
 
 #ifdef DEBUG

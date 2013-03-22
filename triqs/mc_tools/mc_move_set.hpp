@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,148 +18,158 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_TOOLS_MC_MOVE_SET2_H
 #define TRIQS_TOOLS_MC_MOVE_SET2_H
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/mpi.hpp>
-#include <boost/concept_check.hpp>
-#include <boost/utility/enable_if.hpp>
-#include "random_generator.hpp"
 #include <triqs/utility/report_stream.hpp>
 #include <triqs/utility/exceptions.hpp>
+#include <functional>
+#include <boost/mpi.hpp>
+#include "./random_generator.hpp"
 
 namespace triqs { namespace mc_tools { 
- namespace mpi=boost::mpi; namespace BLL = boost::lambda;
 
- template <class X, typename Y> struct IsMove { // a concept check for the moves at compile time
-  BOOST_CONCEPT_USAGE(IsMove)
-  {
-   Y r = i.Try();      
-   r = i.Accept();
-   i.Reject();
-  }
-  private: X i;
- };
+ // mini concept checking
+ template<typename MCSignType, typename T, typename Enable=MCSignType> struct has_attempt : std::false_type {};
+ template<typename MCSignType, typename T> struct has_attempt <MCSignType, T, decltype(MCSignType(std::declval<T>().attempt()))> : std::true_type {};
 
+ template<typename MCSignType, typename T, typename Enable=MCSignType> struct has_accept : std::false_type {};
+ template<typename MCSignType, typename T> struct has_accept <MCSignType,T, decltype(std::declval<T>().accept())> : std::true_type {};
+
+ template<typename T, typename Enable=void> struct has_reject : std::false_type {};
+ template<typename T> struct has_reject<T, decltype(std::declval<T>().reject())> : std::true_type {};
+
+ //----------------------------------
+ 
  template<typename MCSignType> class move_set;
 
  template<typename MCSignType> 
   class move {
 
-   boost::shared_ptr<void> move_impl;
-   uint64_t NProposed, NAccepted;
+   std::shared_ptr<void> impl_;
+   std::function<move()> clone_; 
+   size_t hash_; 
+   std::string type_name_;
+
+   std::function<MCSignType()> attempt_, accept_;
+   std::function<void()> reject_;
+   uint64_t NProposed, Naccepted;
+   double acceptance_rate_;
+   move_set<MCSignType> * mset_ptr_;
 
    static move_set<MCSignType> * _mk_ptr( move_set<MCSignType> * x) { return x;}
    template<class T> static move_set<MCSignType> * _mk_ptr( T * x) { return NULL;}
 
-   public:
+   template<typename MoveType> 
+    void deleg (MoveType * p) {
+     impl_= std::shared_ptr<void> (p);
+     hash_ = typeid(MoveType).hash_code();
+     type_name_ =  typeid(MoveType).name();
+     clone_   = [p]() { return MoveType(*p);};
+     attempt_ = [p]() { return p->attempt();};
+     accept_  = [p]() { return p->accept();};
+     reject_  = [p]() { p->reject();};
+     NProposed=0;
+     Naccepted=0;
+     acceptance_rate_ =-1;
+     //h5_w       = [obj](h5::group F, std::string const &Name)->void { h5_write(F,Name, *obj);};
+     mset_ptr_ =  _mk_ptr(p);
+    }
 
-   double acceptance_rate;
-   move_set<MCSignType> * mset_ptr;
+   template<typename MoveType> void check_code() const { 
+    if (typeid(MoveType).hash_code() != hash_) 
+     TRIQS_RUNTIME_ERROR << "Trying to retrieve a measure of type "<< typeid(MoveType).name() << " from a measure of type "<< type_name_;
+   };
 
-   boost::function<MCSignType()> Try_, Accept_;
-   boost::function<void()> Reject;
+   public :
 
-   template<typename MoveType>
-    move( MoveType * move_ptr) : 
-     move_impl(move_ptr),NProposed(0),NAccepted(0),
-     acceptance_rate(-1),
-     mset_ptr( _mk_ptr(move_ptr)), 
-     Try_(BLL::bind(&MoveType::Try,move_ptr)),
-     Accept_(BLL::bind(&MoveType::Accept,move_ptr)),
-     Reject(BLL::bind(&MoveType::Reject,move_ptr))
-   {
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType,MCSignType>));
+   template<typename MoveType> 
+    move (MoveType && p ) { 
+     static_assert( has_attempt<MCSignType,MoveType>::value, " Move has no attempt method !"); 
+     static_assert( has_accept<MCSignType,MoveType>::value, " Move has no accept method !"); 
+     static_assert( has_reject<MoveType>::value, " Move has no reject method !"); 
+     deleg( new typename std::remove_reference<MoveType>::type(std::forward<MoveType>(p)));
+    }
+
+   // Value semantics. Everyone at the end call move = ...
+   move(move const &rhs) {*this = rhs;}  
+   move(move &rhs) {*this = rhs;} // to avoid clash with tempalte construction 
+   move(move && rhs) { *this = std::move(rhs);}
+   move & operator = (move const & rhs) { *this = rhs.clone_(); return *this;}
+   move & operator = (move && rhs) { 
+    using std::swap; 
+    swap(impl_,rhs.impl_); swap( hash_, rhs.hash_); swap(type_name_,rhs.type_name_); swap(clone_,rhs.clone_);
+    swap(attempt_,rhs.attempt_); swap(accept_, rhs.accept_); swap(reject_, rhs.reject_);
+    swap(NProposed,rhs.NProposed);swap(Naccepted,rhs.Naccepted); swap(acceptance_rate_,rhs.acceptance_rate_);
+    swap(mset_ptr_,rhs.mset_ptr_);
+    return *this;
    }
 
-   template<typename MoveType>
-    move(boost::shared_ptr<MoveType> sptr) :
-     move_impl(sptr),NProposed(0),NAccepted(0),
-     acceptance_rate(-1),
-     mset_ptr( _mk_ptr(sptr.get())),
-     Try_(BLL::bind(&MoveType::Try,sptr.get())),
-     Accept_(BLL::bind(&MoveType::Accept,sptr.get())),
-     Reject(BLL::bind(&MoveType::Reject,sptr.get()))
-   {
-    BOOST_CONCEPT_ASSERT((IsMove<MoveType,MCSignType>));
-   }
+   MCSignType attempt(){ NProposed++; return attempt_();}
+   MCSignType accept() { Naccepted++; return accept_(); }
+   void reject() { reject_(); }
+   double acceptance_rate() const { return acceptance_rate_;}
+   move_set<MCSignType> * mset_ptr() { return mset_ptr_;}
 
-   MCSignType Try(){ NProposed++; return Try_();}
-   MCSignType Accept() { NAccepted++; return  Accept_(); }
-
-   void collect_statistics(mpi::communicator const & c) {
-     uint64_t nacc_tot=0, nprop_tot=1;
-     mpi::reduce(c, NAccepted, nacc_tot, std::plus<uint64_t>(), 0);
-     mpi::reduce(c, NProposed, nprop_tot, std::plus<uint64_t>(), 0);
-     acceptance_rate = nacc_tot/static_cast<double>(nprop_tot);
+   void collect_statistics(boost::mpi::communicator const & c) {
+    uint64_t nacc_tot=0, nprop_tot=1;
+    boost::mpi::reduce(c, Naccepted, nacc_tot,  std::plus<uint64_t>(), 0);
+    boost::mpi::reduce(c, NProposed, nprop_tot, std::plus<uint64_t>(), 0);
+    acceptance_rate_ = nacc_tot/static_cast<double>(nprop_tot);
    }
 
   };
 
  //--------------------------------------------------------------------
 
- /// A vector of (moves, PropositionProbability), which is also a move itself
+ /// A vector of (moves, proposition_probability), which is also a move itself
  template<typename MCSignType>
-  class move_set : std::vector<move<MCSignType> > { 
+  class move_set  { 
+   std::vector<move<MCSignType> > move_vec; 
    std::vector<std::string> names_;
    move<MCSignType> * current;
    size_t current_move_number;
-   random_generator & RNG;
+   random_generator * RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;  
    public:   
 
    ///
-   move_set(random_generator & R): RNG(R) { Proba_Moves.push_back(0); }
+   move_set(random_generator & R): RNG(&R) { Proba_Moves.push_back(0); }
 
    /** 
     * Add move M with its probability of being proposed.
-    * NB : the PropositionProbability needs to be >0 but does not need to be 
+    * NB : the proposition_probability needs to be >0 but does not need to be 
     * normalized. Normalization is automatically done with all the added moves
     * before starting the run
-    *
-    * WARNING : the pointer is deleted automatically by the MC class at destruction. 
     */
    template <typename MoveType>
-    void add (MoveType *M, std::string name, double PropositionProbability) {
-     this->push_back( move<MCSignType> (M) );
-     assert(PropositionProbability >=0);
-     Proba_Moves.push_back(PropositionProbability);
-     names_.push_back(name);
-     normaliseProba();// ready to run after each add !
-    }
-
-   template <typename MoveType>
-    void add (boost::shared_ptr<MoveType> sptr, std::string name, double PropositionProbability) {
-     this->push_back( move<MCSignType> (sptr) );
-     assert(PropositionProbability >=0);
-     Proba_Moves.push_back(PropositionProbability);
+    void add (MoveType && M, std::string name, double proposition_probability) {
+     move_vec.push_back( move<MCSignType> (std::forward<MoveType>(M)) );
+     assert(proposition_probability >=0);
+     Proba_Moves.push_back(proposition_probability);
      names_.push_back(name);
      normaliseProba();// ready to run after each add !
     }
 
    /**
     *  - Picks up one of the move at random (weighted by their proposition probability), 
-    *  - Call Try method of that move
+    *  - Call attempt method of that move
     *  - Returns the metropolis ratio R (see move concept). 
     *    The sign ratio returned by the try method of the move is kept.
     */
-   double Try() {
+   double attempt() {
     assert( Proba_Moves_Acc_Sum.size()>0);
     // Choice of move with its probability
-    double proba = RNG(); assert(proba>=0);
+    double proba = (*RNG)(); assert(proba>=0);
     current_move_number =0; while (proba >= Proba_Moves_Acc_Sum[current_move_number] ) { current_move_number++;}
-    assert(current_move_number>0); assert(current_move_number<=this->size());
+    assert(current_move_number>0); assert(current_move_number<=move_vec.size());
     current_move_number--;
-    current =  & (*this)[current_move_number];
+    current =  & move_vec[current_move_number];
 #ifdef TRIQS_TOOLS_MC_DEBUG 
     std::cerr << "*******************************************************"<< std::endl;
     std::cerr << "Name of the proposed move: " << name_of_currently_selected() << std::endl;
     std::cerr <<"  Proposition probability = "<<proba<<std::endl;
 #endif
-    MCSignType rate_ratio = current->Try();
+    MCSignType rate_ratio = current->attempt();
     if (!std::isfinite(std::abs(rate_ratio))) 
      TRIQS_RUNTIME_ERROR<<"Monte Carlo Error : the rate is not finite in move "<<name_of_currently_selected();
     double abs_rate_ratio = std::abs(rate_ratio);
@@ -173,12 +182,12 @@ namespace triqs { namespace mc_tools {
    }
 
    /**
-    *  Accept the move previously selected and tried.
+    *  accept the move previously selected and tried.
     *  Returns the Sign computed as, if M is the move : 
-    *  Sign = sign (M.Try()) * M.Accept()
+    *  Sign = sign (M.attempt()) * M.accept()
     */
-   MCSignType Accept() { 
-    MCSignType accept_sign_ratio =  current->Accept();
+   MCSignType accept() { 
+    MCSignType accept_sign_ratio =  current->accept();
     // just make sure that accept_sign_ratio is a sign!
     assert(std::abs(std::abs(accept_sign_ratio)-1.0) < 1.e-10);
 #ifdef TRIQS_TOOLS_MC_DEBUG
@@ -191,36 +200,36 @@ namespace triqs { namespace mc_tools {
     return try_sign_ratio * accept_sign_ratio;
    }
 
-   /**  Reject the move :  Call the Reject() method of the move previously selected
+   /**  reject the move :  Call the reject() method of the move previously selected
    */
-   void Reject() { 
+   void reject() { 
 #ifdef TRIQS_TOOLS_MC_DEBUG
     std::cerr<<" ... Move rejected"<<std::endl;
 #endif
-    current->Reject();
+    current->reject();
    } 
 
    /// Pretty printing of the acceptance probability of the moves. 
-   std::string get_statistics(mpi::communicator const & c, int shift = 0) {
-     std::ostringstream s;
-     for (unsigned int u =0; u< this->size(); ++u) {
-       (*this)[u].collect_statistics(c);
-       for(int i=0; i<shift; i++) s << " ";
-       if ((*this)[u].mset_ptr) {
-         s << "Move set " << names_[u] << ": " << (*this)[u].acceptance_rate << "\n";
-         s << (*this)[u].mset_ptr->get_statistics(c,shift+2);
-       } else {
-         s << "Move " << names_[u] << ": " << (*this)[u].acceptance_rate << "\n";
-       }
+   std::string get_statistics(boost::mpi::communicator const & c, int shift = 0) {
+    std::ostringstream s;
+    for (unsigned int u =0; u< move_vec.size(); ++u) {
+     move_vec[u].collect_statistics(c);
+     for(int i=0; i<shift; i++) s << " ";
+     if (move_vec[u].mset_ptr()) {
+      s << "Move set " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
+      s << move_vec[u].mset_ptr()->get_statistics(c,shift+2);
+     } else {
+      s << "Move " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
      }
-     return s.str();
+    }
+    return s.str();
    }
 
    protected:
    MCSignType try_sign_ratio;
 
    void normaliseProba() { // Computes the normalised accumulated probability
-    if (this->size() ==0)  TRIQS_RUNTIME_ERROR<<" no moves registered";
+    if (move_vec.size() ==0)  TRIQS_RUNTIME_ERROR<<" no moves registered";
     double acc = 0; 
     Proba_Moves_Acc_Sum.clear();
     for (unsigned int u = 0; u<Proba_Moves.size(); ++u) acc+=Proba_Moves[u];assert(acc>0);
@@ -229,7 +238,7 @@ namespace triqs { namespace mc_tools {
     assert(std::abs(Proba_Moves_Acc_Sum[Proba_Moves_Acc_Sum.size()-1] -1)<1.e-13);
     Proba_Moves_Acc_Sum[Proba_Moves_Acc_Sum.size()-1] += 0.001; 
     // I shift the last proba acc so that even if random number in onecycle is 1 it is below that bound
-    assert(Proba_Moves_Acc_Sum.size()==this->size()+1);
+    assert(Proba_Moves_Acc_Sum.size()==move_vec.size()+1);
    }
 
    std::string name_of_currently_selected() const { return names_[current_move_number];} 

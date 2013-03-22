@@ -85,23 +85,23 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  double p_mv = params["prob_move"];
 
  typedef triqs::mc_tools::move_set<SignType> move_set_type;
- boost::shared_ptr<move_set_type> AllInserts(new move_set_type(QMC.RandomGenerator));
- boost::shared_ptr<move_set_type> AllRemoves(new move_set_type(QMC.RandomGenerator));
+ move_set_type AllInserts(QMC.RandomGenerator);
+ move_set_type AllRemoves(QMC.RandomGenerator);
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
-   AllInserts->add( new Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves->add( new Remove_Cdag_C_Delta_SegmentPicture ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts.add( Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves.add( Remove_Cdag_C_Delta_SegmentPicture ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
   }  
   else {  
-   AllInserts -> add( new Insert_Cdag_C_Delta ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves -> add( new Remove_Cdag_C_Delta ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts.add(Insert_Cdag_C_Delta ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
+   AllRemoves.add(Remove_Cdag_C_Delta ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
   }
  }
 
- QMC.add_move(AllInserts, "INSERT", p_ir);
- QMC.add_move(AllRemoves, "REMOVE", p_ir);
- QMC.add_move(new Move_C_Delta(Config, QMC.RandomGenerator), "Move C Delta", p_mv);
+ QMC.add_move(std::move(AllInserts), "INSERT", p_ir);
+ QMC.add_move(std::move(AllRemoves), "REMOVE", p_ir);
+ QMC.add_move(Move_C_Delta(Config, QMC.RandomGenerator), "Move C Delta", p_mv);
 
  // Register the Global moves
  python::list GM_List = python::extract<python::list>(params.dict()["global_moves_mapping_list"]);
@@ -114,7 +114,7 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
    //cout<< "MAP" << Config.H[p->key].Number<< "  "<<mapping[Config.H[p->key].Number]->Number<<endl<<
    //      Config.H[p->key].name<< "  "<<mapping[Config.H[p->key].Number]->name<<endl;
   }
-  QMC.add_move(new Global_Move(g->x3 , Config, QMC.RandomGenerator, mapping), "Global move", g->x1);
+  QMC.add_move(Global_Move(g->x3 , Config, QMC.RandomGenerator, mapping), "Global move", g->x1);
  }
 
  /*************
@@ -125,9 +125,9 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
 
  for (int a =0; a<Config.Na;++a) { 
    if (LegendreAccumulation) {
-     QMC.add_measure(new Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
+     QMC.add_measure(Measure_G_Legendre(Config, a, G_legendre[a]), make_string("G Legendre ",a));
    } else if (TimeAccumulation) {
-     QMC.add_measure(new Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
+     QMC.add_measure(Measure_G_tau(Config, a, G_tau[a] ), make_string("G(tau) ",a));
    } else {
      assert(0);
    }
@@ -137,13 +137,13 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  // register the measure of F
  if (bool(params["use_f"]))
    for (int a =0; a<Config.Na;++a) 
-     QMC.add_measure(new Measure_F_tau(Config, a, F_tau[a] ), make_string("F(tau) ",a));
+     QMC.add_measure(Measure_F_tau(Config, a, F_tau[a] ), make_string("F(tau) ",a));
 
  // register the measures of the average of some operators
  python::dict opAv_results = python::extract<python::dict>(params.dict()["measured_operators_results"]);
  python::list opAv_List = python::extract<python::list>(params.dict()["operators_av_list"]);
  for (triqs::python_tools::IteratorOnPythonList<string> g(opAv_List); !g.atEnd(); ++g) {
-  QMC.add_measure(new Measure_OpAv(*g, Config, opAv_results), *g);
+  QMC.add_measure(Measure_OpAv(*g, Config, opAv_results), *g);
  }
 
  // register the measures for the time correlators:
@@ -152,7 +152,7 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  for (triqs::python_tools::IteratorOnPythonList<string> g(opCorr_List); !g.atEnd(); ++g, ++a) {
   string str1(*g);
   str1+= "OpCorr";
-  QMC.add_measure(new Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh().size()), str1);
+  QMC.add_measure(Measure_OpCorr(str1, *g, Config, OpCorrToAverage[a], OpCorrToAverage[a].mesh().size()), str1);
  }
 
 }

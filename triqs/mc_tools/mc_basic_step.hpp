@@ -32,14 +32,14 @@ namespace triqs { namespace mc_tools { namespace Step {
  template<typename MCSignType>
   struct Metropolis {  
    static void do_it (move_set<MCSignType> & MoveGroup, random_generator & RNG, MCSignType & signe){
-    double  r = MoveGroup.Try();
+    double  r = MoveGroup.attempt();
     if (RNG() < std::min(1.0,r)) { 
-     signe *= MoveGroup.Accept();
+     signe *= MoveGroup.accept();
 #ifdef DEBUG
      std::cerr<<"   Metropolis sign = "<< signe <<std::endl;
 #endif
     }
-    else MoveGroup.Reject();
+    else MoveGroup.reject();
    }
   };
 

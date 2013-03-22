@@ -1,9 +1,8 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,120 +18,131 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_TOOLS_MC_MEASURE2_H
 #define TRIQS_TOOLS_MC_MEASURE2_H 
 
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/function.hpp>
+#include <functional>
 #include <boost/mpi.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/concept_check.hpp>
 #include <map>
 #include <triqs/utility/exceptions.hpp>
 
 namespace triqs { namespace mc_tools { 
- namespace mpi=boost::mpi;
- namespace BLL = boost::lambda;
  
- template <class X, typename MCSignType> struct IsMeasure {
-  BOOST_CONCEPT_USAGE(IsMeasure)
-  {
-   i.accumulate(MCSignType(1.0));    
-   i.collect_results(*c);
-  }
-  private:
-  X i; boost::mpi::communicator const * c;
- };
+ // mini concept checking
+ template<typename MCSignType, typename T, typename Enable=void> struct has_accumulate : std::false_type {};
+ template<typename MCSignType, typename T> struct has_accumulate <MCSignType, T, decltype(std::declval<T>().accumulate(MCSignType()))> : std::true_type {};
+
+ template<typename T, typename Enable=void> struct has_collect_result : std::false_type {};
+ template<typename T> struct has_collect_result < T, decltype(std::declval<T>().collect_results(std::declval<boost::mpi::communicator>()))> : std::true_type {};
 
  //--------------------------------------------------------------------
 
  template<typename MCSignType>  
-  class mcmeasure  { 
-   boost::shared_ptr< void > impl_;
-   boost::function<void (MCSignType const & ) > accumulate_;
+  class mcmeasure { 
+   
+   std::shared_ptr<void> impl_;
+   std::function<mcmeasure()> clone_; 
+   size_t hash_; 
+   std::string type_name_;
+   
+   std::function<void (MCSignType const & ) > accumulate_;
+   std::function<void (boost::mpi::communicator const & )> collect_results_;
    uint64_t count_;
+ 
+   template<typename MeasureType> 
+    void deleg (MeasureType * p) {
+    impl_= std::shared_ptr<void> (p);
+    accumulate_ = [p](MCSignType const & x) { p->accumulate(x);};
+    count_ = 0; 
+    hash_ = typeid(MeasureType).hash_code();
+    type_name_ =  typeid(MeasureType).name();
+    collect_results_ = [p] ( boost::mpi::communicator const & c) { p->collect_results(c);};
+    clone_ =  [p]() { return MeasureType(*p);} ;
+    //h5_w       = [obj](h5::group F, std::string const &Name)->void { h5_write(F,Name, *obj);};
+   }
+
+   template<typename MeasureType> void check_code() const { 
+    if (typeid(MeasureType).hash_code() != hash_) 
+     TRIQS_RUNTIME_ERROR << "Trying to retrieve a measure of type "<< typeid(MeasureType).name() << " from a measure of type "<< type_name_;
+   };
 
    public :
-   boost::function<void (boost::mpi::communicator const & )> collect_results;
 
-   mcmeasure():impl_(), count_(0) {} // needed to make vector of these...
+   template<typename MeasureType> 
+    mcmeasure (MeasureType && p) { 
+     static_assert( has_accumulate<MCSignType,MeasureType>::value, " Measure has no accumulate method !"); 
+     static_assert( has_collect_result<MeasureType>::value, " Measure has no collect_results method !"); 
+     deleg( new typename std::remove_reference<MeasureType>::type(std::forward<MeasureType>(p)));
+    } 
 
-   template<typename MeasureType> mcmeasure ( MeasureType * p) : 
-    impl_(p),
-    accumulate_(BLL::bind(&MeasureType::accumulate,p,BLL::_1)),
-    count_(0),
-    collect_results( BLL::bind(&MeasureType::collect_results, p,BLL::_1))
-   { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
-
-   template<typename MeasureType> mcmeasure ( boost::shared_ptr<MeasureType> sptr) :
-    impl_(sptr),
-    accumulate_(BLL::bind(&MeasureType::accumulate,sptr.get(),BLL::_1)),
-    count_(0),
-    collect_results(BLL::bind(&MeasureType::collect_results,sptr.get(),BLL::_1))
-   { BOOST_CONCEPT_ASSERT((IsMeasure<MeasureType,MCSignType>)); }
+   // Value semantics. Everyone at the end call move = ...
+   mcmeasure(mcmeasure const &rhs) {*this = rhs;}  
+   mcmeasure(mcmeasure &rhs) {*this = rhs;} // or it will use the template  = bug 
+   mcmeasure(mcmeasure && rhs) { *this = std::move(rhs);}
+   mcmeasure & operator = (mcmeasure const & rhs) { *this = rhs.clone_(); return *this;}
+   mcmeasure & operator = (mcmeasure && rhs) { 
+    using std::swap; 
+    swap(impl_,rhs.impl_); swap(accumulate_, rhs.accumulate_); swap(count_, rhs.count_); swap( hash_, rhs.hash_); swap(type_name_,rhs.type_name_);
+    swap(collect_results_,rhs.collect_results_); swap(clone_,rhs.clone_);
+    return *this;
+   }
 
    void accumulate(MCSignType signe){ assert(impl_); count_++; accumulate_(signe); }
- 
+   void collect_results (boost::mpi::communicator const & c ) { collect_results_(c);}
+
    uint64_t count() const { return count_;}
-};
+   size_t hash_code() const { return hash_;} 
+   template<typename MeasureType> MeasureType       & get()       { check_code<MeasureType>(); return *(static_cast<MeasureType *>(impl_.get())); }
+   template<typename MeasureType> MeasureType const & get() const { check_code<MeasureType>(); return *(static_cast<MeasureType const *>(impl_.get())); }
+  };
 
-//--------------------------------------------------------------------
+ //--------------------------------------------------------------------
 
-template<typename MCSignType>
-class measure_set : std::map<std::string, mcmeasure<MCSignType> > {
- typedef std::map<std::string, mcmeasure<MCSignType> > BaseType;
- typedef mcmeasure<MCSignType> measure_type;
- public : 
- typedef typename BaseType::iterator iterator;
- typedef typename BaseType::const_iterator const_iterator;
+ template<typename MCSignType>
+  class measure_set  { 
+   typedef mcmeasure<MCSignType> measure_type;
+   std::map<std::string, mcmeasure<MCSignType>> m_map;
+   public : 
 
- /**
-  * Register the Measure M with a name
-  * WARNING : the pointer is deleted automatically by the class at destruction. 
-  */
- template<typename T>
-  void insert (T *M, std::string const & name) {
-   if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-   BaseType::insert(std::make_pair(name, measure_type (M) )); 
-  } 
+   /**
+    * Register the Measure M with a name
+    */
+   template<typename MeasureType>
+    void insert (MeasureType && M, std::string const & name) {
+     if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
+     m_map.insert(std::make_pair(name, measure_type (std::forward<MeasureType>(M))));
+     // not implemented on gcc 4.6's stdlibc++ ?
+     // m_map.emplace(name, measure_type (std::forward<MeasureType>(M))); 
+    } 
 
- template<typename T>
-  void insert (boost::shared_ptr<T> sptr, std::string const & name) {
-   if (has(name)) TRIQS_RUNTIME_ERROR <<"measure_set : insert : measure '"<<name<<"' already inserted";
-   BaseType::insert(std::make_pair(name, measure_type (sptr) ));
-  }
+   bool has(std::string const & name) const { return m_map.find(name) != m_map.end(); }
 
- bool has(std::string const & name) const { return BaseType::find(name) != BaseType::end(); }
+   void accumulate(MCSignType & signe) { for (auto & nmp : m_map) nmp.second.accumulate(signe); }
 
- /*measure_type & operator[](std::string const & name) {
-  if (!has(name)) throw std::out_of_range("No result found with the name: " + name);
-  return BaseType::find(name)->second;
- }
+   std::vector<std::string> names() const { 
+    std::vector<std::string> res; 
+    for (auto & nmp : m_map) res.push_back(nmp.first); 
+    return res;
+   }
 
- measure_type const & operator[](std::string const & name) const {
-  if (!has(name)) throw std::out_of_range("No result found with the name: " + name);
-  return BaseType::find(name)->second;
- }
-*/
- ///
- void accumulate( MCSignType & signe) { for (iterator it= this->begin(); it != this->end(); ++it) it->second.accumulate(signe); }
+   // gather result for all measure, on communicator c
+   void collect_results (boost::mpi::communicator const & c ) { for (auto & nmp : m_map) nmp.second.collect_results(c); }
 
- ///
- std::vector<std::string> names() const { 
-  std::vector<std::string> res; 
-  for (const_iterator it= this->begin(); it !=this->end(); ++it) res.push_back(it->first); 
-  return res;
- }
+   // access to the measure, given its type, with dynamical type check 
+   template<typename MeasureType>
+    MeasureType & get_measure(std::string const & name) {
+     auto it = m_map.find (name);
+     if (it == m_map.end()) TRIQS_RUNTIME_ERROR << " Measure " << name << " unknown"; 
+     return it->template get<MeasureType>(); 
+    }
 
- // gather result for all measure, on communicator c
- void collect_results (boost::mpi::communicator const & c ) {
-  for (typename BaseType::iterator it = this->begin(); it != this->end(); ++it) it->second.collect_results(c);
- }
-
-};
+   template<typename MeasureType>
+    MeasureType const & get_measure(std::string const & name) const {
+     auto it = m_map.find (name);
+     if (it == m_map.end()) TRIQS_RUNTIME_ERROR << " Measure " << name << " unknown"; 
+     return it->template get<MeasureType>(); 
+    }
+  };
 
 }}// end namespace
 #endif

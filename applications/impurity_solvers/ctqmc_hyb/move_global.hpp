@@ -57,10 +57,10 @@ public :
 
   //---------------------
 
-  mc_weight_type Try() {
+  mc_weight_type attempt() {
 
 #ifdef DEBUG
-    std::cout << "I AM IN Try for Global_Move" << std::endl;
+    std::cout << "I AM IN attempt for Global_Move" << std::endl;
     std::cout << "CONFIG BEFORE: " << Config.DT << std::endl;
 #endif
  
@@ -122,7 +122,7 @@ public :
   
   //-------------------------------------------------------------------------
   
-  mc_weight_type Accept() { 
+  mc_weight_type accept() { 
 
     Config.DT.confirm_applyGlobalFunction();
 
@@ -144,7 +144,7 @@ public :
     }
 
 #ifdef DEBUG
-    std::cout << "I AM IN Accept for Global_Move" << std::endl;
+    std::cout << "I AM IN accept for Global_Move" << std::endl;
     std::cout << "CONFIG AFTER: " << Config.DT << std::endl;
 #endif
     Config.update_Sign();
@@ -153,12 +153,12 @@ public :
   
   //-------------------------------------------------------------------------
   
-  void Reject() {
+  void reject() {
     
     Config.DT.undo_applyGlobalFunction();
     
 #ifdef DEBUG
-    std::cout << "I AM IN Reject for Global_Move" << std::endl;
+    std::cout << "I AM IN reject for Global_Move" << std::endl;
     std::cout << "CONFIG AFTER: " << Config.DT << std::endl;
 #endif
 
