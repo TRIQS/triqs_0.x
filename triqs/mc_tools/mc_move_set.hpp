@@ -25,6 +25,7 @@
 #include <functional>
 #include <boost/mpi.hpp>
 #include "./random_generator.hpp"
+#include "./impl_tools.hpp"
 
 namespace triqs { namespace mc_tools {
 
@@ -40,8 +41,6 @@ namespace triqs { namespace mc_tools {
 
  //----------------------------------
 
- template<typename MCSignType> class move_set;
-
  template<typename MCSignType>
   class move {
 
@@ -52,63 +51,63 @@ namespace triqs { namespace mc_tools {
 
    std::function<MCSignType()> attempt_, accept_;
    std::function<void()> reject_;
+   std::function<void(h5::group, std::string const &)> h5_r, h5_w;
+
    uint64_t NProposed, Naccepted;
    double acceptance_rate_;
-   move_set<MCSignType> * mset_ptr_;
-
-   static move_set<MCSignType> * _mk_ptr( move_set<MCSignType> * x) { return x;}
-   template<class T> static move_set<MCSignType> * _mk_ptr( T * x) { return NULL;}
 
    template<typename MoveType>
-    void deleg (MoveType * p) {
+    void construct_delegation (MoveType * p) {
      impl_= std::shared_ptr<void> (p);
      hash_ = typeid(MoveType).hash_code();
      type_name_ =  typeid(MoveType).name();
-     clone_   = [p]() { return MoveType(*p);};
-     attempt_ = [p]() { return p->attempt();};
-     accept_  = [p]() { return p->accept();};
-     reject_  = [p]() { p->reject();};
+     clone_   = [p](){return MoveType(*p);};
+     attempt_ = [p](){return p->attempt();};
+     accept_  = [p](){return p->accept();};
+     reject_  = [p](){p->reject();};
+     h5_r = make_h5_read(p); // make_h5_read in impl_tools
+     h5_w = make_h5_write(p);
      NProposed=0;
      Naccepted=0;
      acceptance_rate_ =-1;
-     //h5_w       = [obj](h5::group F, std::string const &Name)->void { h5_write(F,Name, *obj);};
-     mset_ptr_ =  _mk_ptr(p);
     }
-
-   template<typename MoveType> void check_code() const {
-    if (typeid(MoveType).hash_code() != hash_)
-     TRIQS_RUNTIME_ERROR << "Trying to retrieve a measure of type "<< typeid(MoveType).name() << " from a measure of type "<< type_name_;
-   };
 
    public :
 
    template<typename MoveType>
     move (MoveType && p ) {
-     static_assert( has_attempt<MCSignType,MoveType>::value, " Move has no attempt method !");
-     static_assert( has_accept<MCSignType,MoveType>::value, " Move has no accept method !");
-     static_assert( has_reject<MoveType>::value, " Move has no reject method !");
-     deleg( new typename std::remove_reference<MoveType>::type(std::forward<MoveType>(p)));
+     static_assert( is_move_constructible<MoveType>::value, "This move is not MoveConstructible");
+     static_assert( has_attempt<MCSignType,MoveType>::value, "This move has no attempt method (or is has an incorrect signature) !");
+     static_assert( has_accept<MCSignType,MoveType>::value, "This move has no accept method (or is has an incorrect signature) !");
+     static_assert( has_reject<MoveType>::value, "This move has no reject method (or is has an incorrect signature) !");
+     construct_delegation( new typename std::remove_reference<MoveType>::type(std::forward<MoveType>(p)));
     }
 
-   // Value semantics. Everyone at the end call move = ...
+   // Close to value semantics. Everyone at the end call move = ...
+   // no default constructor.
    move(move const &rhs) {*this = rhs;}
-   move(move &rhs) {*this = rhs;} // to avoid clash with tempalte construction
+   move(move &rhs) {*this = rhs;} // to avoid clash with tempalte construction  !
    move(move && rhs) { *this = std::move(rhs);}
    move & operator = (move const & rhs) { *this = rhs.clone_(); return *this;}
-   move & operator = (move && rhs) {
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+   move & operator = (move && rhs) = default;
+#else
+   move & operator = (move && rhs) { // how painful is icc  !
     using std::swap;
-    swap(impl_,rhs.impl_); swap( hash_, rhs.hash_); swap(type_name_,rhs.type_name_); swap(clone_,rhs.clone_);
-    swap(attempt_,rhs.attempt_); swap(accept_, rhs.accept_); swap(reject_, rhs.reject_);
-    swap(NProposed,rhs.NProposed);swap(Naccepted,rhs.Naccepted); swap(acceptance_rate_,rhs.acceptance_rate_);
-    swap(mset_ptr_,rhs.mset_ptr_);
+#define SW(X) swap(X,rhs.X)
+    SW(impl_); SW(hash_); SW(type_name_); SW(clone_);
+    SW(attempt_); SW(accept_); SW(reject_); SW(h5_r); SW(h5_w);
+    SW(NProposed);SW(Naccepted); SW(acceptance_rate_);
+#undef SW
     return *this;
    }
+#endif
 
    MCSignType attempt(){ NProposed++; return attempt_();}
    MCSignType accept() { Naccepted++; return accept_(); }
    void reject() { reject_(); }
+
    double acceptance_rate() const { return acceptance_rate_;}
-   move_set<MCSignType> * mset_ptr() { return mset_ptr_;}
 
    void collect_statistics(boost::mpi::communicator const & c) {
     uint64_t nacc_tot=0, nprop_tot=1;
@@ -117,6 +116,21 @@ namespace triqs { namespace mc_tools {
     acceptance_rate_ = nacc_tot/static_cast<double>(nprop_tot);
    }
 
+   // true iif the stored object has type MoveType Cf hash_code doc.
+   template<typename MoveType> bool has_type() const { return (typeid(MoveType).hash_code() == hash_); };
+
+   template<typename MoveType> void check_type() const {
+    if (!(has_type<MoveType>()))
+     TRIQS_RUNTIME_ERROR << "Trying to retrieve a move of type "<< typeid(MoveType).name() << " from a move of type "<< type_name_;
+   };
+
+   // retrieve an object of the correct type
+   template<typename MoveType> MoveType       & get()       { check_type<MoveType>(); return *(static_cast<MoveType *>(impl_.get())); }
+   template<typename MoveType> MoveType const & get() const { check_type<MoveType>(); return *(static_cast<MoveType const *>(impl_.get())); }
+
+   // redirect the h5 call to the object lambda, if it not empty (i.e. if the underlying object can be called with h5_read/write
+   friend void h5_write (h5::group g, std::string const & name, move const & m){ if (m.h5_w) m.h5_w(g,name);};
+   friend void h5_read  (h5::group g, std::string const & name, move & m)      { if (m.h5_r) m.h5_r(g,name);};
   };
 
  //--------------------------------------------------------------------
@@ -130,10 +144,28 @@ namespace triqs { namespace mc_tools {
    size_t current_move_number;
    random_generator * RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;
+   MCSignType try_sign_ratio;
    public:
 
    ///
    move_set(random_generator & R): RNG(&R) { Proba_Moves.push_back(0); }
+
+   ///
+   move_set(move_set const &) = default;
+   move_set(move_set &&) = default;
+   move_set& operator = (move_set const &) = default;
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+   move_set& operator = (move_set &&) = default;
+#else
+   move_set& operator = (move_set && rhs) {
+    using std::swap;
+#define SW(X) swap(X,rhs.X)
+    SW(move_vec); SW(names_); SW(current); SW(current_move_number); SW(RNG);
+    SW(Proba_Moves); SW(Proba_Moves_Acc_Sum); SW(try_sign_ratio);
+#undef SW
+    return *this;
+   }
+#endif
 
    /**
     * Add move M with its probability of being proposed.
@@ -143,7 +175,7 @@ namespace triqs { namespace mc_tools {
     */
    template <typename MoveType>
     void add (MoveType && M, std::string name, double proposition_probability) {
-     move_vec.push_back( move<MCSignType> (std::forward<MoveType>(M)) );
+     move_vec.emplace_back(std::forward<MoveType>(M));
      assert(proposition_probability >=0);
      Proba_Moves.push_back(proposition_probability);
      names_.push_back(name);
@@ -215,9 +247,10 @@ namespace triqs { namespace mc_tools {
     for (unsigned int u =0; u< move_vec.size(); ++u) {
      move_vec[u].collect_statistics(c);
      for(int i=0; i<shift; i++) s << " ";
-     if (move_vec[u].mset_ptr()) {
+     if (move_vec[u].template has_type<move_set>()) {
+      auto & ms = move_vec[u].template get<move_set>();
       s << "Move set " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
-      s << move_vec[u].mset_ptr()->get_statistics(c,shift+2);
+      s << ms.get_statistics(c,shift+2);
      } else {
       s << "Move " << names_[u] << ": " << move_vec[u].acceptance_rate() << "\n";
      }
@@ -225,8 +258,7 @@ namespace triqs { namespace mc_tools {
     return s.str();
    }
 
-   protected:
-   MCSignType try_sign_ratio;
+   private:
 
    void normaliseProba() { // Computes the normalised accumulated probability
     if (move_vec.size() ==0)  TRIQS_RUNTIME_ERROR<<" no moves registered";
@@ -242,6 +274,35 @@ namespace triqs { namespace mc_tools {
    }
 
    std::string name_of_currently_selected() const { return names_[current_move_number];}
+
+   public :
+
+   // HDF5 interface
+   friend void h5_write (h5::group g, std::string const & name, move_set const & ms){
+    auto gr = g.create_group(name);
+    for (size_t u=0; u<ms.move_vec.size(); ++u) h5_write(gr,ms.names_[u],ms.move_vec[u]);
+   }
+
+   friend void h5_read (h5::group g, std::string const & name, move_set & ms){
+    auto gr = g.open_group(name);
+    for (size_t u=0; u<ms.move_vec.size(); ++u) h5_read(gr,ms.names_[u],ms.move_vec[u]);
+   }
+
+   // access to the move, given its type, with dynamical type check
+   template<typename MoveType>
+    MoveType & get_move(std::string const & name) {
+     int u=0; for (;u<names_.size();++u) { if (names_[u] == name) break;}
+     if (u == names_.size()) TRIQS_RUNTIME_ERROR << " Move " << name << " unknown";
+     return move_vec[u].template get<MoveType>();
+    }
+
+   template<typename MoveType>
+    MoveType const & get_move(std::string const & name) const {
+     int u=0; for (;u<names_.size();++u) { if (names_[u] == name) break;}
+     if (u == names_.size()) TRIQS_RUNTIME_ERROR << " Move " << name << " unknown";
+     return move_vec[u].template get<MoveType>();
+    }
+
   };// class move_set
 
 }}// end namespace
