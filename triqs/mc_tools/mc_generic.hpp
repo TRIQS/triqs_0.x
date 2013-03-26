@@ -43,7 +43,7 @@ namespace triqs { namespace mc_tools {
      * Constructor from a set of parameters
      */
     mc_generic(uint64_t N_Cycles, uint64_t Length_Cycle, uint64_t N_Warmup_Cycles, std::string Random_Name, int Random_Seed, int Verbosity,
-      boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
+      std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
      RandomGenerator(Random_Name, Random_Seed),
      AllMoves(RandomGenerator),
      AllMeasures(),
@@ -59,7 +59,7 @@ namespace triqs { namespace mc_tools {
      * \param[in] P  dictionary parameters
      * \param[in] AfterCycleDuty  a function bool() to be called after each QMC cycle
      */
-     mc_generic(utility::parameters const & P, boost::function<bool()> AfterCycleDuty = boost::function<bool()>() ) :
+     mc_generic(utility::parameters const & P, std::function<bool()> AfterCycleDuty = std::function<bool()>() ) :
       RandomGenerator(std::string(P["Random_Generator_Name"]), long(P["Random_Seed"])),
       //RandomGenerator(P["Random_Generator_Name"]), P.value_or_default("Random_Seed",1)),
       report(&std::cout,int(P["Verbosity"])),
@@ -102,7 +102,7 @@ namespace triqs { namespace mc_tools {
     random_generator RandomGenerator;
 
     /// Start the Monte Carlo
-    bool start(MCSignType sign_init, boost::function<bool ()> const & stop_callback) {
+    bool start(MCSignType sign_init, std::function<bool ()> const & stop_callback) {
      assert(stop_callback);
      Timer.start();
      sign = sign_init; done_percent = 0; nmeasures = 0;
@@ -161,6 +161,13 @@ namespace triqs { namespace mc_tools {
      auto gr = g.create_group(name);
      h5_write(gr,"moves", mc.AllMoves);
      h5_write(gr,"measures", mc.AllMeasures);
+     h5_write(gr,"length_monte_carlo_cycle", mc.Length_MC_Cycle);
+     h5_write(gr,"number_cycle_requested", mc.NCycles);
+     h5_write(gr,"number_warming_cycle_requested", mc.NWarmIterations);
+     h5_write(gr,"number_cycle_done", mc.NC);
+     h5_write(gr,"number_measure_done", mc.nmeasures);
+     h5_write(gr,"sign", mc.sign);
+     h5_write(gr,"sum_sign", mc.sum_sign);
     }
 
     /// HDF5 interface
@@ -168,18 +175,25 @@ namespace triqs { namespace mc_tools {
      auto gr = g.open_group(name);
      h5_read(gr,"moves", mc.AllMoves);
      h5_read(gr,"measures", mc.AllMeasures);
+     h5_read(gr,"length_monte_carlo_cycle", mc.Length_MC_Cycle);
+     h5_read(gr,"number_cycle_requested", mc.NCycles);
+     h5_read(gr,"number_warming_cycle_requested", mc.NWarmIterations);
+     h5_read(gr,"number_cycle_done", mc.NC);
+     h5_read(gr,"number_measure_done", mc.nmeasures);
+     h5_read(gr,"sign", mc.sign);
+     h5_read(gr,"sum_sign", mc.sum_sign);
     }
 
    private:
     move_set<MCSignType> AllMoves;
     measure_set<MCSignType> AllMeasures;
-    triqs::utility::report_stream report;
+    utility::report_stream report;
     uint64_t Length_MC_Cycle;/// Length of one Monte-Carlo cycle between 2 measures
     uint64_t NWarmIterations, NCycles;
     uint64_t nmeasures;
     MCSignType sum_sign;
-    triqs::utility::timer Timer;
-    boost::function<bool()> after_cycle_duty;
+    utility::timer Timer;
+    std::function<bool()> after_cycle_duty;
     MCSignType sign, sign_av;
     uint64_t NC,done_percent;// NC = number of the cycle
 
