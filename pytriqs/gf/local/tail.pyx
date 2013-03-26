@@ -61,10 +61,10 @@ cdef class TailGf:
         def __get__(self) : return self._c.order_max()
 
     property N1 : 
-        def __get__(self): return self.shape[1]
+        def __get__(self): return self.shape[0]
 
     property N2 : 
-        def __get__(self): return self.shape[2]
+        def __get__(self): return self.shape[1]
 
     property size : 
         """Length of the expansion"""

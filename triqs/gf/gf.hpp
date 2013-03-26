@@ -297,8 +297,9 @@ namespace triqs { namespace gf {
     B(m,factory<typename B::data_t>(dat),si,s, ind,eval) {}
 
   friend void swap ( gf & a, gf & b) {
-   std::swap(a._mesh, b._mesh); swap(a.data, b.data); std::swap (a.singularity,b.singularity); std::swap(a._symmetry,b._symmetry);
-   std::swap(a._indices,b._indices); std::swap(a.evaluator_,b.evaluator_);
+   using std::swap;
+   swap(a._mesh, b._mesh); swap(a.data, b.data); swap (a.singularity,b.singularity); swap(a._symmetry,b._symmetry);
+   swap(a._indices,b._indices); swap(a.evaluator_,b.evaluator_);
   }
 
   void operator = (gf const & rhs) { *this = gf(rhs);} // use move =
@@ -385,12 +386,12 @@ namespace triqs { namespace gf {
 
  template<typename Descriptor, bool V, typename... Args>
   gf_view<Descriptor> slice_target (gf_impl<Descriptor,V> const & g, Args... args) {
-   return gf_view<Descriptor>(g.mesh(), g.data_view()(args... , tqa::range()), slice_target (g.singularity_view(),args...), g.symmetry());
+   return gf_view<Descriptor>(g.mesh(), g.data_view()(tqa::range(), args... ), slice_target (g.singularity_view(),args...), g.symmetry());
   }
 
  template<typename Descriptor, bool V, typename... Args>
   gf_view<Descriptor> slice_mesh (gf_impl<Descriptor,V> const & g, Args... args) {
-   return gf_view<Descriptor>(g.mesh().slice(args...), g.data_view()(arrays::ellipsis(), g.mesh().slice_get_range(args...)), g.singularity_view(), g.symmetry());
+   return gf_view<Descriptor>(g.mesh().slice(args...), g.data_view()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity_view(), g.symmetry());
   }
 
 }}

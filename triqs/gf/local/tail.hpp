@@ -72,7 +72,7 @@ namespace triqs { namespace gf { namespace local {
 
    long order_min() const {return omin;}
    long order_max() const {return min_element(mask);}
-   size_t size() const {return data.shape()[2];}
+   size_t size() const {return data.shape()[0];}
    long smallest_nonzero() const {
      long om = omin;
      while ((om < this->order_max()) && (max_element(abs(data(om-omin,tqa::range(),tqa::range()))) < details::small)) om++;
