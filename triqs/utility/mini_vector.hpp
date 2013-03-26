@@ -96,9 +96,22 @@ namespace triqs { namespace utility {
     return res;
    }
 
+   mini_vector<T, Rank+1> front_append (T const & x) const { 
+    mini_vector<T, Rank+1> res;
+    for (int i=0;i<Rank; ++i)  res[i+1]=_data[i];
+    res[0] = x;
+    return res;
+   }
+
    mini_vector<T, Rank-1> pop () const { 
     mini_vector<T, Rank-1> res;
     for (int i=0;i<Rank-1; ++i)  res[i]=_data[i];
+    return res;
+   }
+
+   mini_vector<T, Rank-1> front_pop () const { 
+    mini_vector<T, Rank-1> res;
+    for (int i=1;i<Rank; ++i)  res[i-1]=_data[i];
     return res;
    }
 
