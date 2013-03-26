@@ -58,7 +58,7 @@ namespace triqs { namespace gf {
    static constexpr int arity = 1;
    //ERROR : give a double and interpolate
    template<typename G>
-   arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data_view()(arrays::range(), arrays::range(),n); }
+   arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data_view()(n, arrays::range(), arrays::range()); }
    template<typename G>
    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity_view();}
   };
@@ -80,7 +80,7 @@ namespace triqs { namespace gf {
    return mesh_t(domain_t(beta,S), 0, beta, n_time_slices, mk);
   }
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-   gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
+   gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
    return gf_t ( m, std::move(A), t, nothing(), indices_t(shape) ) ;
   }
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {

@@ -64,7 +64,7 @@ namespace triqs { namespace gf {
      size_t index; double w; bool in;
      std::tie(in, index, w) = windowing(mesh,w0);
      if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     arrays::matrix<std::complex<double> > res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
+     arrays::matrix<std::complex<double> > res = w*data(mesh.index_to_linear(index), arrays::ellipsis()) + (1-w)*data(mesh.index_to_linear(index+1), arrays::ellipsis());
      return res;
     }
    template<typename G>
@@ -89,12 +89,12 @@ namespace triqs { namespace gf {
   }
 
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
-   gf_t::data_non_view_t A(shape.append(n_freq)); A() =0;
+   gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
    return gf_t(make_mesh(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
-   gf_t::data_non_view_t A(shape.append(n_freq)); A() =0;
+   gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
    return gf_t(make_mesh(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
   }
 
