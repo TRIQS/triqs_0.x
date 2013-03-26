@@ -75,12 +75,12 @@ namespace triqs { namespace gf { namespace local {
    size_t size() const {return data.shape()[2];}
    long smallest_nonzero() const {
      long om = omin;
-     while ((om < this->order_max()) && (max_element(abs(data(tqa::range(),tqa::range(),om-omin))) < details::small)) om++;
+     while ((om < this->order_max()) && (max_element(abs(data(om-omin,tqa::range(),tqa::range()))) < details::small)) om++;
      return om;
    }
 
    typedef tqa::mini_vector<size_t,2> shape_type;
-   shape_type shape() const { return shape_type(data.shape()[0], data.shape()[1]);}
+   shape_type shape() const { return shape_type(data.shape()[1], data.shape()[2]);}
    size_t shape(int i) const { return data.shape()[i];}
 
    bool is_decreasing_at_infinity() const { return (smallest_nonzero() >=1);}
@@ -94,7 +94,7 @@ namespace triqs { namespace gf { namespace local {
    // All constructors
    tail_impl(): omin(0), mask(), data() {} // all arrays of zero size (empty)
    tail_impl(size_t N1, size_t N2, size_t size_, long order_min):
-     omin(order_min), mask(tqa::make_shape(N1,N2)), data(tqa::make_shape(N1,N2,size_)) {
+     omin(order_min), mask(tqa::make_shape(N1,N2)), data(tqa::make_shape(size_,N1,N2)) {
      mask() = order_min+size_-1;
      data() = 0;
    }
@@ -110,13 +110,13 @@ namespace triqs { namespace gf { namespace local {
    mv_type operator() (int n) {
      if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
      if (n<this->order_min()) TRIQS_RUNTIME_ERROR<<" n < Min Order. n= "<<n <<", Min Order = "<<order_min() ;
-     return this->data(tqa::range(), tqa::range(), n - omin);
+     return this->data(n-omin, tqa::range(), tqa::range());
    }
 
    const_mv_type operator() (int n) const {
      if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
      if (n<this->order_min())  { mv_type::non_view_type r(this->shape()); r()=0; return r;}
-     return this->data(tqa::range(), tqa::range(), n - omin);
+     return this->data(n-omin,tqa::range(), tqa::range());
    }
 
    operator freq_infty() const { return freq_infty();}
@@ -187,14 +187,14 @@ namespace triqs { namespace gf { namespace local {
     if (this->data.is_empty()) rebind(rhs);
     else {
       if (rhs.omin < omin) TRIQS_RUNTIME_ERROR<<"rhs has too small omin";
-      if ((data.shape()[0] != rhs.data.shape()[0]) || (data.shape()[1] != rhs.data.shape()[1]))
+      if ((data.shape()[1] != rhs.data.shape()[1]) || (data.shape()[2] != rhs.data.shape()[2]))
         TRIQS_RUNTIME_ERROR<<"rhs has different shape";
       for (size_t i=0; i<mask.shape()[0]; ++i)
         for (size_t j=0; j<mask.shape()[1]; ++j)
           mask(i,j) = std::min(rhs.mask(i,j), long(omin+size()-1));
       for (size_t n=0; n<std::min(size(), size_t(rhs.size()-omin+rhs.omin)); ++n)
-        if (n < rhs.omin-omin) data(tqa::range(),tqa::range(),n) = 0.0;
-        else data(tqa::range(),tqa::range(),n) = rhs.data(tqa::range(),tqa::range(),n-rhs.omin+omin);
+        if (n < rhs.omin-omin) data(n,tqa::range(),tqa::range()) = 0.0;
+        else data(n,tqa::range(),tqa::range()) = rhs.data(n-rhs.omin+omin,tqa::range(),tqa::range());
     }
     return *this;
   }
@@ -202,8 +202,8 @@ namespace triqs { namespace gf { namespace local {
 
   tail_view & operator=(std::complex<double> const & x) {
     if (omin > 0) TRIQS_RUNTIME_ERROR<<"lhs has too large omin";
-    for (size_t n=0; n<size(); ++n) data(tqa::range(), tqa::range(), n) = 0.0;
-    data(tqa::range(), tqa::range(), -omin) = x;
+    for (size_t n=0; n<size(); ++n) data(n, tqa::range(), tqa::range()) = 0.0;
+    data(-omin, tqa::range(), tqa::range()) = x;
     mask() = omin+size()-1;
     return *this;
   }
@@ -267,21 +267,21 @@ namespace triqs { namespace gf { namespace local {
     if (this->data.is_empty()) rebind(rhs);
     else {
       if (rhs.omin < omin) TRIQS_RUNTIME_ERROR<<"rhs has too small omin";
-      if ((data.shape()[0] != rhs.data.shape()[0]) || (data.shape()[1] != rhs.data.shape()[1]))
+      if ((data.shape()[1] != rhs.data.shape()[1]) || (data.shape()[2] != rhs.data.shape()[2]))
         TRIQS_RUNTIME_ERROR<<"rhs has different shape";
       for (size_t i=0; i<mask.shape()[0]; ++i)
         for (size_t j=0; j<mask.shape()[1]; ++j)
           mask(i,j) = std::min(rhs.mask(i,j), long(omin+size()-1));
       for (size_t n=0; n<std::min(size(),size_t(rhs.size()-omin+rhs.omin)); ++n)
-        if (n < rhs.omin-omin) data(tqa::range(),tqa::range(),n) = 0.0;
-        else data(tqa::range(),tqa::range(),n) = rhs.data(tqa::range(),tqa::range(),n-rhs.omin+omin);
+        if (n < rhs.omin-omin) data(n,tqa::range(),tqa::range()) = 0.0;
+        else data(n,tqa::range(),tqa::range()) = rhs.data(n-rhs.omin+omin, tqa::range(), tqa::range());
     }
     return *this;
   }
 
  /// Slice in orbital space
  template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
-  return tail_view(t.data_view()(R1,R2,tqa::range()),t.order_min(),t.mask_view()(R1,R2));
+  return tail_view(t.data_view()(tqa::range(),R1,R2),t.order_min(),t.mask_view()(R1,R2));
  }
 
  inline tail inverse(tail_view const & t) {
