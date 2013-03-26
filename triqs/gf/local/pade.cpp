@@ -36,7 +36,7 @@ namespace triqs { namespace gf {
   // copy the tail. it doesn't need to conform to the pade approximant
   gr.singularity_view() = gw.singularity_view();
 
-  auto sh = gw.data_view().shape().pop();
+  auto sh = gw.data_view().shape().front_pop();
   int N1 = sh[0], N2 = sh[1];
   for (int n1=0; n1<N1; n1++) {
     for (int n2=0; n2<N2; n2++) {

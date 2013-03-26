@@ -31,23 +31,6 @@ namespace triqs { namespace gf {
  void fourier_impl         (gf_view<imfreq> &gw , gf_view<imtime> const & gt);
  void inverse_fourier_impl (gf_view<imtime> &gt,  gf_view<imfreq> const & gw);
 
- // Then a good old function make a new gf 
- /*
- gf<imfreq> fourier (gf_view<imtime> const & gt) { 
-  auto gw = imfreq::make_gf(gt.domain().beta, gt.domain().statistic,gt.data_view().shape().pop(),gt.mesh().size(), gt(freq_infty()));
-  auto V = gw();
-  fourier_impl(V,gt);
-  return gw;
- }
-
- gf<imtime> inverse_fourier (gf_view<imfreq> const & gw) { 
-  auto gt = imtime::make_gf(gw.domain().beta, gw.domain().statistic,gw.data_view().shape().pop(),gw.mesh().size(), gw(freq_infty()));
-  auto V = gt();
-  inverse_fourier_impl(V,gw);
-  return gt;
- }
- */
-
  gf_keeper<tags::fourier,imtime> lazy_fourier         (gf_view<imtime> const & g);
  gf_keeper<tags::fourier,imfreq> lazy_inverse_fourier (gf_view<imfreq> const & g);
 
