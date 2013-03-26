@@ -62,7 +62,7 @@ class GfGeneric:
                               indicesR = list(self.indicesR)[sl2],
                               name = self.name,
                               mesh = self.mesh,
-                              data = self.data[sl1, sl2,:],
+                              data = self.data[:,sl1,sl2],
                               tail = self.tail._make_slice(sl1, sl2))
 
     def __setitem__(self, key, val):
@@ -115,8 +115,8 @@ class GfGeneric:
         X, data = numpy.array(X), self.data
         if x_window:
           sl = clip_array (X, *x_window) if x_window else slice(len(X)) # the slice due to clip option x_window
-          X, data = X[sl],  data[:,:, sl]
-        if flatten_y and data.shape[:2]==(1, 1): data = data[0, 0,:]
+          X, data = X[sl],  data[sl,:,:]
+        if flatten_y and data.shape[1:3]==(1, 1): data = data[:,0,0]
         return X, data
 
     #--------  LAZY expression system -----------------------------------------
@@ -208,7 +208,7 @@ class GfGeneric:
         if type(self) == type(arg):
             d, d2 = self.data, arg.data
             assert d.shape == d2.shape, " Green function block multiplication with arrays of different size !"
-            for om in range (d.shape[-1]):
+            for om in range (d.shape[0]):
                 d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
             self.tail = self.tail * arg.tail
         elif descriptors.is_scalar(arg):
@@ -236,12 +236,12 @@ class GfGeneric:
 
     def from_L_G_R(self, L, G, R):
 
-      N1 = self.data.shape[0]
-      N2 = self.data.shape[1]
-      assert L.shape[0] == N1
-      assert L.shape[1] == G.data.shape[0]
-      assert R.shape[0] == G.data.shape[1]
-      assert R.shape[1] == N2
+      N1 = self.data.shape[1]
+      N2 = self.data.shape[2]
+      assert L.shape[1] == N1
+      assert L.shape[2] == G.data.shape[1]
+      assert R.shape[1] == G.data.shape[2]
+      assert R.shape[2] == N2
 
       MatrixStack(self.data).matmul_L_R(L, G.data, R)
 

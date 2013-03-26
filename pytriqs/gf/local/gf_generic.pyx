@@ -75,10 +75,10 @@ cdef class GfGeneric_cython :
         def __set__ (self, value) : self._data[:,:,:] = value
    
     property N1 : 
-        def __get__(self): return self.data.shape[0]
+        def __get__(self): return self.data.shape[1]
 
     property N2 : 
-        def __get__(self): return self.data.shape[1]
+        def __get__(self): return self.data.shape[2]
 
     property indicesL : 
         """Indices ..."""

@@ -71,7 +71,7 @@ h['tt'] = tailtempl
 # tranpose
 g = G['a']
 gt = G['a'].transpose()
-gt.data[0,1,3] = 100
-assert g.data[1,0,3] == 100
+gt.data[3,0,1] = 100
+assert g.data[3,1,0] == 100
 
 del h

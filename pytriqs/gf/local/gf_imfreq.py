@@ -47,7 +47,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
         self.dtype = numpy.complex_
         indicesL, indicesR = get_indices_in_dict(d)
         N1, N2 = len(indicesL),len(indicesR)
-        data = d.pop('data') if 'data' in d else numpy.zeros((N1,N2,len(mesh)), self.dtype )
+        data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
         tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10, order_min=-1)
         symmetry = d.pop('symmetry', None)
         name =  d.pop('name','g')
@@ -101,7 +101,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
          if (om.imag <= fit_stop): nstop = nstop+1
          if (om.imag <= fit_stop and om.imag >= fit_start): x += [om]
        omegas = numpy.array(x)
-       values = self.data[:,:,ninit:nstop+1]
+       values = self.data[ninit:nstop+1,:,:]
 
        # Loop over the indices of the Green's function
        for n1,indR in enumerate(self.indicesR):

@@ -197,7 +197,7 @@ class SumkLDATools(SumkLDA):
             # non-projected DOS
             for iom in range(n_om): 
                 for sig,gf in Gupf: 
-                    asd = gf.data[:,:,iom].imag.trace()/(-3.1415926535)
+                    asd = gf.data[iom,:,:].imag.trace()/(-3.1415926535)
                     DOS[sig][iom] += asd
                 
             for icrsh in xrange(self.n_corr_shells):
@@ -216,7 +216,7 @@ class SumkLDATools(SumkLDA):
         # Gloc can now also be used to look at orbitally resolved quantities
         for ish in range(self.n_inequiv_corr_shells):
             for sig,gf in Gloc[self.invshellmap[ish]]: # loop over spins
-                for iom in range(n_om): DOSproj[ish][sig][iom] += gf.data[:,:,iom].imag.trace()/(-3.1415926535) 
+                for iom in range(n_om): DOSproj[ish][sig][iom] += gf.data[iom,:,:].imag.trace()/(-3.1415926535) 
 
                 DOSproj_orb[ish][sig][:,:,:] += gf.data[:,:,:].imag/(-3.1415926535)
      
@@ -295,7 +295,7 @@ class SumkLDATools(SumkLDA):
 
             # non-projected DOS
             for iom in range(n_om): 
-                for sig,gf in S: DOS[sig][iom] += gf.data[:,:,iom].imag.trace()/(-3.1415926535)
+                for sig,gf in S: DOS[sig][iom] += gf.data[iom,:,:].imag.trace()/(-3.1415926535)
                
             #projected DOS:
             for ish in xrange(self.n_shells):
@@ -320,7 +320,7 @@ class SumkLDATools(SumkLDA):
                 
         for ish in range(self.n_shells):
             for sig,gf in Gproj[ish]:  
-                for iom in range(n_om): DOSproj[ish][sig][iom] += gf.data[:,:,iom].imag.trace()/(-3.1415926535)
+                for iom in range(n_om): DOSproj[ish][sig][iom] += gf.data[iom,:,:].imag.trace()/(-3.1415926535)
                 DOSproj_orb[ish][sig][:,:,:] += gf.data[:,:,:].imag / (-3.1415926535)
 	    
 
@@ -424,9 +424,9 @@ class SumkLDATools(SumkLDA):
                 for iom in range(n_om): 
                     if (M[iom]>om_minplot) and (M[iom]<om_maxplot):
                         if fermi_surface:
-                            for sig,gf in S: Akw[sig][ik,0] += gf.data[:,:,iom].imag.trace()/(-3.1415926535) * (M[1]-M[0])
+                            for sig,gf in S: Akw[sig][ik,0] += gf.data[iom,:,:].imag.trace()/(-3.1415926535) * (M[1]-M[0])
                         else:
-                            for sig,gf in S: Akw[sig][ik,iom] += gf.data[:,:,iom].imag.trace()/(-3.1415926535)
+                            for sig,gf in S: Akw[sig][ik,iom] += gf.data[iom,:,:].imag.trace()/(-3.1415926535)
                             Akw[sig][ik,iom] += ik*shift                       # shift Akw for plotting in xmgrace
                   
 
@@ -447,7 +447,7 @@ class SumkLDATools(SumkLDA):
                     if (M[iom]>om_minplot) and (M[iom]<om_maxplot):
                         for ish in range(self.shells[ishell][3]):
                             for ibn in bln:
-                                Akw[ibn][ish,ik,iom] = Gproj[ibn].data[ish,ish,iom].imag/(-3.1415926535)
+                                Akw[ibn][ish,ik,iom] = Gproj[ibn].data[iom,ish,ish].imag/(-3.1415926535)
                
             
         # END k-LOOP

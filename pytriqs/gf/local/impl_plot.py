@@ -32,7 +32,7 @@ def plot_base (self, opt_dict, xlabel, ylabel, use_ris, X):
                 'ylabel' : ylabel (self.name),
                 'xdata' : X[sl],
                 'label' : Name if Name else prefix + B.name ,
-                'ydata' : f( B.data[0,0,sl] ) } for (i,j,B) in self ]
+                'ydata' : f( B.data[sl,0,0] ) } for (i,j,B) in self ]
 
     if use_ris :
         ris = opt_dict.pop('RI','RI')

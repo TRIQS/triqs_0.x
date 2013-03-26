@@ -24,11 +24,11 @@ cdef class TailGf:
         a = d.pop('data',None)
         if a==None :
             (N1, N2), s = d.pop('shape'), d.pop('size')
-            a = numpy.zeros((N1,N2,s) ,numpy.complex)
+            a = numpy.zeros((s,N1,N2) ,numpy.complex)
         m = d.pop('mask',None)
         if m==None :
-            m = numpy.zeros(a.shape[0:2], int)
-            m.fill(omin+a.shape[2]-1)
+            m = numpy.zeros(a.shape[1:3], int)
+            m.fill(omin+a.shape[0]-1)
         assert len(d) == 0, "Unknown parameters in TailGf constructions %s"%d.keys()
         self._c = tail(array_view[dcomplex,THREE](a), omin, array_view[long,TWO](m))
     
@@ -50,7 +50,7 @@ cdef class TailGf:
             return self._c.mask_view().to_python()
 
     property shape : 
-        def __get__(self) : return self.data.shape[:2]
+        def __get__(self) : return self.data.shape[1:3]
 
     property order_min : 
         """Min order of the expansion"""
@@ -61,10 +61,10 @@ cdef class TailGf:
         def __get__(self) : return self._c.order_max()
 
     property N1 : 
-        def __get__(self): return self.shape[0]
+        def __get__(self): return self.shape[1]
 
     property N2 : 
-        def __get__(self): return self.shape[1]
+        def __get__(self): return self.shape[2]
 
     property size : 
         """Length of the expansion"""
@@ -77,7 +77,7 @@ cdef class TailGf:
         self._c << T._c
 
     def _make_slice(self, sl1, sl2):
-        return self.__class__(data = self.data[sl1,sl2,:], order_min = self.order_min, mask = self.mask[sl1,sl2])
+        return self.__class__(data = self.data[:,sl1,sl2], order_min = self.order_min, mask = self.mask[sl1,sl2])
 
     def __repr__ (self) :
         return string.join([ "%s"%self[r]+ (" /" if r>0 else "") + " Om^%s"%(abs(r)) for r in range(self.order_min, self.order_max+1) ] , " + ")
@@ -85,12 +85,12 @@ cdef class TailGf:
     def __getitem__(self,i) :
         """Returns the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        return self.data[:,:,i-self.order_min]
+        return self.data[i-self.order_min,:,:]
 
     def __setitem__(self,i, val) :
         """Sets the i-th coefficient of the expansion, or order Om^i"""
         if not self.has_coef(i) : raise IndexError, "Index %s is out of range"%i
-        self.data[:,:,i-self.order_min] = val
+        self.data[i-self.order_min,:,:] = val
 
     def has_coef(self, i):
         return (i >= self.order_min) and (i <= self.order_max)

@@ -115,7 +115,7 @@ class Omega_(Base):
         Id = numpy.identity(G.N1)
         G.tail.zero()
         G.tail[-1][:,:] = Id
-        for n,om in enumerate(G.mesh): G.data[:,:,n] = om*Id
+        for n,om in enumerate(G.mesh): G.data[n,:,:] = om*Id
         return G
 
 Omega = Omega_()
