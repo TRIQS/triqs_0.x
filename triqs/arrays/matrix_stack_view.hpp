@@ -42,11 +42,11 @@ namespace triqs { namespace arrays {
    matrix_view_proxy      <array_view_t,2> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,2>(a,i);}
    const_matrix_view_proxy<array_view_t,2> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,2>(a,i);}
  
-   matrix_view<T> view(size_t i) const { return a(range(),range(),i);}
+   matrix_view<T> view(size_t i) const { return a(i,range(),range());}
    
-   size_t dim0() const { return a.len(0);}
-   size_t dim1() const { return a.len(1);}
-   size_t size() const { return a.len(2);}
+   size_t size() const { return a.len(0);}
+   size_t dim0() const { return a.len(1);}
+   size_t dim1() const { return a.len(2);}
 
    matrix_stack_view & operator +=(matrix_stack_view const & arg) { a += arg.a; return *this; }
    matrix_stack_view & operator -=(matrix_stack_view const & arg) { a -= arg.a; return *this; }
