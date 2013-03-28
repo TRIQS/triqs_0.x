@@ -39,8 +39,8 @@ namespace triqs { namespace arrays {
    explicit matrix_stack_view (PyObject * X):a(typename array_view_t::view_type (X)){}
 #endif
 
-   matrix_view_proxy      <array_view_t,2> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,2>(a,i);}
-   const_matrix_view_proxy<array_view_t,2> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,2>(a,i);}
+   matrix_view_proxy      <array_view_t,0> operator()(size_t i)       { return matrix_view_proxy       <array_view_t,0>(a,i);}
+   const_matrix_view_proxy<array_view_t,0> operator()(size_t i) const { return const_matrix_view_proxy <array_view_t,0>(a,i);}
  
    matrix_view<T> view(size_t i) const { return a(i,range(),range());}
    
@@ -65,7 +65,7 @@ namespace triqs { namespace arrays {
    void invert() {for (size_t i=0; i<size(); ++i) { auto v = view(i); v = inverse(v);} }
 
    friend matrix_stack_view matmul_L_R ( matrix_view<T> const & L, matrix_stack_view const & M, matrix_view<T> const & R) {
-    matrix_stack_view res (typename array_view_t::non_view_type (L.dim0(), R.dim1(),M.size()));
+    matrix_stack_view res (typename array_view_t::non_view_type (M.size(), L.dim0(), R.dim1()));
     for (size_t i=0; i<M.size(); ++i)  { res.view(i) = L * M.view(i) * R; }
     return res;
    }
