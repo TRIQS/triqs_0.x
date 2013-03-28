@@ -299,7 +299,7 @@ namespace triqs { namespace gf { namespace local {
    for (size_t p=0; p<n; p++) {
      t_inv(omin1 + n) -= t(n-omin1-p) * t_inv(omin1+p);
    }
-   t_inv(omin1 + n) = t_inv(omin1) * t_inv(omin1 + n);
+   t_inv(omin1 + n) = t_inv(omin1) * make_clone(t_inv(omin1 + n));
   }
   return t_inv;
  }
