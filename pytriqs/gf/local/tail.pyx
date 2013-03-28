@@ -24,7 +24,7 @@ cdef class TailGf:
         a = d.pop('data',None)
         if a==None :
             (N1, N2), s = d.pop('shape'), d.pop('size')
-            a = numpy.zeros((s,N1,N2) ,numpy.complex)
+            a = numpy.zeros((s,N1,N2), numpy.complex)
         m = d.pop('mask',None)
         if m==None :
             m = numpy.zeros(a.shape[1:3], int)

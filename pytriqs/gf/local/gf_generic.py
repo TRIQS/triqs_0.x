@@ -209,7 +209,7 @@ class GfGeneric:
             d, d2 = self.data, arg.data
             assert d.shape == d2.shape, " Green function block multiplication with arrays of different size !"
             for om in range (d.shape[0]):
-                d[:,:, om ] = numpy.dot(d[:,:, om], d2[:,:, om])
+                d[om,:,:] = numpy.dot(d[om,:,:], d2[om,:,:])
             self.tail = self.tail * arg.tail
         elif descriptors.is_scalar(arg):
             self.data *= arg
@@ -238,10 +238,10 @@ class GfGeneric:
 
       N1 = self.data.shape[1]
       N2 = self.data.shape[2]
-      assert L.shape[1] == N1
-      assert L.shape[2] == G.data.shape[1]
-      assert R.shape[1] == G.data.shape[2]
-      assert R.shape[2] == N2
+      assert L.shape[0] == N1
+      assert L.shape[1] == G.data.shape[1]
+      assert R.shape[0] == G.data.shape[2]
+      assert R.shape[1] == N2
 
       MatrixStack(self.data).matmul_L_R(L, G.data, R)
 
@@ -288,7 +288,7 @@ class GfGeneric:
         return self.__class__(
                 indices = list(self.indices),
                 mesh = self.mesh,
-                data = self.data.transpose( (1, 0, 2) ),
+                data = self.data.transpose( (0, 2, 1) ),
                 tail = self.tail.transpose(),
                 name = self.name+'(t)')
 
