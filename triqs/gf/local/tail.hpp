@@ -63,7 +63,8 @@ namespace triqs { namespace gf { namespace local {
    typedef typename mpl::if_c<IsView, mask_view_type, mask_non_view_type>::type  mask_type;
 
    typedef arrays::matrix_view<dcomplex>  mv_type;
-   typedef arrays::matrix_view<const dcomplex>  const_mv_type;
+   typedef arrays::matrix_view<dcomplex>  const_mv_type;
+   //typedef arrays::matrix_view<const dcomplex>  const_mv_type;
 
    data_view_type data_view()             { return data;}
    const data_view_type data_view() const { return data;}

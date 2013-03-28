@@ -48,6 +48,7 @@ namespace triqs { namespace arrays {
    public :
     typedef typename StorageType::value_type value_type;
     static_assert(std::is_constructible<value_type>::value, "array/array_view and const operate only on values");
+    //static_assert(!std::is_const<value_type>::value,         "no const type");
     typedef StorageType storage_type;
     typedef IndexMapType indexmap_type;
     static constexpr unsigned int rank = IndexMapType::domain_type::rank;

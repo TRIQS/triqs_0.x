@@ -35,9 +35,6 @@ namespace triqs { namespace arrays {
  template<typename LHS, typename RHS>
   void triqs_arrays_assign_delegation (LHS & lhs, const RHS & rhs )  { assignment::impl<LHS,RHS,'E'>(lhs,rhs).invoke();}
 
- template<typename LHS, typename RHS>
-  void triqs_arrays_assign_delegation_ignore_const (LHS & lhs, const RHS & rhs )  { assignment::impl<LHS,RHS,'F'>(lhs,rhs).invoke();}
-
  template<typename LHS, typename RHS, char OP>
   void triqs_arrays_compound_assign_delegation  (LHS & lhs, const RHS & rhs, mpl::char_<OP> ) { assignment::impl<LHS,RHS,OP>(lhs,rhs).invoke();}
 
@@ -59,7 +56,6 @@ namespace triqs { namespace arrays {
 
   template<typename A,typename B, char OP> struct _ops_;
   template<typename A,typename B> struct _ops_ <A,B,'E'> { static void invoke (A & a, B const & b) { a =b;} };
-  template<typename A,typename B> struct _ops_ <A,B,'F'> { static void invoke (A & a, B const & b) { a =b;} static void invoke (A const  & a, B const & b) { const_cast<A&>(a) =b;} };
   template<typename A,typename B> struct _ops_ <A,B,'A'> { static void invoke (A & a, B const & b) { a+=b;} };
   template<typename A,typename B> struct _ops_ <A,B,'S'> { static void invoke (A & a, B const & b) { a-=b;} };
   template<typename A,typename B> struct _ops_ <A,B,'M'> { static void invoke (A & a, B const & b) { a*=b;} };
@@ -71,7 +67,7 @@ namespace triqs { namespace arrays {
    std::integral_constant<bool, std::is_base_of<Tag::indexmap_storage_pair,RHS>::value && (!is_scalar_for<RHS,LHS>::value) > {};
 
 #define TRIQS_REJECT_ASSIGN_TO_CONST \
-  static_assert( (!std::is_const<typename LHS::value_type>::value || (OP =='F')), "Assignment : The value type of the LHS is const and can not be assigned to !");
+  static_assert( (!std::is_const<typename LHS::value_type>::value ), "Assignment : The value type of the LHS is const and can not be assigned to !");
 #define TRIQS_REJECT_MATRIX_COMPOUND_MUL_DIV_NON_SCALAR\
   static_assert( (!((OP=='M' || OP=='D') && MutableMatrix<LHS>::value && (!is_scalar_for<RHS,LHS>::value))),\
     "*= and /= operator for non scalar RHS are deleted for a type modeling MutableMatrix (e.g. matrix, matrix_view) matrix, because this is ambiguous");
@@ -89,14 +85,6 @@ namespace triqs { namespace arrays {
     typedef typename std::remove_cv<value_type>::type v_t;
     impl(LHS & lhs_, const RHS & rhs_): lhs(lhs_), rhs(rhs_) {} 
 
-    template<typename S1, typename S2>
-     static typename boost::enable_if_c< ( storages::raw_copy_possible<S1,S2>::value), bool >::type
-     rcp_impl(S1 & s1, S2 const & s2) {s1.raw_copy_from(s2); return true;}
-
-    template<typename S1, typename S2>
-     static typename boost::disable_if_c< ( storages::raw_copy_possible<S1,S2>::value), bool >::type
-     rcp_impl(S1 & s1, S2 const & s2) { return false;}
-
     template<typename ... Args> void operator()(Args const & ... args) const {
      //    void operator()(value_type & p, index_value_type const & key) {
      _ops_<typename std::remove_cv<value_type>::type, typename RHS::value_type, OP>::invoke(lhs(args...), rhs(args...)) ;}
@@ -105,8 +93,9 @@ namespace triqs { namespace arrays {
 #ifdef TRIQS_ARRAYS_DEBUG
       if (!indexmaps::compatible_for_assignment(lhs.indexmap(), rhs.indexmap())) TRIQS_RUNTIME_ERROR<< "Size mismatch in operation "<<OP <<" : LHS "<< lhs << " \n RHS = "<< rhs;
 #endif
-      if (( ((OP=='E')||(OP=='F')) && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap())) &&
-	(lhs.storage().size()== rhs.storage().size()) && rcp_impl(lhs.storage(),rhs.storage()) ) {}
+      if (( (OP=='E') && indexmaps::raw_copy_possible(lhs.indexmap(), rhs.indexmap()))) {
+       storages::memcopy(lhs.data_start(), rhs.data_start(), rhs.indexmap().domain().number_of_elements());
+      }
       else {
 #ifdef TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
        foreach(lhs,*this);
@@ -146,7 +135,7 @@ namespace triqs { namespace arrays {
 
     // -----------------   assignment for scalar RHS, except some matrix case --------------------------------------------------
     template<typename LHS, typename RHS, char OP>
-     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (!(MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F') ))) >{
+     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (!(MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E') ))) >{
       TRIQS_REJECT_ASSIGN_TO_CONST;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 
@@ -170,7 +159,7 @@ namespace triqs { namespace arrays {
 
     // Specialisation for Matrix Classes : scalar is a unity matrix, and operation is E, A, S, but NOT M, D
     template<typename LHS, typename RHS, char OP>
-     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E'||OP=='F')))> {
+     struct impl<LHS,RHS,OP, ENABLE_IFC(is_scalar_for<RHS,LHS>::value && (MutableMatrix<LHS>::value && (OP=='A'||OP=='S'||OP=='E')))> {
       TRIQS_REJECT_ASSIGN_TO_CONST;
       typedef typename LHS::value_type value_type;
       LHS & lhs; const RHS & rhs; 

@@ -24,7 +24,7 @@
 #include "../../utility/exceptions.hpp"
 #include <Python.h>
 #include <numpy/arrayobject.h>
-#include "./common.hpp"
+#include "./memcopy.hpp"
 
 #ifdef TRIQS_ARRAYS_DEBUG_TRACE_MEM
 #include <iostream>
@@ -70,23 +70,10 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
     else Py_DECREF(py_obj); 
    } 
 
-   private:
-   // copy such that it is a fast memcpy for scalar / pod objects
-   template<typename T>
-   typename boost::enable_if<is_scalar_or_pod<T> ,void>::type
-   memcopy (T * restrict p1, T * restrict p2, size_t size) { memcpy (p1, p2 , size * sizeof(T)); }
-
-   // when not a scalar object, loop on elements
-   template<typename T>
-   typename boost::disable_if<is_scalar_or_pod<T> ,void>::type
-   memcopy (T * restrict p1, T * restrict p2, size_t size) { for (size_t i = 0; i < size; ++i) p1[i] = p2[i]; }
-
-   public:
-
-   void operator=(const mem_block & X) {
+  void operator=(const mem_block & X) {
     //assert( py_obj==NULL); 
     assert(size_==X.size_);assert(p); assert(X.p);
-    this->memcopy (p, X.p, size_);
+    storages::memcopy (p, X.p, size_);
    }
 
    mem_block ( mem_block const & X): size_(X.size()), py_obj(NULL) {

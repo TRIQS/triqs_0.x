@@ -77,9 +77,6 @@ namespace triqs { namespace arrays {
 
  template <class S> struct is_scalar : boost::mpl::or_<std::is_arithmetic<S > , boost::is_complex<S> > {};
  
- // beware : complex is not a pod
- template <class S> struct is_scalar_or_pod : boost::mpl::or_<boost::is_arithmetic<S > , boost::is_complex<S>, boost::is_pod<S> > {};
- 
  template<class S, class A> struct is_scalar_for : 
   boost::mpl::if_<is_scalar<typename A::value_type > , is_scalar<S>,boost::is_same<S,typename A::value_type > >::type {};
 
