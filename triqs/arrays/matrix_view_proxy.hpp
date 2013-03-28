@@ -93,8 +93,8 @@ namespace triqs { namespace arrays {
    indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
    domain_type domain() const { return indexmap().domain();}\
    size_t len(int i) const { return A->len(i);}\
-   size_t dim0() const { return A->len(0);}\
-   size_t dim1() const { return A->len(1);}\
+   size_t dim0() const { return A->len((POS+1)%3);}\
+   size_t dim1() const { return A->len((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
    matrix_view<value_type> operator()() const {return *this;}\
    TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_view_proxy);\
@@ -116,8 +116,8 @@ namespace triqs { namespace arrays {
   indexmap_type indexmap() const { return slicer_t::invoke(A->indexmap() BOOST_PP_ENUM_TRAILING(POS, TEXT, range()),n, ellipsis()); }\
    domain_type domain() const { return indexmap().domain();}\
    size_t len(int i) const { return A->len(i);}\
-   size_t dim0() const { return A->len(0);}\
-   size_t dim1() const { return A->len(1);}\
+   size_t dim0() const { return A->len((POS+1)%3);}\
+   size_t dim1() const { return A->len((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
    matrix_view<value_type> operator()() const {return *this;}\
    template<typename RHS> matrix_view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }\
