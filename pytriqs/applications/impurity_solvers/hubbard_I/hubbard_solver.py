@@ -136,8 +136,7 @@ class Solver:
         isp=-1
         for a,al in self.gf_struct:
             isp+=1
-            #M[a] = gf[isp*self.Nlm:(isp+1)*self.Nlm,isp*self.Nlm:(isp+1)*self.Nlm,:]
-            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:])
+            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:]).transpose(2,0,1).copy()
             for i in range(min(self.Nmoments,8)):
                 self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
 
@@ -199,8 +198,7 @@ class Solver:
         isp=-1
         for a,al in self.gf_struct:
             isp+=1
-            #M[a] = gf[isp*self.Nlm:(isp+1)*self.Nlm,isp*self.Nlm:(isp+1)*self.Nlm,:]
-            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:])
+            M[a] = numpy.array(gf[isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot,:]).transpose(2,0,1).copy()
             for i in range(min(self.Nmoments,8)):
                 self.tailtempl[a][i+1] = tail[i][isp*nlmtot:(isp+1)*nlmtot,isp*nlmtot:(isp+1)*nlmtot]
 
