@@ -88,8 +88,7 @@ namespace triqs { namespace arrays {
 
     matrix_view & operator=(matrix_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
-    /// Move assignment
-    matrix_view & operator=(matrix_view && X) { this->swap_me(X); return *this;}
+    // Move assignment not defined : will use the copy = since view must copy data
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view); 
     _IMPL_MATRIX_COMMON;
@@ -180,6 +179,13 @@ namespace triqs { namespace arrays {
 #undef IMPL_TYPE
 
 }}//namespace triqs::arrays
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std { 
+ template <typename V, triqs::ull_t Opt, triqs::ull_t To >
+  void swap( triqs::arrays::matrix_view<V,Opt,To> & a , triqs::arrays::matrix_view<V,Opt,To> & b)= delete;
+}
 #include "./expression_template/matrix_algebra.hpp"
 #endif
 

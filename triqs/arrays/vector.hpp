@@ -64,7 +64,7 @@ namespace triqs { namespace arrays {
    vector_view () = delete;
 
    // Move
-   vector_view(vector_view && X) { this->swap_me(X);}
+    vector_view(vector_view && X) { this->swap_me(X);}
 
    /// Swap
    friend void swap( vector_view & A, vector_view & B) { A.swap_me(B);}
@@ -77,8 +77,7 @@ namespace triqs { namespace arrays {
 
    vector_view & operator=(vector_view const & X) {triqs_arrays_assign_delegation(*this,X); return *this; }//cf array_view class comment
 
-   /// Move assignment
-   vector_view & operator=(vector_view && X) { this->swap_me(X); return *this;}
+   // Move assignment not defined : will use the copy = since view must copy data
 
    size_t size() const { return this->shape()[0];}
 
@@ -261,4 +260,11 @@ namespace triqs { namespace arrays {
   void deep_swap(vector <V,S1> & x, vector<V,S2>  & y) { blas::swap(x,y);}
 
 }}
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std {
+ template <typename V, triqs::ull_t S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
+}
 #endif
+

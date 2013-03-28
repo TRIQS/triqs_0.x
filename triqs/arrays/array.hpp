@@ -77,8 +77,7 @@ namespace triqs { namespace arrays {
    ///
    array_view & operator=(array_view const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
 
-   /// Move assignment
-   array_view & operator=(array_view && X) { this->swap_me(X); return *this;}
+   // Move assignment not defined : will use the copy = since view must copy data
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
@@ -174,5 +173,15 @@ namespace triqs { namespace arrays {
  template < class V, int R, ull_t Opt, ull_t TraversalOrder > struct ViewFactory< V, R, Opt, TraversalOrder,Tag::array_view > { typedef array_view<V,R,Opt,TraversalOrder> type; };
 
 }}//namespace triqs::arrays
+
+// The std::swap is WRONG for a view because of the copy/move semantics of view.
+// Use swap instead (the correct one, found by ADL).
+namespace std { 
+ template <typename V, int R,  triqs::ull_t Opt, triqs::ull_t To >
+  void swap( triqs::arrays::array_view<V,R,Opt,To> & a , triqs::arrays::array_view<V,R,Opt,To> & b)= delete;
+}
+
 #include "./expression_template/array_algebra.hpp"
+
 #endif
+

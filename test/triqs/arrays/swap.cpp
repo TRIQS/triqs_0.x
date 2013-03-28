@@ -57,8 +57,10 @@ int main(int argc, char **argv) {
   std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
   std::swap(V,W);
   std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
-  std::swap(VV,VW);
-  std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
+  
+  // This does NOT compile, the std::swap specialization is deleted.
+  //std::swap(VV,VW);
+  //std::cout << "V = "<< V << " W = " << W<< " V view "<< VV<< " W view "<< VW<< std::endl;
 
  }
  std::cout  << "With deep_swap"<< std::endl;
