@@ -77,7 +77,7 @@ namespace triqs { namespace arrays {
    */
   template <typename T, int R>
    void write_array (h5::group g, std::string const & name, array_view <T,R> const & A, bool C_reorder = true) {
-    if (C_reorder) { write_array(g,name, make_const_cache(A).view(),false);}
+    if (C_reorder) { write_array(g,name, make_const_cache(A).view(),false); return; }
     try {
      H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space(A) );
      ds.write( get_array_data_cptr(A), h5::data_type_memory<T>(), data_space(A) );
