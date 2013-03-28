@@ -33,9 +33,9 @@ class gf_binner {
  // Binning operation
  void operator() (int alpha1, double t1, int alpha2, double t2,  typename GFType::data_t::value_type val)  { 
   if (t1>=t2) 
-   G.data_view()(alpha1, alpha2,int(floor((t1 - t2)*L_over_Beta))) += val;
+   G.data_view()(int(floor((t1 - t2)*L_over_Beta)), alpha1, alpha2) += val;
   else
-   G.data_view()(alpha1, alpha2,int(floor((t1 - t2 + G.domain().beta)*L_over_Beta))) -=val;
+   G.data_view()(int(floor((t1 - t2 + G.domain().beta)*L_over_Beta)), alpha1, alpha2) -=val;
  }
 
 }; 
@@ -53,8 +53,8 @@ class gf_grid_evaluator {
  // alpha starts at ZERO
  typename GFType::data_t::value_type operator() (int alpha1, double tau1, int alpha2, double tau2 ) const 
  { 
-  return ( (tau1>=tau2) ? G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2)*L_over_Beta))) : 
-    - G.data_view()(alpha1, alpha2,int(floor((tau1 - tau2 + G.domain().beta)*L_over_Beta)) ) );
+  return ( (tau1>=tau2) ? G.data_view()(int(floor((tau1 - tau2)*L_over_Beta)), alpha1, alpha2) : 
+    - G.data_view()(int(floor((tau1 - tau2 + G.domain().beta)*L_over_Beta)), alpha1, alpha2 ) );
  }
 
 }; 
