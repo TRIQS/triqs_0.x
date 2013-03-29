@@ -22,6 +22,7 @@
 #define TRIQS_ARRAYS_ASSIGN2_H_
 #include "iterator_adapter.hpp"
 #include "../indexmaps/cuboid/foreach.hpp"
+#include "../storages/memcopy.hpp"
 
 // two ways of doing things... optimal one depends on compiler ? To be checked...
 #define TRIQS_ARRAYS_ASSIGN_ISP_WITH_FOREACH
