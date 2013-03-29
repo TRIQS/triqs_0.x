@@ -2,7 +2,7 @@
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
  *
- * Copyright (C) 2011-2012 by M. Ferrero, O. Parcollet
+ * Copyright (C) 2011-2013 by M. Ferrero, O. Parcollet
  *
  * TRIQS is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,8 +23,8 @@
 #include <triqs/utility/first_include.hpp>
 #include <vector>
 #include <iterator>
-#include <triqs/arrays/matrix.hpp>
-#include <triqs/arrays/mapped_functions.hpp>
+#include <triqs/arrays.hpp>
+//#include <triqs/arrays/mapped_functions.hpp>
 #include <triqs/arrays/algorithms.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/determinant.hpp>
@@ -32,29 +32,38 @@
 #include <triqs/arrays/linalg/matmul.hpp>
 #include <triqs/arrays/linalg/mat_vec_mul.hpp>
 #include <triqs/arrays/blas_lapack/dot.hpp> 
+#include <triqs/utility/function_arg_ret_type.hpp>
 
 namespace triqs { namespace det_manip { 
 
  /**
- */ 
- template<typename FunctionTypeArg>
+  * \brief Standard matrix/det manipulations used in several QMC.
+  */
+ template<typename FunctionType>
   class det_manip {
+   private:
+    typedef utility::function_arg_ret_type<FunctionType> f_tr;
+    static_assert(f_tr::arity == 2, "det_manip : the function must take two arguments !");
+    // Do we REALLY need this ?
+    static_assert(std::is_same< typename f_tr::template decay_arg<0>::type, typename f_tr::template decay_arg<1>::type>::value,
+      "det_manip : the two arguments must of the function must have the same type");
    public:
 
-    typedef typename boost::unwrap_reference<FunctionTypeArg>::type  FunctionType;
-    typedef typename FunctionType::result_type                       value_type;
-    typedef typename FunctionType::argument_type                     xy_type;
-    typedef triqs::arrays::vector<value_type>                        vector_type;
-    typedef triqs::arrays::matrix<value_type>                        matrix_type;
-    typedef triqs::arrays::matrix_view<value_type>                   matrix_view_type;
+    typedef typename f_tr::template decay_arg<0>::type xy_type;
+    typedef typename f_tr::result_type                 value_type;
+    static_assert( std::is_floating_point<value_type>::value || boost::is_complex<value_type>::value, "det_manip : the function must return a floating number or a complex number");
+
+    typedef arrays::vector<value_type>                 vector_type;
+    typedef arrays::matrix<value_type>                 matrix_type;
+    typedef arrays::matrix_view<value_type>            matrix_view_type;
 
    protected: // the data
     typedef std::ptrdiff_t int_type;
-    typedef triqs::arrays::range range;
+    typedef arrays::range range;
 
     FunctionType f;
-    
-    // serialized data
+
+    // serialized data. There are all VALUES.
     value_type det;
     size_t Nmax,N, last_try;
     std::vector<size_t> row_num,col_num;
@@ -62,6 +71,64 @@ namespace triqs { namespace det_manip {
     int sign;
     matrix_type mat_inv;
     long long n_opts, n_opts_max_before_check;
+
+    friend void swap(det_manip& lhs, det_manip & rhs) noexcept { 
+     using std::swap;
+#define SW(a) swap(lhs.a,rhs.a)
+     SW(f); // f must have move = or at least copy =
+     SW(det);SW(Nmax);SW(N); SW(last_try);
+     SW(row_num); SW(col_num);
+     SW(x_values); SW(y_values);
+     SW(sign); SW(mat_inv); SW(n_opts); SW(n_opts_max_before_check);
+#undef SW
+    }
+
+   private:
+    //  ------------     BOOST Serialization ------------
+    //  What about f ? Not serialized at the moment.
+    friend class boost::serialization::access;
+    template<class Archive>
+     void serialize(Archive & ar) {
+      using boost::serialization::make_nvp;
+      ar & make_nvp("Nmax",Nmax) & make_nvp("N",N) 
+       & make_nvp("n_opts",n_opts) & make_nvp("n_opts_max_before_check",n_opts_max_before_check) 
+       & make_nvp("det",det) & make_nvp("sign",sign) 
+       & make_nvp("Minv",mat_inv) 
+       & make_nvp("row_num",row_num) & make_nvp("col_num",col_num) 
+       & make_nvp("x_values",x_values) & make_nvp("y_values",y_values); 
+     }
+
+    /// Write into HDF5
+    friend void h5_write (h5::group fg, std::string subgroup_name, det_manip const & g) {
+     auto gr =  fg.create_group(subgroup_name);
+     h5_write(gr,"N",g.N);
+     h5_write(gr,"mat_inv",g.mat_inv);
+     h5_write(gr,"det",g.det);
+     h5_write(gr,"sign",g.sign);
+     h5_write(gr,"row_num",g.row_num);
+     h5_write(gr,"col_num",g.col_num);
+     h5_write(gr,"x_values",g.x_values);
+     h5_write(gr,"y_values",g.y_values);
+     h5_write(gr,"n_opts",g.n_opts);
+     h5_write(gr,"n_opts_max_before_check",g.n_opts_max_before_check);
+    }
+
+    /// Read from HDF5
+    friend void h5_read  (h5::group fg, std::string subgroup_name, det_manip & g){
+     auto gr = fg.open_group(subgroup_name);
+     h5_read(gr,"N",g.N);
+     h5_read(gr,"mat_inv",g.mat_inv);
+     g.Nmax = g.mat_inv.dim0(); // restore Nmax
+     g.last_try = 0; 
+     h5_read(gr,"det",g.det);
+     h5_read(gr,"sign",g.sign);
+     h5_read(gr,"row_num",g.row_num);
+     h5_read(gr,"col_num",g.col_num);
+     h5_read(gr,"x_values",g.x_values);
+     h5_read(gr,"y_values",g.y_values);
+     h5_read(gr,"n_opts",g.n_opts);
+     h5_read(gr,"n_opts_max_before_check",g.n_opts_max_before_check);
+    }
 
    private:
     // temporary work data, not saved, serialized, etc....  
@@ -72,7 +139,7 @@ namespace triqs { namespace det_manip {
      size_t i,j,ireal,jreal;
      void reserve(size_t s) { B.resize(s); C.resize(s); MB.resize(s); MC.resize(s); MB()=0; MC()=0; }
     };
-    
+
     struct work_data_type2 { 
      xy_type x[2], y[2];
      matrix_type MB,MC, B, C,ksi;
@@ -112,27 +179,27 @@ namespace triqs { namespace det_manip {
     /** 
      * \brief Constructor.
      * 
-     * \param F         The function (NB : a copy is made of the F object in this class). // CHANGE this with boost::ref ? useful ?
+     * \param F         The function (NB : a copy is made of the F object in this class).
      * \param init_size The maximum size of the matrix before a resize (like reserve in std::vector).
      *                  Like std::vector, resize is automatic (by a factor 2) but can yield a performance penalty
      *                  if it happens too often.
      */
-    det_manip(FunctionTypeArg F,size_t init_size):
-     f(boost::unwrap_ref(F)), Nmax(0) , N(0){ 
+    det_manip(FunctionType F,size_t init_size):
+     f(std::move(F)), Nmax(0) , N(0){ 
       reserve(init_size);
       mat_inv()=0;
       det = 1; 
-     _construct_common();
+      _construct_common();
      }
 
     /** \brief Constructor.
      * 
-     * \param F         The function (NB : a copy is made of the F object in this class). // CHANGE this with boost::ref ? useful ?
+     * \param F         The function (NB : a copy is made of the F object in this class).
      * \tparam ArgumentContainer 
      * \param X, Y : container for X,Y. 
      */
     template<typename ArgumentContainer1, typename ArgumentContainer2>
-     det_manip(FunctionTypeArg F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(boost::unwrap_ref(F)) { 
+     det_manip(FunctionType F, ArgumentContainer1 const & X, ArgumentContainer2 const & Y) : f(std::move(F)) { 
       if (X.size() != Y.size()) TRIQS_RUNTIME_ERROR<< " X.size != Y.size";
       _construct_common();
       N =X.size(); 
@@ -144,12 +211,17 @@ namespace triqs { namespace det_manip {
       for (size_t i=0; i<N; ++i) { 
        row_num.push_back(i);col_num.push_back(i); 
        for (size_t j=0; j<N; ++j)
-        mat_inv(i,j) = f(x_values[i],y_values[j]);
+	mat_inv(i,j) = f(x_values[i],y_values[j]);
       }
       range R(0,N);
-      det = triqs::arrays::determinant(mat_inv(R,R));
+      det = arrays::determinant(mat_inv(R,R));
       mat_inv(R,R) = inverse(mat_inv(R,R));
      }
+
+    det_manip (det_manip const&) = default;
+    det_manip (det_manip && rhs) noexcept {*this =std::move(rhs);} 
+    det_manip& operator=(const det_manip&) = default;
+    det_manip& operator=(det_manip&& rhs) noexcept { swap(*this,rhs);}
 
     /// Put to size 0 : like a vector 
     void clear () { 
@@ -192,22 +264,6 @@ namespace triqs { namespace det_manip {
      return res;
     }
 
-   private:
-    //  ------------     BOOST Serialization ------------
-    friend class boost::serialization::access;
-    template<class Archive>
-     void serialize(Archive & ar) {
-      using boost::serialization::make_nvp;
-      ar & make_nvp("Nmax",Nmax) & make_nvp("N",N) 
-       & make_nvp("n_opts",n_opts) & make_nvp("n_opts_max_before_check",n_opts_max_before_check) 
-       & make_nvp("det",det) & make_nvp("sign",sign) 
-       & make_nvp("Minv",mat_inv) 
-       & make_nvp("row_num",row_num) & make_nvp("col_num",col_num) 
-       & make_nvp("x_values",x_values) & make_nvp("y_values",y_values); 
-     }
-
-   public:
-
     // ------------------------- OPERATIONS -----------------------------------------------
 
     /**
@@ -247,7 +303,7 @@ namespace triqs { namespace det_manip {
       w1.C(k) = f(x, y_values[k]);
      }
      range R(0,N);
-     w1.MB(R) = mat_inv(R,R) * w1.B(R);
+     w1.MB(R) = mat_inv(R,R) * w1.B(R);// CHANGE
      w1.ksi = f(x,y) - arrays::dot( w1.C(R) , w1.MB(R) );
      newdet = det*w1.ksi;
      newsign = ((i + j)%2==0 ? sign : -sign);   // since N-i0 + N-j0  = i0+j0 [2]
@@ -266,7 +322,7 @@ namespace triqs { namespace det_manip {
      if (N==0) { N=1; mat_inv(0,0) = 1/newdet; return; }
 
      range R1(0,N);  
-     w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); 
+     w1.MC(R1) = mat_inv(R1,R1).transpose() * w1.C(R1); //CHANGE
      w1.MC(N) = -1;
      w1.MB(N) = -1;
 
@@ -289,7 +345,7 @@ namespace triqs { namespace det_manip {
      range R(0,N);
      mat_inv(R,N-1) = 0;
      mat_inv(N-1,R) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi, w1.MB(R) ,w1.MC(R)) ;//mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi, w1.MB(R) ,w1.MC(R)) ;//mat_inv(R,R) += w1.ksi* w1.MB(R) * w1.MC(R)// CHANGE
     }
 
    public : 
@@ -340,8 +396,8 @@ namespace triqs { namespace det_manip {
       w2.C(1,k) = f(x1, y_values[k]);
      }
      range R(0,N), R2(0,2);
-     w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); 
-     w2.ksi -= w2.C (R2, R) * w2.MB(R, R2);
+     w2.MB(R,R2) = mat_inv(R,R) * w2.B(R,R2); // CHANGE
+     w2.ksi -= w2.C (R2, R) * w2.MB(R, R2); // CHANGE
      newdet = det * w2.det_ksi();
      newsign = ((i0 + j0 + i1 + j1)%2==0 ? sign : -sign); // since N-i0 + N-j0 + N + 1 -i1 + N+1 -j1 = i0+j0 [2]
      return (newdet/det)*(newsign*sign); // sign is unity, hence 1/sign == sign
@@ -360,7 +416,7 @@ namespace triqs { namespace det_manip {
      if (N==0) {N=2; mat_inv(R2,R2)=inverse(w2.ksi); row_num[w2.i[1]]=1; col_num[w2.j[1]]=1; return;}
 
      range Ri(0,N);   
-     w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);
+     w2.MC(R2,Ri) = w2.C(R2,Ri) * mat_inv(Ri,Ri);// CHANGE 
      w2.MC(R2, range(N, N+2) ) = -1; // identity matrix 
      w2.MB(range(N,N+2), R2 ) = -1; // identity matrix ! 
 
@@ -379,7 +435,7 @@ namespace triqs { namespace det_manip {
      range R(0,N);
      mat_inv(R,range(N-2,N)) = 0;
      mat_inv(range(N-2,N),R) = 0;
-     mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); 
+     mat_inv(R,R) += w2.MB(R,R2) * (w2.ksi * w2.MC(R2,R)); // CHANGE
     }
 
    public:
@@ -415,12 +471,12 @@ namespace triqs { namespace det_manip {
      {
       range R(0,N);
       if (w1.jreal !=N-1){
-       triqs::arrays::deep_swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
+       arrays::deep_swap( mat_inv(w1.jreal,R), mat_inv(N-1,R));
        y_values[w1.jreal] = y_values[N-1]; 
       }
 
       if (w1.ireal !=N-1){
-       triqs::arrays::deep_swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
+       arrays::deep_swap (mat_inv(R,w1.ireal),  mat_inv(R,N-1));
        x_values[w1.ireal] = x_values[N-1];
       }
      }
@@ -431,7 +487,7 @@ namespace triqs { namespace det_manip {
      w1.ksi = - 1/mat_inv(N,N);
      range R(0,N);
 
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,N),mat_inv(N,R));
+     mat_inv(R,R) += arrays::a_x_ty(w1.ksi,mat_inv(R,N),mat_inv(N,R));
 
      // modify the permutations
      for (size_t k =w1.i; k<N; k++) {row_num[k]= row_num[k+1];}
@@ -495,19 +551,19 @@ namespace triqs { namespace det_manip {
      range R(0,N);
 
      if (j_real_max != N-1) { 
-      triqs::arrays::deep_swap( mat_inv(j_real_max,R), mat_inv(N-1,R));
+      arrays::deep_swap( mat_inv(j_real_max,R), mat_inv(N-1,R));
       y_values[ j_real_max ] = y_values[N-1];
      }
      if (j_real_min != N-2) { 
-      triqs::arrays::deep_swap( mat_inv(j_real_min,R), mat_inv(N-2,R));
+      arrays::deep_swap( mat_inv(j_real_min,R), mat_inv(N-2,R));
       y_values[ j_real_min ] = y_values[N-2];
      }
      if (i_real_max != N-1) { 
-      triqs::arrays::deep_swap (mat_inv(R,i_real_max),  mat_inv(R,N-1));
+      arrays::deep_swap (mat_inv(R,i_real_max),  mat_inv(R,N-1));
       x_values[ i_real_max ] = x_values[N-1];
      }
      if (i_real_min != N-2) { 
-      triqs::arrays::deep_swap (mat_inv(R,i_real_min),  mat_inv(R,N-2));
+      arrays::deep_swap (mat_inv(R,i_real_min),  mat_inv(R,N-2));
       x_values[ i_real_min ] = x_values[N-2];
      }
 
@@ -520,7 +576,7 @@ namespace triqs { namespace det_manip {
      w2.ksi =  inverse( mat_inv(Rl,Rl));
 
      // write explicitely the second product on ksi for speed ?
-     mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn));
+     mat_inv(Rn,Rn) -= mat_inv(Rn,Rl) * (w2.ksi * mat_inv(Rl,Rn)); // CHANGE
 
      // modify the permutations
      for (size_t k =w2.i[0]; k<w2.i[1]-1; k++)   row_num[k] = row_num[k+1];
@@ -554,7 +610,7 @@ namespace triqs { namespace det_manip {
      // Compute the col B.
      for (size_t i= 0; i<N;i++) w1.MC(i) = f(x_values[i] , w1.y) - f(x_values[i], y_values[w1.jreal]);
      range R(0,N);
-     w1.MB(R) = mat_inv(R,R) * w1.MC(R);
+     w1.MB(R) = mat_inv(R,R) * w1.MC(R);// CHANGE
 
      // compute the newdet
      w1.ksi = (1+w1.MB(w1.jreal));
@@ -574,8 +630,8 @@ namespace triqs { namespace det_manip {
      // Cf notes : simply multiply by -w1.ksi
      w1.ksi = - 1/(1+ w1.MB(w1.jreal));
      w1.MB(w1.jreal) = 0;
-     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R));
-     mat_inv(w1.jreal,R)*= -w1.ksi; 
+     mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,w1.MB(R), mat_inv(w1.jreal,R)); // CHANGE
+     mat_inv(w1.jreal,R)*= -w1.ksi; // CHANGE  
     }
 
     //------------------------------------------------------------------------------------------
@@ -596,7 +652,7 @@ namespace triqs { namespace det_manip {
      // Compute the col B.
      for (size_t i= 0; i<N;i++) w1.MB(i) = f(w1.x, y_values[i] ) -  f(x_values[w1.ireal], y_values[i] ); 
      range R(0,N);
-     w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); 
+     w1.MC(R) = mat_inv(R,R).transpose() * w1.MB(R); // CHANGE 
 
      // compute the newdet
      w1.ksi = (1+w1.MC(w1.ireal));
@@ -616,7 +672,7 @@ namespace triqs { namespace det_manip {
      w1.ksi = - 1/(1+ w1.MC(w1.ireal));
      w1.MC(w1.ireal) = 0;
      mat_inv(R,R) += triqs::arrays::a_x_ty(w1.ksi,mat_inv(R,w1.ireal),w1.MC(R));
-     mat_inv(R,w1.ireal) *= -w1.ksi;
+     mat_inv(R,w1.ireal) *= -w1.ksi; // CHANGE 
     }
     //------------------------------------------------------------------------------------------
    private: 
