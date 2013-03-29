@@ -25,28 +25,28 @@
 namespace triqs { namespace tuple {
 
  /**
-  * for_each(f, t, args...)
+  * for_each(f, t)
   * f: a callable object
   * t: a tuple
-  * calls f on all tuple elements: f(x, args...) for all x in t
+  * calls f on all tuple elements: f(x) for all x in t
   */
  template<int pos> struct for_each_impl {
-   template<typename F, typename T, typename ...Args>
-   void operator()(F && f, T const & t, Args && ... args) {
-     f(std::get<std::tuple_size<T>::value-1-pos>(t), args...);
-     for_each_impl<pos-1>()(f, t, args...);
+   template<typename F, typename T>
+   void operator()(F && f, T const & t) {
+     f(std::get<std::tuple_size<T>::value-1-pos>(t));
+     for_each_impl<pos-1>()(f, t);
    }
  };
 
  template<>
  struct for_each_impl<0> {
-   template<typename F, typename T, typename ...Args>
-   void operator() (F && f, T const & t, Args && ... args) { f(std::get<std::tuple_size<T>::value-1>(t), args...); }
+   template<typename F, typename T>
+   void operator() (F && f, T const & t) { f(std::get<std::tuple_size<T>::value-1>(t)); }
  };
 
- template<typename F, typename T, typename ...Args>
- void for_each(F && f, T const & t, Args && ... args) {
-   for_each_impl<std::tuple_size<T>::value-1>()(f, t, args...);
+ template<typename F, typename T>
+ void for_each(F && f, T const & t) {
+   for_each_impl<std::tuple_size<T>::value-1>()(f, t);
  }
 
  /**

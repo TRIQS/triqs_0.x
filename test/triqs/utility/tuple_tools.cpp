@@ -33,7 +33,8 @@ struct fun2 {
 
 struct print_t {
   template<typename T>
-  void operator()(T x, std::string s) { std::cerr << x << s; }
+  void operator()(T x) { std::cerr << x << " "; }
+  std::string s;
 };
 
 int main(int argc, char **argv) {
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
  auto t1 = std::make_tuple(1,2.3,4.3,8);
   
  {
-  triqs::tuple::for_each(print_t(), t, " ");
+  triqs::tuple::for_each(print_t(), t);
   std::cerr << std::endl;
  }
 
