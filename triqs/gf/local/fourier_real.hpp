@@ -40,7 +40,7 @@ namespace triqs { namespace gf {
    size_t L = gt.mesh().size();
    double wmin = -impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
    double wmax =  impl_local_real::pi * (L-1) / (L*gt.mesh().delta());
-   auto gw = gf_factories<refreq>::make_gf(wmin, wmax, L, gt.data_view().shape().pop());
+   auto gw = gf_factories<refreq>::make_gf(wmin, wmax, L, gt.data_view().shape().front_pop());
    auto V = gw();
    fourier_impl(V, gt);
    return gw;
@@ -50,7 +50,7 @@ namespace triqs { namespace gf {
    size_t L = gw.mesh().size();
    double tmin = -impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
    double tmax =  impl_local_real::pi * (L-1) / (L*gw.mesh().delta());
-   auto gt = gf_factories<retime>::make_gf(tmin, tmax, L, gw.data_view().shape().pop());
+   auto gt = gf_factories<retime>::make_gf(tmin, tmax, L, gw.data_view().shape().front_pop());
    auto V = gt();
    inverse_fourier_impl(V, gw);
    return gt;
