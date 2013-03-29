@@ -62,7 +62,8 @@ class HDFArchiveGroupBasicLayer :
         return p in self.cached_keys and type(self._group[p]) == h5py.highlevel.Dataset
 
     def write_attr (self, key, val) : 
-        self._group.attrs[key] =  val 
+        self._group.attrs.create(key, val) 
+        #self._group.attrs[key] =  val 
 
     def read_attr(self,attribute_name) : 
         return self._group.attrs[attribute_name] 
