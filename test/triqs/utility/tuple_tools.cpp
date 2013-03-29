@@ -19,12 +19,10 @@
  *
  ******************************************************************************/
 #include <triqs/utility/tuple_tools.hpp>
-//#include <functional>
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
 
-//double f(int i, double x, double y, int k) { std::cout   << i << x << y <<k <<std::endl ; return k + i+ x + 2*y;}
 struct fun { 
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
 };
@@ -33,12 +31,22 @@ struct fun2 {
  double operator()(double x, double y) {  return x+y;}
 };
 
+struct print_t {
+  template<typename T>
+  void operator()(T x, std::string s) { std::cerr << x << s; }
+};
+
 int main(int argc, char **argv) {
 
  auto t = std::make_tuple(1,2.3,4.3,8);
  auto t2 = std::make_tuple(1,2,3,4);
  auto t1 = std::make_tuple(1,2.3,4.3,8);
   
+ {
+  triqs::tuple::for_each(print_t(), t, " ");
+  std::cerr << std::endl;
+ }
+
  {
   auto res = triqs::tuple::apply(fun(),t);
   std::cerr  << " f(t) =" << res << std::endl ;
