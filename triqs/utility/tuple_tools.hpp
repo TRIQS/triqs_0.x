@@ -31,22 +31,22 @@ namespace triqs { namespace tuple {
   * calls f on all tuple elements: f(x) for all x in t
   */
  template<int pos> struct for_each_impl {
-   template<typename F, typename T>
-   void operator()(F && f, T const & t) {
+   template<typename T, typename F>
+   void operator()(T const & t, F && f) {
      f(std::get<std::tuple_size<T>::value-1-pos>(t));
-     for_each_impl<pos-1>()(f, t);
+     for_each_impl<pos-1>()(t, f);
    }
  };
 
  template<>
  struct for_each_impl<0> {
-   template<typename F, typename T>
-   void operator() (F && f, T const & t) { f(std::get<std::tuple_size<T>::value-1>(t)); }
+   template<typename T, typename F>
+   void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t)); }
  };
 
- template<typename F, typename T>
- void for_each(F && f, T const & t) {
-   for_each_impl<std::tuple_size<T>::value-1>()(f, t);
+ template<typename T, typename F>
+ void for_each(T const & t, F && f) {
+   for_each_impl<std::tuple_size<T>::value-1>()(t, f);
  }
 
  /**

@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
  auto t1 = std::make_tuple(1,2.3,4.3,8);
   
  {
-  triqs::tuple::for_each(print_t(), t);
+  triqs::tuple::for_each(t, print_t());
   std::cerr << std::endl;
  }
 
