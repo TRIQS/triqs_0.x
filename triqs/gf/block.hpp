@@ -54,13 +54,13 @@ namespace triqs { namespace gf {
   template<typename G> 
   static void h5_data_write(h5::group g, std::string const & s, G const & gf) {
    auto gr =  g.create_group(s);
-   for (size_t i =0; i<gf.mesh.size(); ++i) h5_write(gr,gf.mesh.domain().names()[i],gf.data[i]);
+   for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
   }
 
   template<typename G> 
    static void h5_data_read(h5::group g, std::string const & s, G & gf) {
     auto gr =  g.create_group(s);
-    for (size_t i =0; i<gf.mesh.size(); ++i) h5_write(gr,gf.mesh.domain().names()[i],gf.data[i]);
+    for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
    }
   };
  /// ---------------------------  evaluator ---------------------------------
