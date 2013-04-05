@@ -44,9 +44,6 @@ namespace triqs { namespace gf {
    /// Symmetry
    typedef nothing symmetry_t;
 
-   /// Indices
-   typedef nothing indices_t;
-
   static std::string h5_name() { return "block_gf";}
 
   typedef void has_special_h5_read_write_tag;

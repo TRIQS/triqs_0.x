@@ -45,9 +45,6 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  /// Indices
-  typedef indices_2_t indices_t;
-
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
@@ -85,7 +82,7 @@ namespace triqs { namespace gf {
 
   static gf_l make_gf(double beta, statistic_enum S, size_t n_leg, tqa::mini_vector<size_t,2> shape) {
    gf_l::data_non_view_t A(shape.front_append(n_leg)); A() = 0;
-   return gf_l(make_mesh(beta, S, n_leg), std::move(A), nothing(), nothing(), indices_t(shape));
+   return gf_l(make_mesh(beta, S, n_leg), std::move(A), nothing(), nothing());
   }
 
  };

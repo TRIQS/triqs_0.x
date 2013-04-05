@@ -55,7 +55,7 @@ namespace triqs { namespace gf {
  }
 
  //------------------------------------------------------
-
+/*
  class indices_2_t { 
   std::vector<std::vector<std::string>> data;
   void construct_deleg (int n1, int n2) { 
@@ -69,7 +69,7 @@ namespace triqs { namespace gf {
   indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
   
   indices_2_t(int n1, int n2) { construct_deleg(n1,n2);}
-  template<typename T> indices_2_t(arrays::mini_vector<T,2> & shape) { construct_deleg(shape[0], shape[1]);}
+  template<typename T> indices_2_t(arrays::mini_vector<T,2> const & shape) { construct_deleg(shape[0], shape[1]);}
   
   std::vector<std::string> const & operator[](int i) const { return data[i];} 
   std::vector<std::vector<std::string>> const & operator()() const { return data;} 
@@ -101,7 +101,7 @@ namespace triqs { namespace gf {
    }
 
  };
-
+*/
  //------------------------------------------------------
 
  struct nothing {

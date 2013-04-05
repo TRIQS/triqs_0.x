@@ -45,9 +45,6 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  /// Indices
-  typedef indices_2_t indices_t;
-
   static std::string h5_name() { return "imtime_gf";}
  };
 
@@ -81,7 +78,7 @@ namespace triqs { namespace gf {
   }
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-   return gf_t ( m, std::move(A), t, nothing(), indices_t(shape) ) ;
+   return gf_t ( m, std::move(A), t, nothing() ) ;
   }
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
    return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));

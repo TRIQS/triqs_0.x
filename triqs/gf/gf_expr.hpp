@@ -62,7 +62,6 @@ namespace triqs { namespace gf {
   auto data_view() const ->decltype( utility::operation<Tag>()(l.data_view(), r.data_view())) {  return utility::operation<Tag>()(l.data_view(), r.data_view());}
   const singularity_view_t singularity_view() const { return utility::operation<Tag>()(l.singularity_view() , r.singularity_view());}
   //symmetry_t const & symmetry() const { return _symmetry;}
-  //indices_t const & indices() const { return _indices;}
   template<typename KeyType> auto operator[](KeyType && key) const DECL_AND_RETURN(utility::operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]));
   template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN(utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...)));
   friend std::ostream &operator <<(std::ostream &sout, gf_expr const &expr){return sout << "("<<expr.l << " "<<utility::operation<Tag>::name << " "<<expr.r<<")" ; }
@@ -82,7 +81,6 @@ namespace triqs { namespace gf {
   auto data_view() const ->decltype( - l.data_view()) {  return - l.data_view();}
   const singularity_view_t singularity_view() const { return l.singularity_view();}
   //symmetry_t const & symmetry() const { return _symmetry;}
-  //indices_t const & indices() const { return _indices;}
   template<typename KeyType> auto operator[](KeyType&& key) const DECL_AND_RETURN( -l[key]); 
   template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( -l(std::forward<Args>(args)...));
   friend std::ostream &operator <<(std::ostream &sout, gf_unary_m_expr const &expr){return sout << '-'<<expr.l; }

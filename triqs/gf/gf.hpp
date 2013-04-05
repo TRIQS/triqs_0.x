@@ -68,7 +68,6 @@ namespace triqs { namespace gf {
    typedef typename mesh_t::mesh_point_t          mesh_point_t;
    typedef typename mesh_t::index_t               mesh_index_t;
    typedef typename Descriptor::symmetry_t        symmetry_t;
-   typedef typename Descriptor::indices_t         indices_t;
    typedef evaluator<Descriptor>          evaluator_t;
 
    typedef data_proxy<Descriptor>                                                 data_proxy_t;
@@ -88,7 +87,6 @@ namespace triqs { namespace gf {
    singularity_t const & singularity_view() const { return singularity;}
 
    symmetry_t const & symmetry() const { return _symmetry;}
-   indices_t const & indices() const { return _indices;}
    evaluator_t const & _evaluator() const { return evaluator_;}
 
   protected:
@@ -96,7 +94,6 @@ namespace triqs { namespace gf {
    data_t data;
    singularity_t singularity;
    symmetry_t _symmetry;
-   indices_t _indices;
    evaluator_t evaluator_;
    data_proxy_t data_proxy_;
   public:
@@ -108,20 +105,20 @@ namespace triqs { namespace gf {
    gf_impl() {} // all arrays of zero size (empty)
   public : //everyone can make a copy (for clef lib in particular, this is needed)
    gf_impl(gf_impl const & x) : _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()),evaluator_(x.evaluator_){}
+   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), evaluator_(x.evaluator_){}
 
    gf_impl(gf_impl && ) = default;
 
   protected:
    gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), data(factory<data_t>(x.data_view())),
-   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), _indices(x.indices()), evaluator_(x._evaluator()){}
+   singularity(factory<singularity_t>(x.singularity_view())), _symmetry(x.symmetry()), evaluator_(x._evaluator()){}
 
    // from the data directly
-   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind, evaluator_t const &e ) :
-    _mesh(m), data(dat), singularity(ad),_symmetry(s), _indices(ind),evaluator_(e){}
+   gf_impl(mesh_t const & m, data_view_t const & dat, singularity_view_t const & ad, symmetry_t const & s, evaluator_t const &e ) :
+    _mesh(m), data(dat), singularity(ad),_symmetry(s), evaluator_(e){}
 
-   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, indices_t const & ind, evaluator_t const &e  ) :
-    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), _indices(ind), evaluator_(e) {}
+   gf_impl(mesh_t const & m, data_t && dat, singularity_view_t const & ad, symmetry_t const & s, evaluator_t const &e  ) :
+    _mesh(m), data(std::move(dat)), singularity(ad),_symmetry(s), evaluator_(e) {}
 
    // -------------------------------- assigner -----------------------------------------------
 
@@ -244,7 +241,6 @@ namespace triqs { namespace gf {
     h5_write(gr,"singularity",g.singularity);
     h5_write(gr,"mesh",g._mesh);
     h5_write(gr,"symmetry",g._symmetry);
-    h5_write(gr,"indices",g._indices);
    }
 
    /// Read from HDF5
@@ -255,7 +251,6 @@ namespace triqs { namespace gf {
     h5_read(gr,"singularity",g.singularity);
     h5_read(gr,"mesh",g._mesh);
     h5_read(gr,"symmetry",g._symmetry);
-    h5_read(gr,"indices",g._indices);
    }
 
    //  BOOST Serialization
@@ -266,7 +261,6 @@ namespace triqs { namespace gf {
      ar & boost::serialization::make_nvp("singularity",singularity);
      ar & boost::serialization::make_nvp("mesh",_mesh);
      ar & boost::serialization::make_nvp("symmetry",_symmetry);
-     ar & boost::serialization::make_nvp("indices",_indices);
     }
 
    /// print
@@ -291,18 +285,18 @@ namespace triqs { namespace gf {
      DATA_VIEW_TYPE const & dat,
      typename B::singularity_view_t const & si,
      typename B::symmetry_t const & s ,
-     typename B::indices_t const & ind = typename B::indices_t (),
      typename B::evaluator_t const & eval = typename B::evaluator_t ()
      ) :
-    B(m,factory<typename B::data_t>(dat),si,s, ind,eval) {}
+    B(m,factory<typename B::data_t>(dat),si,s,eval) {}
 
   friend void swap ( gf & a, gf & b) {
    using std::swap;
    swap(a._mesh, b._mesh); swap(a.data, b.data); swap (a.singularity,b.singularity); swap(a._symmetry,b._symmetry);
-   swap(a._indices,b._indices); swap(a.evaluator_,b.evaluator_);
+   swap(a.evaluator_,b.evaluator_);
   }
 
   void operator = (gf const & rhs) { *this = gf(rhs);} // use move =
+  void operator = (gf & rhs) { *this = gf(rhs);} // use move =
   void operator = (gf && rhs) { swap(*this, rhs); }
 
   template<typename RHS> void operator = (RHS && rhs) {
@@ -311,7 +305,7 @@ namespace triqs { namespace gf {
    //this->data = rhs.data_view();
    this->singularity = rhs.singularity_view();
    // to be implemented : there is none in the gf_expr in particular....
-   //this->_symmetry = rhs.symmetry(); this->_indices = rhs._indices();
+   //this->_symmetry = rhs.symmetry(); 
   }
  };
 
@@ -325,7 +319,7 @@ namespace triqs { namespace gf {
   public :
 
   void rebind( gf_view const &X) {
-   this->_mesh = X._mesh; this->_symmetry = X._symmetry; this->_indices = X._indices;
+   this->_mesh = X._mesh; this->_symmetry = X._symmetry; 
    _rebinder(X, this->storage_is_array); // need to change the trait to std::integrall...
    this->singularity.rebind(X.singularity);
   }
@@ -336,9 +330,8 @@ namespace triqs { namespace gf {
   template<typename D, typename T>
    gf_view (typename B::mesh_t const & m,
      D const & dat,T const & t,typename B::symmetry_t const & s,
-     typename B::indices_t const & ind= typename B::indices_t (),
      typename B::evaluator_t const &e = typename B::evaluator_t ()  ) :
-    B(m,factory<typename B::data_t>(dat),t,s,ind,e) {}
+    B(m,factory<typename B::data_t>(dat),t,s,e) {}
 
   void operator = (gf_view const & rhs)  { triqs_gf_view_assign_delegation(*this,rhs);}
 

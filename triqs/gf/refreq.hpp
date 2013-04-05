@@ -45,9 +45,6 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  /// Indices
-  typedef indices_2_t indices_t;
-
   static std::string h5_name() { return "refreq_gf";}
 
  };
@@ -90,12 +87,12 @@ namespace triqs { namespace gf {
 
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
    gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
-   return gf_t(make_mesh(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+   return gf_t(make_mesh(wmin, wmax, n_freq, full_bins), std::move(A), local::tail(shape), nothing());
   }
 
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
    gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;
-   return gf_t(make_mesh(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing(), indices_t(shape));
+   return gf_t(make_mesh(wmin, wmax, n_freq, mk), std::move(A), local::tail(shape), nothing());
   }
 
  };
