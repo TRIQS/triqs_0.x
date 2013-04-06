@@ -161,7 +161,7 @@ class GfGeneric:
             MatrixStack(self.data).add(arg)
             t[0][:,:] += arg
         elif descriptors.is_scalar(arg): # just a scalar
-            arg = arg*numpy.identity(self.N1)
+            arg = arg*numpy.identity(self.N1,dtype = self.data.dtype )
             MatrixStack(self.data).add(arg)
             t[0][:,:] += arg
         else:
@@ -185,7 +185,7 @@ class GfGeneric:
             MatrixStack(self.data).sub(arg)
             t[0][:,:] -= arg
         elif descriptors.is_scalar(arg): # just a scalar
-            arg = arg*numpy.identity(self.N1)
+            arg = arg*numpy.identity(self.N1, dtype = self.data.dtype )
             MatrixStack(self.data).sub(arg)
             t[0][:,:] -= arg
         else:
