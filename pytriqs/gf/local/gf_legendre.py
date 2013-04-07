@@ -44,20 +44,22 @@ class GfLegendre ( GfGeneric, GfLegendre_cython ) :
             mesh = MeshLegendre(beta,stat,n_max)
 
         self.dtype = numpy.float64
-        indicesL, indicesR = get_indices_in_dict(d)
+        indices_pack = get_indices_in_dict(d)
+        indicesL, indicesR = indices_pack
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
         tail = d.pop('tail',Nothing())
         symmetry = d.pop('symmetry',None)
         name =  d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
-        
-        GfLegendre_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
+
+        GfGeneric.__init__(self, mesh, data, tail, symmetry, indices_pack, name, GfLegendre)
+        GfLegendre_cython.__init__(self, mesh, data)
 
     #--------------   PLOT   ---------------------------------------
    
     def _plot_(self, opt_dict):
-        """ Plot protocol. OptionsDict can contain : 
+        """ Plot protocol. opt_dict can contain : 
              * :param RI: 'R', 'I', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]
              * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.

@@ -2,6 +2,7 @@ from gf import GfImTime_cython, MeshImTime, TailGf
 from gf_generic import GfGeneric
 import numpy
 from tools import get_indices_in_dict
+from nothing import Nothing
 import impl_plot
 
 class GfImTime ( GfGeneric, GfImTime_cython ) :
@@ -38,30 +39,32 @@ class GfImTime ( GfGeneric, GfImTime_cython ) :
         if mesh is None : 
             if 'beta' not in d : raise ValueError, "beta not provided"
             beta = float(d.pop('beta'))
-            stat = d.pop('statistic','F') 
             n_max = d.pop('n_points',10000)
+            stat = d.pop('statistic','F')
             kind = d.pop('kind','H') 
             mesh = MeshImTime(beta,stat,n_max,kind)
 
         self.dtype = numpy.float64
-        indicesL, indicesR = get_indices_in_dict(d)
+        indices_pack = get_indices_in_dict(d)
+        indicesL, indicesR = indices_pack
         N1, N2 = len(indicesL),len(indicesR)
-        data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2,), self.dtype )
-        tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10,  order_min=-1)
-        symmetry = d.pop('symmetry',None)
+        data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
+        tail = d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10, order_min=-1)
+        symmetry = d.pop('symmetry', Nothing())
         name =  d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys() 
-        
-        GfImTime_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
+
+        GfGeneric.__init__(self, mesh, data, tail, symmetry, indices_pack, name, GfImTime)
+        GfImTime_cython.__init__(self, mesh, data, tail)
 
     #--------------   PLOT   ---------------------------------------
    
-    def _plot_(self, OptionsDict):
-        """ Plot protocol. OptionsDict can contain : 
+    def _plot_(self, opt_dict):
+        """ Plot protocol. opt_dict can contain : 
              * :param RI: 'R', 'I', 'RI' [ default] 
              * :param x_window: (xmin,xmax) or None [default]
              * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
         has_complex_value = False
-        return impl_plot.plot_base( self, OptionsDict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
+        return impl_plot.plot_base( self, opt_dict,  r'$\tau$', lambda name : r'%s$(\tau)$'%name, has_complex_value ,  list(self.mesh) )
 

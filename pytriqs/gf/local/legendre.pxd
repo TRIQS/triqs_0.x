@@ -14,19 +14,16 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
         bint operator == (mesh_legendre &)
 
     cdef mesh_legendre make_mesh_legendre "triqs::gf::gf_factories<triqs::gf::legendre>::make_mesh" (double beta, statistic_enum S, size_t n_leg)
-    #cdef mesh_legendre make_mesh_legendre "triqs::gf::legendre::make_mesh" (double beta, statistic_enum S, size_t n_leg)
 
     cdef cppclass gf_legendre "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::legendre>>" :
         gf_legendre()
         gf_legendre(gf_legendre &)
-        gf_legendre(mesh_legendre, array_view[double, THREE], nothing, nothing, indices_2_t) #except +
+        gf_legendre(mesh_legendre, array_view[double, THREE], nothing, nothing) #except +
         void operator << (gf_legendre &)
         mesh_legendre mesh() 
         array_view[double, THREE] data_view()
-        indices_2_t indices()
 
 cdef extern from "triqs/gf/legendre.hpp"  :
-
     cdef void h5_write (h5_group, char *, gf_legendre &)
 
 cdef extern from "triqs/utility/serialization.hpp"  :
@@ -37,7 +34,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_legendre as_gf_legendre(g) except +
 
 # C -> Python 
-cdef make_GfLegendre(gf_legendre x)
+cdef make_GfLegendre(gf_legendre x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
@@ -51,6 +48,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_legendre  make_gf_block_legendre "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::legendre>>" (  vector[gf_legendre] &) 
 
 cdef gf_block_legendre  as_gf_block_legendre (G) except +
-cdef make_BlockGfLegendre (gf_block_legendre G) 
-
+cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack=*)
 

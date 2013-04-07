@@ -3,6 +3,7 @@ from gf_generic import GfGeneric
 import numpy
 from scipy.optimize import leastsq
 from tools import get_indices_in_dict
+from nothing import Nothing
 import impl_plot
 
 class GfImFreq ( GfGeneric, GfImFreq_cython ) :
@@ -41,19 +42,20 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
             beta = float(d.pop('beta'))
             n_max = d.pop('n_points',1025)
             stat = d.pop('statistic','F')
-            sh = 1 if stat== 'F' else 0
-            mesh = MeshImFreq(beta,'F',n_max)
+            mesh = MeshImFreq(beta,stat,n_max)
 
         self.dtype = numpy.complex_
-        indicesL, indicesR = get_indices_in_dict(d)
+        indices_pack = get_indices_in_dict(d)
+        indicesL, indicesR = indices_pack
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
-        tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10, order_min=-1)
-        symmetry = d.pop('symmetry', None)
+        tail = d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10, order_min=-1)
+        symmetry = d.pop('symmetry', Nothing())
         name =  d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys()
 
-        GfImFreq_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
+        GfGeneric.__init__(self, mesh, data, tail, symmetry, indices_pack, name, GfImFreq)
+        GfImFreq_cython.__init__(self, mesh, data, tail)
 
     #--------------   PLOT   ---------------------------------------
 

@@ -19,12 +19,11 @@ cdef extern from "triqs/gf/retime.hpp" namespace "triqs::gf" :
         gf_retime()
         gf_retime(gf_retime &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_retime(mesh_retime, array_view[dcomplex, THREE], tail, nothing, indices_2_t) #except +
+        gf_retime(mesh_retime, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_retime &)
         mesh_retime mesh() 
         array_view[dcomplex, THREE] data_view()
         tail singularity_view() 
-        indices_2_t indices()
 
 cdef extern from "triqs/gf/retime.hpp"  :
     cdef void h5_write (h5_group, char *, gf_retime &)
@@ -37,7 +36,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_retime as_gf_retime (g) except +
 
 # C -> Python 
-cdef make_GfReTime ( gf_retime x) 
+cdef make_GfReTime (gf_retime x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
@@ -51,6 +50,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_retime  make_gf_block_retime "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::retime>>" (  vector[gf_retime] &) 
 
 cdef gf_block_retime  as_gf_block_retime (G) except +
-cdef make_BlockGfReTime (gf_block_retime G) 
-
+cdef make_BlockGfReTime (gf_block_retime G, block_indices_pack=*)
 

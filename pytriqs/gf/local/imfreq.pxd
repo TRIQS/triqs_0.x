@@ -13,37 +13,19 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         bint operator ==( mesh_imfreq &)
 
     cdef mesh_imfreq make_mesh_imfreq "triqs::gf::gf_factories<triqs::gf::imfreq>::make_mesh" (double beta, statistic_enum S, size_t n_max)
-    #cdef mesh_imfreq make_mesh_imfreq "triqs::gf::imfreq::make_mesh" (double beta, statistic_enum S, size_t n_max)
     
     cdef cppclass gf_imfreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::imfreq> >" :
         gf_imfreq()
         gf_imfreq(gf_imfreq &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE], tail, nothing, indices_2_t) #except +
+        gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_imfreq &)
         mesh_imfreq mesh() 
         array_view[dcomplex, THREE] data_view()
         tail singularity_view() 
-        indices_2_t indices()
-
-    #cdef gf_imfreq operator +( gf_imfreq &, gf_imfreq &) except + 
-    #cdef gf_imfreq operator -( gf_imfreq &, gf_imfreq &) except + 
-    #cdef gf_imfreq operator *( gf_imfreq &, gf_imfreq &) except + 
-    
-    #cdef gf_imfreq operator *( dcomplex, gf_imfreq &) except + 
-    #cdef gf_imfreq operator *( gf_imfreq &, dcomplex) except + 
-    #cdef gf_imfreq operator /( gf_imfreq &, dcomplex) except + 
-
-    #cdef gf_imfreq operator *( matrix_view[dcomplex] &, gf_imfreq &) except + 
-    #cdef gf_imfreq operator *( gf_imfreq &, matrix_view[dcomplex]&) except + 
 
 cdef extern from "triqs/gf/imfreq.hpp"  :
-
     cdef void h5_write (h5_group, char *, gf_imfreq &)
-    #cdef gf_imfreq inverse_c "inverse"   (gf_imfreq &)
-    
-    #cdef gf_imfreq make_gf_imfreq "triqs::gf::imfreq::make_gf" (mesh_imfreq, array_view[dcomplex, THREE], tail) except +
-    #cdef gf_imfreq clone_gf_imfreq "triqs::make_clone" (gf_imfreq &) 
 
 cdef extern from "triqs/utility/serialization.hpp"  :
     cdef std_string boost_serialize "triqs::serialize" (gf_imfreq &) 
@@ -53,7 +35,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_imfreq  as_gf_imfreq (g) except +  
 
 # C -> Python 
-cdef make_GfImFreq ( gf_imfreq x) 
+cdef make_GfImFreq (gf_imfreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Freq #########################
 
@@ -67,5 +49,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imfreq>>" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
-cdef make_BlockGfImFreq (gf_block_imfreq G) 
+cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack=*)
 

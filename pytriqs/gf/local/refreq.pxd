@@ -19,12 +19,11 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         gf_refreq()
         gf_refreq(gf_refreq &)
         # The constructor must be no_except, or the cython code won't be correct...
-        gf_refreq(mesh_refreq, array_view[dcomplex, THREE], tail, nothing, indices_2_t) #except +
+        gf_refreq(mesh_refreq, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_refreq &)
         mesh_refreq mesh() 
         array_view[dcomplex, THREE] data_view()
         tail singularity_view() 
-        indices_2_t indices()
 
 cdef extern from "triqs/gf/refreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_refreq &)
@@ -37,7 +36,7 @@ cdef extern from "triqs/utility/serialization.hpp"  :
 cdef gf_refreq as_gf_refreq (g) except +
 
 # C -> Python 
-cdef make_GfReFreq ( gf_refreq x) 
+cdef make_GfReFreq (gf_refreq x, indices_pack=*, name=*)
 
 ###############  Blocks of Im Time #########################
 
@@ -51,6 +50,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
-cdef make_BlockGfReFreq (gf_block_refreq G) 
-
+cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*)
 

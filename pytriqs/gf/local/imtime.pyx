@@ -1,13 +1,13 @@
 from gf_imtime import GfImTime
 
-cdef class GfImTime_cython ( GfGeneric_cython ) :
-    cdef gf_imtime _c
-    def __init__(self, MeshImTime mesh, data, TailGf tail, symmetry, indices,  name ):
+cdef class GfImTime_cython:
 
-        GfGeneric_cython.__init__(self,  mesh, data,  tail, symmetry,indices, name, GfImTime) 
-        self._c =  gf_imtime ( mesh._c, array_view[double,THREE](data), tail._c , nothing(), make_c_indices(indices[0],indices[1]) ) 
+    cdef gf_imtime _c
+
+    def __init__(self, MeshImTime mesh, data, TailGf tail):
+        self._c = gf_imtime (mesh._c, array_view[double,THREE](data), tail._c, nothing())
     
-    def __write_hdf5__ (self, gr , char * key) :
+    def __write_hdf5_cython__ (self, gr , char * key) :
         h5_write (make_h5_group(gr), key, self._c)
 
     def set_from_inverse_fourier(self,GfImFreq_cython gw) :
@@ -23,8 +23,18 @@ cdef class GfImTime_cython ( GfGeneric_cython ) :
 
 #----------------  Reading from h5 ---------------------------------------
 
-def h5_read_GfImTime ( gr, std_string key) : 
-    return make_GfImTime( h5_extractor[gf_imtime]()(make_h5_group(gr),key))
+def h5_read_GfImTime(gr, key):
+    try:
+      indicesL = gr[key]['indices']['left']
+      indicesR = gr[key]['indices']['right']
+      pack = [indicesL, indicesR]
+    except:
+      pack = []
+    try:
+      name = gr[key]['name']
+    except:
+      name = key
+    return make_GfImTime(h5_extractor[gf_imtime]()(make_h5_group(gr),key), pack, name)
 
 from pytriqs.archive.hdf_archive_schemes import register_class
 register_class (GfImTime, read_fun = h5_read_GfImTime)
@@ -36,13 +46,16 @@ cdef gf_imtime as_gf_imtime (g) except +:
     return (<GfImTime_cython?>g)._c
 
 # C -> Python. Do NOT add except +
-cdef make_GfImTime ( gf_imtime  x) :
+cdef make_GfImTime (gf_imtime x, indices_pack = [], name = "g"):
+    data = x.data_view().to_python()
+    if indices_pack == []:
+      indices_pack = [range(data.shape[1]), range(data.shape[2])]
     return GfImTime( 
             mesh = make_MeshImTime (x.mesh()), 
-            data = x.data_view().to_python(),
+            data = data,
             tail = make_TailGf (x.singularity_view()),
-            indices_pack = x.indices()(),
-            name = "")
+            indices_pack = indices_pack,
+            name = name)
 
 # Python -> C for blocks
 cdef gf_block_imtime  as_gf_block_imtime (G) except +:
@@ -52,10 +65,13 @@ cdef gf_block_imtime  as_gf_block_imtime (G) except +:
         return make_gf_block_imtime (v_c)
 
 # C -> Python for block
-cdef make_BlockGfImTime (gf_block_imtime G) :
+cdef make_BlockGfImTime (gf_block_imtime G, block_indices_pack = []):
     gl = []
     name_list = G.mesh().domain().names()
     for i,n in enumerate(name_list):
-        gl.append( make_GfImTime(G[i] ) )
-    return BlockGf( name_list = name_list, block_list = gl)
+        if block_indices_pack == []:
+          sha = G[i].data_view().to_python().shape[1:3]
+          block_indices_pack.append( [range(sha[0]), range(sha[1])] )
+        gl.append( make_GfImTime(G[i]) )
+    return BlockGf( name_list = name_list, block_list = gl )
 

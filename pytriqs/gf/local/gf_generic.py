@@ -30,12 +30,82 @@ from impl_plot import PlotWrapperPartialReduce
 from nothing import Nothing
 from gf import TailGf
 from matrix_stack import MatrixStack
+import copy_reg
+from nothing import Nothing
+
+def builder_cls_with_dict_arg(cls, args): return cls(**args)
+
+def reductor(x):
+    return (builder_cls_with_dict_arg, (x._derived, x.__reduce_to_dict__()) )
+
 
 class GfGeneric:
 
+    def __init__(self, mesh, data, singularity, symmetry, indices_pack, name, derived):
+
+        self._mesh = mesh
+        self._data = data
+        self._singularity = singularity
+        self._symmetry = symmetry
+        self._indices_pack = indices_pack
+        self.name = name
+        self._derived = derived
+
+        self.indicesR, self.indicesL = indices_pack
+
+        copy_reg.pickle(derived, reductor, builder_cls_with_dict_arg )
+
+    @property
+    def mesh(self): return self._mesh
+
+    @property
+    def tail(self): return self._singularity
+    @tail.setter
+    def tail(self, t):
+        if type(t) == TailGf:
+            assert (self.N1, self.N2) == (t.N1, t.N2)
+            self._singularity.copy_from (t)
+        elif type(t) == Nothing:
+            self._singularity = Nothing()
+        else:
+            raise RuntimeError, "invalid rhs for tail assignment"
+
+    @property
+    def data(self): return self._data
+    @data.setter
+    def data (self, value): self._data[:,:,:] = value
+
+    @property
+    def indices(self):
+      assert (self.indicesR == self.indicesL), "right and left indices are different"
+      return self.indicesR
+
+    @property
+    def N1(self): return self._data.shape[1]
+
+    @property
+    def N2(self): return self._data.shape[2]
+
+    #---------------------   h5 and reduction ------------------------------------------
+
+    def __reduce_to_dict__(self):
+        return {'mesh': self._mesh, 'data': self._data,
+                'tail': self._singularity, 'symmetry': self._symmetry,
+                'indices_pack': self._indices_pack, 'name': self.name }
+
+    def __write_hdf5__ (self, gr, key):
+        self.__write_hdf5_cython__(gr, key)
+        gr[key].create_group('indices')
+        gr[key]['indices']['left'] = self.indicesL
+        gr[key]['indices']['right'] = self.indicesR
+        #gr[key]['name'] = self.name
+
+    #---------------------   copies        ------------------------------------------
+
     def copy(self):
-        return self._derived(indices_pack = (list(self.indicesL),list(self.indicesR)), mesh = self.mesh,
-                             data = self.data.copy(), tail = self.tail.copy(), name = self.name)
+        return self._derived(indices_pack = self._indices_pack, mesh = self._mesh,
+                             data = self._data.copy(), tail = self._singularity.copy(),
+                             name = self.name)
 
     def copy_from(self, X):
         assert self._derived is X._derived
@@ -43,8 +113,8 @@ class GfGeneric:
         self.data = X.data
         self.tail = X.tail
         #assert list(self._indices)== list(X._indices)
-        #self._symmetry = X._symmetry
-        self._name = X.name
+        self._symmetry = X._symmetry
+        self.name = X.name
 
     #---------------------   [  ] operator        ------------------------------------------
 

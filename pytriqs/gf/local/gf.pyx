@@ -9,7 +9,6 @@ from block_gf import BlockGf
 from math import pi
 from h5 cimport *
 
-include "gf_generic.pyx"
 include "mesh_imfreq.pyx"
 include "mesh_imtime.pyx"
 include "mesh_refreq.pyx"

@@ -43,7 +43,8 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
             mesh = MeshReTime(t_min, t_max, n_max, kind)
 
         self.dtype = numpy.complex_
-        indicesL, indicesR = get_indices_in_dict(d)
+        indices_pack = get_indices_in_dict(d)
+        indicesL, indicesR = indices_pack
         N1, N2 = len(indicesL),len(indicesR)
         data = d.pop('data') if 'data' in d else numpy.zeros((len(mesh),N1,N2), self.dtype )
         tail= d.pop('tail') if 'tail' in d else TailGf(shape = (N1,N2), size=10,  order_min=-1)
@@ -51,15 +52,16 @@ class GfReTime ( GfGeneric, GfReTime_cython ) :
         name = d.pop('name','g')
         assert len(d) ==0, "Unknown parameters in GFBloc constructions %s"%d.keys()
 
-        GfReTime_cython.__init__(self, mesh, data, tail, symmetry, (indicesL,indicesR), name)
+        GfGeneric.__init__(self, mesh, data, tail, symmetry, indices_pack, name, GfReTime)
+        GfReTime_cython.__init__(self, mesh, data, tail)
 
     #--------------   PLOT   ---------------------------------------
 
-    def _plot_(self, OptionsDict):
-        """ Plot protocol. OptionsDict can contain :
+    def _plot_(self, opt_dict):
+        """ Plot protocol. opt_dict can contain :
              * :param RI: 'R', 'I', 'RI' [ default]
              * :param x_window: (xmin,xmax) or None [default]
              * :param name: a string [default ='']. If not '', it remplaces the name of the function just for this plot.
         """
-        return impl_plot.plot_base(self, OptionsDict,  r'$\t$', lambda name : r'%s$(\t)$'%name, True, list(self.mesh))
+        return impl_plot.plot_base(self, opt_dict,  r'$\t$', lambda name : r'%s$(\t)$'%name, True, list(self.mesh))
 

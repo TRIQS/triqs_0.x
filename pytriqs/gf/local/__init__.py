@@ -37,5 +37,5 @@ from gf_legendre import GfLegendre
 from block_gf import BlockGf
 from descriptors import Omega, iOmega_n, SemiCircular, Wilson, Fourier, InverseFourier, LegendreToMatsubara, MatsubaraToLegendre
 
-__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime', 'GfReFreq', 'GfReTime', 'GfLegendre', 'BlockGf', 'inverse']
+__all__ = ['Omega','iOmega_n','SemiCircular','Wilson','Fourier','InverseFourier','LegendreToMatsubara','MatsubaraToLegendre','lazy_expressions','TailGf','GfImFreq','GfImTime','GfReFreq','GfReTime','GfLegendre','BlockGf','inverse']
 
