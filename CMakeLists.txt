@@ -121,6 +121,10 @@ add_definitions( -DBOOST_PP_VARIADICS=1 )
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
  add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
+ # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
+ if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
+  add_definitions (-DTRIQS_NUMPY_VERSION_LT_17)
+ endif()
 endif (PythonSupport)
 
 enable_testing()

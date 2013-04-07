@@ -39,7 +39,11 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    for(size_t i =0; i<rank; ++i) { dims[i] = A.indexmap().lengths()[i]; strides[i] = A.indexmap().strides()[i]*sizeof(value_type); }
    const value_type * data = A.data_start();
    //int flags = NPY_ARRAY_BEHAVED & ~NPY_ARRAY_OWNDATA;;// for numpy2
+#ifdef TRIQS_NUMPY_VERSION_LT_17
    int flags = NPY_BEHAVED & ~NPY_OWNDATA;
+#else
+   int flags = NPY_ARRAY_BEHAVED & ~NPY_ARRAY_OWNDATA;
+#endif
    PyObject* res  = PyArray_NewFromDescr(&PyArray_Type, PyArray_DescrFromType(elementsType), (int) rank, dims, strides, (void*) data,  flags, NULL);
 
    if (!res) { 
@@ -49,9 +53,14 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
    if (!PyArray_Check(res)) TRIQS_RUNTIME_ERROR<<" array_view_from_numpy : internal error : the python object is not a numpy";
    PyArrayObject * arr = (PyArrayObject *)(res);
    //PyArray_SetBaseObject(arr,  A.storage().new_ref_to_guard());
+#ifdef TRIQS_NUMPY_VERSION_LT_17
    arr->base =  A.storage().new_ref_to_guard();
-
    assert( arr->flags == (arr->flags & ~NPY_OWNDATA));
+#else
+   int r = PyArray_SetBaseObject(arr,A.storage().new_ref_to_guard());
+   if (r!=0) TRIQS_RUNTIME_ERROR << "Internal Error setting the guard in numpy !!!!";
+   assert( PyArray_FLAGS(arr) == PyArray_FLAGS(arr) & ~NPY_ARRAY_OWNDATA);
+#endif
    if (copy)  { 
     PyObject * na = PyObject_CallMethod(res,(char*)"copy",NULL);
     Py_DECREF(res);

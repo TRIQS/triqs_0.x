@@ -86,13 +86,29 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
      import_numpy_array(); 
      //assert(PyArray_Check(X.py_obj));
      if (!is_scalar_or_pod<ValueType>::value) TRIQS_RUNTIME_ERROR << "Internal Error : memcpy on non-scalar";
-     if ( ( PyArray_ISFORTRAN(X.py_obj)) || (PyArray_ISCONTIGUOUS(X.py_obj)))  { 
+#ifdef TRIQS_NUMPY_VERSION_LT_17
+     if ( ( PyArray_ISFORTRAN(X.py_obj)) || (PyArray_ISCONTIGUOUS(X.py_obj)))  {
       memcpy (p,PyArray_DATA(X.py_obj),size_ * sizeof(ValueType));
      }
+#else
+      // STRANGE : uncommenting this leads to a segfault on mac ???
+      // TO BE INVESTIGATED, IT IS NOT NORMAL
+      //if (!PyArray_Check(X.py_obj)) TRIQS_RUNTIME_ERROR<<"Internal error : is not an array";
+      PyArrayObject * arr3 = (PyArrayObject *)(X.py_obj);
+      if ( ( PyArray_ISFORTRAN(arr3)) || (PyArray_ISCONTIGUOUS(arr3)))  { 
+      memcpy (p,PyArray_DATA(arr3),size_ * sizeof(ValueType));
+     }
+#endif
      else { // if the X.py_obj is not contiguous, first let numpy copy it properly
       PyObject * na = PyObject_CallMethod(X.py_obj,(char *)"copy",NULL);
       assert(na); assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
+#ifdef TRIQS_NUMPY_VERSION_LT_17
       memcpy (p,PyArray_DATA(na),size_ * sizeof(ValueType));
+#else
+      if (!PyArray_Check(na)) TRIQS_RUNTIME_ERROR<<"Internal error : is not an array";
+      PyArrayObject * arr = (PyArrayObject *)(na);
+      memcpy (p,PyArray_DATA(arr),size_ * sizeof(ValueType));
+#endif
       Py_DECREF(na);
      }
     }
@@ -105,7 +121,7 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
 
    PyObject * new_ref_to_guard() { 
     if (py_obj==NULL) { 
-    TRACE_MEM_DEBUG(" activating python guard for C++ block"<<p<< "  py_obj = "<< py_obj);
+     TRACE_MEM_DEBUG(" activating python guard for C++ block"<<p<< "  py_obj = "<< py_obj);
      py_obj = PyCObject_FromVoidPtr( (void*) p, &mem_block<ValueType>::delete_pointeur);
     } 
     Py_INCREF(py_obj); 
