@@ -49,5 +49,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_imfreq  make_gf_block_imfreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imfreq>>" (  vector[gf_imfreq] &) 
 
 cdef gf_block_imfreq  as_gf_block_imfreq (G) except +
-cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack=*)
+cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack=*, name=*)
 

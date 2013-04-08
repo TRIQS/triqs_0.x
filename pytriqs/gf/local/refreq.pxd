@@ -50,5 +50,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
-cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*)
+cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*, name=*)
 

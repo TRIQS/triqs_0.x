@@ -48,5 +48,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_legendre  make_gf_block_legendre "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::legendre>>" (  vector[gf_legendre] &) 
 
 cdef gf_block_legendre  as_gf_block_legendre (G) except +
-cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack=*)
+cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack=*, name=*)
 

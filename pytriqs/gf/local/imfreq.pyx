@@ -68,7 +68,7 @@ cdef gf_block_imfreq  as_gf_block_imfreq (G) except +:
         return make_gf_block_imfreq (v_c)
 
 # C -> Python for block
-cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack = []):
+cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack = [], name = "G"):
     gl = []
     name_list = G.mesh().domain().names()
     for i,n in enumerate(name_list):
@@ -76,5 +76,5 @@ cdef make_BlockGfImFreq (gf_block_imfreq G, block_indices_pack = []):
           sha = G[i].data_view().to_python().shape[1:3]
           block_indices_pack.append( [range(sha[0]), range(sha[1])] )
         gl.append( make_GfImFreq(G[i], block_indices_pack[i]) )
-    return BlockGf( name_list = name_list, block_list = gl )
+    return BlockGf( name_list = name_list, block_list = gl, name = name )
 

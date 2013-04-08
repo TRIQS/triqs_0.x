@@ -51,5 +51,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_imtime  make_gf_block_imtime "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::imtime>>" (  vector[gf_imtime] &) 
 
 cdef gf_block_imtime  as_gf_block_imtime (G) except +
-cdef make_BlockGfImTime (gf_block_imtime G, block_indices_pack=*)
+cdef make_BlockGfImTime (gf_block_imtime G, block_indices_pack=*, name=*)
 

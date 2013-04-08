@@ -50,5 +50,5 @@ cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" :
     cdef gf_block_retime  make_gf_block_retime "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::retime>>" (  vector[gf_retime] &) 
 
 cdef gf_block_retime  as_gf_block_retime (G) except +
-cdef make_BlockGfReTime (gf_block_retime G, block_indices_pack=*)
+cdef make_BlockGfReTime (gf_block_retime G, block_indices_pack=*, name=*)
 
