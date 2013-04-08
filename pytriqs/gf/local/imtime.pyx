@@ -72,6 +72,6 @@ cdef make_BlockGfImTime (gf_block_imtime G, block_indices_pack = []):
         if block_indices_pack == []:
           sha = G[i].data_view().to_python().shape[1:3]
           block_indices_pack.append( [range(sha[0]), range(sha[1])] )
-        gl.append( make_GfImTime(G[i]) )
+        gl.append( make_GfImTime(G[i], block_indices_pack[i]) )
     return BlockGf( name_list = name_list, block_list = gl )
 

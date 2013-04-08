@@ -69,6 +69,6 @@ cdef make_BlockGfReTime (gf_block_retime G, block_indices_pack = []):
         if block_indices_pack == []:
           sha = G[i].data_view().to_python().shape[1:3]
           block_indices_pack.append( [range(sha[0]), range(sha[1])] )
-        gl.append( make_GfReTime(G[i]) )
+        gl.append( make_GfReTime(G[i], block_indices_pack[i]) )
     return BlockGf( name_list = name_list, block_list = gl )
 
