@@ -8,6 +8,7 @@ Part II : C++ librairies
    arrays/contents
    mctools/intro
    det_manip/det_manip
+   parameters/parameters
    clef/contents
    lectures/contents
    utility.rst

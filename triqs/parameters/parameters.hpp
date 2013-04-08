@@ -30,10 +30,10 @@ namespace triqs { namespace utility {
   public :
    parameters() {};
    parameters (parameters const & other) = default;
-   parameters (parameters && other) { swap(*this,other);}
+   parameters (parameters && other) noexcept { swap(*this,other);}
    parameters & operator =  (parameters const & other)  = default;
-   parameters & operator =  (parameters && other) { swap(*this,other); return *this;}
-   friend void swap(parameters & a, parameters &b) { swap(a.object_map,b.object_map);} 
+   parameters & operator =  (parameters && other) noexcept { swap(*this,other); return *this;}
+   friend void swap(parameters & a, parameters &b) noexcept { swap(a.object_map,b.object_map);} 
 
   private:
    typedef std::map<std::string, _object> map_t;
