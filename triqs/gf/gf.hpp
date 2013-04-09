@@ -325,6 +325,8 @@ namespace triqs { namespace gf {
   }
 
   gf_view(gf_view const & g): B(g){}
+  gf_view(gf_view && g): B(std::move(g)){}
+
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
 
   template<typename D, typename T>
