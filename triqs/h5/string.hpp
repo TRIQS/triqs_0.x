@@ -21,7 +21,7 @@
 #ifndef TRIQS_H5_STRING_H
 #define TRIQS_H5_STRING_H
 #include "./group.hpp"
-//#include <string.h>
+#include <cstring>
 namespace triqs { namespace h5 {
 
  /**
