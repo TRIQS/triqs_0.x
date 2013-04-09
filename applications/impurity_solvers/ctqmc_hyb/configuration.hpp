@@ -62,6 +62,9 @@ struct Configuration {
   Delta_Proxy (const triqs::gf::gf_view<triqs::gf::imtime> & Delta_, const std::vector<BlockInfo> & info_ ):
    Delta(Delta_),Delta_eval(Delta_), 
    info(info_) { }
+  Delta_Proxy (Delta_Proxy const & ) = default;
+  //Delta_Proxy (Delta_Proxy && ) = default;
+  Delta_Proxy & operator =(Delta_Proxy const & ) = delete;
   double operator()(OP_REF A, OP_REF B) const { 
    return Delta_eval(info[A->Op->Number].alpha,A->tau, 
      info[B->Op->Number].alpha,B->tau);}

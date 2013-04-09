@@ -105,8 +105,8 @@ namespace triqs { namespace det_manip {
      h5_write(gr,"mat_inv",g.mat_inv);
      h5_write(gr,"det",g.det);
      h5_write(gr,"sign",g.sign);
-     h5_write(gr,"row_num",g.row_num);
-     h5_write(gr,"col_num",g.col_num);
+     //h5_write(gr,"row_num",g.row_num);
+     //h5_write(gr,"col_num",g.col_num);
      h5_write(gr,"x_values",g.x_values);
      h5_write(gr,"y_values",g.y_values);
      h5_write(gr,"n_opts",g.n_opts);
@@ -122,8 +122,8 @@ namespace triqs { namespace det_manip {
      g.last_try = 0; 
      h5_read(gr,"det",g.det);
      h5_read(gr,"sign",g.sign);
-     h5_read(gr,"row_num",g.row_num);
-     h5_read(gr,"col_num",g.col_num);
+     //h5_read(gr,"row_num",g.row_num);
+     //h5_read(gr,"col_num",g.col_num);
      h5_read(gr,"x_values",g.x_values);
      h5_read(gr,"y_values",g.y_values);
      h5_read(gr,"n_opts",g.n_opts);
@@ -220,7 +220,7 @@ namespace triqs { namespace det_manip {
 
     det_manip (det_manip const&) = default;
     det_manip (det_manip && rhs) = default ;//noexcept {*this =std::move(rhs);}
-    det_manip& operator=(const det_manip&) = default;
+    //det_manip& operator=(const det_manip&) = default;
     det_manip& operator=(det_manip&& rhs) noexcept { assert((last_try==0)&&(rhs.last_try==0)); swap(*this,rhs);  }
 
     /// Put to size 0 : like a vector 
