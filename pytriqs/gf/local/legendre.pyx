@@ -71,10 +71,11 @@ cdef gf_block_legendre  as_gf_block_legendre (G) except +:
 cdef make_BlockGfLegendre (gf_block_legendre G, block_indices_pack = [], name = "G"):
     gl = []
     name_list = G.mesh().domain().names()
+    if block_indices_pack == []:
+      for i,n in enumerate(name_list):
+        sha = G[i].data_view().to_python().shape[1:3]
+        block_indices_pack.append( [range(sha[0]), range(sha[1])] )
     for i,n in enumerate(name_list):
-        if block_indices_pack == []:
-          sha = G[i].data_view().to_python().shape[1:3]
-          block_indices_pack.append( [range(sha[0]), range(sha[1])] )
-        gl.append( make_GfLegendre(G[i], block_indices_pack[i]) )
+      gl.append( make_GfLegendre(G[i], block_indices_pack[i]) )
     return BlockGf( name_list = name_list, block_list = gl, name = name )
 
