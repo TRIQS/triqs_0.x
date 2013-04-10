@@ -57,8 +57,14 @@ SET(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
 add_custom_command (OUTPUT ${doxy_top} DEPENDS ${DOXYGEN_SOURCES} COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile > ${doxy_top} )
 add_custom_target(docs_doxy ALL DEPENDS ${doxy_top})
 add_dependencies(docs_sphinx_cpp docs_doxy) # we must first have doxygen process the sources to link to them
-
 add_dependencies(docs_sphinx_cpp triqs boost_for_triqs ) # add also mpi ?
+
+if (Build_PDF_Documentation)
+ # not needed, no link to doxygen in the pdf ...
+ #add_dependencies(docs_sphinx_pdf_cpp docs_doxy) # we must first have doxygen process the sources to link to them
+ add_dependencies(docs_sphinx_pdf_cpp triqs boost_for_triqs ) # add also mpi ?
+ install(FILES ${sphinx_top_pdf} DESTINATION share/doc/triqs/developer_manual/)
+endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/developer_manual
  FILES_MATCHING 

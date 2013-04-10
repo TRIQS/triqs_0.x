@@ -140,6 +140,7 @@ endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Documentation
 ##------------------------
 option(Build_Documentation "Build the documentation ?" OFF)
+option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 
 # remove the possible horrible pthread bug on os X !!
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 

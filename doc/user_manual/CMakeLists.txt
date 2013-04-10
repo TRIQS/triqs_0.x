@@ -39,3 +39,7 @@ else (TRIQS_BUILD_STATIC)
 
 endif (TRIQS_BUILD_STATIC)
 
+if (Build_PDF_Documentation)
+ install(FILES ${sphinx_top_pdf} DESTINATION share/doc/triqs/user_manual/)
+endif()
+
