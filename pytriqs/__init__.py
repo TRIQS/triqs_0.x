@@ -20,7 +20,7 @@
 #
 ################################################################################
 
-__all__ = ['archive', 'dmft', 'dos', 'fit', 'gf', 'lattice', 'plot', 'sumk', 'utility']
+__all__ = ['archive', 'dmft', 'dos', 'fit', 'gf', 'lattice', 'plot', 'sumk', 'utility', 'parameters']
 
 import sys
 if 'additional_builtin_modules' in dir(sys) :
