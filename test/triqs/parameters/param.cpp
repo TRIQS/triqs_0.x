@@ -53,8 +53,12 @@ int main() {
  triqs::arrays::array<long,1> B(3); B()=0;B(0) = 3; B(1) = -8;
  P["A"] = std::move(A);
  P["B"] = B;
- std::cout  << P["A"] << std::endl;
- std::cout  << P["B"] << std::endl;
+ std::cout  << "A"<< P["A"] << std::endl;
+ std::cout  << "B"<< P["B"] << std::endl;
+
+ triqs::arrays::array<long,1> C;
+ C = extract<decltype(C)>(P["B"]);
+ std::cout  << "C" << C << std::endl;
 
  long j = P["a"];
  double x = P["d"];

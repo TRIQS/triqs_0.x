@@ -35,7 +35,11 @@
 namespace triqs { namespace utility {
 
  // All the predefined cast of _object
-#define TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST (int)(long)(double)(bool)(std::string)
+#define TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST (int)(long)(long long)(unsigned int)(unsigned long)(unsigned long long)(double)(bool)(std::string)
+
+ // a trait to compute the type actually stored in the opaque object.
+ // T except for integers, which are all stored as long 
+ template<typename T> struct _object_collapse_type : std::conditional<std::is_integral<T>::value, long, typename std::decay<T>::type > {};
 
  // --------------- the opaque object ---------------------------------------
  // _object is a value : it makes deep copies in particular ...
@@ -91,8 +95,11 @@ namespace triqs { namespace utility {
   // or disable the template for object ...
 
   template <typename RHS> _object & operator=(RHS && rhs) {
-   *this =  _object (std::forward<RHS>(rhs),true); //*this =  factory (std::forward<RHS>(rhs));
-   register_type<typename std::remove_reference<RHS>::type>::invoke();
+   typedef typename _object_collapse_type<RHS>::type storage_t;
+   *this =  _object (storage_t(std::forward<RHS>(rhs)),true); //*this =  factory (std::forward<RHS>(rhs));
+   //*this =  _object (std::forward<RHS>(rhs),true); //*this =  factory (std::forward<RHS>(rhs));
+   register_type<storage_t>::invoke();
+   //register_type<typename std::remove_reference<RHS>::type>::invoke();
    return *this;
   }
 
@@ -226,31 +233,43 @@ namespace triqs { namespace utility {
   catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< _object::make_type_name<T>(); }
  }
 
- template<typename T> T extract(_object const &obj) {
-  // if T is not a string, and obj is string, attempt lexical_cast
-  if ( (!std::is_same<T,std::string>::value) && (obj.has_type<std::string>())) { return lex_cast_from_string<T>(obj); }
+ template<typename T> struct lexical_case_make_sense : std::is_arithmetic<T>{};
+ //template<typename T> constexpr bool lexical_case_make_sense() { return std::is_arithmetic<T>::value; }
+
+ template<typename T> T extract1(_object const &obj, std::false_type) {
   if (! obj.has_type<T>())
    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
   return * static_cast<const T*>(obj.get_void_ptr());
  }
 
+ template<typename T> T extract1(_object const &obj, std::true_type) {
+  // if T is not a string, and obj is string, attempt lexical_cast
+  if ((!std::is_same<T,std::string>::value) && (obj.has_type<std::string>())) { return lex_cast_from_string<T>(obj); }
+  return extract1<T>(obj, std::false_type()); 
+ }
+
+ template<typename T> T extract(_object const &obj) { return extract1<T>(obj, std::integral_constant<bool,lexical_case_make_sense<T>::value>());}
+
  template<> // specialize for double since we can make int -> conversion...
   inline double extract(_object const & obj) {
    if (obj.has_type<double>()) return * static_cast<const double*>(obj.get_void_ptr());
    if (obj.has_type<std::string>()) {return lex_cast_from_string<double>(obj); }
-#define DECAYING_TYPE(T) if (obj.has_type<T>()) return extract<T>(obj)
-   DECAYING_TYPE(int);
-   //DECAYING_TYPE(unsigned int);
-   DECAYING_TYPE(long);
-   //DECAYING_TYPE(unsigned long);
-   DECAYING_TYPE(short);
-   //DECAYING_TYPE(unsigned short);
-   DECAYING_TYPE(long long);
-   //DECAYING_TYPE(unsigned long long);
-   //DECAYING_TYPE(float);
-#undef DECAYING_TYPE
+#define TRANSFORM_TYPE(T) if (obj.has_type<T>()) return extract<T>(obj)
+   TRANSFORM_TYPE(int);
+   //TRANSFORM_TYPE(unsigned int);
+   TRANSFORM_TYPE(long);
+   //TRANSFORM_TYPE(unsigned long);
+   TRANSFORM_TYPE(short);
+   //TRANSFORM_TYPE(unsigned short);
+   TRANSFORM_TYPE(long long);
+   //TRANSFORM_TYPE(unsigned long long);
+   //TRANSFORM_TYPE(float);
+#undef TRANSFORM_TYPE
    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a double";
   }
+
+ template<> // special case to size_t
+  inline size_t extract(_object const & obj) { return extract<long>(obj);}
 
  // --------------- _object cast op implementation ---------------------------------------
 
