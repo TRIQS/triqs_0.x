@@ -11,4 +11,5 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/applicatio
 cython_module(ctqmc_hyb ctqmc_solver applications/impurity_solvers/ctqmc_hyb)
 target_link_libraries(ctqmc_solver triqs_solver_ctqmc)
 
+install(TARGETS ctqmc_solver DESTINATION ${TRIQS_PYTHON_LIB_DEST}/applications/impurity_solvers/ctqmc_hyb)
 
