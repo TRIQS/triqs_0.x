@@ -221,7 +221,7 @@ namespace triqs { namespace det_manip {
     det_manip (det_manip const&) = default;
     det_manip (det_manip && rhs) = default ;//noexcept {*this =std::move(rhs);}
     //det_manip& operator=(const det_manip&) = default;
-    det_manip& operator=(det_manip&& rhs) noexcept { assert((last_try==0)&&(rhs.last_try==0)); swap(*this,rhs);  }
+    det_manip& operator=(det_manip&& rhs) noexcept { assert((last_try==0)&&(rhs.last_try==0)); swap(*this,rhs); return *this; }
 
     /// Put to size 0 : like a vector 
     void clear () { 
