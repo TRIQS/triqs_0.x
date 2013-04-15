@@ -21,6 +21,7 @@
 #ifndef TRIQS_UTILITY_PARAMS_DEFAULT_H
 #define TRIQS_UTILITY_PARAMS_DEFAULT_H
 #include "./opaque_object_h5.hpp"
+#include <triqs/utility/formatted_output.hpp>
 namespace triqs { namespace utility {
  /**
   * DOC TO BE WRITTEN
@@ -92,10 +93,20 @@ namespace triqs { namespace utility {
     return it->second;
    }
 
+   std::vector<std::vector<std::string>> generate_help() const{
+     std::vector<std::vector<std::string>> str;
+     str.push_back({"parameter:", "required/optional:", "default value:", "description:"});
+     for (auto const &s : object_map){
+       std::string key=s.first; std::ostringstream val; val << s.second;
+       if(is_required(key)) str.push_back({key, "required", "-", doc(key)});
+       else str.push_back({key, "optional", val.str(), doc(key)});
+     }
+     return str; 
+  }
+
    friend std::ostream & operator << (std::ostream & out, parameter_defaults const & p) {
-    out<< "{";
-    for (auto & pvp : p.object_map) out<< pvp.first << " : " << pvp.second<< ", ";
-    return out<<"}";
+    out<< print_formatted(p.generate_help());
+    return out;
    }
 
  };

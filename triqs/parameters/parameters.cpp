@@ -71,7 +71,7 @@ namespace triqs { namespace utility {
   }
  
   if(missing.size()) TRIQS_RUNTIME_ERROR<< "update with defaults: the following keys are required but absent: \n"<< print_formatted(missing);
-  if(wrong_t.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters do not have correct types: \n"<< print_formatted(wrong_t);
+  if(wrong_t.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters have incorrect type: \n"<< print_formatted(wrong_t);
 
  }
 
