@@ -141,11 +141,11 @@ find_package(FFTW)
 
 # HDF5
 # on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
-if ( ${CMAKE_VERSION} VERSION_LESS "2.8.7") # CHECK THIS BOUND, where are the cmake changelogs ??
+if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
  find_package(HDF5 REQUIRED C CXX )
-else(${CMAKE_VERSION} VERSION_LESS "2.8.7")
+else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
  find_package(HDF5 REQUIRED C CXX HL )
-endif(${CMAKE_VERSION} VERSION_LESS "2.8.7")
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
 IF(HDF5_FOUND)
  SET(HAVE_LIBHDF5 1)  
  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})
