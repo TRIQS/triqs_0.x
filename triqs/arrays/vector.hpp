@@ -250,6 +250,12 @@ namespace triqs { namespace arrays {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 
+  template<typename T>
+  void triqs_arrays_assign_delegation(vector_view<T> & av, std::vector<T> const& vec) {
+    std::size_t size = vec.size();
+    for(std::size_t n = 0; n < size; ++n) av(n) = vec[n];
+  }
+
  // swapping 2 vector
  template <typename V, ull_t S1, ull_t S2>
   void deep_swap(vector_view <V,S1> x, vector_view<V,S2> y) {
