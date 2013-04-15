@@ -25,14 +25,14 @@ namespace triqs { namespace utility {
  /**
   * DOC TO BE WRITTEN
   */
- class parameters_defaults {
+ class parameter_defaults {
   public :
-   parameters_defaults() {};
-   parameters_defaults (parameters_defaults const & other) = default;
-   parameters_defaults (parameters_defaults && other) { swap(*this,other);}
-   parameters_defaults & operator =  (parameters_defaults const & other)  = default;
-   parameters_defaults & operator =  (parameters_defaults && other) { swap(*this,other); return *this;}
-   friend void swap(parameters_defaults & a, parameters_defaults &b) 
+   parameter_defaults() {};
+   parameter_defaults (parameter_defaults const & other) = default;
+   parameter_defaults (parameter_defaults && other) { swap(*this,other);}
+   parameter_defaults & operator =  (parameter_defaults const & other)  = default;
+   parameter_defaults & operator =  (parameter_defaults && other) { swap(*this,other); return *this;}
+   friend void swap(parameter_defaults & a, parameter_defaults &b) 
    { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);swap(a.is_optional, b.is_optional);  }
 
   private:
@@ -46,8 +46,8 @@ namespace triqs { namespace utility {
     void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("object_map",object_map); }
 
    struct _inserter {
-    parameters_defaults * p; bool opt;
-    _inserter(parameters_defaults *p_, bool opt_) : p(p_), opt(opt_) {}
+    parameter_defaults * p; bool opt;
+    _inserter(parameter_defaults *p_, bool opt_) : p(p_), opt(opt_) {}
     template<typename T> _inserter operator()(std::string const & key, T && def_val, std::string const & doc) {
      p->object_map[key] = std::forward<T>(def_val);
      p->documentation[key] = doc;
@@ -92,7 +92,7 @@ namespace triqs { namespace utility {
     return it->second;
    }
 
-   friend std::ostream & operator << (std::ostream & out, parameters_defaults const & p) {
+   friend std::ostream & operator << (std::ostream & out, parameter_defaults const & p) {
     out<< "{";
     for (auto & pvp : p.object_map) out<< pvp.first << " : " << pvp.second<< ", ";
     return out<<"}";

@@ -36,7 +36,7 @@ namespace triqs { namespace utility {
 
  void parameters::update (parameters const & pdef){ for (auto const & pvp : pdef) (*this)[pvp.first] = pvp.second; }
 
- void parameters::update (parameters_defaults const & pdef, ull_t flag ){
+ void parameters::update (parameter_defaults const & pdef, ull_t flag ){
 
   // FIRST DRAFT : TO BE REREAD/check 
   // it would be better to first compute all the error and present a clean report

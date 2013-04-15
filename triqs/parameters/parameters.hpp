@@ -100,7 +100,7 @@ namespace triqs { namespace utility {
     * If a key is present in both, do no change it in this, but check that type are the same (to be smoothed)
     * If a key is present in this, and not in pdef, and reject_key_without_default is passed, then raise triqs::runtime_error exception
     */
-   void update(parameters_defaults const & pdef, ull_t flag =0);
+   void update(parameter_defaults const & pdef, ull_t flag =0);
 
  };
 
