@@ -29,7 +29,7 @@
 
 namespace triqs { namespace utility { 
 
- std::string print_formatted(std::vector<std::vector<std::string>> const &out){
+ inline std::string print_formatted(std::vector<std::vector<std::string>> const &out){
    std::vector<std::size_t> max_len;
    std::ostringstream str;
 
