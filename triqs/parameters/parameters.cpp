@@ -1,4 +1,5 @@
 #include "./parameters.hpp"
+#include <triqs/utility/formatted_output.hpp>
 
 namespace triqs { namespace utility {
 
@@ -38,32 +39,40 @@ namespace triqs { namespace utility {
 
  void parameters::update (parameter_defaults const & pdef, ull_t flag ){
 
-  // FIRST DRAFT : TO BE REREAD/check 
-  // it would be better to first compute all the error and present a clean report
-  // rather that exiting after the first error...
-
   if ( (flag & reject_key_without_default) ) { // check that no other parameter is present
    for (auto const & pvp : *this) 
     if (!pdef.has_key( pvp.first)) 
      TRIQS_RUNTIME_ERROR << "update : parameter "<< pvp.first << " is absent from the defaults and no_parameter_without_default is ON. ";
   }
 
+  std::vector<std::vector<std::string>> missing;
+  std::vector<std::string> desc{"key:", "description:"};
+  std::vector<std::vector<std::string>> wrong_t;
+  std::vector<std::string> tdesc{"key:", "expected type:", "actual type:"};
+
   for (auto const & pvp : pdef) {
    auto key = pvp.first;
 
-   if (pdef.is_required(key) && (!this->has_key(key)))
-    TRIQS_RUNTIME_ERROR << "update : parameter "<< key << " is required but absent \n   Doc : "<< pdef.doc(key); // ADD THE DOC 
+   if (pdef.is_required(key) && (!this->has_key(key))){
+     if (!missing.size()) missing.push_back(desc);
+     missing.push_back({key, pdef.doc(key)});
+   }
 
    if (this->has_key(key)) { // check the type is correct 
-    if (! have_same_type(pvp.second, (*this)[key]))
-     TRIQS_RUNTIME_ERROR << "update_with_defaults : parameter "<< key << " does not have the right type";
+    if (! have_same_type(pvp.second, (*this)[key])){
+     if (!wrong_t.size()) wrong_t.push_back(tdesc);
+     wrong_t.push_back({key, pvp.second.type_name(), (*this)[key].type_name()});
+    }
    }
    else { 
     (*this)[key] = pvp.second; // insert the default
    }
 
-
   }
+ 
+  if(missing.size()) TRIQS_RUNTIME_ERROR<< "update with defaults: the following keys are required but absent: \n"<< print_formatted(missing);
+  if(wrong_t.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters do not have correct types: \n"<< print_formatted(wrong_t);
+
  }
 
 }}

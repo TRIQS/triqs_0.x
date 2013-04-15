@@ -56,7 +56,10 @@ namespace triqs { namespace utility {
    bool has_key(std::string const & k) const { return object_map.find(k) != object_map.end();}
 
    ///
-   _object & operator[](std::string const & key) { return object_map[key];}
+   _object & operator[](std::string const & key) { 
+     //std::cout << key << std::endl << std::flush;
+     return object_map[key];
+   }
 
    ///
    _object const & operator[](std::string const & key) const {

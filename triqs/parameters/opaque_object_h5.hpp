@@ -212,7 +212,7 @@ namespace triqs { namespace utility {
  DELETE_OP(+); DELETE_OP(-); DELETE_OP(*); DELETE_OP(/);
 #undef DELETE_OP
 
- // --------------------- extraction with strict type check for python ---------------------------------
+ // --------------------- extraction with strict type checking for python ---------------------------------
 
   template<typename T> struct extract_strict  {
   static bool is_possible (_object const &obj) { return obj.has_type<T>(); }
@@ -223,7 +223,7 @@ namespace triqs { namespace utility {
   }
  };
 
- // --------------------- extraction with more relax checking for C++ ---------------------------------
+ // --------------------- extraction with more relaxed type checking for C++ ---------------------------------
 
  template<typename T> T extract(_object const &obj);
 
@@ -233,13 +233,14 @@ namespace triqs { namespace utility {
   catch(boost::bad_lexical_cast &) { TRIQS_RUNTIME_ERROR << " extraction : can not read the string "<<s <<" into a "<< _object::make_type_name<T>(); }
  }
 
- template<typename T> struct lexical_case_make_sense : std::is_arithmetic<T>{};
- //template<typename T> constexpr bool lexical_case_make_sense() { return std::is_arithmetic<T>::value; }
+ template<typename T> struct lexical_cast_make_sense : std::is_arithmetic<T>{};
+ //template<typename T> constexpr bool lexical_cast_make_sense() { return std::is_arithmetic<T>::value; }
 
  template<typename T> T extract1(_object const &obj, std::false_type) {
-  if (! obj.has_type<T>())
+  typedef typename _object_collapse_type<T>::type coll_t;
+  if (! obj.has_type<coll_t>())
    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
-  return * static_cast<const T*>(obj.get_void_ptr());
+  return * static_cast<const coll_t*>(obj.get_void_ptr());
  }
 
  template<typename T> T extract1(_object const &obj, std::true_type) {
@@ -248,9 +249,11 @@ namespace triqs { namespace utility {
   return extract1<T>(obj, std::false_type()); 
  }
 
- template<typename T> T extract(_object const &obj) { return extract1<T>(obj, std::integral_constant<bool,lexical_case_make_sense<T>::value>());}
+ template<typename T> T extract(_object const &obj) { 
+   return extract1<T>(obj, std::integral_constant<bool,lexical_cast_make_sense<T>::value>());
+ }
 
- template<> // specialize for double since we can make int -> conversion...
+ template<> // specialize for double since we can make int -> double conversion
   inline double extract(_object const & obj) {
    if (obj.has_type<double>()) return * static_cast<const double*>(obj.get_void_ptr());
    if (obj.has_type<std::string>()) {return lex_cast_from_string<double>(obj); }
@@ -268,8 +271,8 @@ namespace triqs { namespace utility {
    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a double";
   }
 
- template<> // special case to size_t
-  inline size_t extract(_object const & obj) { return extract<long>(obj);}
+// template<> // special case to size_t
+//  inline size_t extract(_object const & obj) { return extract<long>(obj);}
 
  // --------------- _object cast op implementation ---------------------------------------
 
