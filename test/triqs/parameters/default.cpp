@@ -7,7 +7,7 @@ using namespace triqs::utility;
 int main() {
 
  parameters P,P2;
- parameters_defaults pdef;
+ parameter_defaults pdef;
 
  pdef.required 
   ( "A", int(), "really ?")
