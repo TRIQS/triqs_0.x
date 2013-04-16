@@ -24,7 +24,14 @@
 #include "./defaults.hpp"
 namespace triqs { namespace utility {
  /**
-  * DOC TO BE WRITTEN
+  * Class for storing program parameters.
+  * Parameters can be added to and extracted from the parameter object using the element access operator [].
+  * Each element is stored by means of an object of type _object, which also stores the original type (all
+  * integral types are collapsed to long and char* is collapsed to std::string).
+  * When accessing elements, a typecheck is performed. Typecasts are allowed and are similar to the C++ rules
+  * for casts. If the lvalue has type double, a cast from any integral type is allowed. If the lvalue has
+  * arithmetic type, a boost::lexical_cast is attempted.
+  * The class is boost-serializable and implements hdf5 I/O operations.
   */
  class parameters {
   public :
@@ -68,11 +75,13 @@ namespace triqs { namespace utility {
     return it->second;
    }
 
+   ///write contents to an hdf5 archive
    friend void h5_write ( h5::group F, std::string const & subgroup_name, parameters const & p){
     auto gr = F.create_group(subgroup_name);
     for (auto & pvp : p.object_map) h5_write(gr, pvp.first, pvp.second);
    }
 
+   ///read from an hdf5 archive
    friend void h5_read ( h5::group F, std::string const & subgroup_name, parameters & p);
 
    friend std::ostream & operator << (std::ostream & out, parameters const & p) {
@@ -89,19 +98,22 @@ namespace triqs { namespace utility {
    template<typename T> static void register_type() { _object::register_type<T>::invoke();}
 
    /** 
-    * Update all keys with pdef, possibly overwriting without any check (python like behaviour).
+    * Update with another parameter set.
+    * If a key is present in other and not in this, add parameter to this.
+    * If a key is present in both, overwrite parameter in this without any check (Python-like behaviour).
     */
    void update(parameters const & pdef);
 
    /// Flags controlling the update_with_default function
-   //static constexpr ull_t strict_type_check = 1ull;              // Type check is strict. alsway true now
+   //static constexpr ull_t strict_type_check = 1ull;              // Type check is strict. Always true now
    static constexpr ull_t reject_key_without_default = 1ull<<2;
 
    /** 
-    * Update with a default parameters set.
-    * If a key is present in pdef and not in this, add the pdef value to this
-    * If a key is present in both, do no change it in this, but check that type are the same (to be smoothed)
-    * If a key is present in this, and not in pdef, and reject_key_without_default is passed, then raise triqs::runtime_error exception
+    * Update with a default parameters set pdef.
+    * If a key is a default parameter in pdef and not in this, add the pdef parameter and value to this.
+    * If a key is a required parameter in pdef and not in this, then raise triqs::runtime_error exception.
+    * If a key is present in both, do no change it in this, but check that type are the same.
+    * If a key is present in this, and not in pdef, and reject_key_without_default is passed, then raise triqs::runtime_error exception.
     */
    void update(parameter_defaults const & pdef, ull_t flag =0);
 

@@ -24,7 +24,7 @@ namespace triqs { namespace utility {
  //-----------------------------------------------------------------------
 
  void h5_read ( h5::group g, std::string const & name, _object & obj){
-  //std::cerr  << " hread object "<< name << std::endl ;
+  //std::cerr  << " read object "<< name << std::endl ;
   using namespace H5;
   if (!g.has_key(name)) TRIQS_RUNTIME_ERROR << "no such "<<name <<" in file ";
   size_t type_hash;

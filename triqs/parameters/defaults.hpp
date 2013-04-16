@@ -24,7 +24,11 @@
 #include <triqs/utility/formatted_output.hpp>
 namespace triqs { namespace utility {
  /**
-  * DOC TO BE WRITTEN
+  * Class to handle required and optional program parameters and default values for optional parameters.
+  * Required parameters need to be provided by the user. Parameters that are optional need not be provided
+  * by the user because sensible default values can be given. The former are inserted through the required
+  * method, the latter by the optional method. An object of type parameters can be updated from an object
+  * of type parameter_defaults (see parameters.hpp).
   */
  class parameter_defaults {
   public :
@@ -76,23 +80,28 @@ namespace triqs { namespace utility {
    bool is_required(std::string const & key) const { return (has_key(key) && (! getter(this->is_optional,key)));}
    std::string doc(std::string const & key) const { return (has_key(key) ? getter(this->documentation,key) : "");}
 
+   ///inserter for optional parameters;
+   ///calls can be chained for multiple parameters
    template<typename T>
     _inserter optional (std::string const & key, T && def_val, std::string const & doc) {
      return _inserter(this, true)(key,std::forward<T>(def_val), doc);
     }
 
+   ///inserter for required parameters;
+   ///calls can be chained for multiple parameters
    template<typename T>
     _inserter required (std::string const & key, T && def_val, std::string const & doc) {
      return _inserter(this, false)(key,std::forward<T>(def_val), doc);
     }
 
-   ///
+   ///parameters class-like element access
    _object const & operator[](std::string const & key) const {
     auto it = object_map.find(key);
     if ( it== object_map.end()) TRIQS_RUNTIME_ERROR<<"Key : "<< key<< " not found";
     return it->second;
    }
 
+   ///generate help in form of a table of strings containing a list of required and optional parameters
    std::vector<std::vector<std::string>> generate_help() const{
      std::vector<std::vector<std::string>> str;
      str.push_back({"parameter:", "required/optional:", "default value:", "description:"});
@@ -102,8 +111,9 @@ namespace triqs { namespace utility {
        else str.push_back({key, "optional", val.str(), doc(key)});
      }
      return str; 
-  }
+   }
 
+   ///print a formatted table of required and optional parameters
    friend std::ostream & operator << (std::ostream & out, parameter_defaults const & p) {
     out<< print_formatted(p.generate_help());
     return out;

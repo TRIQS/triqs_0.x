@@ -29,7 +29,7 @@ namespace triqs { namespace utility {
     h5_read(gr,x,obj);
     p[x] = obj;
    }
-   catch(H5::Exception const & e) { TRIQS_RUNTIME_ERROR<< "Can not load "<< x<<"\n H5 error is : \n   "<< e.getCDetailMsg();}
+   catch(H5::Exception const & e) { TRIQS_RUNTIME_ERROR<< "Cannot load "<< x<<"\n H5 error is : \n   "<< e.getCDetailMsg();}
   }
  }
 
@@ -39,7 +39,7 @@ namespace triqs { namespace utility {
 
  void parameters::update (parameter_defaults const & pdef, ull_t flag ){
 
-  if ( (flag & reject_key_without_default) ) { // check that no other parameter is present
+  if ( (flag & reject_key_without_default) ) { // check that no extra parameters are present
    for (auto const & pvp : *this) 
     if (!pdef.has_key( pvp.first)) 
      TRIQS_RUNTIME_ERROR << "update : parameter "<< pvp.first << " is absent from the defaults and no_parameter_without_default is ON. ";
@@ -53,13 +53,15 @@ namespace triqs { namespace utility {
   for (auto const & pvp : pdef) {
    auto key = pvp.first;
 
+   // check whether required parameters are present
    if (pdef.is_required(key) && (!this->has_key(key))){
+     // delay exception until all parameters have been checked
      if (!missing.size()) missing.push_back(desc);
-     missing.push_back({key, pdef.doc(key)});
-   }
+     missing.push_back({key, pdef.doc(key)});    }
 
-   if (this->has_key(key)) { // check the type is correct 
+   if (this->has_key(key)) { // check whether the type is correct 
     if (! have_same_type(pvp.second, (*this)[key])){
+     // delay exception until all parameters have been checked
      if (!wrong_t.size()) wrong_t.push_back(tdesc);
      wrong_t.push_back({key, pvp.second.type_name(), (*this)[key].type_name()});
     }
@@ -69,7 +71,7 @@ namespace triqs { namespace utility {
    }
 
   }
- 
+  // raise a runtime exception if errors occured
   if(missing.size()) TRIQS_RUNTIME_ERROR<< "update with defaults: the following keys are required but absent: \n"<< print_formatted(missing);
   if(wrong_t.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters have incorrect type: \n"<< print_formatted(wrong_t);
 
