@@ -47,8 +47,8 @@ namespace triqs { namespace utility {
 
   std::shared_ptr<void> p;          // the object handled by the class
   size_t type_code_;                // id of the type, implementation dependent...
-  std::function<_object()> clone_;  // clones the object : will be used to make copy of parameters !
-  std::function<void(h5::group const &, std::string const &)> h5_w; // the function to write in h5 !
+  std::function<_object()> clone_;  // clones the object : will be used to make copy of parameters
+  std::function<void(h5::group const &, std::string const &)> h5_w; // the function to write in h5
   std::function<std::string()> serialize_; // for boost serialization ...
   std::function<void(std::ostream&)> print_;
 
@@ -59,7 +59,7 @@ namespace triqs { namespace utility {
 
   _object() {_init(); };
 
-  // pass a const & or a && (in which case a move will be used, provided that T has a move constructor
+  // pass a const & or a && (in which case a move will be used, provided that T has a move constructor)
   template<typename T>
    //static _object factory( T && obj){ _object res; res.delegate_constructor( new typename std::remove_reference<T>::type(std::forward<T>(obj))); return res;}
    _object ( T && obj,bool){ delegate_constructor( new typename std::remove_cv<typename std::remove_reference<T>::type>::type(std::forward<T>(obj)));}
@@ -73,7 +73,7 @@ namespace triqs { namespace utility {
    h5_w       = [obj](h5::group const &F, std::string const &Name)->void { h5_write(F,Name, *obj);};
    serialize_ = [obj](){ return triqs::serialize(*obj);};
    print_     = [obj](std::ostream & out ){out << *obj;};
-   // CEHCK if std::bind would lead to less code bloat ??
+   // CHECK if std::bind would lead to less code bloat ??
    _init();
   }
 
@@ -91,8 +91,8 @@ namespace triqs { namespace utility {
   _object & operator = (_object && c)       { swap(*this, c); return *this; }
   _object & operator = (_object const & x ) { if (x.p) *this = x.clone_(); else *this =  _object(); return *this; }
   _object & operator = (_object & x )       { if (x.p) *this = x.clone_(); else *this =  _object(); return *this; }
-  // the last is need otherwise it takes the template for the _object & !!!
-  // or disable the template for object ...
+  // the last one is needed since otherwise the template for _object & is taken !
+  // alternatively disable the template for object ...
 
   template <typename RHS> _object & operator=(RHS && rhs) {
    typedef typename _object_collapse_type<RHS>::type storage_t;
@@ -103,7 +103,7 @@ namespace triqs { namespace utility {
    return *this;
   }
 
-  // special treatment for the const *, fall back to string
+  // special treatment for const char *: fall back to string
   _object &  operator=(const char * rhs) { *this = std::string(rhs); return *this;}
 
   bool is_empty() const { return bool(p);}
@@ -115,7 +115,7 @@ namespace triqs { namespace utility {
   const void * get_void_ptr() const { return p.get();}
   void * get_void_ptr() { return p.get();}
 
-   // implemented later, since need the extract function ...
+   // implemented later, since it needs the extract function ...
 #define CAST_OPERATOR(r, data, T) operator T () const;
   BOOST_PP_SEQ_FOR_EACH(CAST_OPERATOR, nil , TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST);
 #undef CAST_OPERATOR
@@ -145,7 +145,7 @@ namespace triqs { namespace utility {
    }
   BOOST_SERIALIZATION_SPLIT_MEMBER();
 
-  // ----- Unserialization (boost, h5) table : type_code -> deserialization function
+  // ----- Deserialization (boost, h5) table : type_code -> deserialization function
   // init will register the most common types.
   static std::map<size_t, std::function<_object(std::string const &)>>                      code_to_deserialization_fnts;
   static std::map<size_t, std::function<_object(h5::group const &, std::string const &)>>   code_to_h5_read_fnts;
@@ -184,7 +184,7 @@ namespace triqs { namespace utility {
    code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5_read(f,s,n); return _object(std::move(n),true);};
    auto h5_scheme = get_triqs_hdf5_data_scheme(T());
    if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = code;
-   //std::cerr  << " registering " << type_code_to_type_name[code] << "h5 scehme "<< h5_scheme<< std::endl ;
+   //std::cerr  << " registering " << type_code_to_type_name[code] << "h5 scheme "<< h5_scheme<< std::endl ;
    return false;
   }
  };
@@ -239,12 +239,12 @@ namespace triqs { namespace utility {
  template<typename T> T extract1(_object const &obj, std::false_type) {
   typedef typename _object_collapse_type<T>::type coll_t;
   if (! obj.has_type<coll_t>())
-   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
+   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a "<<_object::make_type_name<T>();
   return * static_cast<const coll_t*>(obj.get_void_ptr());
  }
 
  template<typename T> T extract1(_object const &obj, std::true_type) {
-  // if T is not a string, and obj is string, attempt lexical_cast
+  // if T is not a string, and object contains a string, attempt lexical_cast
   if ((!std::is_same<T,std::string>::value) && (obj.has_type<std::string>())) { return lex_cast_from_string<T>(obj); }
   return extract1<T>(obj, std::false_type()); 
  }
@@ -268,7 +268,7 @@ namespace triqs { namespace utility {
    //TRANSFORM_TYPE(unsigned long long);
    //TRANSFORM_TYPE(float);
 #undef TRANSFORM_TYPE
-   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a double";
+   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a double";
   }
 
 // template<> // special case to size_t
