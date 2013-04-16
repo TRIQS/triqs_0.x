@@ -86,7 +86,7 @@ namespace triqs { namespace arrays {
    TRIQS_DEFINE_COMPOUND_OPERATORS(vector_view);
 
    // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
+   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
    template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
    // gcc 4.6 does not like this one...
    //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
@@ -178,7 +178,7 @@ namespace triqs { namespace arrays {
     TRIQS_DEFINE_COMPOUND_OPERATORS(vector);
 
     // to make interface similar to std::vector : forward [] to ()
-   template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
+   template<typename Arg> typename std::result_of<const IMPL_TYPE(Arg)>::type operator[](Arg && arg) const { return (*this) (std::forward<Arg>(arg));}
    template<typename Arg> typename std::result_of<IMPL_TYPE(Arg)>::type operator[](Arg && arg)       { return (*this) (std::forward<Arg>(arg));}
    //template<typename Arg> auto operator[](Arg && arg) const DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
    //template<typename Arg> auto operator[](Arg && arg)       DECL_AND_RETURN((*this)(std::forward<Arg>(arg)));
