@@ -18,7 +18,7 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#include <triqs/utility/iterator_dressing.hpp>
+#include <triqs/utility/dressed_iterator.hpp>
 #include <iostream>
 #include <map>
 using namespace triqs::utility;
