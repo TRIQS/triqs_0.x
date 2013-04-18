@@ -72,15 +72,21 @@ namespace triqs { namespace det_manip {
     matrix_type mat_inv;
     long long n_opts, n_opts_max_before_check;
 
-    friend void swap(det_manip& lhs, det_manip & rhs) noexcept { 
+   private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
+    void swap_but_f (det_manip & rhs) noexcept { 
      using std::swap;
-#define SW(a) swap(lhs.a,rhs.a)
-     SW(f); // f must have move = or at least copy =
+#define SW(a) swap(this->a,rhs.a)
      SW(det);SW(Nmax);SW(N); SW(last_try);
      SW(row_num); SW(col_num);
      SW(x_values); SW(y_values);
      SW(sign); SW(mat_inv); SW(n_opts); SW(n_opts_max_before_check);
 #undef SW
+    }
+    
+    friend void swap(det_manip& lhs, det_manip & rhs) noexcept { 
+     using std::swap;
+     swap(lhs.f, rhs.f); 
+     lhs.swap_but_f(rhs);
     }
 
    private:
@@ -219,8 +225,9 @@ namespace triqs { namespace det_manip {
      }
 
     det_manip (det_manip const&) = default;
-    det_manip (det_manip && rhs) = default ;//noexcept {*this =std::move(rhs);}
+    det_manip (det_manip && rhs) noexcept : f(std::move(rhs.f)) { this->swap_but_f(rhs);} // f need not have a default constructor and we dont swap the temp data...
     //det_manip& operator=(const det_manip&) = default;
+    det_manip& operator=(const det_manip&) = delete;
     det_manip& operator=(det_manip&& rhs) noexcept { assert((last_try==0)&&(rhs.last_try==0)); swap(*this,rhs); return *this; }
 
     /// Put to size 0 : like a vector 
