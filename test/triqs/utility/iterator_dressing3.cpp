@@ -38,12 +38,12 @@ struct S {
   const_iterator (mcit_t it, m_t const * m): dressed_iterator<mcit_t,_cdress, m_t const>(it,m) {}
   friend const_iterator next_cyclic(const_iterator it) { 
    ++it; 
-   if (it.get() == it.get_aux()->end()) return {it.get_aux()->begin(),it.get_aux()};
+   if (it.get() == it.get_aux()->end()) return const_iterator(it.get_aux()->begin(),it.get_aux());
    else return it;
   }
  };
- const_iterator begin() const { return const_iterator{m.begin(),&m};}
- const_iterator end()   const { return const_iterator{m.end(),&m};}
+ const_iterator begin() const { return const_iterator(m.begin(),&m);}
+ const_iterator end()   const { return const_iterator(m.end(),&m);}
 
 };
 
