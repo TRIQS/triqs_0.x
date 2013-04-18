@@ -37,6 +37,13 @@ struct print_t {
   std::string s;
 };
 
+struct A { 
+  std::string str(int const & x) const { std::stringstream fs; fs << "the string is "<< x; return fs.str();}
+};
+
+  std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
+
+
 int main(int argc, char **argv) {
 
  auto t = std::make_tuple(1,2.3,4.3,8);
@@ -75,7 +82,10 @@ int main(int argc, char **argv) {
   if ( std::abs((res -  35.6)) > 1.e-13) throw std::runtime_error(" ");
  }
 
-
+ {
+  auto res = triqs::tuple::apply(my_print_str, std::make_tuple(1,2));
+  std::cerr  << " " << res << std::endl ;
+ }
 }
 
 

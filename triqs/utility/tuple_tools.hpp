@@ -22,38 +22,17 @@
 #define TRIQS_UTILITY_TUPLE_TOOLS_H
 #include<triqs/utility/macros.hpp>
 #include <tuple>
+#include <sstream>
+
 namespace triqs { namespace tuple {
 
- /**
-  * for_each(f, t)
-  * f: a callable object
-  * t: a tuple
-  * calls f on all tuple elements: f(x) for all x in t
-  */
- template<int pos> struct for_each_impl {
-   template<typename T, typename F>
-   void operator()(T const & t, F && f) {
-     f(std::get<std::tuple_size<T>::value-1-pos>(t));
-     for_each_impl<pos-1>()(t, f);
-   }
- };
-
- template<>
- struct for_each_impl<0> {
-   template<typename T, typename F>
-   void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t)); }
- };
-
- template<typename T, typename F>
- void for_each(T const & t, F && f) {
-   for_each_impl<std::tuple_size<T>::value-1>()(t, f);
- }
-
- /**
+/**
   * apply(f, t)
   * f : a callable object
   * t a tuple
   * Returns : f(t[0], t[1], ...)
+  * Equivalent to f(*t) in python ....
+  * Q : what about constructor
   */
  template<int pos,  typename T> struct apply_impl {
   template<typename F, typename ... Args>
@@ -63,11 +42,42 @@ namespace triqs { namespace tuple {
 
  template<typename T> struct apply_impl<-1,T> {
   template<typename F, typename ... Args>
-   auto operator()(F && f, T const & t, Args && ... args) DECL_AND_RETURN( std::forward<F>(f)(args...));
+   auto operator()(F && f, T const & t, Args && ... args) DECL_AND_RETURN( std::forward<F>(f)(std::forward<Args>(args)...));
  };
 
  template<typename F, typename T>
   auto apply (F && f, T const & t) DECL_AND_RETURN( apply_impl<std::tuple_size<T>::value-1,T>()(std::forward<F>(f),t));
+
+ //template <typename T, typename ClassType, typename ReturnType, typename... Args>
+ //ReturnType apply(ReturnType(ClassType::*f)(Args...) const, T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
+
+ template <typename T, typename ReturnType, typename... Args>
+  ReturnType apply( ReturnType(*f)(Args...), T const & t) { return apply([f](Args const & ... args) { return (*f)(args...);} ,t);}
+
+ /**
+  * for_each(f, t)
+  * f: a callable object
+  * t: a tuple
+  * calls f on all tuple elements: f(x) for all x in t
+  */
+ template<int pos> struct for_each_impl {
+  template<typename T, typename F>
+   void operator()(T const & t, F && f) {
+    f(std::get<std::tuple_size<T>::value-1-pos>(t));
+    for_each_impl<pos-1>()(t, f);
+   }
+ };
+
+ template<>
+  struct for_each_impl<0> {
+   template<typename T, typename F>
+    void operator() (T const & t, F && f) { f(std::get<std::tuple_size<T>::value-1>(t)); }
+  };
+
+ template<typename T, typename F>
+  void for_each(T const & t, F && f) {
+   for_each_impl<std::tuple_size<T>::value-1>()(t, f);
+  }
 
  /**
   * apply_on_zip(f, t1,t2)
@@ -94,7 +104,7 @@ namespace triqs { namespace tuple {
   * f : a callable object
   * t1, t2 two tuples of the same size
   * Returns : [f(i,j) for i,j in zip(t1,t2)]
- */
+  */
  template<int pos, typename T1, typename T2, typename T3> struct apply_on_zip3_impl {
   template<typename F, typename ... Args>
    auto operator()(F && f, T1 const & t1, T2 const & t2, T3 const & t3, Args && ... args)
