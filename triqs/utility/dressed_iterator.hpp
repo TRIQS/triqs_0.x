@@ -41,10 +41,40 @@ namespace triqs { namespace utility {
   *
   *  Example : See doc or test/utility/iterator_dressing.cpp ...
   *
+  *
+  * Variant : one can keep in the iterator a pointer to anything (typically the parent container)
+  * which is useful in some cases
+  * See iterator_dressing3 for an example
   */
+ template< typename BidirectionalIteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType = void> struct dressed_iterator;
 
+ // specialization when a aux data is present
+ template< typename BidirectionalIteratorType, typename Dressing, typename DressingAuxiliaryArgumentPtrType> 
+  struct dressed_iterator : public boost::iterator_facade<dressed_iterator<BidirectionalIteratorType,Dressing,DressingAuxiliaryArgumentPtrType>, 
+  Dressing, boost::bidirectional_traversal_tag,Dressing > {
+   public : 
+    dressed_iterator () {}
+    dressed_iterator (BidirectionalIteratorType const & it, DressingAuxiliaryArgumentPtrType * aux): _it(it), _aux(aux) {}
+    BidirectionalIteratorType const & get() const { return _it;}
+    BidirectionalIteratorType       & get()       { return _it;}
+    operator BidirectionalIteratorType() const { return _it;}
+    DressingAuxiliaryArgumentPtrType * get_aux() { return _aux;}
+    const DressingAuxiliaryArgumentPtrType * get_aux() const { return _aux;}
+   private:
+    friend class boost::iterator_core_access;
+    void increment(){ ++_it;}
+    void decrement(){ --_it;}
+    bool equal(dressed_iterator const & other) const { return(other._it==_it);}
+    Dressing dereference() const { return Dressing(_it,_aux); } 
+    BidirectionalIteratorType _it;
+    DressingAuxiliaryArgumentPtrType * _aux;// keep a pointer to maintain assignment of iterator !
+  };
+
+ 
+ // specialisation when no auxiliary data is present 
  template< typename BidirectionalIteratorType, typename Dressing> 
-  struct dressed_iterator : public boost::iterator_facade<dressed_iterator<BidirectionalIteratorType,Dressing>, Dressing, boost::bidirectional_traversal_tag,Dressing > {
+  struct dressed_iterator<BidirectionalIteratorType, Dressing,void> : 
+  public boost::iterator_facade<dressed_iterator<BidirectionalIteratorType,Dressing>, Dressing, boost::bidirectional_traversal_tag,Dressing > {
    public : 
     dressed_iterator () {}
     dressed_iterator (BidirectionalIteratorType const & it): _it(it) {}
@@ -59,6 +89,7 @@ namespace triqs { namespace utility {
     Dressing dereference() const { return Dressing(_it); } 
     BidirectionalIteratorType _it;
   };
+
 
 }}
 #endif

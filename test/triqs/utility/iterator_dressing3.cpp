@@ -1,3 +1,4 @@
+
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -30,24 +31,22 @@ struct S {
  typedef m_t::iterator mit_t;
  m_t m;
 
- struct _cdress {double const & tau; int const & a; _cdress( mcit_t const & it): tau(it->first), a(it->second){} };
- struct _dress  {double const & tau; int & a;       _dress ( mit_t const & it) : tau(it->first), a(it->second){} };
+ struct _cdress {double const & tau; int const & a; m_t const * m; _cdress( mcit_t const & it, m_t const * mm): tau(it->first), a(it->second),m(mm){} };
 
- // const iterator
- struct const_iterator : public dressed_iterator< mcit_t,_cdress> {
-  const_iterator (mcit_t it):  dressed_iterator<mcit_t,_cdress>(it) {}
+ // const iterator with cyclic condition
+ struct const_iterator : public dressed_iterator< mcit_t,_cdress, m_t const> {
+  const_iterator (mcit_t it, m_t const * m): dressed_iterator<mcit_t,_cdress, m_t const>(it,m) {}
+  friend const_iterator next_cyclic(const_iterator it) { 
+   ++it; 
+   if (it.get() == it.get_aux()->end()) return {it.get_aux()->begin(),it.get_aux()};
+   else return it;
+  }
  };
- const_iterator begin() const { return m.begin();}
- const_iterator end()   const { return m.end();}
-
- //iterator
- struct iterator : public dressed_iterator< mit_t,_dress> {
-  iterator (mit_t it = mit_t()):  dressed_iterator<mit_t,_dress>(it) {}
- };
- iterator begin() { return m.begin();}
- iterator end()   { return m.end();}
+ const_iterator begin() const { return const_iterator{m.begin(),&m};}
+ const_iterator end()   const { return const_iterator{m.end(),&m};}
 
 };
+
 
 
 int main() {
@@ -63,12 +62,8 @@ int main() {
  std::cout  << it->tau << std::endl ;
  ++it;
  std::cout  << it->tau << std::endl ;
- --it;
+ it = next_cyclic(it);
  std::cout  << it->tau << std::endl ;
 
- it-> a *=10;
-
- for (auto const & p : s) 
-  std::cout << p.tau << " -- "<< p.a << std::endl;
 
 }
