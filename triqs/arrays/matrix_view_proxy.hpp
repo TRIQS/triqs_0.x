@@ -96,6 +96,8 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return A->len((POS+1)%3);}\
    size_t dim1() const { return A->len((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
+   value_type const * restrict data_start() const { return &storage()[indexmap().start_shift()];}\
+   value_type * restrict data_start() { return &storage()[indexmap().start_shift()];}\
    matrix_view<value_type> operator()() const {return *this;}\
    TRIQS_DELETE_COMPOUND_OPERATORS(const_matrix_view_proxy);\
   template<BOOST_PP_ENUM_PARAMS(POS,typename A) BOOST_PP_COMMA_IF(POS) typename ... Args>\
@@ -119,6 +121,8 @@ namespace triqs { namespace arrays {
    size_t dim0() const { return A->len((POS+1)%3);}\
    size_t dim1() const { return A->len((POS+2)%3);}\
    typename ArrayType::storage_type const & storage() const { return A->storage();}\
+   value_type const * restrict data_start() const { return &storage()[indexmap().start_shift()];}\
+   value_type * restrict data_start() { return &storage()[indexmap().start_shift()];}\
    matrix_view<value_type> operator()() const {return *this;}\
    template<typename RHS> matrix_view_proxy & operator=(const RHS & X) {triqs_arrays_assign_delegation(*this,X); return *this; }\
    TRIQS_DEFINE_COMPOUND_OPERATORS(matrix_view_proxy);\
