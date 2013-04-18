@@ -125,6 +125,10 @@ namespace triqs { namespace gf {
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
 
   public:
+
+   // MOVE THIS TO data_proxies ???
+   // replace data by data_proxies in all gf ? 
+   //
    // array is true, vector is false.
    // warning : dimension should match, no resize ??
    template<typename RHS> void _data_assigner_no_resize (RHS && rhs, std::true_type) { data() = rhs.data_view();}
@@ -226,6 +230,7 @@ namespace triqs { namespace gf {
 
    //----------------------------- HDF5 -----------------------------
 
+   // WHY NOT use here a specialisation of a template for block<im...> ?? simpler...
   private : // indirection if descrptor has a special read write
    void __h5_write (h5::group g, std::string const & s, std::false_type) const { h5_write(g,"data",data); }
    void __h5_write (h5::group g, std::string const & s, std::true_type)  const { Descriptor::h5_data_write(g,s,*this);}

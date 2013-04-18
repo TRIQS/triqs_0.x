@@ -55,7 +55,7 @@ namespace triqs { namespace gf {
    static constexpr int arity = 1;
    //ERROR : give a double and interpolate
    template<typename G>
-   arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data_view()(n, arrays::range(), arrays::range()); }
+   arrays::matrix_view<double>  operator() (G const * g,long n)  const {return g->data_view()(n, arrays::range(), arrays::range()); }
    template<typename G>
    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity_view();}
   };
@@ -66,11 +66,11 @@ namespace triqs { namespace gf {
 
  // -------------------  ImmutableGfMatsubaraTime identification trait ------------------
 
- template<typename G> struct ImmutableGfMatsubaraTime : boost::is_base_of<typename imtime::tag,G> {};
+ template<typename G> struct ImmutableGfMatsubaraTime : std::is_base_of<typename imtime::tag,G> {};
 
  // -------------------------------   Factories  --------------------------------------------------
 
- template<> struct gf_factories< imtime>: imtime { 
+ template<> struct gf_factories< imtime> : imtime { 
   typedef gf<imtime> gf_t;
 
   static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk) {
@@ -80,13 +80,14 @@ namespace triqs { namespace gf {
    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
    return gf_t ( m, std::move(A), t, nothing() ) ;
   }
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
+  /*static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
    return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));
   }
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) {
    return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
   }
-  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk) {
+  */
+  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, local::tail(shape));
   }
   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, mesh_kind mk, local::tail_view const & t) {
