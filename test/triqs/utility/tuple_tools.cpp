@@ -22,6 +22,7 @@
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
+#include <functional>
 
 struct fun { 
  double operator()(int i, double x, double y, int k) {  return 6*k + i - 1.3*x + 2*y;}
@@ -37,11 +38,12 @@ struct print_t {
   std::string s;
 };
 
-struct A { 
-  std::string str(int const & x) const { std::stringstream fs; fs << "the string is "<< x; return fs.str();}
+struct A {
+template<typename T1, typename T2>  
+  std::string str(T1 const & x, T2 const &y) const { std::stringstream fs; fs << "the string is "<< x<<" " << y; return fs.str();}
 };
 
-  std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
+std::string my_print_str(int x, int y) { std::stringstream fs; fs << "the string is "<< x<< " " << y; return fs.str();}
 
 
 int main(int argc, char **argv) {
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
  auto t = std::make_tuple(1,2.3,4.3,8);
  auto t2 = std::make_tuple(1,2,3,4);
  auto t1 = std::make_tuple(1,2.3,4.3,8);
-  
+
  {
   triqs::tuple::for_each(t, print_t());
   std::cerr << std::endl;
@@ -62,7 +64,7 @@ int main(int argc, char **argv) {
  }
 
  {
- auto r = triqs::tuple::apply_on_zip(fun2(),t1,t2);
+  auto r = triqs::tuple::apply_on_zip(fun2(),t1,t2);
   std::cerr  << " [f(a,b) for (a,b) in zip(t1,t2)] =" 
    << std::get<0>(r) << " "
    << std::get<1>(r) << " "
@@ -86,9 +88,14 @@ int main(int argc, char **argv) {
   auto res = triqs::tuple::apply(my_print_str, std::make_tuple(1,2));
   std::cerr  << " " << res << std::endl ;
  }
+
+ {
+  using namespace std::placeholders;
+  A a;
+  auto res = triqs::tuple::apply(std::bind(&A::str<int,int>,a,_1,_2), std::make_tuple(1,2));
+  res = triqs::tuple::apply(std::mem_fn(&A::str<int,int>), std::make_tuple(a,1,2));
+  std::cerr  << " " << res << std::endl ;
+ }
+
 }
-
-
-
-
 
