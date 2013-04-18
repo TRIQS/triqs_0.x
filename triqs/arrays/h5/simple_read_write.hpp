@@ -77,6 +77,7 @@ namespace triqs { namespace arrays {
    */
   template <typename T, int R>
    void write_array (h5::group g, std::string const & name, array_view <T,R> const & A, bool C_reorder = true) {
+    static_assert( !std::is_base_of<std::string, T>::value, " Not implemented");// 1d is below
     if (C_reorder) { write_array(g,name, make_const_cache(A).view(),false); return; }
     try {
      H5::DataSet ds = g.create_dataset(name, h5::data_type_file<T>(), data_space(A) );
@@ -103,6 +104,7 @@ namespace triqs { namespace arrays {
    */
   template <typename ArrayType>
    void read_array (h5::group g, std::string const & name,  ArrayType & A, bool C_reorder = true) {
+    static_assert( !std::is_base_of<std::string, typename ArrayType::value_type>::value, " Not implemented");// 1d is below
     typedef typename ArrayType::value_type V;
     try {
      H5::DataSet ds = g.open_dataset(name);
@@ -123,10 +125,29 @@ namespace triqs { namespace arrays {
     TRIQS_ARRAYS_H5_CATCH_EXCEPTION;
    }
 
- }// namespace
+  // overload : special treatment for arrays of strings (one dimension only).
+  inline void write_array (h5::group f, std::string const & name, vector_view<std::string> const & V) {
+   h5::detail::write_1darray_vector_of_string_impl(f,name,V);
+  }
 
- template<typename ArrayType> struct is_amv_value_or_view_class_no_string :
-  boost::mpl::and_<is_amv_value_or_view_class<ArrayType>, boost::mpl::not_<boost::is_base_of<std::string, typename ArrayType::value_type> > > {};
+  inline void write_array (h5::group f, std::string const & name, array_view<std::string,1> const & V) {
+   write_array(f,name,vector_view<std::string>(V));
+  }
+
+  inline void read_array (h5::group f, std::string const & name, arrays::vector<std::string> & V) {
+   h5::detail::read_1darray_vector_of_string_impl(f,name,V);
+  }
+
+  // I can not use the generic code, just because the resize of the array take a shape,  not a size_t as std::vector and vector
+  // Ok, speed is no issue here...
+  inline void read_array (h5::group f, std::string const & name, arrays::array<std::string,1> & V) {
+   arrays::vector<std::string> res; read_array(f,name,res); V = res;
+  }
+
+ }// namespace h5impl
+
+ //template<typename ArrayType> struct is_amv_value_or_view_class_no_string :
+ // boost::mpl::and_<is_amv_value_or_view_class<ArrayType>, boost::mpl::not_<boost::is_base_of<std::string, typename ArrayType::value_type> > > {};
 
  /**
   * \brief Read an array or a view from an hdf5 file
@@ -137,7 +158,7 @@ namespace triqs { namespace arrays {
   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  template <typename ArrayType>
-  ENABLE_IF(is_amv_value_or_view_class_no_string<ArrayType>)
+  ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
   h5_read (h5::group fg, std::string const & name,  ArrayType & A) { h5_impl::read_array(fg,name, A);}
 
  /**
@@ -149,23 +170,8 @@ namespace triqs { namespace arrays {
   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  template <typename ArrayType>
-  ENABLE_IF(is_amv_value_or_view_class_no_string<ArrayType>)
+  ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
   h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, array_view<typename ArrayType::value_type, ArrayType::rank>(A));}
-
-
- inline void h5_write (h5::group f, std::string const & name, vector_view<std::string> const & V) {
-  h5::detail::write_1darray_vector_of_string_impl(f,name,V);
- }
-
- inline void h5_read (h5::group f, std::string const & name, arrays::vector<std::string> & V) {
-  h5::detail::read_1darray_vector_of_string_impl(f,name,V);
- }
-
- // I can not use the generic code, just because the resize of the array take a shape,  not a size_t as std::vector and vector
- // Ok, speed is no issue here...
- inline void h5_read (h5::group f, std::string const & name, arrays::array<std::string,1> & V) {
-  arrays::vector<std::string> res; h5_read(f,name,res); V = res;
- }
 
 }}
 #endif
