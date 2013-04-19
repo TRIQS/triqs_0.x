@@ -44,7 +44,7 @@
 
 namespace triqs { namespace utility {
 
-#define TRIQS_STACKTRACE_WITH_GDB
+//#define TRIQS_STACKTRACE_WITH_GDB
 #ifdef TRIQS_STACKTRACE_WITH_GDB
 
  std::string stack_trace() {
@@ -66,7 +66,7 @@ namespace triqs { namespace utility {
   return buffer.str();
   }
 #else
- std::string stack_trace2() {
+ std::string stack_trace() {
   std::ostringstream buffer;
 
   void * stack[TRIQS_TRACE_MAX_FRAMES + 1];
