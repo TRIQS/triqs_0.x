@@ -1,8 +1,8 @@
 .. index:: installation steps
 
-.. _installation:
-
 .. highlight:: bash
+
+.. _installation:
 
 Installation 
 ============

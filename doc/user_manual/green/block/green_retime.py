@@ -1,10 +1,12 @@
-import numpy
-from pytriqs.base.gf_local import GfReFreq,SemiCircular
-from pytriqs.base.plot.mpl_interface import oplot
+from pytriqs.gf.local import *
 
-gf = GfReFreq(indices = [1], beta = 50, mesh_array = numpy.arange(-30,30,0.1) , name = "my_block")
-gf[1,1] =  SemiCircular(half_bandwidth = 2)
+gw = GfReFreq(indices = [1], window = (-5, 5), n_points = 300, name = "egBlock")
+gw <<= SemiCircular(2.0)
 
-oplot(gf.InverseFourier().imag, '-o')   
+# This is a GfReTime
+gt = gw.inverse_fourier()
+
+from pytriqs.plot.mpl_interface import oplot
+oplot(gt.imag, '-o')
 
 

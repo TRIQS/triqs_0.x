@@ -3,7 +3,7 @@
 The Solver class
 =================
 
-.. autoclass:: pytriqs.solvers.ctqmc_hyb.Solver
+.. autoclass:: pytriqs.applications.impurity_solvers.ctqmc_hyb.Solver
   :members: 
 
  

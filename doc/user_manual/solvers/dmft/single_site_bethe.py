@@ -1,6 +1,6 @@
-from pytriqs.base.gf_local import *
-from pytriqs.base.archive import *
-import pytriqs.base.utility.mpi as mpi
+from pytriqs.gf.local import *
+from pytriqs.archive import *
+import pytriqs.utility.mpi as mpi
 
 # Set up a few parameters
 Half_Bandwidth = 1.0    
@@ -10,8 +10,8 @@ Beta = 100
 N_loops = 5
 
 # Construct a CTQMC solver
-from pytriqs.solvers.operators import *                          # imports the class manipulating C, C_dagger and N = C_dagger C
-from pytriqs.solvers.ctqmc_hyb import Solver        # imports the solver class
+from pytriqs.applications.impurity_solvers.operators import *                          # imports the class manipulating C, C_dagger and N = C_dagger C
+from pytriqs.applications.impurity_solvers.ctqmc_hyb import Solver        # imports the solver class
 S = Solver(Beta = Beta,                                                       # inverse temperature
            GFstruct = [ ('up',[1]), ('down',[1]) ],                           # Structure of the Green function 
            H_Local = U * N('up',1) * N('down',1),                             # Local Hamiltonian 

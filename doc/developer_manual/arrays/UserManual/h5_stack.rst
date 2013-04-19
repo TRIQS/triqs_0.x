@@ -24,7 +24,7 @@ It is typically used to store a Monte-Carlo data series for later analysis.
 Reference 
 ------------
 
-Here is the :arrays_doxy:`full C++ documentation<triqs::arrays::h5::array_stack>` for this class.
+Here is the :doxy:`full C++ documentation<triqs::arrays::h5::array_stack>` for this class.
 
 
 Tutorial

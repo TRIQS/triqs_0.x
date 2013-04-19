@@ -21,6 +21,14 @@
 #ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 #define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
+// FOR DEBUG ONLY : detection of the version of numpy is automatic.
+// Uncomment to use the old API ANYWAY
+//#define TRIQS_NUMPY_VERSION_LT_17
+
+#ifndef TRIQS_NUMPY_VERSION_LT_17
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#endif
+
 // including python first remove some warning
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "Python.h"

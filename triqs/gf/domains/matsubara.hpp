@@ -34,15 +34,15 @@ namespace triqs { namespace gf {
   bool operator == (matsubara_domain const & D) const { return ((std::abs(beta - D.beta)<1.e-15) && (statistic == D.statistic));}
 
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain const & d) {
-   tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+  friend void h5_write (h5::group fg, std::string subgroup_name, matsubara_domain const & d) {
+   h5::group gr =  fg.create_group(subgroup_name);
    h5_write(gr,"beta",d.beta);
    h5_write(gr,"statistic",(d.statistic==Fermion ? "F" : "B"));
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, matsubara_domain & d){
-   tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+  friend void h5_read  (h5::group fg, std::string subgroup_name, matsubara_domain & d){
+   h5::group gr = fg.open_group(subgroup_name);
    double beta; std::string statistic;
    h5_read(gr,"beta",beta);
    h5_read(gr,"statistic",statistic);

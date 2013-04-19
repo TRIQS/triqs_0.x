@@ -3,13 +3,15 @@
 Automatic assignment 
 =======================
 
+Principle
+----------------
+
 It is possible to use a subset of possible expressions as Left Hand Side (LHS) in an assignment statement, e.g. ::
 
  A(x_)        = some_expression_of_x_
  A[i_]        = some_expression_of_i_
  A(x_)(i_,j_) = some_expression_of_x_i_j
  A[x_](i_,j_) = some_expression_of_x_i_j
-
 
 * Right Hand Side (RHS) of the = statement can be any expression.
 * Left Hand Side (LHS) of the = sign. A must be a `lazy-assignable`, called by [] or (), one or several time.
@@ -21,89 +23,92 @@ This writing means that a regular function ::
 will be given to A so that it can fill itself by evaluating this function.
 A determines the range of value of x on which the function is called.
 
-How this is done in details depends on the object.
+Example
+---------
 
+.. compileblock::
 
-Object with HasRandomAccess concept (i.e. std::vector like)
+  #include "triqs/clef.hpp"
+  #include "triqs/clef/adapters/vector.hpp"
+  #include <iostream> 
+
+  int main() { 
+  int N = 10;
+  double pi = std::acos(-1);
+  std::vector<double> V(N);
+
+  // automatic assignment of vector and use of lazy math function
+  triqs::clef::placeholder <0> k_; 
+  triqs::clef::lazy(V) [k_] << cos( (2* pi* k_)/ N );
+
+  // check result... 
+  for (size_t u=0; u<V.size(); ++u) std::cout<< u << " "<<V[u]<< "  "<< cos((2*pi*u)/N)<<std::endl;
+  }
+
+Implementing automatic assign for an object 
 ------------------------------------------------------------
 
-The HasRandomAccess concept is a subset of std::vector ::
-  
-  value_type & operator[](size_t);
-  size_t size() const; 
-  
-If A models HasRandomAccess then ::
+It is sufficient to add a function ::
 
- A[i_] = some_expression_of_i
+   template<typename Fnt> void triqs_clef_auto_assign (Obj & x, Fnt f);
 
-is rewritten by the triqs::clef lib into ::
+The compiler will rewrite ::
 
- for (size_t u=0; u<A.size(); ++u) A[u] = eval(some_expression_of_i, i_=u)
+   obj(x_,y_, ...) = expression
 
-In practice, for such an object T the trait ::
+into ::
 
-   triqs::clef::has_random_access_concept<T>
+   triqs_clef_auto_assign (obj, make_function( expression, x_, y_, ....)) 
 
-must be true.
+The function is found by ADL. It is therefore useful to implement it e.g. as a friend function.
 
-In practice : 
+Similarly, for [ ], adding a function ::
 
-* A std::vector models this concept. Just include ::
+   template<typename Fnt> void triqs_clef_auto_assign_subscript (Obj & x, Fnt f);
 
-  #include <triqs/clef/adapters/vector.hpp>
-  
-* For a custom type, defines e.g. ::
+The compiler will rewrite ::
 
-   namespace triqs { namespace clef { 
-     template<> struct has_random_access_concept< My_Type >: mpl::true_{};  
-   }}
- 
+   obj[i_] = expression
 
-.. _callable_object:
+into ::
 
-Object with a set_from_function method
---------------------------------------------
-
-For objects that have a set_from_function method::
-
- F(x_,y_) = an_expression_of(x_,y_);
-
-is rewritten by the library into ::
-
- F.set_from_function( triqs::clef::make_function( an_expression_of(x_,y_), x_, y_) );
-
-In practice, the object must implement a (template) method void set_from_function(), which takes a function and uses
-it to recompute the data of the object. The library will autodetect whether this function is present and use it,
-unless the trait ::
-
-   namespace triqs { namespace clef { 
-    template <typename RHS> struct has_set_from_function<The_Type,RHS>; 
-   }}
-is specialized to false (where The_Type is the type of the object).
-
-Example ::
-
-  struct MyObject { 
-   
-  // ....
+   triqs_clef_auto_assign_subscript (obj, make_function( expression, i_)) 
 
 
-  template<typename Fnt> void set_from_function (Fnt f) { 
-     // do something with the function f
-   }
-  };
-  
-  //---------------------------------------
 
-  placeholder <1> x_;
-  placeholder <2> y_;
-  MyObject ob;
-  ob(x_,y_) = 2*x_ + 3*y_; 
-  // same as
-  ob.set_from_function( make_function(  2*x_ + 3*y_, x_,y_));
+A complete example : 
 
-General case 
------------------------------
+.. compileblock::
 
-To be written. Specializing the assignment_impl trait.
+    #include <triqs/clef.hpp>
+    #include <iostream>
+
+    struct Obj{ 
+    double v; 
+    Obj(double v_): v(v_){}
+
+    // lazy call : cf ...
+    template< typename... Args>
+    typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<const Obj>,Args...>::type
+    operator()( Args&&... args ) const { return make_expr_call (std::ref(* this),args...);}
+
+    // The non const version (which then stores a non-const reference ....)
+    template< typename... Args>
+    typename triqs::clef::result_of::make_expr_call<std::reference_wrapper<Obj>,Args...>::type
+    operator()( Args&&... args ) { return  make_expr_call (std::ref(* this),args...);}
+
+    template<typename Fnt> friend void triqs_clef_auto_assign (Obj & x, Fnt f) { 
+    x.v++; std::cout<< " called triqs_clef_auto_assign "<< f(100)<<std::endl;
+    }
+    friend std::ostream & triqs_clef_formal_print(std::ostream & out, Obj const & x) {return out<<"Obj";}
+    };
+
+    int main() {
+    Obj f(2);
+    triqs::clef::placeholder<3> x_;
+    std::cout<< f.v << std::endl;
+    f(x_ ) << 8*x_ ;
+    //f(x_ + y_) = 8*x_; // leads to a compile error as expected
+    std::cout<< f.v << std::endl;
+    }
 

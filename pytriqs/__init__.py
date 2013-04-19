@@ -20,5 +20,13 @@
 #
 ################################################################################
 
-__all__ = []
+__all__ = ['archive', 'dmft', 'dos', 'fit', 'gf', 'lattice', 'plot', 'sumk', 'utility']
+
+import sys
+if 'additional_builtin_modules' in dir(sys) :
+
+    from version import greeting
+    import utility.mpi as mpi
+    if (mpi.world.rank == 0) :  sys.stderr.write(greeting)
+
 

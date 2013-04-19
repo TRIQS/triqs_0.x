@@ -140,7 +140,12 @@ SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE S
 find_package(FFTW)
 
 # HDF5
-find_package(HDF5 REQUIRED C CXX )
+# on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
+if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
+ find_package(HDF5 REQUIRED C CXX )
+else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
+ find_package(HDF5 REQUIRED C CXX HL )
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
 IF(HDF5_FOUND)
  SET(HAVE_LIBHDF5 1)  
  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})

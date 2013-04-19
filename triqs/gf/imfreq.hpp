@@ -23,15 +23,13 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./domains/matsubara.hpp"
 #include "./meshes/linear.hpp"
+namespace triqs { namespace gf {
 
-namespace triqs { namespace gf { 
+ struct imfreq {
 
- struct imfreq { 
-
-  /// A tag to recognize the function 
+  /// A tag to recognize the function
   struct tag {};
 
   /// The domain
@@ -40,86 +38,56 @@ namespace triqs { namespace gf {
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
 
-  /// The target
-  typedef arrays::matrix<std::complex<double> >     target_t;
-  //typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
-  typedef typename target_t::view_type            target_view_t;
-
   /// The tail
   typedef local::tail singularity_t;
 
   /// Symmetry
   typedef nothing symmetry_t;
 
-  /// Indices
-  typedef indices_2_t indices_t;
+  static std::string h5_name() { return "imfreq_gf";}
+ };
 
-  /// Arity (number of argument in calling the function)
-  static const int arity =1;
+ /// ---------------------------  evaluator ---------------------------------
 
-  /// All the possible calls of the gf
-  struct evaluator { 
-   template<typename D, typename T>
-    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data(arrays::range(), arrays::range(),n); } 
-
-   template<typename D, typename T>
-    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
+ template<>
+  struct evaluator<imfreq> {
+   static constexpr int arity = 1;
+   template<typename G>
+    arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data_view()(n, arrays::range(), arrays::range()); }
+   template<typename G>
+    local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity_view();}
   };
 
-  struct bracket_evaluator {};
+ /// ---------------------------  data access  ---------------------------------
 
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS> 
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
-    // access to the data . Beware, we view it as a *matrix* NOT an array... (crucial for assignment to scalars !) 
-    for (auto w: mesh) { target_view_t( data(tqa::range(),tqa::range(),w.index)) = rhs(w); }
-    //for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-    t = rhs( local::tail::omega(t.shape(),t.size()));
-    // if f is an expression, replace the placeholder with a simple tail. If f is a function callable on freq_infty, 
-    // it uses the fact that tail_non_view_t can be casted into freq_infty 
-   }
+ template<> struct data_proxy<imfreq> : data_proxy_array<std::complex<double>,3> {};
 
-  static std::string h5_name() { return "imfreq_gf";}
+ // -------------------  ImmutableGfMatsubaraFreq identification trait ------------------
 
-  // -------------------------------   Factories  --------------------------------------------------
+ template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
 
+ // -------------------------------   Factories  --------------------------------------------------
+
+ template<> struct gf_factories<imfreq> : imfreq { 
   typedef gf<imfreq> gf_t;
 
   static mesh_t make_mesh (double beta, statistic_enum S, size_t Nmax = 1025) {
    double m1 = std::acos(-1)/beta;
-   return mesh_t( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, mesh_t::without_last);
+   return mesh_t( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, without_last);
   }
-
-  static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) { 
-   gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t ( m, std::move(A), t, nothing(), indices_t(shape) ) ;
+  static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+   gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+   return gf_t ( m, std::move(A), t, nothing() ) ;
   }
-
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) { 
+  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
    return make_gf(make_mesh(beta,S), shape, local::tail(shape));
   }
-
-  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) { 
+  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
    return make_gf(make_mesh(beta,S,Nmax), shape, local::tail(shape));
   }
-
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) { 
+  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
    return make_gf(make_mesh(beta,S,Nmax), shape, t);
   }
-
  };
-
- typedef gf_view<imfreq> gf_view_imfreq_t;
-
- // -------------------------------   Expression template --------------------------------------------------
-
- // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
- template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(imfreq,imfreq::tag, 1,local::is_scalar_or_element,ImmutableGfMatsubaraFreq);
-
 }}
-
 #endif
-

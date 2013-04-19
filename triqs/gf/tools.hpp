@@ -23,25 +23,21 @@
 #include <triqs/utility/first_include.hpp>
 #include <utility>
 #include <boost/iterator/iterator_facade.hpp>
-#include <triqs/utility/cint.hpp>
-#include <triqs/clef/core.hpp>
+#include <triqs/clef.hpp>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
-#include <triqs/utility/proto/tools.hpp>
 #include <triqs/arrays/h5/simple_read_write.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-#include <triqs/arrays/proto/array_algebra.hpp>
 #include "triqs/utility/complex_ops.hpp"
 #include <triqs/utility/view_tools.hpp>
+#include <triqs/utility/expression_template_tools.hpp>
+#include <triqs/h5.hpp>
 
 namespace triqs { namespace gf {
-
  namespace tqa= triqs::arrays;
  namespace mpl=boost::mpl;
- namespace proto=boost::proto;
- namespace bf = boost::fusion; 
- namespace tup = triqs::utility::proto;
 
+ namespace tag  { struct composite{}; struct mesh_point{};} 
+ 
  //------------------------------------------------------
 
  typedef std::complex<double> dcomplex; 
@@ -59,7 +55,7 @@ namespace triqs { namespace gf {
  }
 
  //------------------------------------------------------
-
+/*
  class indices_2_t { 
   std::vector<std::vector<std::string>> data;
   void construct_deleg (int n1, int n2) { 
@@ -73,7 +69,7 @@ namespace triqs { namespace gf {
   indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
   
   indices_2_t(int n1, int n2) { construct_deleg(n1,n2);}
-  template<typename T> indices_2_t(arrays::mini_vector<T,2> & shape) { construct_deleg(shape[0], shape[1]);}
+  template<typename T> indices_2_t(arrays::mini_vector<T,2> const & shape) { construct_deleg(shape[0], shape[1]);}
   
   std::vector<std::string> const & operator[](int i) const { return data[i];} 
   std::vector<std::vector<std::string>> const & operator()() const { return data;} 
@@ -81,20 +77,20 @@ namespace triqs { namespace gf {
   bool same() const { return data[0]==data[1];} 
 
   /// Write into HDF5
-  friend void h5_write (tqa::h5::group_or_file fg, std::string key, indices_2_t const & g) {
-    tqa::h5::group_or_file gr = fg.create_group(key);
-    h5_write(gr,"left",g.data[0]);
-    h5_write(gr,"right",g.data[1]);
+  friend void h5_write (h5::group g, std::string key, indices_2_t const & ind) {
+    auto gr = g.create_group(key);
+    h5_write(gr,"left",ind.data[0]);
+    h5_write(gr,"right",ind.data[1]);
   }
 
   /// Read from HDF5
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string key, indices_2_t & g){
-    tqa::h5::group_or_file gr = fg.open_group(key);
+  friend void h5_read  (h5::group g, std::string key, indices_2_t & ind){
+    auto gr = g.open_group(key);
     std::vector<std::string> V;
     h5_read(gr,"left",V);
-    g.data.push_back(V);
+    ind.data.push_back(V);
     h5_read(gr,"right",V);
-    g.data.push_back(V);
+    ind.data.push_back(V);
   }
 
   //  BOOST Serialization
@@ -105,27 +101,37 @@ namespace triqs { namespace gf {
    }
 
  };
-
+*/
  //------------------------------------------------------
 
  struct nothing {
-  template<typename... Args> nothing(Args...) {} // takes anything, do nothing..
+  template<typename... Args> explicit nothing(Args...) {} // takes anything, do nothing..
   nothing() {}
   typedef void has_view_type_tag;     // Idiom : ValueView  
   typedef nothing view_type;
   typedef nothing non_view_type;
   void rebind (nothing){}
-  void operator=(nothing) {}
-  friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
-  friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, nothing ) {}
+  template< typename RHS> void operator=(RHS && ) {}
+  friend void h5_write (h5::group, std::string subgroup_name, nothing ) {}
+  friend void h5_read  (h5::group, std::string subgroup_name, nothing ) {}
   //  BOOST Serialization
   friend class boost::serialization::access;
   template<class Archive>
    void serialize(Archive & ar, const unsigned int version) {
    }
   friend nothing operator +( nothing, nothing) { return nothing();}
- }; 
+  template<typename RHS> friend void assign_from_expression(nothing & ,RHS) {}
+}; 
 
+ template<typename T> nothing operator+(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator-(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator*(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator/(nothing, T const &) { return nothing();}
+ template<typename T> nothing operator+(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator-(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator*(T const &, nothing) { return nothing();}
+ template<typename T> nothing operator/(T const &, nothing) { return nothing();}
+  
  //------------------------------------------------------
 
 }}

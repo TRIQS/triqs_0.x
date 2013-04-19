@@ -1,7 +1,7 @@
 
 .. highlight:: c
 
-Evaluating lazy expressions
+Evaluating clef expressions
 ===============================
 
 Forming expressions is nice, but completely useless unless one can *evaluate* them 
@@ -33,9 +33,8 @@ Note that :
 
 * The order of placeholder does not matter in calling eval.
 * It is an error to put the same placeholder twice.
-
-.. note::
-   gcc 4.4 seems to have an ADL bug. So you need to qualify eval as triqs::clef::eval in that case...
+* The correct version of eval is found by ADL (Argument Dependent Lookup).
+  (It if the clef::eval since arguments are defined in the clef namespace)
 
 Partial evaluation
 --------------------

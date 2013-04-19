@@ -38,6 +38,8 @@ namespace triqs {
 
   local::tail_view get_tail(gf_view<legendre> const & gl, int size, int omin);
 
+  void enforce_discontinuity(gf_view<legendre> & gl, triqs::arrays::array_view<double,2> disc);
+
   // For anything that has the ImmutableGfMatsubaraFreq concept, create such a function and compute
   // Here I choose to create G and call the function to avoid creating one code for each expression...
   //template<typename GfType>
@@ -47,7 +49,7 @@ namespace triqs {
  }
 
  namespace clef {
-  TRIQS_CLEF_MAKE_FNT_LAZY (1, density);
+  TRIQS_CLEF_MAKE_FNT_LAZY (density);
  }
 }
 

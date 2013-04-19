@@ -40,18 +40,7 @@ namespace triqs {
   { typename T::non_view_type r(x); r =r + y; return r;}
  };
 
- // This is a little proxy, the only class allowed to build a view empty !
- template<typename V> class view_proxy {
-  V _v;
-  public:
-  view_proxy() {}
-  view_proxy(V const &v) :_v(v){}
-  void rebind( V const & v) { _v.rebind(v);}
-  V & operator() () { return _v;}
-  V const & operator() () const { return _v;}
-  template<typename V2> void operator <<( V2 && v) { _v = v;} 
- };
-
+ 
 }//namespace triqs
 #endif
 

@@ -23,98 +23,107 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
 #include "./meshes/discrete.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gf {
 
  struct block_tag {};
 
  template<typename Target>
- struct block { 
+  struct block {
 
-  /// A tag to recognize the function 
-  struct tag : block_tag {};
+   /// A tag to recognize the function
+   struct tag : block_tag {};
 
-  /// The Mesh
-  typedef discrete_mesh<discrete_domain> mesh_t;
+   /// The Mesh
+   typedef discrete_mesh<discrete_domain> mesh_t;
 
-  /// The target
-  typedef gf<Target> target_t;
-  typedef typename target_t::view_type            target_view_t;
+   ///
+   typedef nothing singularity_t;
 
-  /// 
-  typedef nothing singularity_t;
-
-  /// Symmetry
-  typedef nothing symmetry_t;
-
-  /// Indices
-  typedef nothing indices_t;
-
-  /// Arity (number of argument in calling the function)
-  static const int arity =1;
-
-  struct evaluator { 
-   template<typename D, typename T>
-    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, long  n)  const {return data[n]; }
-  };
-
-  struct bracket_evaluator {
-   template<typename Td, bool v,  typename T>
-    typename vector_storage<Td,v>::T_t  &  operator() (mesh_t const & mesh, vector_storage<Td,v> & data, T & t, long  n)  const {return data[n]; }
-   template<typename Td, bool v,  typename T>
-    typename vector_storage<Td,v>::T_t const &  operator() (mesh_t const & mesh, const vector_storage<Td,v> & data, T & t, long  n)  const {return data[n]; }
-   //template<typename D, typename T>
-   // target_t &  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
-   //template<typename D, typename T>
-   // target_t const &  operator() (mesh_t const & mesh, const D & data, T & t, long  n)  const {return data[n]; }
-    //target_view_t  operator() (mesh_t const & mesh, D & data, T & t, long  n)  const {return data[n]; }
-  };
-
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS> 
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { for (auto w: mesh) {data[w.index] = rhs(w); } }
+   /// Symmetry
+   typedef nothing symmetry_t;
 
   static std::string h5_name() { return "block_gf";}
- 
-  // -------------------------------   Factories  --------------------------------------------------
 
-  typedef gf<block> gf_t;
-  typedef gf_view<block> gf_view_t;
+  typedef void has_special_h5_read_write_tag;
 
-  static gf_t make_gf(std::vector<gf<Target>> const & V)  { return gf_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-  static gf_t make_gf(std::vector<gf<Target>> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
-
-  static gf_t make_gf(std::vector<std::string> const & Names, std::vector<gf<Target>> const & V) {
-    return gf_t(mesh_t(Names), V, nothing(), nothing() );
-  }
-  static gf_t make_gf(std::vector<std::string> const & Names, std::vector<gf<Target>> && V) {
-    return gf_t(mesh_t(Names), std::move(V), nothing(), nothing() );
-  }
-  
-  template<typename... Args> 
-  static gf_t make_gf(size_t N, Args&& ...args)  { 
-   std::vector<gf<Target>> V;
-   for (size_t i=0; i<N; ++i)  V.push_back( Target::make_gf (args...));
-   return make_gf(V);
+  template<typename G> 
+  static void h5_data_write(h5::group g, std::string const & s, G const & gf) {
+   auto gr =  g.create_group(s);
+   for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
   }
 
-  static gf_view_t make_gf_view(std::vector<gf<Target>> const & V)      { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf<Target>> && V)           { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf_view<Target>> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
-  static gf_view_t make_gf_view(std::vector<gf_view<Target>> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
+  template<typename G> 
+   static void h5_data_read(h5::group g, std::string const & s, G & gf) {
+    auto gr =  g.create_group(s);
+    for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
+   }
+  };
+ /// ---------------------------  evaluator ---------------------------------
 
- };
+
+ /// ---------------------------  data access  ---------------------------------
+
+ template<typename Target> struct data_proxy<block<Target>> : data_proxy_vector <gf<Target>>{};
+
+ // -------------------------------   Factories  --------------------------------------------------
+
+ template<typename Target>
+  struct gf_factories<block<Target>> : block<Target> { 
+   typedef block<Target> B;
+   typedef typename B::mesh_t mesh_t;
+   typedef gf<block<Target>> gf_t;
+   typedef gf_view<block<Target>> gf_view_t;
+
+   static gf_t make_gf(std::vector<gf<Target>> const & V)  { return gf_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
+   static gf_t make_gf(std::vector<gf<Target>> && V)       { return gf_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
+
+   static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<gf<Target>> const & V) {
+    return gf_t(mesh_t(block_names), V, nothing(), nothing() );
+   }
+   static gf_t make_gf(std::vector<std::string> const & block_names, std::vector<gf<Target>> && V) {
+    return gf_t(mesh_t(block_names), std::move(V), nothing(), nothing() );
+   }
+
+   /* template<typename... Args>
+      static gf_t make_gf(size_t N, Args&& ...args)  {
+      std::vector<gf<Target>> V; V.reserve(N);
+      for (size_t i=0; i<N; ++i) V.push_back( Target::make_gf (std::forward<Args>(args...)));
+      return make_gf(V);
+      }
+      */
+   static gf_t make_gf(int N, gf<Target> const & g)  {
+    std::vector<gf<Target>> V; V.reserve(N);
+    for (size_t i=0; i<N; ++i)  V.push_back(g);
+    return make_gf(V);
+   }
+
+   static gf_t make_gf(std::vector<std::string> const & block_names, gf<Target> const & g)  {
+    std::vector<gf<Target>> V; V.reserve(block_names.size());
+    for (size_t i=0; i<block_names.size(); ++i)  V.push_back(g);
+    return make_gf(block_names,V);
+   }
 
 
- // -------------------------------   Expression template --------------------------------------------------
+   /*  template<typename... Args>
+       static gf_t make_gf(std::vector<std::string> const & block_names, Args&& ...args)  {
+       std::vector<gf<Target>> V; V.reserve(block_names.size());
+       for (size_t i=0; i<block_names.size(); ++i)  V.push_back( Target::make_gf (std::forward<Args>(args...)));
+       return make_gf(block_names,V);
+       }
+       */
+
+   template<typename GF>
+    static gf_view_t make_gf_view(std::vector<GF> const & V) { return gf_view_t ( mesh_t(V.size()), V,            nothing(), nothing() ) ; }
+   template<typename GF>
+    static gf_view_t make_gf_view(std::vector<GF> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
+
+  };
+
 
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
- template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};  
-
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- TRIQS_GF_DEFINE_OPERATORS(block,block_tag, 0,local::is_scalar_or_element,ImmutableBlockGf);
+ template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};
 
 }}
 

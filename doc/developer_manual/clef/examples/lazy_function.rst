@@ -8,9 +8,9 @@ Using clef::function
 
 The following code :
 
-.. literalinclude:: examples_code/lazyfunction.cpp
+.. literalinclude:: src/lazyfunction.cpp
 
 will print :  
   
-.. literalinclude:: examples_code/lazyfunction.output
+.. literalinclude:: src/lazyfunction2.output
 

@@ -1,31 +1,31 @@
 
 .. highlight:: c
 
-Lazy expressions vs functions
+Clef expressions vs functions
 =====================================================================
 
-Lazy expressions are **NOT** functions. In short, 
+Clef expressions are **NOT** functions. In short, 
 
-* expressions are *evaluated* (the order of argument does not matter) ::
+* clef expressions are *evaluated* (the order of argument *does not* matter) ::
 
-   triqs::clef::eval( expr, x_=1, y_=2, ...);
+   eval( expr, x_=1, y_=2, ...);
 
-* while functions are *called*, as usual (the order of argument does matter !) ::
+* while functions are *called*, as usual (the order of argument *does* matter !) ::
 
    f(1,2)
 
 It is however possible to transform expressions into functions, *as soon as you specify the order of the placeholders*,
 and back.
 
-Function to expressions
--------------------------
+Function to clef expressions
+-------------------------------------
 
 This is immediate, if the function accept lazy arguments, cf :ref:`callable_object`::
 
   auto e1 = f(x_);
 
 
-Transforming lazy expressions into functions
+Transforming clef expressions into functions
 ----------------------------------------------------
 
 make_function
@@ -34,7 +34,7 @@ make_function
 Given any expression with placeholder `x_`, `y_`, `z_`, ..., `make_function`
 transform them into a regular function. If we say ::
 
-  auto f = make_function( lazy_expression, placeholder_1, placeholder_2, placeholder_3, ...)
+  auto f = make_function( clef_expression, placeholder_1, placeholder_2, placeholder_3, ...)
 
 then f is :: 
   
@@ -43,7 +43,7 @@ then f is ::
 where RESULT is : 
 
 * the result of the complete evaluation of the expression if the list of placeholder exhausts the placeholders of the expression.
-* otherwise a lazy_expression of the remaining placeholders, returning a **function**.
+* otherwise a clef_expression of the remaining placeholders, returning a **function**.
 
 Examples :
 
@@ -52,14 +52,14 @@ Examples :
    auto e1 = 2*x_ + 1;
    auto f = make_function( e1, x_);
    f(3) == 7; // ok
-   boost::function<double(double)> F(f); // ok
+   std::function<double(double)> F(f); // ok
 
 * With two variables ::
   
    auto e2 = 2*x_ + y_ + 1;
    auto f = make_function( e2, x_, y_);
    f(3,4) == 11; // ok
-   boost::function<double(double,double)> F(f); // ok
+   std::function<double(double,double)> F(f); // ok
 
 * Make a function partially ::
 

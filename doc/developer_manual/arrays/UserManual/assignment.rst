@@ -3,14 +3,8 @@
 Assignment 
 =========================
 
-The `value classes` and the `view classes` have a quite general assignment operator (=), 
-and corresponding compound operators (+=, -=).
-We will illustrate it on the `array` class, it is the same for `matrix` and `vector`.
-
-Assignment operator (=)
--------------------------------------------------
-
 The `value classes` and the `view classes` have a quite general assignment operator.
+We will illustrate it on the `array` class, it is the same for `matrix` and `vector`.
 
 * **Syntax** : the syntax is the same in both cases::
 
@@ -70,22 +64,3 @@ The `value classes` and the `view classes` have a quite general assignment opera
   * but the compiler compiles (2), which eliminates temporaries...
 
 
-Compound operators (+=, -=, * =, /=)
--------------------------------------------------
-
-
- * **Syntax** 
-
-   The syntax is natural ::
-
-    template<typename RHS> array & operator += (const RHS & X);
-    template<typename RHS> array & operator -= (const RHS & X);
-    template<typename RHS> array & operator *= (const Scalar & S);
-    template<typename RHS> array & operator /= (const Scalar & S);
-
- * **Behaviour**
-
-   - Domain must match.
-   - X is evaluated and added term by term.
-
-To be written : special operators.

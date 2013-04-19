@@ -21,20 +21,10 @@
 #ifndef TRIQS_ARRAYS_ALL_H
 #define TRIQS_ARRAYS_ALL_H
 
-// First the lazy expression lib
-#include <triqs/clef/core.hpp>
-
 // The basic classes
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/vector.hpp>
-
-// Adaptation to lazy
-#include <triqs/clef/adapters/array.hpp>
-
-// Proto expression
-#include <triqs/arrays/proto/array_algebra.hpp>
-#include <triqs/arrays/proto/matrix_algebra.hpp>
 
 //
 //#include <triqs/arrays/functional/map.hpp>

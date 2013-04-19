@@ -18,18 +18,26 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-#ifndef TRIQS_GF_LOCAL_FOURIER_BASE_H 
+#ifndef TRIQS_GF_LOCAL_FOURIER_BASE_H
 #define TRIQS_GF_LOCAL_FOURIER_BASE_H
 #include <triqs/arrays/vector.hpp>
 
-namespace triqs { namespace gf { namespace details { 
+namespace triqs { namespace gf {
 
- namespace tqa = triqs::arrays;
- typedef std::complex<double> dcomplex;
+ namespace details {
 
- void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct);
+   namespace tqa = triqs::arrays;
+   typedef std::complex<double> dcomplex;
 
-}}}
+   void fourier_base(const tqa::vector<dcomplex> &in, tqa::vector<dcomplex> &out, size_t L, bool direct);
+
+ }
+
+ namespace tags { struct fourier{}; }
+
+}}
+
+
 
 #endif
 

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,11 +18,9 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_LATTICE_BRAVAIS_LATTICE_H
 #define TRIQS_LATTICE_BRAVAIS_LATTICE_H
-#include <boost/python.hpp>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/vector.hpp>
@@ -34,7 +31,7 @@
 namespace triqs { namespace lattice_tools { 
 
  namespace tqa = triqs::arrays; 
- using tqa::array; using tqa::array_view; using tqa::matrix_view;using tqa::matrix;
+ using tqa::array; using tqa::array_view; using tqa::matrix_view;using tqa::matrix;using tqa::range;
 
  typedef tqa::vector <double> R_type;
  typedef tqa::vector <double> K_type;
@@ -44,28 +41,38 @@ namespace triqs { namespace lattice_tools {
 
  class bravais_lattice { 
   public : 
-   typedef tqa::matrix<double> units_type;
-   typedef boost::unordered_map<std::string, R_type> orbital_type; // name -> position in space
+   typedef matrix<double> units_type;
+   typedef std::unordered_map<std::string, R_type> orbital_type; // name -> position in space
+  
+   bravais_lattice(units_type const & units); 
    
-   bravais_lattice( units_type const & units__, orbital_type const & orbitals__); 
-   bravais_lattice( boost::python::object units__, boost::python::object orbitals__); 
-   //bravais_lattice( tqa::array_view<double,2> const & units__, boost::python::object orbitals__); 
    size_t n_orbitals() const {return orbitals_.size();}
    units_type const & units() const { return units_;}
    size_t dim() const { return dim_; }   
+
+  /**
+    * Push_back mechanism of a pair orbital_name -> position in R^3
+    * VectorType is anything from which a tqa::vector <double> can be constructed
+    */
+   template<typename VectorType>
+    void push_back(std::string const & s, VectorType && v) { orbitals_.insert(std::make_pair(s,std::forward<VectorType>(v)));}
+    
    /***
     * Transform into real coordinates.
-    * @param[in] x : coordinates in the basis :unit_i
+    * @param[in] x : coordinates in the basis :unit_i arrays::vector or vector_view
     * @return  Coordinates in R^3 ("real" coordinates) 
     */
-   R_view_type lattice_to_real_coordinates(R_view_type const & x) const;
-   //R_view_type lattice_to_real_coordinates(R_type const & x) const;
+   template<typename R> 
+    R_view_type lattice_to_real_coordinates(R const & x) const { 
+     R_type res(3); res() =0;
+     for (size_t i =0; i< dim();i++) res += x (i) * units_(i,range());
+     return(res);
+    }
 
-   protected :
+  protected :
    units_type units_;
    size_t dim_;
    orbital_type orbitals_;
-   void cons_deleg(tqa::array<double,2> const & units__);
  };
 
  class brillouin_zone { 

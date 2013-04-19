@@ -20,49 +20,35 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_MAKE_IMMUTABLE_ARRAY_H
 #define TRIQS_ARRAYS_MAKE_IMMUTABLE_ARRAY_H
-
-#ifndef TRIQS_HAS_CLEF_EXPRESSIONS
-#error "arrays : make_immutable_xxx can only be used if lazy expressions are included too"
-#endif
-
 #include "./array.hpp"
 namespace triqs { namespace arrays { 
 
-
- // 2 generalization : N dim for array with preproc and matrix/vector.....
- // after rethinking a bit...
- 
- template<typename Expr, typename PH1, typename PH2>
+ template<typename Expr, int ... ph>
   class immutable_array_impl : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
-
+   template<int I> struct _si { typedef size_t type;};
    public : 
-    immutable_array_impl(Expr e_, boost::fusion::pair<PH1,range> p1, boost::fusion::pair<PH2,range> p2): 
-     f(clef::make_function(e_, PH1(),PH2())), dom_(make_shape(p1.second.size(), p2.second.size())) {};
-
-    typedef triqs::clef::make_function_impl<Expr, mpl::vector<PH1, PH2> > function_type;
-    // pass this result_type in std result of format ...
-    typedef typename function_type::template result_type<size_t,size_t>::type value_type; 
-    typedef indexmaps::cuboid_domain<2> domain_type;
+    immutable_array_impl(Expr e_, clef::pair<ph,range> ... p): 
+     f(clef::make_function(e_, clef::placeholder<ph>()...)), dom_(make_shape(p.rhs().size()...)) {};
+    typedef typename triqs::clef::result_of::make_function<Expr,clef::placeholder<ph>... >::type function_type;
+    typedef typename std::result_of<function_type(typename _si<ph>::type...)>::type value_type;
+    typedef indexmaps::cuboid::domain_t<sizeof...(ph)> domain_type;
     domain_type domain() const { return dom_;} 
-    template<typename KeyType> value_type operator[] (KeyType const & key) const { return f(key[0],key[1]);}
-
+    template<typename ... Args> value_type operator() (Args const &  ... args) const { return f(args...); } 
     friend std::ostream & operator<<(std::ostream & out, immutable_array_impl const & x){return out<<" immutable_array on domain : "<<x.domain();}
-
    protected:
     function_type f;
     domain_type dom_;
-
   };
 
  /** 
   * \brief Makes a lazy immutable (cuboid) array from a simple expression and a set of range...
   * \param expr The lazy expression
-  * \param i_=R i_ is a placeholder, R a range. The i_=R produce a (boost::fusion) pair of i_ and R , which is the parameter.
+  * \param i_=R i_ is a placeholder, R a range. The i_=R produce a pair of i_ and R , which is the parameter.
   * \return A lazy object implementing the ImmutableCuboidArray concept with the domain built from the ranges. 
   */
- template<typename Expr, typename PH1, typename PH2>
-  immutable_array_impl<Expr,PH1,PH2> make_immutable_array( Expr const & expr, boost::fusion::pair<PH1,range> p1, boost::fusion::pair<PH2,range> p2) {
-   return immutable_array_impl<Expr,PH1,PH2> (expr, p1, p2);
+ template<typename Expr, int ... ph>
+  immutable_array_impl<Expr,ph...> make_immutable_array( Expr const & expr, clef::pair<ph,range> ... p) {
+   return immutable_array_impl<Expr,ph...> (expr, p...);
   }
 
 }}//namespace triqs::arrays

@@ -23,33 +23,21 @@
 #include "./tools.hpp"
 #include "./gf.hpp"
 #include "./local/tail.hpp"
-#include "./gf_proto.hpp"
+#include "./domains/R.hpp"
 #include "./meshes/linear.hpp"
 
-namespace triqs { namespace gf { 
+namespace triqs { namespace gf {
 
  struct retime {
 
-  /// A tag to recognize the function 
+  /// A tag to recognize the function
   struct tag {};
 
   /// The domain
-  struct domain_t {
-   typedef double point_t; 
-   bool operator == (domain_t const & D) const { return true; }
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t const & d) {}
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, domain_t & d){ }
-   friend class boost::serialization::access;
-   template<class Archive> void serialize(Archive & ar, const unsigned int version) {}
-  };
+  typedef R_domain domain_t;
 
   /// The Mesh
   typedef linear_mesh<domain_t> mesh_t;
- 
-  /// The target
-  typedef arrays::matrix<std::complex<double> >     target_t;
-  //  typedef arrays::matrix<std::complex<double>, arrays::Option::Fortran >     target_t;
-  typedef typename target_t::view_type                                       target_view_t;
 
   /// The tail
   typedef local::tail   singularity_t;
@@ -57,60 +45,57 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  /// Indices
-  typedef indices_2_t indices_t;
-
-  /// Arity (number of argument in calling the function)
-  static const int arity =1;
-
-  struct evaluator { 
-   /// All the possible calls of the gf
-   template<typename D, typename T>
-    target_view_t operator() (mesh_t const & mesh, D const & data, T const & t, double t0)  const {
-     size_t index; double w; bool in;
-     std::tie(in, index, w) = windowing(mesh,t0);
-     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
-     //return data(arrays::ellipsis(),mesh.index_to_linear(index)); 
-     target_t res = w*data(arrays::ellipsis(),mesh.index_to_linear(index)) + (1-w)*data(arrays::ellipsis(),mesh.index_to_linear(index+1));
-     return res;
-    } 
-
-   template<typename D, typename T>
-    local::tail_view operator()(mesh_t const & mesh, D const & data, T const & t, freq_infty const &) const {return t;} 
-  };
-
-  struct bracket_evaluator {};
-
-  /// How to fill a gf from an expression (RHS)
-  template<typename D, typename T, typename RHS> 
-   static void assign_from_expression (mesh_t const & mesh, D & data, T & t, RHS rhs) { 
-    for (size_t u=0; u<mesh.size(); ++u)  { target_view_t( data(tqa::range(),tqa::range(),u)) = rhs(mesh[u]); }
-    t = rhs( local::tail::omega(t.shape(),t.size()));
-   }
-
   static std::string h5_name() { return "retime_gf";}
-
-  // -------------------------------   Factories  --------------------------------------------------
-
-  typedef gf<retime> gf_t;
-
-  static gf_t make_gf(double tmin, double tmax, size_t n_time_points, tqa::mini_vector<size_t,2> shape) { 
-   retime::mesh_t m(retime::domain_t(), tmin, tmax, n_time_points, mesh_t::full_bins);
-   gf_t::data_non_view_t A(shape.append(m.size())); A() =0;
-   return gf_t (m, std::move(A), local::tail(shape), nothing(), indices_t(shape) ) ;
-  }
 
  };
 
+ /// ---------------------------  evaluator ---------------------------------
 
+ template<>
+  struct evaluator<retime> {
+   static constexpr int arity = 1;
+   template<typename G>
+    arrays::matrix_view<std::complex<double> >  operator() (G const * g,double t0)  const {
+     auto & data = g->data_view();
+     auto & mesh = g->mesh();
+     size_t index; double w; bool in;
+     std::tie(in, index, w) = windowing(mesh,t0);
+     if (!in) TRIQS_RUNTIME_ERROR <<" Evaluation out of bounds";
+     arrays::matrix<std::complex<double> > res = w*data(mesh.index_to_linear(index), arrays::ellipsis()) + (1-w)*data(mesh.index_to_linear(index+1), arrays::ellipsis());
+     return res;
+    }
+   template<typename G>
+    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity_view();}
+  };
 
- // -------------------------------   Expression template --------------------------------------------------
+ /// ---------------------------  data access  ---------------------------------
 
- // A trait to identify objects that have the concept ImmutableGfOneTime
- template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};  
+ template<> struct data_proxy<retime> : data_proxy_array<std::complex<double>,3> {};
 
- // This defines the expression template with boost::proto (cf gf_proto.hpp).
- // TRIQS_GF_DEFINE_OPERATORS(times,local::is_scalar_or_element,ImmutableGfOneRealTime);
+ // -------------------  ImmutableGfOneRealTime identification trait ------------------
+
+ template<typename G> struct ImmutableGfOneRealTime : boost::is_base_of<typename retime::tag,G> {};
+
+ // -------------------------------   Factories  --------------------------------------------------
+
+ template<> struct gf_factories<retime> : retime { 
+  typedef gf<retime> gf_t;
+
+  static mesh_t make_mesh(double tmin, double tmax, size_t n_points, mesh_kind mk) {
+   return mesh_t(domain_t(), tmin, tmax, n_points, mk);
+  }
+
+  static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {
+   gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_points, full_bins), std::move(A), local::tail(shape), nothing());
+  }
+
+  static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape, mesh_kind mk) {
+   gf_t::data_non_view_t A(shape.front_append(n_points)); A() =0;
+   return gf_t(make_mesh(tmin, tmax, n_points, mk), std::move(A), local::tail(shape), nothing());
+  }
+
+ };
 
 }}
 #endif

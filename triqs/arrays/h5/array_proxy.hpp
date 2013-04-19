@@ -50,7 +50,7 @@ namespace triqs { namespace arrays {
        if (!h5::exists(file_group, name)) TRIQS_RUNTIME_ERROR<< " h5 : no dataset"<< name << " in file "; 
        storage_ = std::make_pair( boost::make_shared<FileGroupType>(file_group),name);
        DataSet dataset = file_group.openDataSet( name.c_str() );
-       try { if (T_is_complex) write_attribute(dataset,"__complex__","1"); } 
+       try { if (T_is_complex) write_string_attribute(&dataset,"__complex__","1"); } 
        catch (...) {} // catch if the attribute already exists...
       }
 
@@ -66,7 +66,7 @@ namespace triqs { namespace arrays {
     storage_ = std::make_pair( boost::make_shared<FileGroupType>(file_group),name_);
     DataSpace ds  = indexmap_.template dataspace<T_is_complex>(); //(indexmap_type::rank_full, &indexmap_.lengths()[0], &indexmap_.strides()[0]  );
     DataSet dataset = file_group.createDataSet( name_.c_str(), data_type_file(ValueType()), ds);
-    if (T_is_complex) write_attribute(dataset,"__complex__","1");
+    if (T_is_complex) write_string_attribute(&dataset,"__complex__","1");
    }
 
     /// Shallow copy

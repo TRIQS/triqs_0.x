@@ -22,7 +22,7 @@
 #define TRIQS_ARRAYS_HDF5_ARRAY_PROXY_IMPL_H
 //#define TRIQS_ARRAYS_DEBUG_H5_SLICE
 
-#include "../indexmaps/cuboid/cuboid_domain.hpp"
+#include "../indexmaps/cuboid/domain.hpp"
 #include "./group_or_file.hpp"
 #include "../impl/sliceable_object.hpp"
 #include "../impl/tuple_tools.hpp"
@@ -46,7 +46,7 @@ namespace triqs { namespace arrays {
      static const unsigned int rank= Rank, rank_full = Rank_full;
      typedef mini_vector<size_t, Rank>      v_type;
      typedef mini_vector<size_t, Rank_full> v_type_full;
-     typedef indexmaps::cuboid_domain<Rank> domain_type;
+     typedef indexmaps::cuboid::domain<Rank> domain_type;
      domain_type const & domain() const { return mydomain;}
 
      index_system (v_type_full const & total_lengths_) {

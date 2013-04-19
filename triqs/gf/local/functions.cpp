@@ -32,7 +32,7 @@ namespace triqs { namespace gf {
  // ------------------------------------------------------
  tqa::matrix<double> density( gf_view<imfreq> const & G) { 
   dcomplex I(0,1);
-  auto sh = G.data_view().shape().pop();
+  auto sh = G.data_view().shape().front_pop();
   auto Beta = G.domain().beta;
   local::tail_view t = G(freq_infty());
   if (!t.is_decreasing_at_infinity())  TRIQS_RUNTIME_ERROR<<" density computation : Green Function is not as 1/omega or less !!!";
@@ -73,12 +73,12 @@ namespace triqs { namespace gf {
 
  tqa::matrix<double> density( gf_view<legendre> const & gl) { 
 
-   auto sh = gl.data_view().shape().pop();
+   auto sh = gl.data_view().shape().front_pop();
    tqa::matrix<double> res(sh);
    res() = 0.0;
 
    for (auto l : gl.mesh()) {
-     res -= sqrt(2*l.index+1) * gl(l);
+     res -= sqrt(2*l.index()+1) * gl(l);
    }
    res /= gl.domain().beta;
 
@@ -90,37 +90,39 @@ namespace triqs { namespace gf {
  // this is Eq. 8 of our paper
  local::tail_view get_tail(gf_view<legendre> const & gl, int size = 10, int omin = -1) {
 
-   auto sh = gl.data_view().shape().pop();
+   auto sh = gl.data_view().shape().front_pop();
    local::tail t(sh, size, omin);
    t.data_view() = 0.0;
 
    for (int p=1; p<=t.order_max(); p++)
      for (auto l : gl.mesh())
-       t(p) += (triqs::utility::legendre_t(l.index,p)/pow(gl.domain().beta,p)) * gl(l);
+       t(p) += (triqs::utility::legendre_t(l.index(),p)/pow(gl.domain().beta,p)) * gl(l);
 
    return t;
 
  }
 
  // Impose a discontinuity G(\tau=0)-G(\tau=\beta)
-/*
  void enforce_discontinuity(gf_view<legendre> & gl, tqa::array_view<double,2> disc) {
 
-   disc.reindexSelf(TinyVector<int,2>(1,1));
+   double norm = 0.0;
+   tqa::vector<double> t(gl.data_view().shape()[0]);
+   for (int i=0; i<t.size(); ++i) {
+     t(i) = triqs::utility::legendre_t(i,1) / gl.domain().beta;
+     norm += t(i)*t(i);
+   }
 
-   Array<double,1> A (Range(0,data.ubound(thirdDim)));
-   for (int i=0; i<=data.ubound(thirdDim); i++)
-     A(i) = legendre_t(i,1) / Beta;
-   double c=sum(A*A);
-   Array<double,2> step=disc.copy();
+   tqa::array<double,2> corr(disc.shape()); corr() = 0;
+   for (auto l : gl.mesh()) {
+     corr += t(l.index()) * gl(l);
+   }
 
-   step=disc(tensor::i,tensor::j)-sum(data(tensor::i,tensor::j,tensor::k)*A(tensor::k),tensor::k);
-   data+=step(tensor::i,tensor::j)*A(tensor::k)/c;
+   tqa::range R;
+   for (auto l : gl.mesh()) {
+     gl.data_view()(l.index(),R,R) += (disc - corr) * t(l.index()) / norm;
+   }
 
-   gl.data(i,j,k) = 
- 
  }
-*/
 
 
 }}

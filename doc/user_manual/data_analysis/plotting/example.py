@@ -1,10 +1,10 @@
-from pytriqs.base.gf_local import *
-from pytriqs.base.gf_local.descriptors import Omega
-g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "g")
+from pytriqs.gf.local import *
+from pytriqs.gf.local.descriptors import Omega
+g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "g")
 g <<= inverse( Omega + 0.5 )
 
 # open 2 panels top (t) and bottom (b) 
-from pytriqs.base.plot.mpl_interface import subplots
+from pytriqs.plot.mpl_interface import subplots
 f, (t,b) = subplots( 2,1)
 
 #plot ...

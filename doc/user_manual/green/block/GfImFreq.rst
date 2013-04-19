@@ -19,7 +19,7 @@ where :math:`G(\tau)` is the :ref:`Matsubara Green function in imaginary time <G
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GfImFreq
+.. autoclass:: pytriqs.gf.local.GfImFreq
   :members: density, set_from_fourier, set_from_legendre
  
 

@@ -19,35 +19,17 @@
  *
  ******************************************************************************/
 #include "bravais_lattice_and_brillouin_zone.hpp"
-
-#include <triqs/arrays/proto/matrix_algebra.hpp>
-#include <boost/numeric/bindings/blas/level1/dot.hpp>
+#include <triqs/arrays/blas_lapack/dot.hpp>
 #include <triqs/arrays/linalg/inverse.hpp>
 #include <triqs/arrays/linalg/cross_product.hpp>
-#include <triqs/python_tools/converters/unordered_map.hpp> 
-#include <triqs/arrays/python/converters.hpp>
 namespace triqs { namespace lattice_tools { 
 
  using namespace tqa;
  using namespace std;
- using boost::numeric::bindings::blas::dot;
+ //using triqs::arrays::blas::dot;
  const double almost_zero(1E-10);
 
- bravais_lattice::bravais_lattice( units_type const & units__, orbital_type const & orbitals__) : 
-  units_(3,3), dim_(units__.len(0)), orbitals_(orbitals__) { cons_deleg(units__);}
-
- //bravais_lattice::bravais_lattice( tqa::array_view<double,2> const & units__, boost::python::object orbitals__) : 
- bravais_lattice::bravais_lattice( boost::python::object units__, boost::python::object orbitals__) : 
-  units_(3,3), dim_(boost::python::len(units__)), orbitals_() { 
-  //units_(3,3), dim_(units__.len(0)), orbitals_() { 
-   cons_deleg(array<double,2>(units__.ptr()));
-   //if (orbitals__) 
-    orbitals_ = python_tools::converter<orbital_type>::Py2C(orbitals__);
-   //else { R_type z(3); z()=0; orbitals_.insert(std::make_pair("",z));}
-  }
-
- void bravais_lattice::cons_deleg(tqa::array<double,2> const & units__) {
-
+ bravais_lattice::bravais_lattice( units_type const & units__) : units_(3,3), dim_(units__.len(0)) { 
   units_(range(0,dim_),range()) = units__();
   units_(range(dim_,3),range()) = 0;
   // First complete the basis. Add some tests for safety
@@ -77,13 +59,6 @@ namespace triqs { namespace lattice_tools {
     units_(2,range()) = uy /delta;
   }
  //cerr<<" Units = "<< units_<<endl; 
- }
-
- R_view_type bravais_lattice::lattice_to_real_coordinates(R_view_type const & x) const {
-  assert(x.size()==dim());
-  R_type res(3); res() =0;
-  for (size_t i =0; i< dim();i++) res += x (i) * units_(i,range());
-  return(res);
  }
 
  //------------------------------------------------------------------------------------

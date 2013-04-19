@@ -208,7 +208,7 @@ Storage
    clone() const                                           Create a clone of the data.
    const_clone() const                                     Create a clone of the data with const value_type (e.g. int--> const int).
  
-   void raw_copy_from(const STO & X)                       Copy all the data from X to *this. Behaviour undefined if sizes do not match.
+   void raw_copy_from(const STO & X)                       Copy all the data from X to * this. Behaviour undefined if sizes do not match.
        
    size_t size() const                                     Number of elements in the storage
   
@@ -216,10 +216,6 @@ Storage
    ======================================================  ==================================================================================================
 
 
-* **Examples** : 
-   * shared_block : basically a shared_ptr to a basic C++ array, dressed to model the Storage concept.
-   * numpy        : a dressing of a python numpy object to model the Storage concept.
-   
 
 StorageOrder concept
 -------------------------------------------------
@@ -252,26 +248,5 @@ StorageOrder concept
  ==========================================================  ==================================================================================================
  Operator ==                                                 Defined between any of the ordering.
  ==========================================================  ==================================================================================================
-
-
-* **Examples** ::
-
-     storage_order_C <rank>         // canonical C ordering
-     
-     storage_order_fortran <rank>   // canonical Fortran ordering 
-     
-     storage_order_custom <P>       // custom storage given by a permutation P
-
-  * Details on the custom order : 
-      
-      * P = [p_1,... p_r] : p_1 is the fastest index, p_r the slowest.       
-
-      * Example::
-
-         storage_order_C <rank>       == storage_order_custom< Permutations::reverse_identity<rank> >
-        
-         storage_order_fortran <rank> == storage_order_custom< Permutations::identity<rank> >
-        
-         storage_order_custom <Permutations::permutation<0,2,1> > // the fastest index in memory is 0, then 1, then 2.
 
 

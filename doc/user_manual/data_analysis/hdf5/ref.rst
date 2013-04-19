@@ -27,7 +27,7 @@ Let us first document :class:`HDFArchive`.
 HDFArchive
 =======================================
 
-.. autoclass::  pytriqs.base.archive.HDFArchive
+.. autoclass::  pytriqs.archive.HDFArchive
 
 
 
@@ -189,7 +189,7 @@ The class is registered using the module `hdf_archive_schemes` ::
  class myclass :
    pass #....
    
- from pytriqs.base.archive.hdf_archive_schemes import register_class
+ from pytriqs.archive.hdf_archive_schemes import register_class
  register_class (myclass)
 
 The function is 

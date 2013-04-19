@@ -3,15 +3,22 @@
 FAQ
 ======
 
-Should I use array_view or array & as a return_type of a function ?
-----------------------------------------------------------------------
+How do I iterate on my array ?
+-----------------------------------
 
-It depends...
 
-* array & is slightly quicker, since creating a view means copying the index systems (lengths and strides) 
-  and a shared_ptr.
-* BUT array_view will keep the reference counting.
+There are different way to iterate on the element of an array, recommended in this order from the most simple/efficient to the most complex/slow : 
 
-So except in very critical parts of the code, the recommendation is to return a view.
+* To assign data into an array, the simplest and efficient way is to use 
+  automatic assignment with lazy expressions, Cf :ref:`Lazy`.
 
+* For a more general case, where one does not simply assign a value to the array element, 
+  use a *foreach* construct, Cf :ref:`Foreach`.
+
+* You can use STL algorithms, since arrays have STL compliant iterators.
+  The performance may be lower than *foreach* loops (never better anyhow).
+
+* Of course, one can still use a simple for loop, but this is not recommended in general
+  since it is more error prone and less optimal.
+  
 

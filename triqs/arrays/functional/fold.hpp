@@ -34,9 +34,10 @@ namespace triqs { namespace arrays {
    
    template<class A>
     struct fold_func_adaptor { 
+     A const & b;
      F f; result_type r;
-     fold_func_adaptor(F f_, A a_):f(f_) { r= a_;}
-     template<class KT> void operator()(A const & b, KT &) { r = f(r,b);}
+     fold_func_adaptor(F f_, A const & a_,typename A::value_type init ):b(a_), f(f_) { r= init;}
+     template<typename ... Args> void operator()(Args const & ... args) { r = f(r,b(args...)); }
     };
 
    public:
@@ -45,8 +46,10 @@ namespace triqs { namespace arrays {
 
    template<class A>   
     result_type operator() (A const & a, typename A::value_type init = typename A::value_type() )  const { 
-     fold_func_adaptor<typename A::value_type> func(f,init);
-     indexmaps::foreach(boost::ref(func),a);
+     fold_func_adaptor<A> func(f,a,init);
+     //fold_func_adaptor<typename A::value_type> func(f,init);
+     foreach(a,std::ref(func));
+     //foreach(a,boost::ref(func));
      return func.r;
     }
   };

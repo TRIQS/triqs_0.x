@@ -16,8 +16,8 @@ This object stores a retarded matrix valued Green function in real time :
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GfReTime
-  :members: density, set_from_inverse_fourier, transpose, conjugate
+.. autoclass:: pytriqs.gf.local.GfReTime
+  :members: set_from_inverse_fourier, fourier, transpose, conjugate
  
 
 HDF5 data scheme

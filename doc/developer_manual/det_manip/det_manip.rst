@@ -103,7 +103,7 @@ Under the hood ...
 Doxygen documentation
 -------------------------
 
-The :detmanip_doxy:`full C++ documentation<triqs::det_manip::det_manip>` is available here.
+The :doxy:`full C++ documentation<triqs::det_manip::det_manip>` is available here.
 
 Example  
 -------------

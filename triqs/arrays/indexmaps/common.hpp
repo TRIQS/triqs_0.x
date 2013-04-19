@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,21 +18,35 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
 #ifndef TRIQS_ARRAYS_INDEXMAP_COMMON_H
 #define TRIQS_ARRAYS_INDEXMAP_COMMON_H
 #include "../impl/common.hpp"
-#include "../impl/mini_vector.hpp"
-#include "../impl/tuple_tools.hpp"
+#include <triqs/utility/mini_vector.hpp>
+//#include "../impl/tuple_tools.hpp"
+#include <boost/ref.hpp>
 #include <iostream>
 
 namespace boost { namespace serialization { class access;}}
 namespace triqs { namespace arrays { namespace Tag {struct indexmap{}; }}}
 
-namespace triqs { namespace arrays { namespace indexmaps { 
+namespace triqs { namespace arrays { 
+ using utility::mini_vector;
+
+ // make_shape
+ // generalize with preproc or variadic template
+#define IMPL(z, NN, unused)                                \
+ template <typename T> mini_vector<size_t,BOOST_PP_INC(NN)> make_shape(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), T I_)) \
+ { return mini_vector<size_t,BOOST_PP_INC(NN)>(BOOST_PP_ENUM_PARAMS(BOOST_PP_INC(NN), I_));} 
+ BOOST_PP_REPEAT(ARRAY_NRANK_MAX , IMPL, nil)
+#undef IMPL
+// template<typename T0, typename... T> 
+//  mini_vector<T0, sizeof...(T)+1> make_shape(T0 x0, T... args) { return  mini_vector<T0, sizeof...(T)+1> (x0,args...);}
+
+
+ namespace indexmaps { 
 
  // to be specialized for all IndexMap types.
- template<typename IndexMap, typename Args> struct slicer; 
+ template<typename IndexMap, typename... Args> struct slicer; 
 
  /// Returns whether the 2 indexMaps are compatible with A op B (op : = , +, etc...)
  template< typename IndexMap1, typename IndexMap2>
@@ -68,25 +81,10 @@ namespace triqs { namespace arrays { namespace indexmaps {
   *     and use indexmap_iterator_adapter to deduce the iterator on B that traver
   se the indices in the same way. 
   */
- template <typename IndexMapIterator, typename IndexMap>
-  struct indexmap_iterator_adapter;
+ //template <typename IndexMapIterator, typename IndexMap>
+ // struct indexmap_iterator_adapter;
 
- /**
-  * Pretty printing : a generic version for any domain. To be specialized.
-  */
- namespace PrettyPrint_details { 
-  template<typename D, typename A>
-   struct print_impl {
-    static void do_it (std::ostream & out,const D & d, A const & a ) { out<<"[";
-     for (typename D::generator it(d); it; ++it) out<<a[*it]<<" ";
-     out<<"]"; }
-   };
- }
-
- template<typename D, typename A>
-  void pretty_print (std::ostream & out,const D & d, A const & a ) { PrettyPrint_details::print_impl<D,A>::do_it(out,d,a);}
-
-}}}//namespace triqs::arrays 
+ }}}//namespace triqs::arrays 
 #endif
 
 

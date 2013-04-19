@@ -22,5 +22,5 @@ A simple example
 Complete reference
 ------------------------
 
-.. autoclass:: pytriqs.solvers.operators.Operator
+.. autoclass:: pytriqs.applications.impurity_solvers.operators.Operator
   :members:

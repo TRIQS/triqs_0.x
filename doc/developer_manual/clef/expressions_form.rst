@@ -1,17 +1,9 @@
-
 .. highlight:: c
 
-Forming lazy expressions
+Introduction
 ===========================
 
-
-The first step consists in forming lazy expressions, and then evaluate them.
-Expressions are made of :
-
-* Placeholders
-* Binary operations on expressions `(+, -, *, /, >, <, >=, <=, ==)`
-* Callable objects (see below) called on expressions
-* Conditional if_else expressions
+The first step consists in forming lazy expressions, before evaluating them.
  
 Placeholders
 ----------------
@@ -40,12 +32,38 @@ In other words, a placeholder is **empty**. It contains **no value** at runtime.
 
       would imply that `x_` is the same as `y_` : `x_` == `y_` will be always true.
 
-Usual operators
-----------------------
+Forming an expression
+-------------------------
 
-Standard arithmetic operations are possible with expressions, e.g.::
+Using simple operators, one can form a more complex expression, e.g.::
+
+  auto e = x_ + 2* y_;
+
+e has a complicated type (it is an expression template), which encodes the structure of the expression.
+Typically here something like ::
  
-  auto e1 = x_ + 2* y_;
+  expr<tags::plus, placeholder<1>, expr<tags::multiplies, int, placeholder<2> >
+
+It is worth noting that : 
+
+* As a user, one *never* has to write such a type
+  One always use expression "on the fly", or use auto.
+
+* Having the whole structure of the expression at compile time allows
+  efficient evaluation (it is the principle of expression template : add a ref here).
+
+* Declaring an expression does not do any computation, hence the name of the library (lazy ...).
+  It just stores the expression tree (its structure in the type, and the leaves of the tree).
+
+What is allowed in clef expressions ? 
+==========================================
+
+Expressions are composed of :
+
+* Placeholders
+* Binary operations on expressions `(+, -, *, /, >, <, >=, <=, ==)`
+* Conditional if_else expressions
+* Callable objects (see below) called on expressions
 
 Callable objects
 --------------------
@@ -58,7 +76,7 @@ Callable objects
   
  .. compileblock::
  
-   #include <triqs/clef/math.hpp>
+   #include <triqs/clef.hpp>
    int main () { 
     triqs::clef::placeholder <1> x_; 
 
@@ -67,6 +85,7 @@ Callable objects
     auto e3 = floor(2*x_-1);
     auto e4 = pow(2*x_+1,2);
    }
+
 * To make your object callable, or to overload a function to accept lazy argument,  see :ref:`callable_object`.
 
 *lazy* function
@@ -76,7 +95,7 @@ The *lazy* function can be called on any object to make it lazy, e.g.
 
 .. compileblock::
  
-   #include <triqs/clef/core.hpp>
+   #include <triqs/clef.hpp>
    #include <vector>
    namespace tql = triqs::clef;
    int main () { 
@@ -85,57 +104,29 @@ The *lazy* function can be called on any object to make it lazy, e.g.
     auto e1 = tql::lazy(V)[i_];
    }
 
-NB : The type of expressions
--------------------------------
-
-The type of expressions (e1,e2, ... above) is quite complex. The structure of the expression is actually encoded in the type
-itself, using recursive template (a technique called *expression template*).
-Therefore it worth noting that : 
-
-* We use auto to declare an expression (*NB : non C++11 users should use BOOST_AUTO*) ::
-  
-   auto e1 = x_ + 2* y_;
-
-* Declaring an expression does not do any computation, hence the name of the library (lazy).
-  It just stores the expression tree (its structure in the type, and the leaves of the tree).
-
-
 Copy policy in building expressions
 ---------------------------------------------------
 
 A central question when forming expressions is whether the object at the leaves of the expressions tree
 (scalar, placeholders, various callable objects, etc...) should be captured by value or by reference.
 
-In the lazy library, the choice has been made to capture them **by value**, i.e. : 
+In the clef library, the choice has been made to capture them **by value**, i.e. : 
 
-  *By default, all objects appearing in a lazy expression are* **copied**, *rather than captured by reference*.
+  *By default, all objects appearing in a clef expression are* **copied**, *rather than captured by reference*.
 
 This is necessary to store expressions (with auto like above) for future reuse, transform them into new expressions
 (e.g. make partial evaluation). Expressions are ordinary objects. 
 If the leaves of the expression tree were captured by reference, a guarantee would have to be made that 
 they will live at least as long as the expression itself, or one gets dangling references.
 
-The drawback of this approach is that it can generate unless copies of large objects.
-There are several solutions to this issue : 
+The drawback of this approach is that it can generate useless copies of large objects.
+There are two simple solutions to this issue : 
 
-* If the object is very small (like a double), hence making a copy in not a problem.
-
-* If you *know* that the object `A` will survive the expression, so using a reference is not a problem.
-  You can use the `lazy(A)` expression that will wrap the reference to the object.
+* If you *know* that the object `A` will survive the expression, so using a reference is not a problem
+  and use std::reference_wrapper<A> instead of A in the tree.
 
 * If the object has a compagnon view object (like array, array_view). In this case, 
   one wishes to put a view of the object rather than a copy in the expression.
-  There are two sub-cases : 
 
-  * TRIQS objects like array, matrix, vector will do it automatically.
-
-  * For another object, if the object defines the tag `has_view_type_tag` as ::
-
-     typedef void has_view_type_tag;
-     typedef MY_VIEW_TYPE view_type;
-  
-    the instance of the object will be replaced by an instance of its view_type in building the expression.
-
-For an illustration, Cf....
 
 

@@ -79,6 +79,13 @@ MESSAGE(STATUS "PYTHON_NUMPY_INCLUDE_DIR = ${PYTHON_NUMPY_INCLUDE_DIR}" )
 mark_as_advanced(PYTHON_NUMPY_INCLUDE_DIR)
 
 #
+# include files for numpy
+#
+EXEC_PYTHON_SCRIPT ("import numpy;print numpy.version.version" PYTHON_NUMPY_VERSION)
+MESSAGE(STATUS "PYTHON_NUMPY_VERSION = ${PYTHON_NUMPY_VERSION}" )
+mark_as_advanced(PYTHON_NUMPY_VERSION)
+
+#
 # Check for site packages
 #
 EXEC_PYTHON_SCRIPT ("from distutils.sysconfig import * ;print get_python_lib(0,0)"

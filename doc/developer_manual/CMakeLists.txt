@@ -20,12 +20,18 @@ EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/foreignlibs/boost/libb
 else(BOOST_SOURCE_DIR)
  SET(  link_boost_for_triqs " ")
 endif(BOOST_SOURCE_DIR)
-SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
 SET(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR}  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/foreignlibs  )
-SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs_utility ${TMP} ")
+SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
+else()
+SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs_utility ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
+SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
+endif()
 SET(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
 
 EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
+EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs_utility.so ${CMAKE_CURRENT_BINARY_DIR}")
 
 # generating the conf.py
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
@@ -42,7 +48,7 @@ find_package(Doxygen REQUIRED)
 
 get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
 string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
-#message( "Doxygen sources are ${DOXYGEN_SOURCES}") 
+message(STATUS "Doxygen sources are ${DOXYGEN_SOURCES}") 
 
 # Prepare the Doxyfile
 configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
@@ -51,8 +57,14 @@ SET(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
 add_custom_command (OUTPUT ${doxy_top} DEPENDS ${DOXYGEN_SOURCES} COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile > ${doxy_top} )
 add_custom_target(docs_doxy ALL DEPENDS ${doxy_top})
 add_dependencies(docs_sphinx_cpp docs_doxy) # we must first have doxygen process the sources to link to them
-
 add_dependencies(docs_sphinx_cpp triqs boost_for_triqs ) # add also mpi ?
+
+if (Build_PDF_Documentation)
+ # not needed, no link to doxygen in the pdf ...
+ #add_dependencies(docs_sphinx_pdf_cpp docs_doxy) # we must first have doxygen process the sources to link to them
+ add_dependencies(docs_sphinx_pdf_cpp triqs boost_for_triqs ) # add also mpi ?
+ install(FILES ${sphinx_top_pdf} DESTINATION share/doc/triqs/developer_manual/)
+endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/ COMPONENT documentation DESTINATION share/doc/triqs/developer_manual
  FILES_MATCHING 

@@ -47,9 +47,9 @@ but obviously you would usually want to cut this into pieces for clarity::
 
     flip(configuration & config_) : config(config_) {}
 
-    double Try() { return std::exp(-2*config.spin*config.h*config.beta); }
-    double Accept() { config.spin *= -1; return 1.0; }
-    void Reject() {}
+    double attempt() { return std::exp(-2*config.spin*config.h*config.beta); }
+    double accept() { config.spin *= -1; return 1.0; }
+    void reject() {}
 
   };
 
@@ -197,8 +197,8 @@ The move concept
 Let's go back to the beginning of the code and have a look at the ``flip``
 class which proposed a flip of the spin. The class is very short.  It has a
 constructor which might define some class variables. But more importantly, it
-has three member functions that any move **must** have: ``Try``, ``Accept`` and
-``Reject``::
+has three member functions that any move **must** have: ``attempt``, ``accept`` and
+``reject``::
 
   struct flip {
 
@@ -206,16 +206,16 @@ has three member functions that any move **must** have: ``Try``, ``Accept`` and
 
     flip(configuration & config_) : config(config_) {}
 
-    double Try() { return std::exp(-2*config.spin*config.h*config.beta); }
-    double Accept() { config.spin *= -1; return 1.0; }
-    void Reject() {}
+    double attempt() { return std::exp(-2*config.spin*config.h*config.beta); }
+    double accept() { config.spin *= -1; return 1.0; }
+    void reject() {}
 
   };
 
-The ``Try`` method is called by the Monte Carlo loop in order to try a new
+The ``attempt`` method is called by the Monte Carlo loop in order to try a new
 move. The Monte Carlo class doesn't care about what this trial is. All that
 matters for the loop is the Metropolis ratio describing the transition to a new
-proposed configuration. It is precisely this ratio that the ``Try`` method is
+proposed configuration. It is precisely this ratio that the ``attempt`` method is
 expected to return:
 
 .. math::
@@ -230,11 +230,11 @@ In our example this ratio is
 
 With this ratio, the Monte Carlo loop decides wether this proposed move should
 be rejected, or accepted. If the move is accepted, the Monte Carlo calls the
-``Accept`` method of the move, otherwise it calls the ``Reject`` method.  The
-``Accept`` method should always return 1.0 unless you want to correct the sign
+``accept`` method of the move, otherwise it calls the ``reject`` method.  The
+``accept`` method should always return 1.0 unless you want to correct the sign
 only when moves are accepted for performance reasons (this rather special case
 is described in the :ref:`full reference <montecarloref>`).  Note that the
-return type of ``Try`` and ``Accept`` has to be the same as the template of the
+return type of ``attempt`` and ``accept`` has to be the same as the template of the
 Monte Carlo class.  In our example, nothing has to be done if the move is
 rejected. If it is accepted, the spin should be flipped.
 
@@ -294,7 +294,7 @@ the simulation with::
 
 The ``start`` method takes two arguments. The first is the sign
 of the very first *configuration* of the simulation. Because the
-``Accept`` method only returns a ratio, this initial sign is used
+``accept`` method only returns a ratio, this initial sign is used
 to determine the sign of all generated configurations.
 
 The second argument is used to decide if the simulation must be stopped for

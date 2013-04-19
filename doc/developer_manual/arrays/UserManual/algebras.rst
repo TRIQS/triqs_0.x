@@ -1,31 +1,82 @@
-
 .. highlight:: c
 
-array and matrix/vector algebra 
+Operations : array and matrix/vector algebras 
 =======================================================
+
+Operations
+------------
 
 Arrays and matrices can be combined in formal algebraic expressions, which models the :ref:`HasImmutableArrayInterface` concept.
 This algebraic expressions can therefore be used as RHS of assignment (SEE) or in array/matrix contructors.
-For example ::
-  
-   array<long,2> A (2,2), B(2,2),C;
-   C= A + 2*B;
-   array<long,2> D = A+ 2*B;
-   array<double,2> F = 0.5 * A;  // Type promotion is automatic
+For example ; 
 
-Expression templates : the basic idea
+.. compileblock::
+
+   #include <triqs/arrays.hpp>
+   using triqs::arrays::array; 
+   int main() {  
+    array<long,2> A (2,2), B(2,2), C;
+    C= A + 2*B;
+    array<long,2> D = A+ 2*B;
+    array<double,2> F = 0.5 * A;  // Type promotion is automatic
+   }
+
+Arrays vs matrices
+----------------------
+
+Because their multiplication is not the same, arrays and matrices algebras can not be mixed.
+Mixing them in expression would therefore be meaningless and it is therefore not allowed ::
+
+   array<long,2> A;
+   matrix<long,2> M;
+   M + A; // --> ERROR. Rejected by the compiler.
+
+However, you can always make a matrix_view from a array of rank 2 ::
+  
+   A + make_matrix_view(M); //--> OK.
+
+.. note::
+
+   Making view is cheap, it only copies the index systems. Nevertheless
+   this can still cause severe overhead in very intense loops. 
+
+   
+Compound operators (+=, -=, *=, /=)
+-------------------------------------------
+
+The `value classes` and the `view classes` behaves similarly.
+We will illustrate it on the `array` class, it is the same for `matrix` and `vector`.
+
+ * **Syntax** 
+
+   The syntax is natural ::
+
+    template<typename RHS> array & operator += (const RHS & X);
+    template<typename RHS> array & operator -= (const RHS & X);
+    template<typename RHS> array & operator *= (const Scalar & S);
+    template<typename RHS> array & operator /= (const Scalar & S);
+
+ * **Behaviour**
+
+   - Similar to assignment, but it makes the operation
+   - For matrices, scalar is correctly interpreted as a scalar matrix.
+
+
+Performance
 ---------------------------------------------
 
-The programming technique used here is called `expression templates`. 
+The performance of such compact writing is as good as "hand-written" code or even better.
 
-The principle in a nutshell is that the result of A+B is **NOT** an array, but a complex type of the form::
+Indeed, the operations are implemented with the `expression templates` technique.
+The principle is that the result of A+B is **NOT** an array, but a more complex type which stores
+the expression using the naturally recursive structure of templates.
 
-  auto Expr = A+B; // <--- Expr is a type of the form  addition_of< A_type, B_type>
-  auto Expr = A + 2*B + C; // <--- Expr is a type of the form 
-  // addition_of<A_type, addition_of< multiplication_of<int,B_type>, C_type> >
+Expressions models :ref:`HasImmutableArrayInterface` concept.
+They behave like an immutable array : they have a domain, they can be evaluated.
+Hence they can used *anywhere* an object modeling this concept is accepted, e.g. : 
 
-The resulting type stores the syntax tree in the type (using the naturally recursive structure of templates)
-and it stores the numbers and a view on the arrays involved in the expression.
+* array, matrix contruction
+* operator =, +=, -=, ...
 
 When an array in assigned (or constructed from) such expression, it fills itself
 by evaluating the expression.
@@ -47,32 +98,11 @@ but with several advantages :
 * It is much better for **optimization** : 
   
   * What you want is to tell the compiler/library to compute this expression, not *how* to do it optimally on a given machine.
-  * For example, since the memory layout is decided at compile time, the library can traverse the data
+  * For example, since the traversal order of indices is decided at compile time, the library can traverse the data
     in an optimal way, allowing machine-dependent optimization.
-  * The library can perform easy optimisations, e.g. for vector it will use blas if possible.
+  * The library can perform easy optimisations behind the scene when possible, e.g. for vector it can use blas.
   
-Arrays vs matrices
-----------------------
-
-Because their multiplication is not the same, arrays and matrices don't form the same algebra.
-Mixing them in expression  would therefore be meaningless and it is therefore not allowed ::
-
-   array<long,2> A;
-   matrix<long,2> M;
-   M + A; // --> ERROR
-
-However, you can always make a matrix_view from a array of rank 2 ::
-  
-   A + make_matrix_view(M); //--> OK.
-
-.. note::
-
-   Making view is very cheap, it only copies the index systems. 
-
-Expressions are lazy
----------------------------
-
-This means that constructing an expression is separated from evaluating it ::
+Note that expressions are lazy objects. It does nothing when constructed, it just "record" the mathematical expression ::
 
    auto e =  A + 2*B;             // expression, purely formal, no computation is done
    cout<< e <<endl ;              // prints the expression
@@ -81,30 +111,4 @@ This means that constructing an expression is separated from evaluating it ::
    array<long,2> D(e);            // now really makes the computation and store the result in D.
    D = 2*A +B;                    // reassign D to the evaluation of the expression.
 
-*N.B.* The expression type is complicated (the expression in stored in the C++ type), so we used here 
-the C++11 `auto` to make simple things simple.
-
-FAQ
-----------
-
-Where can expressions be used ?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Expressions models :ref:`HasImmutableArrayInterface` concept, so they can used *anywhere* 
-an object modeling this concept is accepted, e.g. : 
-
-* array, matrix contruction
-* operator =, +=, -=, ...
-
-They behave like an immutable array : they have a domain, they can be evaluated.
-When `C` is assigned to the expression in the previous example, 
-the compiler just needs to compute the new domain for `C`, resize it and fill it by evaluation of the expression.
-
-What is the cost of this technique ?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Thanks to the Boost Proto library, this can be done :
-
-* with an acceptable increase in compilation time (try it !).
-* in about *2 pages of readable code* !
 

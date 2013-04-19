@@ -32,12 +32,12 @@ namespace triqs { namespace gf {
 void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & gl) {
 
   gw() = 0.0;
-  triqs::arrays::range R();
+  triqs::arrays::range R;
 
   // Use the transformation matrix
   for (auto om: gw.mesh()) {
     for (auto l: gl.mesh()) {
-      gw(om) += legendre_T(om.index,l.index) * gl(l);
+      gw(om) += legendre_T(om.index(),l.index()) * gl(l);
     }
   }
 
@@ -53,9 +53,9 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   // I set Nt time bins. This is ugly, one day we must code the direct
   // transformation without going through imaginary time
   long Nt = 50000;
-  auto gt = triqs::gf::imtime::make_gf(gw.domain().beta, gw.domain().statistic,
-    triqs::arrays::mini_vector<size_t,2>(gw.data_view().shape()[0],gw.data_view().shape()[1]),
-    Nt, triqs::gf::imtime::mesh_t::half_bins);
+  auto gt = triqs::gf::make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
+    triqs::arrays::mini_vector<size_t,2>(gw.data_view().shape()[1],gw.data_view().shape()[2]),
+    Nt, triqs::gf::half_bins);
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
   gt() = lazy_inverse_fourier(gw);
@@ -72,7 +72,7 @@ void legendre_matsubara_direct (gf_view<imtime> & gt, gf_view<legendre> const & 
   for (auto t : gt.mesh()) {
     L.reset( 2*t/gt.domain().beta-1 );
     for (auto l : gl.mesh()) {
-      gt(t) += sqrt(2*l.index+1) / gt.domain().beta * gl(l) * L.next();
+      gt(t) += sqrt(2*l.index()+1) / gt.domain().beta * gl(l) * L.next();
     }
   }
 
@@ -89,7 +89,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imtime> const &
   for (auto t : gt.mesh()) {
     L.reset( 2*t/gt.domain().beta-1 );
     for (auto l : gl.mesh()) {
-      gl(l) += sqrt(2*l.index+1) * L.next() * gt(t);
+      gl(l) += sqrt(2*l.index()+1) * L.next() * gt(t);
     }
   }
   gl.data_view() *= gt.mesh().delta();

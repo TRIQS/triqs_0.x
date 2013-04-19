@@ -52,8 +52,8 @@ Slicing
 Just like numpy arrays, the Green's function can be sliced, *when the indices are integers* (otherwise it is meaningless).
 The syntax is the regular python/numpy syntax, so a simple example will be enough here::
 
-  >>> from pytriqs.base.gf_local import *
-  >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_matsubara = 1000, name = "imp")
+  >>> from pytriqs.gf.local import *
+  >>> g = GfImFreq(indices = [1,2,3], beta = 50, n_points = 1000, name = "imp")
   >>> g[1:3:,1:3]
   GfImFreq imp :  Beta = 50.000; IndicesL = [1, 2], IndicesR = [1, 2] 
 
@@ -87,9 +87,9 @@ the = sign is possible and equivalent to the `<<=` operator.
    
    Let us illustrate this issue on a simple example::
   
-    from pytriqs.base.gf_local import *
+    from pytriqs.gf.local import *
     # Create the Matsubara-frequency Green's function 
-    g = GfImFreq(indices = [1], beta = 50, n_matsubara = 1000, name = "imp")
+    g = GfImFreq(indices = [1], beta = 50, n_points = 1000, name = "imp")
     
     g    <<= inverse( Omega + 0.5 )   # correct 
     g[1,1] = inverse( Omega + 0.5 )   # correct (it uses __setitem__).
@@ -134,7 +134,7 @@ Green's functions are `pickable`, i.e. they support the standard python serializ
 
 * It can be sent/broadcasted/reduced over mpi ::
 
-     from pytriqs.base.utility import MPI
+     from pytriqs.utility import MPI
      mpi.send (G, destination)
 
 .. warning::
@@ -159,19 +159,14 @@ calculating the spectral function of an imaginary-time Green's function is not u
 Direct access to data points and tails [not for the Legendre version]
 -----------------------------------------------------------------------------
 
-Data points can be accessed via the properties _data and _tail respectively.
+Data points can be accessed via the properties ``data`` and ``tail`` respectively.
+``data`` returns an array object and so does ``tail[i]``::
 
-_data returns an `ArrayViewWithIndexConverter` object, which is just
-the array, and a index converter that converts the indices of the Green's functions
-into the ordinary numpy indices (integers starting at 0).
-
-In order to get the numpy array itself, use::
-
-  g._data.array
+  g.data
 
 .. warning::
   
-  Be careful when manipulating _data directly to keep consistency between 
+  Be careful when manipulating data directly to keep consistency between
   the function and the tail. 
   Basic operations do this automatically, so use them as much as possible.
   The little _ header is there to remind you that maybe you should consider another option.
@@ -192,19 +187,16 @@ behaves like
 
 where :math:`M_i` are matrices with the same dimensions as :math:`g`. 
 
-* Tails can be accessed with the _tail property. Moreover, in order
+* Tails can be accessed with the ``tail`` property. Moreover, in order
   to have access to :math:`M_i`, one uses the bracket. For example::
 
-   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
+   >>> g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
    >>> g <<= 2.0
-   >>> print g._tail[0]
+   >>> print g.tail[0]
 
-   ArrayViewWithIndexConverter with : 
-     Indices = {0: ['eg1', 'eg2'], 1: ['eg1', 'eg2']}
-     Array = [[ 2.+0.j  0.+0.j]
-    [ 0.+0.j  2.+0.j]]
+     TO BE UPDATED
 
-  Here ``g._tail[0]`` is a diagonal matrix with 2 on the diagonal, corresponding to :math:`M_0`.
+  Here ``g.tail[0]`` is a diagonal matrix with 2 on the diagonal, corresponding to :math:`M_0`.
 
 * Some operations (sum over frequencies, Fourier) uses these tails to regulate the sum, 
   so it is necessary to always keep the consistency between the array of data and the tail expansion.
@@ -212,14 +204,14 @@ where :math:`M_i` are matrices with the same dimensions as :math:`g`.
 * Fortunately, in all basic operations on the blocks, these tails are computed automatically.
   For example, when adding two Green functions, the tails are added, and so on.
 
-* However, if you modify the _data or the _tail manually, you loose this guarantee.
+* However, if you modify the ``data`` or the ``tail`` manually, you loose this guarantee.
   So you have to set the tail properly yourself (or be sure that you will not need it later).
   For example::
 
-   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_matsubara = 1000, name = "egBlock") 
-   g <<= gf_init.Function(lambda x: 3/x)
-   g._tail.zero()
-   g._tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
+   g = GfImFreq(indices = ['eg1','eg2'], beta = 50, n_points = 1000, name = "egBlock")
+   g <<= Function(lambda x: 3/x)
+   g.tail.zero()
+   g.tail[1] = numpy.array( [[3.0,0.0], [0.0,3.0]] )
 
   The third line sets all the :math:`M_i` to zero, while the second puts :math:`M_1 = diag(3)`. With
   the tails set correctly, this Green's function can be used safely. 

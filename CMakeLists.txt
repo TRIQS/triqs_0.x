@@ -11,7 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/INSTALL_DIR" CACHE PATH "TRIQS ins
 MESSAGE(STATUS "Installation directory is ${CMAKE_INSTALL_PREFIX}")
 
 # Forbid compilation in the source dir... to force good practice
-# and because I have not checked it (copy of various file before compilation may mess it up), blitz in particular....
+# and because I have not checked it (copy of various file before compilation may mess it up)
 IF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
  MESSAGE(FATAL_ERROR "I am sorry, the on-site compilation is disabled at the moment. Use another directory")
 ENDIF (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
@@ -27,20 +27,11 @@ project (AllPrograms C CXX Fortran)
 # Make sure the rpath is set fine after installation
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# First check the C++ compiler
+find_package(CompilerCheck)
+
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
-
-# Check user input for BOOST_SOURCE_DIR
-if(BOOST_SOURCE_DIR)
- if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
-  Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
- endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
- STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
- IF(TILDE)
-  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
- ENDIF(TILDE)
-endif(BOOST_SOURCE_DIR)
-
 
 # find the basic libraries from which TRIQS depends and add the def, include and link
 find_package(TRIQS_dep_libs)
@@ -62,20 +53,47 @@ string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${ALPS_PYTHON_SIT
 SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
 MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
 
-# compile boost if necessary
+# Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
+ if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
+  Message(FATAL_ERROR "You must specify an absolute path for BOOST_SOURCE_DIR.")
+ endif(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
+ STRING(REGEX MATCH "~\\/" TILDE "${BOOST_SOURCE_DIR}")
+ IF(TILDE)
+  Message(FATAL_ERROR "You should not use the tilde symbol ~. Please write the full absolute path for BOOST_SOURCE_DIR.")
+ ENDIF(TILDE)
+
+ # compile boost if necessary
  add_subdirectory(foreignlibs/boost)
  MESSAGE(STATUS  "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
-else(BOOST_SOURCE_DIR)
- FIND_PACKAGE(Boost 1.46.0 REQUIRED )
- include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
- set(BOOST_LIBRARY ${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
-endif(BOOST_SOURCE_DIR)
 
-# find cblas.
-find_package(CBLAS)
-include_directories(SYSTEM ${CBLAS_INCLUDE_DIR})
+else(BOOST_SOURCE_DIR)
+
+ # if static build, request static lib
+ IF(TRIQS_BUILD_STATIC)
+  set(Boost_USE_STATIC_LIBS        ON)
+ else()
+  set(Boost_USE_STATIC_LIBS        OFF)
+ endif()
+ # icc requires a higher version
+ IF(CMAKE_COMPILER_IS_ICC)
+  SET(BOOST_VERSION 1.53)
+ else()
+  SET(BOOST_VERSION 1.46)
+ endif()
+ FIND_PACKAGE(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization ) #filesystem  )
+ if (NOT Boost_FOUND)
+  MESSAGE(FATAL_ERROR "Boost not found")
+ endif()
+ MESSAGE(STATUS "BOOST has been detected")
+ MESSAGE(STATUS "BOOST include dir ${Boost_INCLUDE_DIRS}")
+ MESSAGE(STATUS "BOOST LIBRARY ${Boost_LIBRARIES}")
+ include_directories(${Boost_INCLUDE_DIRS})
+ #include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
+ set(BOOST_LIBRARY ${Boost_LIBRARIES}) #${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
+
+endif(BOOST_SOURCE_DIR)
 
 Find_package(Git3) # our local version of FindGit...
 if (GIT_FOUND)
@@ -103,9 +121,10 @@ add_definitions( -DBOOST_PP_VARIADICS=1 )
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
  add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
-
- # Tool to help to include the wrappers in main and declare the built-in module
- Find_package(PythonModuleEmbeddingTool)
+ # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
+ if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
+  add_definitions (-DTRIQS_NUMPY_VERSION_LT_17)
+ endif()
 endif (PythonSupport)
 
 enable_testing()
@@ -121,15 +140,11 @@ endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Documentation
 ##------------------------
 option(Build_Documentation "Build the documentation ?" OFF)
-
-# Built blitz and get corresponding variables
-add_subdirectory(${TRIQS_SOURCE_DIR}/foreignlibs/blitz blitz)
-add_definitions( -DUSE_BLITZ)
+option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 
 # remove the possible horrible pthread bug on os X !!
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 
-# since _REENTRANT is mysteriously set and blitz++ compiles in thread_safe mode
-# and this leads to random stalling of the code....
+# since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  add_definitions( -pthread )
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -137,14 +152,13 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # General include header
 # remove this dep to C++
 include_directories(${TRIQS_SOURCE_DIR})
-include_directories(SYSTEM ${TRIQS_SOURCE_DIR}/foreignlibs ${BLITZ_INCLUDE} ${FFTW_INCLUDE_DIR})
+include_directories(SYSTEM ${FFTW_INCLUDE_DIR})
 
 #------------------------
 # link libs for shared libs or for pytriqs 
 #------------------------
 
 SET(TRIQS_LINK_LIBS 
- ${BLITZ_LIBRARY}
  ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS} 
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}
@@ -154,6 +168,8 @@ SET(TRIQS_LINK_LIBS
 #------------------------
 # General triqs libraries
 #------------------------
+
+MESSAGE(STATUS "BOOST_LIB IS ${BOOST_LIBRARY}")
 
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
@@ -173,6 +189,11 @@ add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
 if (PythonSupport)
  add_subdirectory(${TRIQS_SOURCE_DIR}/pytriqs ) 
 endif (PythonSupport)
+
+#------------------------
+# tests
+#------------------------
+add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
 
 #------------------------
 # copy boost into pytriqs/boost

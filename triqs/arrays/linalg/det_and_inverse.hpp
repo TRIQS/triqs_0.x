@@ -25,11 +25,9 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/enable_if.hpp>
 #include "../impl/common.hpp"
-#include "../qcache.hpp"
-#include "triqs/utility/proto/tools.hpp"
 #include "../matrix.hpp"
-#include <boost/numeric/bindings/lapack/computational/getrf.hpp>
-#include <boost/numeric/bindings/lapack/computational/getri.hpp>
+#include "../blas_lapack/getrf.hpp"
+#include "../blas_lapack/getri.hpp"
 
 namespace triqs { namespace arrays { 
 
@@ -63,7 +61,7 @@ namespace triqs { namespace arrays {
  template<typename ViewType> class det_and_inverse_worker { 
   static_assert ( (is_matrix_view<ViewType>::value),"class must have be a view");
   typedef typename ViewType::value_type VT;
-  typedef matrix_view<VT,Option::Fortran > V_type;
+  typedef matrix_view<VT> V_type;
   ViewType V;
   const size_t dim; 
   triqs::arrays::vector <int> ipiv;
@@ -71,7 +69,8 @@ namespace triqs { namespace arrays {
 
   public:
   det_and_inverse_worker (ViewType const & a): V(a), dim(a.dim0()), ipiv(dim), step(0) { 
-   if (a.dim0()!=a.dim1()) TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<a.dim0()<<","<<a.dim1()<<")"<<"\n  ";
+   if (a.dim0()!=a.dim1()) 
+    TRIQS_RUNTIME_ERROR<<"Inverse/Det error : non-square matrix. Dimensions are : ("<<a.dim0()<<","<<a.dim1()<<")"<<"\n  ";
    if (!(has_contiguous_data(a))) TRIQS_RUNTIME_ERROR<<"det_and_inverse_worker only takes a contiguous view";
   }
   VT det() { V_type W = fortran_view(V); _step1(W); _compute_det(W); return _det;}
@@ -80,18 +79,13 @@ namespace triqs { namespace arrays {
   private:
   int info; VT _det;
 
-  template<typename MT>
-   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::C>, V_type>::type 
-   fortran_view (MT const &x) { return x.transpose();}
-
-  template<typename MT>
-   typename boost::enable_if<boost::is_same<typename MT::opt_type::IndexOrderTag, Tag::Fortran>, V_type>::type 
-   fortran_view (MT const &x) { return x;}
+  // no need of special traversal
+  template<typename MT> V_type fortran_view (MT const &x) { return (x.indexmap().memory_layout_is_c() ? x.transpose() : x);}
 
   void _step1(V_type & W) { 
    if (step >0) return;
    step=1; 
-   info = boost::numeric::bindings::lapack::getrf(W, ipiv);
+   info = lapack::getrf(W, ipiv);
    if (info<0) throw matrix_inverse_exception() << "Inverse/Det error : failure of getrf lapack routine ";
   }
 
@@ -108,8 +102,7 @@ namespace triqs { namespace arrays {
    assert(step==1); //if (step==1) return;
    step=2;
    _compute_det(W); 
-   info = boost::numeric::bindings::lapack::getri(W, ipiv);
-   //std::cerr<<" after tri "<< W<<std::endl;
+   info = lapack::getri(W, ipiv);
    if (info!=0) throw matrix_inverse_exception() << "Inverse/Det error : matrix is not invertible";
   }
  };
@@ -129,7 +122,7 @@ namespace triqs { namespace arrays {
   domain_type domain() const { return a.domain(); } 
   size_t dim0() const { return a.dim0();} 
   size_t dim1() const { return a.dim1();} 
-  value_type operator[] (index_value_type const & key) const { activate();  return _id->M [key]; }
+  template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->M(k0,k1); }
   friend std::ostream & operator<<(std::ostream & out,inverse_lazy_impl const&x){return out<<"inverse("<<x.a<<")";}
   protected: 
   struct internal_data { // implementing the pattern LazyPreCompute
@@ -158,9 +151,10 @@ namespace triqs { namespace arrays {
    template<typename MT> // Optimized implementation of =
     friend void triqs_arrays_assign_delegation (MT & lhs, inverse_lazy const & rhs)  {
      static_assert(is_matrix_or_view<MT>::value, "Internal error");
-     if ((MT::order  !=rhs.a.order)|| (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
+     if ((lhs.indexmap().memory_indices_layout()  !=rhs.a.indexmap().memory_indices_layout())|| 
+       (lhs.data_start() != rhs.a.data_start()) || !(has_contiguous_data(lhs))) { rhs.activate(); lhs = rhs._id->M;} 
      else {// if M = inverse(M) with the SAME object, then we do not need to copy the data
-      reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
+      blas_lapack_tools::reflexive_qcache<MT> C(lhs);// a reflexive cache will use a temporary "regrouping" copy if and only if needed
       det_and_inverse_worker<typename MT::view_type> W(C());// the worker to make the inversion of the lhs... 
       W.inverse(); // worker is working ...
      }
@@ -176,6 +170,7 @@ namespace triqs { namespace arrays {
   A_type a;
   determinant_lazy(A const & a_):a(a_){}
   operator value_type()  { activate(); return _id->det; }
+  value_type const & operator()() { activate(); return _id->det; }
   friend std::ostream & operator<<(std::ostream & out, determinant_lazy const & x){ return out<<"determinant("<<x.a<<")";}
   protected:
   struct internal_data {

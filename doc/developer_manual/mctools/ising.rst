@@ -42,7 +42,7 @@ The move
 ********
 
 The 
-The move class should have three methods: `Try()`, `Accept()` and `Reject()`::
+The move class should have three methods: `attempt()`, `accept()` and `reject()`::
 
     #ifndef moves_hpp
     #define moves_hpp
@@ -64,7 +64,7 @@ The move class should have three methods: `Try()`, `Accept()` and `Reject()`::
       flip(configuration & config_, triqs::mc_tools::random_generator & RNG_) :
          config(&config_), RNG(RNG_) {}
 
-      double Try() {
+      double attempt() {
         // pick a random site
         site = RNG(config->N);
 
@@ -85,7 +85,7 @@ The move class should have three methods: `Try()`, `Accept()` and `Reject()`::
       }
 
       // if move accepted just flip site and update energy and magnetization
-      double Accept() {
+      double accept() {
         config->M += (config->chain[site] ? -2 : 2);
         config->chain[site] = !config->chain[site];
         config->energy += delta_energy;
@@ -94,7 +94,7 @@ The move class should have three methods: `Try()`, `Accept()` and `Reject()`::
       }
 
       // nothing to do if the move is rejected
-      void Reject() {}
+      void reject() {}
     };
 
 
@@ -193,9 +193,9 @@ The Monte-Carlo itself can now be written::
       configuration config(length, beta, J, field);
 
       // add moves and measures
-      IsingMC.add_move(new flip(config, IsingMC.RandomGenerator), 1.0, "spin flip");
+      IsingMC.add_move(flip(config, IsingMC.RandomGenerator), 1.0, "spin flip");
       std::cout << "Add measure"<<std::endl;
-      IsingMC.add_measure(new compute_m(config));
+      IsingMC.add_measure(compute_m(config));
       std::cout << "Run"<<std::endl;
 
       // Run and collect results

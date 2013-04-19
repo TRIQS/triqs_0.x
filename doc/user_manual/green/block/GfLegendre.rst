@@ -23,8 +23,8 @@ function in imaginary time <GfImTime>`.
 Reference
 ---------------
 
-.. autoclass:: pytriqs.base.gf_local.GfLegendre
-  :members: density, determine_tail, enforce_discontinuity, copy_and_truncate
+.. autoclass:: pytriqs.gf.local.GfLegendre
+  :members: density, enforce_discontinuity
  
 
 HDF5 data scheme
@@ -49,7 +49,7 @@ Note                        string                       Note
 Example
 --------------- 
 
-.. plot:: green/block/green_imlegendre.py
+.. plot:: green/block/green_legendre.py
    :include-source:
    :scale: 70 
 

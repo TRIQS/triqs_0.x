@@ -1,6 +1,6 @@
-from pytriqs.dft.sumk_lda import *
-from pytriqs.dft.converters.wien2k_converter import *
-from pytriqs.solvers.hubbard_I.solver import Solver
+from pytriqs.applications.dft.sumk_lda import *
+from pytriqs.applications.dft.converters.wien2k_converter import *
+from pytriqs.applications.impurity_solvers.hubbard_I.solver import Solver
 
 LDAFilename = 'Ce-gamma'
 Beta = 40

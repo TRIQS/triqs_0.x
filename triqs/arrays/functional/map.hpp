@@ -20,12 +20,8 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_MAP_H
 #define TRIQS_ARRAYS_EXPRESSION_MAP_H
-#include <boost/utility/enable_if.hpp>
-#include <boost/utility/result_of.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/function.hpp>
 #include "../impl/common.hpp"
+#include <functional>
 namespace triqs { namespace arrays { 
  
  template<class F, int arity=F::arity> class map_impl;
@@ -34,50 +30,60 @@ namespace triqs { namespace arrays {
   * Given a function f : arg_type -> result_type, map(f) is the function promoted to arrays
   * map(f) : array<arg_type, N, Opt> --> array<result_type, N, Opt> 
   */
- template<class F> map_impl<F> map (F const & f) { return map_impl<F>(f); }
+ template<class F> map_impl<F,1> map (F const & f) { return map_impl<F,1>(f,true); }
+ template<class F> map_impl<F,2> map2 (F const & f) { return map_impl<F,2>(f,true); }
 
  // ----------- implementation  -------------------------------------
 
+ // NB The bool is to make constructor not ambiguous
+ // clang on os X with lib++ has a pb otherwise (not clear what the pb is)
  template<class F> class map_impl<F,1>  { 
   F f;
   public :   
-  map_impl(F const & f_):f(f_) {}
+//  map_impl(F const & f_):f(f_) {}
+  map_impl(F const & f_, bool):f(f_) {}
+  map_impl(F && f_, bool):f(f_) {}
+  map_impl(map_impl const &) = default;
+  //map_impl(map_impl &&) = default;
 
   template<typename A, typename Enable = void> class m_result;
 
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableCuboidArray<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableCuboidArray) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
-     value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
+     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
+     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
   
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableMatrix<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableMatrix) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
      size_t dim0() const { return a.dim0();}
      size_t dim1() const { return a.dim1();}
-     value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
+     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
+     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
 
   template<typename A> class m_result<A,typename boost::enable_if<ImmutableVector<A> >::type> : TRIQS_MODEL_CONCEPT(ImmutableVector) { 
     public:
-     typedef typename boost::result_of<F(typename A::value_type)>::type value_type;
+     typedef typename std::result_of<F(typename A::value_type)>::type value_type;
      typedef typename A::domain_type domain_type;
      A const & a; F f;
      m_result(F const & f_, A const & a_):a(a_),f(f_) {}
      domain_type domain() const { return a.domain(); } 
      size_t size() const { return a.size();}
-     value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
+     template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...)); }
+     //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key]); }
      value_type operator() ( size_t i) const { return f(a(i)); }
      friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
    };
@@ -98,19 +104,23 @@ namespace triqs { namespace arrays {
  template<class F> class map_impl<F,2>  { 
   F f;
   public : 
-  map_impl(F const & f_):f(f_) {}
-  
+  map_impl(F const & f_, bool):f(f_) {}
+  map_impl(F && f_, bool):f(f_) {}
+  map_impl(map_impl const &) = default;
+  //map_impl(map_impl &&) = default;
+
   template<class A, class B> class m_result : TRIQS_MODEL_CONCEPT(ImmutableArray) { 
-    static_assert( (boost::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
+    static_assert( (std::is_same<typename  A::domain_type, typename  B::domain_type>::value), "type mismatch");
    public:
-    typedef typename boost::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
+    typedef typename std::result_of<F(typename A::value_type,typename B::value_type)>::type value_type;
     typedef typename A::domain_type domain_type;
     A const & a; B const & b; F f;
     m_result(F const & f_, A const & a_, B const & b_):a(a_),b(b_),f(f_) {
      if (a.domain() != b.domain()) TRIQS_RUNTIME_ERROR<<"map2 : domain mismatch";
     }
     domain_type domain() const { return a.domain(); } 
-    value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key],b[key]); }
+    template<typename ... Args> value_type operator() (Args const & ... args) const { return f(a(args...),b(args...)); }
+    //value_type operator[] ( typename domain_type::index_value_type const & key) const { return f(a[key],b[key]); }
     friend std::ostream & operator<<(std::ostream & out, m_result const & x){ return out<<"lazy matrix resulting of a mapping";}
   };
 

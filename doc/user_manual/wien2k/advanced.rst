@@ -7,11 +7,11 @@ Normally, one wants to adjust some more parameters in order to make the calculat
 will see a more advanced example, which is also suited for parallel execution. 
 First, we load the necessary modules::
 
-  from pytriqs.dft.sumk_lda import *
-  from pytriqs.dft.converters.wien2k_converter import *
-  from pytriqs.dft.solver_multiband import *
-  from pytriqs.base.gf_local import *
-  from pytriqs.base.archive import *
+  from pytriqs.applications.dft.sumk_lda import *
+  from pytriqs.applications.dft.converters.wien2k_converter import *
+  from pytriqs.applications.dft.solver_multiband import *
+  from pytriqs.gf.local import *
+  from pytriqs.archive import *
 
 Then we define some parameters::
 
@@ -102,7 +102,7 @@ previous section, with some additional refinement::
             # Init the DC term and the real part of Sigma, if no previous run was found:
             dm = S.G.density()
             SK.set_dc( dm, U_interact = U, J_hund = J, orb = 0, use_dc_formula = dc_type)
-            S.Sigma <<= gf_init.Const(SK.dc_imp[0]['up'][0,0])
+            S.Sigma <<= SK.dc_imp[0]['up'][0,0]
         
         # now calculate new G0:
         if (mpi.is_master_node()):

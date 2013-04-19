@@ -20,18 +20,10 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAY_EIGENELEMENTS_H
 #define TRIQS_ARRAY_EIGENELEMENTS_H
-
-#include <boost/type_traits/is_same.hpp>
-#include <boost/typeof/typeof.hpp>
-#include <boost/utility/enable_if.hpp>
+#include <type_traits>
 #include "../matrix.hpp"
 #include "../vector.hpp"
 #include <triqs/utility/exceptions.hpp>
-#include <boost/numeric/bindings/lapack/driver/syev.hpp>
-#include <boost/numeric/bindings/lapack/driver/heev.hpp>
-
-#define TRIQS_FORTRAN( id ) id##_
-#define dcomplex std::complex<double> 
 
 namespace triqs { namespace arrays { namespace linalg { 
 
@@ -48,9 +40,9 @@ namespace triqs { namespace arrays { namespace linalg {
   *  For a one shot usage, prefer eigenelements, eigenvalues functions.
   */
  template<typename MatrixViewType, bool Compute_Eigenvectors > struct eigenelements_worker;
- template<typename T, typename Opt, bool Compute_Eigenvectors > struct eigenelements_worker_base;
+ template<typename T, ull_t Opt, bool Compute_Eigenvectors > struct eigenelements_worker_base;
 
- template<typename T, typename Opt >
+ template<typename T, ull_t Opt >
   struct eigenelements_worker_base <T,Opt,false> { 
    private:
     void operator = ( eigenelements_worker_base const & x);
@@ -83,7 +75,7 @@ namespace triqs { namespace arrays { namespace linalg {
 
  //--------------------------------
 
- template<typename T, typename Opt>
+ template<typename T, ull_t Opt>
   struct eigenelements_worker_base <T,Opt,true> : eigenelements_worker_base <T,Opt,false>  {
    protected:
     eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) :  eigenelements_worker_base <T,Opt,false>  (the_matrix) {this->compz='V'; }
@@ -95,13 +87,39 @@ namespace triqs { namespace arrays { namespace linalg {
   };
 
  //--------------------------------
+ extern "C" { 
+ void TRIQS_FORTRAN_MANGLING(dsyev)(char*,char*,        // JOBZ and UPLO
+   int &,              // Matrix Size
+   double[],            // matrix
+   int&,               // LDA of the matrix
+   double[],           // Eigenvalues array
+   double[],            // WORK
+   int&,               // LWORK
+   int &               // INFO
+   );
 
- template<typename Opt, bool Compute_Eigenvectors >
+
+ void TRIQS_FORTRAN_MANGLING(zheev)(char*,char*,        // JOBZ and UPLO
+   int &,              // Matrix Size
+   std::complex<double> [],            // matrix
+   int&,               // LDA of the matrix
+   double[],           // Eigenvalues array
+   std::complex<double>[],            // WORK
+   int &,               // LWORK
+   double[],  // WORK2
+   int &               // INFO
+   );
+ }
+
+ //--------------------------------
+
+ template<ull_t Opt, bool Compute_Eigenvectors >
   struct eigenelements_worker< matrix_view<double,Opt> ,Compute_Eigenvectors > :eigenelements_worker_base<double,Opt,Compute_Eigenvectors> { 
    eigenelements_worker ( matrix_view <double,Opt> the_matrix) : eigenelements_worker_base<double,Opt,Compute_Eigenvectors> (the_matrix) {}
    void invoke() {
-    fortran_int_t info;
-    TRIQS_FORTRAN(dsyev) (&this->compz,&this->uplo,&this->dim,this->mat.data_start(),&this->dim,this->ev.data_start(),this->work.data_start(),&this->lwork,&info);
+    int info;
+    //fortran_int_t info;
+    TRIQS_FORTRAN_MANGLING(dsyev) (&this->compz,&this->uplo,this->dim,this->mat.data_start(),this->dim,this->ev.data_start(),this->work.data_start(),this->lwork,info);
     if (info)  TRIQS_RUNTIME_ERROR<<"eigenelements_worker :error code dsyev : "<<info<<" for matrix "<<this->mat;
     this->has_run = true;
    }
@@ -109,15 +127,15 @@ namespace triqs { namespace arrays { namespace linalg {
 
  //--------------------------------
 
- template<typename Opt, bool Compute_Eigenvectors >
-  struct eigenelements_worker< matrix_view<dcomplex, Opt>,Compute_Eigenvectors > :eigenelements_worker_base<dcomplex,Opt,Compute_Eigenvectors> { 
+ template<ull_t Opt, bool Compute_Eigenvectors >
+  struct eigenelements_worker< matrix_view<std::complex<double>, Opt>,Compute_Eigenvectors > :eigenelements_worker_base<std::complex<double>,Opt,Compute_Eigenvectors> { 
    triqs::arrays::vector <double> work2;   
    public :
-   eigenelements_worker ( matrix_view <dcomplex,Opt> the_matrix) : eigenelements_worker_base<dcomplex,Opt,Compute_Eigenvectors> (the_matrix) {  work2.resize(this->lwork);}
+   eigenelements_worker ( matrix_view <std::complex<double>,Opt> the_matrix) : eigenelements_worker_base<std::complex<double>,Opt,Compute_Eigenvectors> (the_matrix) {  work2.resize(this->lwork);}
    void invoke() {
-    fortran_int_t info;
-    TRIQS_FORTRAN(zheev) (&this->compz,&this->uplo,&this->dim,this->mat.data_start(),
-      &this->dim,this->ev.data_start(),this->work.data_start(),&this->lwork,this->work2.data_start(),&info);
+    int info;
+    TRIQS_FORTRAN_MANGLING(zheev) (&this->compz,&this->uplo,this->dim,this->mat.data_start(),
+      this->dim,this->ev.data_start(),this->work.data_start(),this->lwork,this->work2.data_start(),info);
     if (info)  TRIQS_RUNTIME_ERROR<<"eigenelements_worker :error code zheev : "<<info<<" for matrix "<<this->mat;
     this->has_run = true;
    }
@@ -154,6 +172,5 @@ namespace triqs { namespace arrays { namespace linalg {
   }
 
 }}} // namespace triqs::arrays::linalg
-#undef dcomplex
 #endif
 

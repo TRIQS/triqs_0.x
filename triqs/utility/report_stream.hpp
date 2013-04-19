@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  *
  * TRIQS: a Toolbox for Research in Interacting Quantum Systems
@@ -19,28 +18,28 @@
  * TRIQS. If not, see <http://www.gnu.org/licenses/>.
  *
  ******************************************************************************/
-
-#ifndef REPORT_STREAM_H_238rj238rh
-#define REPORT_STREAM_H_238rj238rh  
-
+#ifndef TRIQS_UTILITY_REPORT_STREAM_H
+#define TRIQS_UTILITY_REPORT_STREAM_H
 #include <ostream>
 #include <sstream>
 
-namespace triqs { 
-namespace utility { 
+namespace triqs { namespace utility {
 
-class report_stream {
-  /* This class behaves pretty much like a standard ostream but you can also
-   * set some verbosity level
-   *
-   * Example:
-   *
-   * report_stream rep(2);        // this creates a report stream w/ verbosity 2
-   * rep << "Hello" << endl;      // this prints Hello
-   * rep(2) << "Hello2" << endl;   // this prints Hello2
-   * rep(3) << "Hello3" << endl;   // this doesn't print anything because the verbosity < 3
-   * 
-   */
+ /**
+  * \brief Output stream with flexible verbosity level.
+  *
+  * This class behaves pretty much like a standard ostream but you can also
+  * set some verbosity level
+  *
+  * Example:
+  *
+  * report_stream rep(2);        // this creates a report stream w/ verbosity 2
+  * rep << "Hello" << endl;      // this prints Hello
+  * rep(2) << "Hello2" << endl;   // this prints Hello2
+  * rep(3) << "Hello3" << endl;   // this doesn't print anything because the verbosity < 3
+  *
+  */
+ class report_stream {
 
   std::ostream * out;
   int verbosity;
@@ -50,14 +49,14 @@ class report_stream {
   report_stream(std::ostream * out_, int verbosity_ = 1): out(out_), verbosity(verbosity_) {}
 
   report_stream operator () (int n) {
-    return report_stream(out, verbosity-n+1);
+   return report_stream(out, verbosity-n+1);
   }
 
   template<class T>
-  report_stream & operator << (T const & x) {
+   report_stream & operator << (T const & x) {
     if (verbosity > 0) (*out)<<x;
     return *this;
-  }
+   }
 
   // this is the type of std::cout
   typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
@@ -67,14 +66,12 @@ class report_stream {
 
   // define an operator<< to take in std::endl
   report_stream & operator << (StandardEndLine manip) {
-    // call the function, but we cannot return it's value
-    if (verbosity > 0) manip(*out);
-    return *this;
+   // call the function, but we cannot return it's value
+   if (verbosity > 0) manip(*out);
+   return *this;
   }
- 
-};
 
-}
-}
+ };
 
+}}
 #endif

@@ -75,9 +75,9 @@ Hubbard-I calculations in TRIQS
 
 In order to run LDA+DMFT calculations within Hubbard-I we need the corresponding python script, :ref:`Ce-gamma-script`. 
 It is generally similar to the script for the case of DMFT calculations with the CT-QMC solver (see :ref:`advanced`), 
-however there are also some differences. First, instead of *pytriqs.dft.solver_multiband* we import Hubbard-I solver ::
+however there are also some differences. First, instead of *pytriqs.applications.dft.solver_multiband* we import Hubbard-I solver ::
 
-   from pytriqs.solvers.hubbard_I.solver import Solver
+   from pytriqs.applications.impurity_solvers.hubbard_I.solver import Solver
 
 The Hubbard-I solver is very fast and we do not need to take into account the LDA blocking structure or use any approximation for the *U*-matrix ::
 

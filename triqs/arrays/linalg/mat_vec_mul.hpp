@@ -20,12 +20,11 @@
  ******************************************************************************/
 #ifndef TRIQS_ARRAYS_EXPRESSION_MAT_VEC_MUL_H
 #define TRIQS_ARRAYS_EXPRESSION_MAT_VEC_MUL_H
-#include "../qcache.hpp"
 #include <boost/type_traits/is_same.hpp>
 #include <boost/typeof/typeof.hpp>
 #include "../matrix.hpp"
 #include "../vector.hpp"
-#include <boost/numeric/bindings/blas/level2/gemv.hpp>
+#include "../blas_lapack/gemv.hpp"
 
 namespace triqs { namespace arrays { 
 
@@ -56,10 +55,7 @@ namespace triqs { namespace arrays {
 
    struct internal_data {
     vector_type R;
-    internal_data(mat_vec_mul_lazy const & P): R( P.a.size(), P.b.dim1()) {
-     const_qcache<M_type> Cm(P.M); const_qcache<V_type> Cv(P.V);
-     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0, R);
-    }
+    internal_data(mat_vec_mul_lazy const & P): R(P.M.dim0()) { blas::gemv(1,P.M,P.V,0,R); }
    };
    friend struct internal_data;
    mutable boost::shared_ptr<internal_data> _id;
@@ -70,19 +66,17 @@ namespace triqs { namespace arrays {
     if (M.dim1() != V.size()) TRIQS_RUNTIME_ERROR<< "Matrix product : dimension mismatch in Matrix*Vector "<< M<<" "<< V; 
    }
 
-   domain_type domain() const { return indexmaps::cuboid_domain<1>(mini_vector<size_t,1>(M.size()));}
+   domain_type domain() const { return mini_vector<size_t,1>(size());}
+   //domain_type domain() const { return indexmaps::cuboid::domain_t<1>(mini_vector<size_t,1>(size()));}
    size_t size() const { return M.dim0();} 
 
-   template<typename KeyType> value_type operator[] (KeyType const & key) const { activate(); return _id->R [key]; }
+   template<typename KeyType> value_type operator() (KeyType const & key) const { activate(); return _id->R (key); }
 
    template<typename LHS> // Optimized implementation of =
     friend void triqs_arrays_assign_delegation (LHS & lhs, mat_vec_mul_lazy const & rhs)  {
      static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
-     const_qcache<M_type> Cm(rhs.M); const_qcache<V_type> Cv(rhs.V);
      resize_or_check_if_view(lhs,make_shape(rhs.size()));
-     reflexive_qcache<LHS> Clhs(lhs); 
-     typename reflexive_qcache<LHS>::exposed_type target = Clhs();
-     boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), 0,target);
+     blas::gemv(1,rhs.M,rhs.V,0,lhs);
     }
 
    template<typename LHS> 
@@ -94,10 +88,7 @@ namespace triqs { namespace arrays {
    template<typename LHS> void assign_comp_impl (LHS & lhs, double S) const { 
     static_assert((is_vector_or_view<LHS>::value), "LHS is not a vector or a vector_view"); 
     if (lhs.size() != size()) TRIQS_RUNTIME_ERROR<< "mat_vec_mul : -=/-= operator : size mismatch in M*V "<< lhs.size()<<" vs "<< size(); 
-    const_qcache<M_type> Cm(M); const_qcache<V_type> Cv(V);
-    reflexive_qcache<LHS> Clhs(lhs); 
-    typename reflexive_qcache<LHS>::exposed_type target = Clhs();
-    boost::numeric::bindings::blas::gemv(1, Cm(), Cv(), S, target);
+     blas::gemv(1,M,V,S,lhs);    
    }
    friend std::ostream & operator<<(std::ostream & out, mat_vec_mul_lazy const & x){ return out<<"mat_vec_mul("<<x.M<<","<<x.V<<")";}
   };

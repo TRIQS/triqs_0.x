@@ -23,6 +23,9 @@
 #include "./mesh_tools.hpp"
 namespace triqs { namespace gf { 
 
+ // Three possible meshes
+ enum mesh_kind { half_bins, full_bins, without_last };
+
  template<typename Domain>
   struct linear_mesh {
 
@@ -30,11 +33,8 @@ namespace triqs { namespace gf {
    typedef size_t index_t; 
    typedef typename domain_t::point_t  domain_pt_t;
 
-   // Three possible meshes
-   enum mesh_kind { half_bins, full_bins, without_last };
-
    linear_mesh (domain_t const & dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
      switch(mk) {
        case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
    }
 
    linear_mesh (domain_t && dom, double a, double b, size_t n_pts, mesh_kind mk) :
-     _dom(dom), a_pt(a), b_pt(b), L(n_pts), meshk(mk) {
+     _dom(dom), L(n_pts), a_pt(a), b_pt(b), meshk(mk) {
      switch(mk) {
        case half_bins: del = (b-a)/L; xmin = a+0.5*del; break;
        case full_bins: del = (b-a)/(L-1); xmin = a; break;
@@ -53,7 +53,7 @@ namespace triqs { namespace gf {
      xmax = xmin + del*(L-1);
    }
 
-   linear_mesh () : _dom(), a_pt(0), b_pt(0), L(0), xmin(0), del(0), xmax(0), meshk(half_bins) {}
+   linear_mesh () : _dom(), L(0), a_pt(0), b_pt(0), xmin(0), xmax(0), del(0), meshk(half_bins) {}
 
    domain_t const & domain() const { return _dom;}
    size_t size() const { return L; }
@@ -72,12 +72,17 @@ namespace triqs { namespace gf {
    size_t  index_to_linear(index_t ind) const {return ind;}   
  
    /// The wrapper for the mesh point
-   struct mesh_point_t : arith_ops_by_cast<mesh_point_t, domain_pt_t  > {
+   class mesh_point_t : tag::mesh_point, public arith_ops_by_cast<mesh_point_t, domain_pt_t  > {
     linear_mesh const * m;  
-    index_t index; 
-    mesh_point_t( linear_mesh const & mesh, index_t const & index_=0): m(&mesh), index(index_) {}
-    void advance() { ++index;}
-    operator domain_pt_t () const { return m->index_to_point(index);} 
+    index_t _index; 
+    public:
+    mesh_point_t( linear_mesh const & mesh, index_t const & index_): m(&mesh), _index(index_) {}
+    void advance() { ++_index;}
+    operator domain_pt_t () const { return m->index_to_point(_index);} 
+    size_t linear_index() const { return _index;}
+    size_t index() const { return _index;}
+    bool at_end() const { return (_index == m->size());}
+    void reset() {_index =0;}
    };
 
    /// Accessing a point of the mesh
@@ -92,8 +97,8 @@ namespace triqs { namespace gf {
    bool operator == (linear_mesh const & M) const { return ((_dom == M._dom) && (size() ==M.size()) && (std::abs(xmin - M.xmin)<1.e-15) && (std::abs(xmax - M.xmax)<1.e-15));} 
 
    /// Write into HDF5
-   friend void h5_write (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh const & m) {
-    tqa::h5::group_or_file gr =  fg.create_group(subgroup_name);
+   friend void h5_write (h5::group fg, std::string subgroup_name, linear_mesh const & m) {
+    h5::group gr =  fg.create_group(subgroup_name);
     int k;
     switch(m.meshk) {
        case half_bins: k=0; break;
@@ -108,8 +113,8 @@ namespace triqs { namespace gf {
    }
 
    /// Read from HDF5
-   friend void h5_read  (tqa::h5::group_or_file fg, std::string subgroup_name, linear_mesh & m){
-    tqa::h5::group_or_file gr = fg.open_group(subgroup_name);
+   friend void h5_read  (h5::group fg, std::string subgroup_name, linear_mesh & m){
+    h5::group gr = fg.open_group(subgroup_name);
     typename linear_mesh::domain_t dom;
     double a,b;
     size_t L; 
@@ -133,8 +138,11 @@ namespace triqs { namespace gf {
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("domain",_dom);
-     ar & boost::serialization::make_nvp("min",a_pt);
-     ar & boost::serialization::make_nvp("max",b_pt);
+     ar & boost::serialization::make_nvp("a_pt",a_pt);
+     ar & boost::serialization::make_nvp("b_pt",b_pt);
+     ar & boost::serialization::make_nvp("xmin",xmin);
+     ar & boost::serialization::make_nvp("xmax",xmax);
+     ar & boost::serialization::make_nvp("del",del);
      ar & boost::serialization::make_nvp("size",L);
      ar & boost::serialization::make_nvp("kind",meshk);
     }

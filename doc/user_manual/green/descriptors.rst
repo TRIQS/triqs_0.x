@@ -20,12 +20,12 @@ Example:
 Reference
 ^^^^^^^^^^^^^
 
-.. class::  pytriqs.base.gf_local.descriptors.Omega
+.. class::  pytriqs.gf.local.descriptors.Omega
 
     The function :math:`\omega \rightarrow \omega`. If used with Matsubara Green's functions, the corresponding 
     class member is called `iOmega_n`.
 
-.. automodule::  pytriqs.base.gf_local.descriptors
+.. automodule::  pytriqs.gf.local.descriptors
    :members: Function,SemiCircular, Wilson 
 
    

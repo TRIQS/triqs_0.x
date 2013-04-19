@@ -1,5 +1,5 @@
-from pytriqs.base.gf_local import *
-from pytriqs.base.plot.mpl_interface import oplot,plt
+from pytriqs.gf.local import *
+from pytriqs.plot.mpl_interface import oplot,plt
 
 # A Green's function on the Matsubara axis set to a semicircular
 gw = GfImFreq(indices = [1], beta = 50)

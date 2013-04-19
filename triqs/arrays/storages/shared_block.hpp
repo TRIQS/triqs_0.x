@@ -28,7 +28,6 @@
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/is_same.hpp> 
 #include <boost/serialization/shared_ptr.hpp>
-#include "./common.hpp"
 #include "../impl/make_const.hpp"
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
 #include "./mem_block.hpp"
@@ -37,8 +36,8 @@
 //#include "basic_block.hpp"
 #endif
 
-namespace triqs { namespace arrays { 
- namespace Tag { struct shared_block:storage{}; }
+namespace triqs { namespace arrays {
+ namespace Tag {struct storage{}; struct shared_block:storage{}; }
 
  namespace storages {
 
@@ -107,12 +106,6 @@ namespace triqs { namespace arrays {
     shared_block(const shared_block<non_const_value_type> & X): sptr(X.sptr) { init_data(); }
 
     void operator=(const shared_block & X) { sptr=X.sptr; init_data(); } 
-
-    /// raw copy from another 
-    void raw_copy_from(const shared_block<non_const_value_type> & X){assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
-
-    /// raw copy from another 
-    void raw_copy_from(const shared_block<const_value_type> & X){ assert(this->size()==X.size()); if (!empty()) (*sptr)=(*X.sptr);}
 
     /// True copy of the data
     clone_type clone() const { 

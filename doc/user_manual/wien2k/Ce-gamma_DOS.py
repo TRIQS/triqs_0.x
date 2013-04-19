@@ -1,6 +1,6 @@
-from pytriqs.dft.sumk_lda_tools import *
-from pytriqs.dft.converters.wien2k_converter import *
-from pytriqs.solvers.hubbard_I.solver import Solver
+from pytriqs.applications.dft.sumk_lda_tools import *
+from pytriqs.applications.dft.converters.wien2k_converter import *
+from pytriqs.applications.impurity_solvers.hubbard_I.solver import Solver
 
 # Creates the data directory, cd into it:
 #Prepare_Run_Directory(DirectoryName = "Ce-Gamma") 

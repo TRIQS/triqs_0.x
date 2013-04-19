@@ -1,8 +1,8 @@
 .. index:: install_options
 
-.. _install_options:
-
 .. highlight:: bash
+
+.. _install_options:
 
 Customizing installation : cmake options
 ----------------------------------------------------
@@ -47,6 +47,7 @@ You may change all other installation options (like locations of libraries, the 
 After having corrected your options you may build, test and install TRIQS as described in :ref:`installation`.
  
 .. _install_without_boost:
+
 Installation with your own version of boost  [-DBOOST_INSTALL_DIR=...]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

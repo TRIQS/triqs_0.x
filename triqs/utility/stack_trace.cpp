@@ -29,6 +29,11 @@
 
 #ifdef __GNUC__
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <stdlib.h>
@@ -37,9 +42,31 @@
 #include <boost/algorithm/string.hpp>
 #include "./typeid_name.hpp"
 
-namespace triqs { namespace utility {  
+namespace triqs { namespace utility {
+
+#define TRIQS_STACKTRACE_WITH_GDB
+#ifdef TRIQS_STACKTRACE_WITH_GDB
 
  std::string stack_trace() {
+   std::ostringstream buffer;
+  char pid_buf[30];
+  sprintf(pid_buf, "%d", getpid());
+  char name_buf[512];
+  name_buf[readlink("/proc/self/exe", name_buf, 511)]=0;
+  int child_pid = fork();
+  if (!child_pid) {
+   dup2(2,1); // redirect output to stderr
+   buffer << "stack trace for "<<name_buf<< "pid=" <<name_buf<< pid_buf<<std::endl;
+   //fprintf(stdout,"stack trace for %s pid=%s\n",name_buf,pid_buf);
+   execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", name_buf, pid_buf, NULL);
+   abort(); /* If gdb failed to start */
+  } else {
+   waitpid(child_pid,NULL,0);
+  }
+  return buffer.str();
+  }
+#else
+ std::string stack_trace2() {
   std::ostringstream buffer;
 
   void * stack[TRIQS_TRACE_MAX_FRAMES + 1];
@@ -61,10 +88,12 @@ namespace triqs { namespace utility {
   }
   return buffer.str();
  }
+#endif
+
 }}
 #else
 
-namespace triqs { namespace utility {  
+namespace triqs { namespace utility {
 
  std::string stack_trace() { return std::string("stacktrace only available in gcc");}
 
