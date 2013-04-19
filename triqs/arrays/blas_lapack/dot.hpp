@@ -82,12 +82,17 @@ namespace triqs { namespace arrays { namespace blas {
    //const_qcache<VTY> Cy(Y); // mettre la condition a la main
    size_t N= X.size(), incx = X.stride(), incy = Y.stride();
    decltype(X(0)*Y(0)) res = 0;
+   // This only works for object with data (ISP), not only from the concept...
+   auto * restrict X_ = X.data_start();
+   auto * restrict Y_ = Y.data_start();
    if ((incx==1) && (incy==1)) {
-    for (size_t i=0; i<N; ++i) res += _conj<Star>(X(i)) * Y(i);
+    for (size_t i=0; i<N; ++i) res += _conj<Star>(X_[i]) * Y_[i];
    }
    else { // code for unequal increments or equal increments  not equal to 1
-    for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) res += _conj<Star>(X(ix)) * Y(iy);
+    for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) {res += _conj<Star>(X_[ix]) * Y_[iy]; }
    }
+   // general code for the concept. Is it really slower ?
+   //for (size_t i=0; i<N; ++i) res += _conj<Star>(X(i)) * Y(i);
    return res;
   }
 }
