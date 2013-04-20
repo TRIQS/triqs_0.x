@@ -25,14 +25,14 @@
 #include "../vector.hpp"
 #include <triqs/utility/exceptions.hpp>
 
-namespace triqs { namespace arrays { namespace linalg { 
+namespace triqs { namespace arrays { namespace linalg {
 
  /**
   * A worker to call lapack routine with the matrices.
   *
   * Handles both real and complex case.
   *
-  * Usage : 
+  * Usage :
   *  - construct from a VIEW of a matrix, that MUST be contiguous.
   *  - call invoke()
   *  - read the eigenvalues/vectors in values and vectors resp.
@@ -43,18 +43,18 @@ namespace triqs { namespace arrays { namespace linalg {
  template<typename T, ull_t Opt, bool Compute_Eigenvectors > struct eigenelements_worker_base;
 
  template<typename T, ull_t Opt >
-  struct eigenelements_worker_base <T,Opt,false> { 
+  struct eigenelements_worker_base <T,Opt,false> {
    private:
     void operator = ( eigenelements_worker_base const & x);
    protected:
     matrix_view <T,Opt> mat;
-    triqs::arrays::vector<double> ev; 
+    triqs::arrays::vector<double> ev;
     triqs::arrays::vector<T> work;
     int dim,info,lwork;
     char uplo,compz;
     bool has_run;
 
-    eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) : mat(the_matrix) { 
+    eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) : mat(the_matrix) {
      if (mat.is_empty())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix is empty : matrix =  "<<mat<<"  ";
      if (!mat.is_square())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix "<<mat<<" is not square ";
      if (!mat.indexmap().is_contiguous())   TRIQS_RUNTIME_ERROR<<"eigenelements_worker : the matrix "<<mat<<" is not contiguous in memory";
@@ -67,7 +67,7 @@ namespace triqs { namespace arrays { namespace linalg {
     }
 
    public :
-    array<double,1> values() const { 
+    array<double,1> values() const {
      if (!has_run)  TRIQS_RUNTIME_ERROR<<"eigenelements_worker has not been invoked !";
      return ev;
     }
@@ -80,14 +80,14 @@ namespace triqs { namespace arrays { namespace linalg {
    protected:
     eigenelements_worker_base ( matrix_view <T,Opt> the_matrix) :  eigenelements_worker_base <T,Opt,false>  (the_matrix) {this->compz='V'; }
    public:
-    matrix<T,Opt> vectors() const { 
+    matrix<T,Opt> vectors() const {
      if (!this->has_run)  TRIQS_RUNTIME_ERROR<<"eigenelements_worker has not been invoked !";
      return this->mat;
     }
   };
 
  //--------------------------------
- extern "C" { 
+ extern "C" {
  void TRIQS_FORTRAN_MANGLING(dsyev)(char*,char*,        // JOBZ and UPLO
    int &,              // Matrix Size
    double[],            // matrix
@@ -114,7 +114,7 @@ namespace triqs { namespace arrays { namespace linalg {
  //--------------------------------
 
  template<ull_t Opt, bool Compute_Eigenvectors >
-  struct eigenelements_worker< matrix_view<double,Opt> ,Compute_Eigenvectors > :eigenelements_worker_base<double,Opt,Compute_Eigenvectors> { 
+  struct eigenelements_worker< matrix_view<double,Opt> ,Compute_Eigenvectors > :eigenelements_worker_base<double,Opt,Compute_Eigenvectors> {
    eigenelements_worker ( matrix_view <double,Opt> the_matrix) : eigenelements_worker_base<double,Opt,Compute_Eigenvectors> (the_matrix) {}
    void invoke() {
     int info;
@@ -128,8 +128,8 @@ namespace triqs { namespace arrays { namespace linalg {
  //--------------------------------
 
  template<ull_t Opt, bool Compute_Eigenvectors >
-  struct eigenelements_worker< matrix_view<std::complex<double>, Opt>,Compute_Eigenvectors > :eigenelements_worker_base<std::complex<double>,Opt,Compute_Eigenvectors> { 
-   triqs::arrays::vector <double> work2;   
+  struct eigenelements_worker< matrix_view<std::complex<double>, Opt>,Compute_Eigenvectors > :eigenelements_worker_base<std::complex<double>,Opt,Compute_Eigenvectors> {
+   triqs::arrays::vector <double> work2;
    public :
    eigenelements_worker ( matrix_view <std::complex<double>,Opt> the_matrix) : eigenelements_worker_base<std::complex<double>,Opt,Compute_Eigenvectors> (the_matrix) {  work2.resize(this->lwork);}
    void invoke() {
@@ -151,9 +151,9 @@ namespace triqs { namespace arrays { namespace linalg {
   *   if false : no copy is made and the content of the matrix M is destroyed (it is equal to vectors()).
   *   if true : a copy is made, M is preserved, but of course it is slower...
   */
- template<typename MatrixViewType >   
-  std::pair<array<double,1>, typename MatrixViewType::non_view_type> eigenelements( MatrixViewType M, bool take_copy =false) { 
-   eigenelements_worker<MatrixViewType, true> W(take_copy ? make_clone(M)() : M()); W.invoke(); return std::make_pair(W.values(),W.vectors());
+ template<typename MatrixViewType >
+  std::pair<array<double,1>, typename MatrixViewType::non_view_type> eigenelements( MatrixViewType M, bool take_copy =false) {
+   eigenelements_worker<typename MatrixViewType::view_type, true> W(take_copy ? make_clone(M)() : M()); W.invoke(); return std::make_pair(W.values(),W.vectors());
   }
 
  //--------------------------------
@@ -166,9 +166,9 @@ namespace triqs { namespace arrays { namespace linalg {
   *   if false : no copy is made and the content of the matrix M is destroyed.
   *   if true : a copy is made, M is preserved, but of course it is slower...
   */
- template<typename MatrixViewType >   
-  triqs::arrays::vector_view <double> eigenvalues( MatrixViewType M, bool take_copy = false) { 
-   eigenelements_worker<MatrixViewType,false> W(take_copy ? make_clone(M)() : M()); W.invoke(); return W.values(); 
+ template<typename MatrixViewType >
+  triqs::arrays::vector_view <double> eigenvalues( MatrixViewType M, bool take_copy = false) {
+   eigenelements_worker<typename MatrixViewType::view_type,false> W(take_copy ? make_clone(M)() : M()); W.invoke(); return W.values();
   }
 
 }}} // namespace triqs::arrays::linalg

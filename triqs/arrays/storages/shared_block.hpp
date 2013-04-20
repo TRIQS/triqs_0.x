@@ -64,6 +64,32 @@ namespace triqs { namespace arrays {
    }
   };
 
+//#define TRIQS_ARRAYS_USE_LOCAL_SHARED_PTR
+
+// This is not thread safe, but on some compilers (clang, gcc) it delivers much more performance...
+// compared to std::shared_ptr .why is not very clear.
+// icc of course, as usual, does not benefit from this ... 
+// support for serialization is missing
+
+#ifdef TRIQS_ARRAYS_USE_LOCAL_SHARED_PTR
+ template<typename T> class my_shared_ptr {
+  T * _p;
+  void clean() noexcept { if (_p==nullptr) return; --(_p->_counter); if (_p->_counter==0)  { delete _p; }}
+  public: 
+  my_shared_ptr() { _p=nullptr;}
+  my_shared_ptr(T*p) { _p =p;  if (_p!=nullptr) p->_counter=1; }
+  my_shared_ptr(my_shared_ptr const & s) noexcept { _p = s._p; if (_p!=nullptr) _p->_counter++;}
+  my_shared_ptr(my_shared_ptr && s) noexcept { _p = s._p;  s._p = nullptr; }
+  my_shared_ptr & operator = (my_shared_ptr const & s) noexcept { clean(); _p = s._p; if (_p!=nullptr) _p->_counter++; return *this;}
+  my_shared_ptr & operator = (my_shared_ptr && s) noexcept { clean(); _p = s._p; s._p = nullptr; return *this;}
+  ~my_shared_ptr() noexcept { clean();}
+  T & operator*() const noexcept { return *_p;}
+  T * operator->() const noexcept { return _p;}
+  operator bool() const noexcept { return _p!=nullptr;} 
+  T * get() noexcept { return _p;}
+  const T * get() const noexcept { return _p;}
+ };
+#endif
 
   /*  Storage as a shared_ptr to a basic_block
    *  The shared pointer guarantees that the data will not be destroyed during the life of the array. 
@@ -83,7 +109,7 @@ namespace triqs { namespace arrays {
     typedef triqs::arrays::Tag::shared_block tag;
     typedef ValueType value_type;
     typedef shared_block<value_type> clone_type;
-    typedef shared_block<const_value_type> const_clone_type;
+    //typedef shared_block<const_value_type> const_clone_type;
 
     ///  Construct a new block of memory of given size
     template<typename InitOpt>
@@ -111,7 +137,12 @@ namespace triqs { namespace arrays {
     clone_type clone() const { 
      if (empty()) return clone_type ();
 #ifdef TRIQS_WITH_PYTHON_SUPPORT    
+#ifdef TRIQS_ARRAYS_USE_LOCAL_SHARED_PTR
+     clone_type res; res.sptr = my_shared_ptr<block_type > (new block_type(*sptr.get())); res.init_data();
+#else
+     //clone_type res; res.sptr = std::make_shared<block_type > (*sptr); res.init_data();
      clone_type res; res.sptr = boost::make_shared<block_type > (*sptr); res.init_data();
+#endif
 #else
      clone_type res(this->size(), Tag::no_init() ); (*res.sptr) = (*sptr);
 #endif
@@ -119,7 +150,7 @@ namespace triqs { namespace arrays {
     }
 
     // Make a clone forced to have const value_type
-    const_clone_type const_clone() const {return clone();} 
+    //const_clone_type const_clone() const {return clone();} 
 
     value_type & operator[](size_t i) const { return data_[i];}
     bool empty() const {return (sptr.get()==NULL);}
@@ -130,11 +161,18 @@ namespace triqs { namespace arrays {
 #endif
 
     private:
-    boost::shared_ptr<block_type > sptr;
+#ifdef TRIQS_ARRAYS_USE_LOCAL_SHARED_PTR
+    my_shared_ptr<block_type> sptr;
+#else
+    //std::shared_ptr<block_type> sptr;
+    boost::shared_ptr<block_type> sptr;
+#endif
     value_type * restrict data_; // for optimization on some compilers.
     void init_data(){ data_ = (sptr ? &((*sptr)[0]) : NULL); }
+    //void init_data(){ data_ = (sptr ? &((*sptr)[0]) : NULL); }
     friend class shared_block <non_const_value_type>; friend class shared_block <const_value_type>;
     friend class boost::serialization::access;
+    //friend class shared_block_ref<ValueType>;
     template<class Archive> void serialize(Archive & ar, const unsigned int version) { ar & boost::serialization::make_nvp("ptr",sptr); init_data(); }
    };
  }

@@ -29,24 +29,25 @@
 namespace triqs { namespace arrays {
 
  template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0> class array_view;
+ template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0> class array_qview;
  template <typename ValueType, int Rank, ull_t Opt=0, ull_t TraversalOrder= 0> class array;
 
  // ---------------------- array_view  --------------------------------
 
 #define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
- storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view > 
+ storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view >
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
   class array_view : Tag::array_view, TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
    static_assert( Rank>0, " Rank must be >0");
-   public:   
+   public:
    typedef typename IMPL_TYPE::indexmap_type indexmap_type;
    typedef typename IMPL_TYPE::storage_type storage_type;
    typedef array_view<ValueType,Rank,Opt,TraversalOrder> view_type;
    typedef array<ValueType,Rank,Opt,TraversalOrder> non_view_type;
    typedef void has_view_type_tag;
- 
-   /// Build from an IndexMap and a storage 
+
+   /// Build from an IndexMap and a storage
    template<typename S> array_view (indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
 
    /// Copy constructor
@@ -56,22 +57,22 @@ namespace triqs { namespace arrays {
    template<typename ISP> array_view(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
 
 #ifdef TRIQS_WITH_PYTHON_SUPPORT
-   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array 
+   /// Build from a numpy.array (X is a borrowed reference) : throws if X is not a numpy.array
    explicit array_view (PyObject * X): IMPL_TYPE(X, false, "array_view "){}
 #endif
 
    array_view () = delete;
 
    // Move
-   array_view(array_view && X) { this->swap_me(X); }
+   array_view(array_view && X) noexcept { this->swap_me(X); }
 
    /// Swap
-   friend void swap( array_view & A, array_view & B) { A.swap_me(B);}
+   friend void swap( array_view & A, array_view & B) noexcept { A.swap_me(B);}
 
    /// Rebind the view
-   void rebind (array_view const & X) { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
+   void rebind (array_view const & X) noexcept { this->indexmap_ = X.indexmap_; this->storage_ = X.storage_;}
 
-   /// Assignment. The size of the array MUST match exactly, except in the empty case 
+   /// Assignment. The size of the array MUST match exactly, except in the empty case
    template<typename RHS> array_view & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
 
    ///
@@ -81,8 +82,53 @@ namespace triqs { namespace arrays {
 
    TRIQS_DEFINE_COMPOUND_OPERATORS(array_view);
   };
+#undef IMPL_TYPE
+
+ // ---------------------- array_qview : a quicker and simpler view for optimisation purpose  --------------------------------
+ // quick view are simpler  (no python possible, no memory guarantee) but then faster
+ // specially on intel compilers.
+ //
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
+ storages::shared_block_ref<ValueType>, Opt, TraversalOrder, Tag::array_view >
+
+ template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
+  class array_qview : Tag::array_view, TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
+   static_assert( Rank>0, " Rank must be >0");
+   public:
+   typedef typename IMPL_TYPE::indexmap_type indexmap_type;
+   typedef typename IMPL_TYPE::storage_type storage_type;
+   //typedef array_qview<ValueType,Rank,Opt,TraversalOrder> qview_type;
+   typedef arrays::array_view<ValueType,Rank,Opt,TraversalOrder> view_type;
+   typedef array<ValueType,Rank,Opt,TraversalOrder> non_view_type;
+   typedef void has_view_type_tag;
+
+   /// Build from an IndexMap and a storage
+   template<typename S> array_qview (indexmap_type const & Ind,S const & Mem): IMPL_TYPE(Ind, Mem) {}
+
+   /// Build from anything that has an indexmap and a storage compatible with this class
+   template<typename ISP> array_qview(const ISP & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
+
+   array_qview () = delete;
+   array_qview(array_qview const & X): IMPL_TYPE(X.indexmap(),X.storage()) {}
+   array_qview(array_qview && X) noexcept { this->swap_me(X); }
+   friend void swap( array_qview & A, array_qview & B) noexcept { A.swap_me(B);}
+
+   /// Assignment. The size of the array MUST match exactly, except in the empty case
+   template<typename RHS> array_qview & operator=(RHS const & X) { triqs_arrays_assign_delegation(*this,X); return *this; }
+
+   ///
+   array_qview & operator=(array_qview const & X) { triqs_arrays_assign_delegation(*this,X); return *this; } //without this, the standard = is synthetized...
+   // Move assignment not defined : will use the copy = since view must copy data
+
+   TRIQS_DEFINE_COMPOUND_OPERATORS(array_qview);
+  };
+#undef IMPL_TYPE
+
 
  //------------------------------- array ---------------------------------------------------
+
+#define IMPL_TYPE indexmap_storage_pair< indexmaps::cuboid::map<Rank,Opt,TraversalOrder>, \
+ storages::shared_block<ValueType>, Opt, TraversalOrder, Tag::array_view >
 
  template <typename ValueType, int Rank, ull_t Opt, ull_t TraversalOrder>
   class array: Tag::array,  TRIQS_MODEL_CONCEPT(MutableCuboidArray), public IMPL_TYPE {
@@ -95,14 +141,14 @@ namespace triqs { namespace arrays {
     typedef void has_view_type_tag;
 
     /// Empty array.
-    explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)) :IMPL_TYPE(ml){} 
+    explicit array(memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)) :IMPL_TYPE(ml){}
 
     /// From a domain
     explicit array( typename indexmap_type::domain_type const & dom, memory_layout<Rank> ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
      IMPL_TYPE(indexmap_type(dom,ml)){}
 
 #ifdef TRIQS_DOXYGEN
-    /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time). 
+    /// Construction from the dimensions. NB : the number of parameters must be exactly rank (checked at compile time).
     array (size_t I_1, .... , size_t I_rank);
 #else
 #define IMPL(z, NN, unused)                                \
@@ -113,18 +159,18 @@ namespace triqs { namespace arrays {
 #undef IMPL
 #endif
 
-     // Makes a true (deep) copy of the data. 
+     // Makes a true (deep) copy of the data.
      array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     // Move
-    explicit array(array && X) { this->swap_me(X); } 
+    explicit array(array && X) noexcept { this->swap_me(X); }
 
-    /** 
-     * Build a new array from X.domain() and fill it with by evaluating X. X can be : 
+    /**
+     * Build a new array from X.domain() and fill it with by evaluating X. X can be :
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
      *  - a expression : e.g. array<int> A = B+ 2*C;
      */
-    template <typename T> 
+    template <typename T>
      array(const T & X, TYPE_ENABLE_IF(memory_layout<Rank>, ImmutableArray<T>) ml = memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
@@ -133,7 +179,7 @@ namespace triqs { namespace arrays {
     explicit array (PyObject * X): IMPL_TYPE(X, true, "array "){}
 #endif
 
-    /** 
+    /**
      * Resizes the array. NB : all references to the storage is invalidated.
      * Does not initialize the array by default: to resize and init, do resize(IND).init()
      */
@@ -143,22 +189,22 @@ namespace triqs { namespace arrays {
     array & operator=(const array & X) { IMPL_TYPE::resize_and_clone_data(X); return *this; }
 
     /// Move assignment
-    array & operator=(array && X) { this->swap_me(X); return *this;}
+    array & operator=(array && X) noexcept { this->swap_me(X); return *this;}
 
     /// Swap
-    friend void swap( array & A, array & B) { A.swap_me(B);}
+    friend void swap( array & A, array & B)  noexcept { A.swap_me(B);}
 
-    /** 
+    /**
      * Assignement resizes the array (if necessary).
      * All references to the storage are therefore invalidated.
      * NB : to avoid that, do make_view(A) = X instead of A = X
      */
-    template<typename RHS> 
-     array & operator=(const RHS & X) { 
+    template<typename RHS>
+     array & operator=(const RHS & X) {
       static_assert(ImmutableArray<RHS>::value, "Assignment : RHS not supported");
       IMPL_TYPE::resize(X.domain());
       triqs_arrays_assign_delegation(*this,X);
-      return *this; 
+      return *this;
      }
 
     TRIQS_DEFINE_COMPOUND_OPERATORS(array);
@@ -170,15 +216,18 @@ namespace triqs { namespace arrays {
  //----------------------------------------------------------------------------------
 
  // how to build the view type ....
- template < class V, int R, ull_t Opt, ull_t TraversalOrder > struct ViewFactory< V, R, Opt, TraversalOrder,Tag::array_view > { typedef array_view<V,R,Opt,TraversalOrder> type; };
+ template < class V, int R, ull_t Opt, ull_t TraversalOrder > struct ViewFactory< V, R, Opt, TraversalOrder,Tag::array_view > { typedef array_qview<V,R,Opt,TraversalOrder> type; };
 
 }}//namespace triqs::arrays
 
 // The std::swap is WRONG for a view because of the copy/move semantics of view.
 // Use swap instead (the correct one, found by ADL).
-namespace std { 
+namespace std {
  template <typename V, int R,  triqs::ull_t Opt, triqs::ull_t To >
   void swap( triqs::arrays::array_view<V,R,Opt,To> & a , triqs::arrays::array_view<V,R,Opt,To> & b)= delete;
+
+ template <typename V, int R,  triqs::ull_t Opt, triqs::ull_t To >
+  void swap( triqs::arrays::array_qview<V,R,Opt,To> & a , triqs::arrays::array_qview<V,R,Opt,To> & b)= delete;
 }
 
 #include "./expression_template/array_algebra.hpp"

@@ -45,6 +45,9 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
 
    public : 
 
+   //mutable int _counter;
+   int _counter;
+
    mem_block():size_(0),p(NULL),py_obj(NULL){}
 
    mem_block (size_t s):size_(s),py_obj(NULL){

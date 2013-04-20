@@ -23,6 +23,7 @@
 #include "./common.hpp"
 #include "./flags.hpp"
 #include "../storages/shared_block.hpp"
+#include "../storages/shared_block_ref.hpp"
 #include "./assignment.hpp"
 #include "../indexmaps/cuboid/foreach.hpp"
 #include "triqs/utility/exceptions.hpp"
@@ -187,7 +188,8 @@ namespace triqs { namespace arrays {
 
     template<bool is_const, typename ... Args> struct result_of_call_as_view {
      typedef typename indexmaps::slicer<indexmap_type,Args...>::r_type IM2;
-     typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
+     typedef value_type V2;
+     //typedef typename std::conditional<is_const, typename std::add_const<value_type>::type, value_type>::type V2;
      static_assert(IM2::domain_type::rank !=0, "Internal error");
      typedef typename ViewFactory<V2,IM2::domain_type::rank, OptionFlags, IM2::traversal_order_in_template,  ViewTag >::type type;
     };
@@ -224,7 +226,8 @@ namespace triqs { namespace arrays {
     template<typename Fnt> friend void triqs_clef_auto_assign (indexmap_storage_pair & x, Fnt f) { assign_foreach(x,f);}
 
     /// Equivalent to make_view
-    typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+    //typename ViewFactory<typename std::add_const<value_type>::type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
+    typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
      operator()() const { return *this; }
     typename ViewFactory<value_type,domain_type::rank, OptionFlags, TraversalOrder, ViewTag >::type
      operator()() { return *this; }
