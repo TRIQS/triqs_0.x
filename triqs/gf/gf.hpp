@@ -238,10 +238,12 @@ namespace triqs { namespace gf {
    void __h5_read  (h5::group g, std::string const & s, std::true_type)  { Descriptor::h5_data_read(g,s,*this);}
   public:
 
+   friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return descriptor_t::h5_name();}
+
    /// Write into HDF5
    friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
     auto gr =  fg.create_group(subgroup_name);
-    // Add the attribute
+    gr.write_triqs_hdf5_data_scheme(g); 
     g.__h5_write (gr,"data", has_special_h5_read_write<Descriptor>());
     h5_write(gr,"singularity",g.singularity);
     h5_write(gr,"mesh",g._mesh);
@@ -252,6 +254,10 @@ namespace triqs { namespace gf {
    friend void h5_read  (h5::group fg, std::string subgroup_name, gf_impl & g){
     auto gr = fg.open_group(subgroup_name);
     // Check the attribute or throw
+    auto tag_file = gr.read_triqs_hdf5_data_scheme();
+    auto tag_expected= get_triqs_hdf5_data_scheme(g);
+    if (tag_file != tag_expected) 
+     TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
     g.__h5_read (gr,"data", has_special_h5_read_write<Descriptor>());
     h5_read(gr,"singularity",g.singularity);
     h5_read(gr,"mesh",g._mesh);

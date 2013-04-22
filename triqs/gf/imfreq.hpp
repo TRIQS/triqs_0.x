@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  static std::string h5_name() { return "imfreq_gf";}
+  static std::string h5_name() { return "GfImFreq";}
  };
 
  /// ---------------------------  evaluator ---------------------------------

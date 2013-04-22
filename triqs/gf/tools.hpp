@@ -55,54 +55,6 @@ namespace triqs { namespace gf {
  }
 
  //------------------------------------------------------
-/*
- class indices_2_t { 
-  std::vector<std::vector<std::string>> data;
-  void construct_deleg (int n1, int n2) { 
-   std::vector<std::string> v1,v2;
-   for (int i =0; i<n1; ++i)  { std::stringstream fs; fs<<i; v1.push_back(fs.str()); }
-   for (int i =0; i<n2; ++i)  { std::stringstream fs; fs<<i; v2.push_back(fs.str()); }
-   data.push_back(v1); data.push_back(v2);
-  }
-  public : 
-  indices_2_t() {}
-  indices_2_t(std::vector<std::vector<std::string>> const & d) : data(d) {} 
-  
-  indices_2_t(int n1, int n2) { construct_deleg(n1,n2);}
-  template<typename T> indices_2_t(arrays::mini_vector<T,2> const & shape) { construct_deleg(shape[0], shape[1]);}
-  
-  std::vector<std::string> const & operator[](int i) const { return data[i];} 
-  std::vector<std::vector<std::string>> const & operator()() const { return data;} 
-
-  bool same() const { return data[0]==data[1];} 
-
-  /// Write into HDF5
-  friend void h5_write (h5::group g, std::string key, indices_2_t const & ind) {
-    auto gr = g.create_group(key);
-    h5_write(gr,"left",ind.data[0]);
-    h5_write(gr,"right",ind.data[1]);
-  }
-
-  /// Read from HDF5
-  friend void h5_read  (h5::group g, std::string key, indices_2_t & ind){
-    auto gr = g.open_group(key);
-    std::vector<std::string> V;
-    h5_read(gr,"left",V);
-    ind.data.push_back(V);
-    h5_read(gr,"right",V);
-    ind.data.push_back(V);
-  }
-
-  //  BOOST Serialization
-  friend class boost::serialization::access;
-  template<class Archive>
-   void serialize(Archive & ar, const unsigned int version) {
-    ar & boost::serialization::make_nvp("data",data);
-   }
-
- };
-*/
- //------------------------------------------------------
 
  struct nothing {
   template<typename... Args> explicit nothing(Args...) {} // takes anything, do nothing..

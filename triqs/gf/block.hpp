@@ -44,7 +44,7 @@ namespace triqs { namespace gf {
    /// Symmetry
    typedef nothing symmetry_t;
 
-  static std::string h5_name() { return "block_gf";}
+  static std::string h5_name() { return "BlockGf";}
 
   typedef void has_special_h5_read_write_tag;
 

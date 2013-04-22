@@ -48,7 +48,7 @@ namespace triqs { namespace gf {
   /// Arity (number of argument in calling the function)
   static const int arity =1;
 
-  static std::string h5_name() { return "legendre_gf";}
+  static std::string h5_name() { return "GfLegendre";}
 
  };
  /// ---------------------------  evaluator ---------------------------------

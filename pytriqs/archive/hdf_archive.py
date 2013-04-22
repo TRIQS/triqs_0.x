@@ -241,7 +241,7 @@ class HDFArchiveGroup (HDFArchiveGroupBasicLayer) :
               try : 
                   sch = hdf_scheme_access(hdf_data_scheme)
               except :
-                  print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group"%hdf_data_scheme
+                  print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group. Hint : did you forgot to import this python class ?"%hdf_data_scheme
                   return SUB
               r_class_name  = sch.classname
               r_module_name = sch.modulename

@@ -45,7 +45,7 @@ namespace triqs { namespace gf {
   /// Symmetry
   typedef nothing symmetry_t;
 
-  static std::string h5_name() { return "refreq_gf";}
+  static std::string h5_name() { return "GfReFreq";}
 
  };
 
