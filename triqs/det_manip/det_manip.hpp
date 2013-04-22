@@ -72,23 +72,6 @@ namespace triqs { namespace det_manip {
     matrix_type mat_inv;
     long long n_opts, n_opts_max_before_check;
 
-   private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
-    void swap_but_f (det_manip & rhs) noexcept { 
-     using std::swap;
-#define SW(a) swap(this->a,rhs.a)
-     SW(det);SW(Nmax);SW(N); SW(last_try);
-     SW(row_num); SW(col_num);
-     SW(x_values); SW(y_values);
-     SW(sign); SW(mat_inv); SW(n_opts); SW(n_opts_max_before_check);
-#undef SW
-    }
-    
-    friend void swap(det_manip& lhs, det_manip & rhs) noexcept { 
-     using std::swap;
-     swap(lhs.f, rhs.f); 
-     lhs.swap_but_f(rhs);
-    }
-
    private:
     //  ------------     BOOST Serialization ------------
     //  What about f ? Not serialized at the moment.
@@ -158,6 +141,24 @@ namespace triqs { namespace det_manip {
     work_data_type2 w2;
     value_type newdet;
     int newsign;
+
+   private: // for the move constructor, I need to separate the swap since f may not be defaulted constructed
+    void swap_but_f (det_manip & rhs) noexcept { 
+     using std::swap;
+#define SW(a) swap(this->a,rhs.a)
+     SW(det);SW(Nmax);SW(N); SW(last_try);
+     SW(row_num); SW(col_num);
+     SW(x_values); SW(y_values);
+     SW(sign); SW(mat_inv); SW(n_opts); SW(n_opts_max_before_check);
+     SW(w1); SW(w2); SW(newdet); SW(newsign);
+#undef SW
+    }
+    
+    friend void swap(det_manip& lhs, det_manip & rhs) noexcept { 
+     using std::swap;
+     swap(lhs.f, rhs.f); 
+     lhs.swap_but_f(rhs);
+    }
 
    public:
 
@@ -303,8 +304,7 @@ namespace triqs { namespace det_manip {
      if (N==0) { newdet = f(x,y); newsign = 1; return newdet; }
 
      // I add the row and col and the end. If the move is rejected,
-     // no effect since N will not be changed : Minv(i,j) for i,j>=N 
-     // has no meaning.
+     // no effect since N will not be changed : Minv(i,j) for i,j>=N has no meaning.
      for (size_t k= 0; k< N; k++) {
       w1.B(k) = f(x_values[k],y);
       w1.C(k) = f(x, y_values[k]);
