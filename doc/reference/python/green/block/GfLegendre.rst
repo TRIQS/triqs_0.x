@@ -49,7 +49,7 @@ Note                        string                       Note
 Example
 --------------- 
 
-.. plot:: green/block/green_legendre.py
+.. plot:: reference/python/green/block/green_legendre.py
    :include-source:
    :scale: 70 
 

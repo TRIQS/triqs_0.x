@@ -10,7 +10,7 @@ A simple example
 Let us for example fit the Green function :
 
 
-.. plot:: data_analysis/fit/fit_test.py
+.. plot:: reference/python/data_analysis/fit/fit_test.py
    :include-source:
    :scale: 70
 

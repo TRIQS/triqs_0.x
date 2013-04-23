@@ -21,7 +21,7 @@ but that can plot TRIQS objects (in fact *any* object, see below).
 
 We can reproduce the first example of the Green function tutorial :
 
-.. plot:: green/example.py
+.. plot:: reference/python/green/example.py
    :include-source:
    :scale: 70
 
@@ -44,7 +44,7 @@ Multiple panels figures
 While one can use the regular matplotlib subfigure to make multi-panel figures, 
 subplots makes it a bit more pythonic :
 
-.. plot:: data_analysis/plotting/example.py
+.. plot:: reference/python/data_analysis/plotting/example.py
    :include-source:
    :scale: 70
 
@@ -87,7 +87,7 @@ Example
 
 Here's a simple example to illustrate the protocol:
 
-.. plot:: data_analysis/plotting/myobject.py
+.. plot:: reference/python/data_analysis/plotting/myobject.py
    :include-source:
    :scale: 70
 
@@ -98,7 +98,7 @@ A little bit more complex, with options.
 Note the use of the `pop method of dict <http://docs.python.org/library/stdtypes.html#dict>`_, 
 which returns and removes the entry from the dict (with a default value).
 
-.. plot:: data_analysis/plotting/myobject2.py
+.. plot:: reference/python/data_analysis/plotting/myobject2.py
    :include-source:
    :scale: 70
 

@@ -14,7 +14,7 @@ The command ``Fourier`` (``InverseFourier``) allows you to initialize a block
 Green's function defined in frequency (time) from a block Green's function defined
 in time (frequency). Here's a simple example:
 
-.. plot:: green/fourier.py
+.. plot:: reference/python/green/fourier.py
    :include-source:
    :scale: 70
 
@@ -28,6 +28,6 @@ initialize a Matsubara Green's function (either in imaginary time or in
 imaginary frequencies) from a Legendre Green's function and conversely.
 Example:
 
-.. plot:: green/legendre.py
+.. plot:: reference/python/green/legendre.py
    :include-source:
    :scale: 70

@@ -49,6 +49,6 @@ Note                        string                       Note
 Example 
 --------------- 
 
-.. plot:: green/block/green_imfreq.py
+.. plot:: reference/python/green/block/green_imfreq.py
    :include-source:
    :scale: 70 

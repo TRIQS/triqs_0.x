@@ -44,7 +44,7 @@ Note                        string                       Note
 Example
 -------
 
-.. plot:: green/block/green_imtime.py
+.. plot:: reference/python/green/block/green_imtime.py
    :include-source:
    :scale: 70 
 

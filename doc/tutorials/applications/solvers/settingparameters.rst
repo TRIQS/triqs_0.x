@@ -180,7 +180,7 @@ The final step is to decide on the ideal number of Legendre coefficients to keep
 for the following runs. If you have saved the Legendre Green's function in an
 archive, you can then plot it:
 
-.. plot:: solvers/legendre_plot.py
+.. plot:: tutorials/applications/solvers/legendre_plot.py
   :include-source:
   :scale: 70
 

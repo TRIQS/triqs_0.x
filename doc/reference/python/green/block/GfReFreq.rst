@@ -46,7 +46,7 @@ Note                        string                       Note
 Examples 
 ---------------
 
-.. plot:: green/block/green_refreq.py
+.. plot:: reference/python/green/block/green_refreq.py
    :include-source:
    :scale: 70
 
@@ -57,6 +57,6 @@ The next example demonstrates how a real frequency Green's function can be
 reconstructed from an imaginary frequency counterpart using set_from_pade()
 method.
 
-.. plot:: green/block/green_pade.py
+.. plot:: reference/python/green/block/green_pade.py
    :include-source:
    :scale: 70

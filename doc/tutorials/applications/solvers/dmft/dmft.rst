@@ -33,6 +33,6 @@ this property would still be true in more complex cases.
 This run generates a file :file:`single_site_bethe.h5` containing the Green's function
 at every iteration. You can plot them to see the convergence on the solver:
 
-.. plot:: solvers/dmft/plot.py
+.. plot:: ./tutorials/applications/solvers/dmft/plot.py
   :include-source:
   :scale: 70

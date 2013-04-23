@@ -43,7 +43,7 @@ Note                        string                       Note
 Example 
 ---------------
 
-.. plot:: green/block/green_retime.py
+.. plot:: reference/python/green/block/green_retime.py
    :include-source:
    :scale: 70
   
