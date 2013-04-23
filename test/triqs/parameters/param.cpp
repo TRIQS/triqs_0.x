@@ -104,6 +104,7 @@ int main() {
  }
 
  parameters P4;
+ parameters::register_type<triqs::arrays::array<double,1>>();
  std::cout << "P4 before : "<< P4<< std::endl ;
  {
   H5::H5File file( "ess.h5", H5F_ACC_RDONLY );
