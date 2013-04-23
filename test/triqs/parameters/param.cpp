@@ -51,6 +51,10 @@ int main() {
 
  triqs::arrays::array<double,2> A(2,2); A()=0;A(0,0) = 1.3; A(1,1) = -8.2;
  triqs::arrays::array<long,1> B(3); B()=0;B(0) = 3; B(1) = -8;
+ triqs::arrays::matrix<double> U(2,2);U()=1.;
+ P["U"] = U;
+ triqs::arrays::vector<double> V(3);V()=1.;
+ P["V"] = V;
  P["A"] = std::move(A);
  P["B"] = B;
  std::cout  << "A"<< P["A"] << std::endl;

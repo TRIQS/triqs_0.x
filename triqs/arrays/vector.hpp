@@ -131,10 +131,12 @@ namespace triqs { namespace arrays {
      * Build a new vector from X.domain() and fill it with by evaluating X. X can be :
      *  - another type of array, array_view, matrix,.... (any <IndexMap, Storage> pair)
      *  - a expression : e.g. array<int, IndexOrder::C<1> > A( B+ 2*C);
+     *  - ml : useless directly, since there only one ml, but used in generic code it maintains the same constructor as array, matrix 
      */
     template <typename T>
-     vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
-      IMPL_TYPE(indexmap_type(X.domain())) { triqs_arrays_assign_delegation(*this,X); }
+     //vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
+     vector(const T & X, TYPE_ENABLE_IF(memory_layout<1>, ImmutableArray<T>) ml = memory_layout<1>(IMPL_TYPE::indexmap_type::traversal_order)):
+      IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
 
     /**
      * Resizes the vector. NB : all references to the storage is invalidated.
