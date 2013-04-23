@@ -15,12 +15,17 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  string(REGEX REPLACE ".*([2-5]\\.[0-9]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
- 
+
  EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion  
   OUTPUT_VARIABLE compiler_version RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
  SET(CMAKE_COMPILER_IS_CLANG TRUE )
- SET( compiler_version_min "3.1")
  SET( compiler_name "clang")
+ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  # Apple which does not has the official clang version number ... 
+  SET( compiler_version_min "4.2")
+ else()
+  SET( compiler_version_min "3.2")
+ endif()
  #string(REGEX REPLACE ".*([2-5]\\.[0-9]).*" "\\1" compiler_version ${_compiler_output})
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
