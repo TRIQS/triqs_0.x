@@ -133,7 +133,8 @@ namespace triqs { namespace gf { namespace local {
    ///
    friend void h5_write (h5::group fg, std::string subgroup_name, tail_impl const & t) {
     auto  gr = fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(t); 
+    // tagging the hdf5 file 
+    //gr.write_triqs_hdf5_data_scheme(t); 
     h5_write(gr,"omin",t.omin);
     h5_write(gr,"mask",t.mask);
     h5_write(gr,"data",t.data);
@@ -142,10 +143,10 @@ namespace triqs { namespace gf { namespace local {
    friend void h5_read  (h5::group fg, std::string subgroup_name, tail_impl & t){
     auto gr = fg.open_group(subgroup_name);
      // Check the attribute or throw
-    auto tag_file = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected= get_triqs_hdf5_data_scheme(t);
-    if (tag_file != tag_expected) 
-     TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
+    //auto tag_file = gr.read_triqs_hdf5_data_scheme();
+    //auto tag_expected= get_triqs_hdf5_data_scheme(t);
+    //if (tag_file != tag_expected) 
+    // TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
     h5_read(gr,"omin",t.omin);
     h5_read(gr,"mask",t.mask);
     h5_read(gr,"data",t.data);
