@@ -164,7 +164,7 @@ namespace triqs {
     int rank = dataspace.getSimpleExtentNdims();
     if (rank != 0) TRIQS_RUNTIME_ERROR << "Reading a string attribute and got rank !=0";
     size_t size = attr.getStorageSize();
-    H5::StrType strdatatype(H5::PredType::C_S1, size);
+    H5::StrType strdatatype(H5::PredType::C_S1, size+1);
     std::vector<char> buf(size+1, 0x00);
     attr.read(strdatatype, (void *)(&buf[0])); 
     value.append( &(buf.front()) );
