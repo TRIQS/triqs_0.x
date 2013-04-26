@@ -29,17 +29,26 @@ namespace triqs { namespace gf {
 
  template<typename T, int R> struct data_proxy_array;
 
+ //---------------------------- 3d array ----------------------------------
+ 
  template<typename T> struct data_proxy_array<T,3> { 
   /// The storage
   typedef arrays::array<T,3>             storage_t;
   typedef typename storage_t::view_type  storage_view_t;
 
   /// The data access 
-  arrays::matrix_view_proxy<storage_t,0>       operator()(storage_t       & data, size_t i)       { return arrays::matrix_view_proxy<storage_t,0>(data,i); } 
-  arrays::const_matrix_view_proxy<storage_t,0> operator()(storage_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_t,0>(data,i); } 
-  arrays::matrix_view_proxy<storage_view_t,0>       operator()(storage_view_t       & data, size_t i)       { return arrays::matrix_view_proxy<storage_view_t,0>(data,i); } 
+  arrays::matrix_view_proxy<storage_t,0>            operator()(storage_t       & data, size_t i) const { return arrays::matrix_view_proxy<storage_t,0>(data,i); } 
+  arrays::const_matrix_view_proxy<storage_t,0>      operator()(storage_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_t,0>(data,i); } 
+  arrays::matrix_view_proxy<storage_view_t,0>       operator()(storage_view_t       & data, size_t i) const { return arrays::matrix_view_proxy<storage_view_t,0>(data,i); } 
   arrays::const_matrix_view_proxy<storage_view_t,0> operator()(storage_view_t const & data, size_t i) const { return arrays::const_matrix_view_proxy<storage_view_t,0>(data,i); } 
+
+  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = rhs;}
+  template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = rhs;}
+  template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = rhs;}
+  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data_view()); }
  };
+
+ //---------------------------- 1d array ----------------------------------
 
  template<typename T> struct data_proxy_array<T,1>{ 
   /// The storage
@@ -47,11 +56,18 @@ namespace triqs { namespace gf {
   typedef typename storage_t::view_type  storage_view_t;
 
   /// The data access 
-  auto operator()(storage_t       & data,size_t i)       -> decltype(data(i)) { return data(i);}
+  auto operator()(storage_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
   auto operator()(storage_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
-  auto operator()(storage_view_t       & data,size_t i)       -> decltype(data(i)) { return data(i);}
+  auto operator()(storage_view_t       & data,size_t i) const -> decltype(data(i)) { return data(i);}
   auto operator()(storage_view_t const & data,size_t i) const -> decltype(data(i)) { return data(i);}
+
+  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = rhs;}
+  template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = rhs;}
+  template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = rhs;}
+  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data_view()); }
  };
+
+ //---------------------------- vector ----------------------------------
 
  template<typename T> struct data_proxy_vector { 
   typedef typename T::view_type Tv;
@@ -61,10 +77,19 @@ namespace triqs { namespace gf {
   typedef std::vector<Tv> storage_view_t;
 
   /// The data access 
-  T        &  operator()(std::vector<T>  &       data, size_t i)       { return data[i];}
-  T  const &  operator()(std::vector<T>  const & data, size_t i) const { return data[i];}
-  Tv       &  operator()(std::vector<Tv> &       data, size_t i)       { return data[i];}
-  Tv const &  operator()(std::vector<Tv> const & data, size_t i) const { return data[i];}
+  T        &  operator()(storage_t  &           data, size_t i)       { return data[i];}
+  T  const &  operator()(storage_t      const & data, size_t i) const { return data[i];}
+  Tv       &  operator()(storage_view_t &       data, size_t i)       { return data[i];}
+  Tv const &  operator()(storage_view_t const & data, size_t i) const { return data[i];}
+
+  template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs) {
+   auto r = make_vector(rhs);
+   if (data.size() !=r.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
+   for (size_t i =0; i<data.size(); ++i) data[i] = r[i];
+  }
+  template<typename S, typename RHS> static void assign_with_resize (S & data, RHS && rhs) {data = utility::factory<storage_t>(rhs);}
+  template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
+  template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) { data.clear(); for (auto & x : rhs.data_view()) data.push_back(x);}
  };
 
 }}

@@ -44,22 +44,26 @@ namespace triqs { namespace gf {
    /// Symmetry
    typedef nothing symmetry_t;
 
-  static std::string h5_name() { return "BlockGf";}
-
-  typedef void has_special_h5_read_write_tag;
-
-  template<typename G> 
-  static void h5_data_write(h5::group g, std::string const & s, G const & gf) {
-   auto gr =  g.create_group(s);
-   for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
-  }
-
-  template<typename G> 
-   static void h5_data_read(h5::group g, std::string const & s, G & gf) {
-    auto gr =  g.create_group(s);
-    for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],gf[i]);
-   }
+   static std::string h5_name() { return "BlockGf";}
   };
+
+ /// ---------------------------  h5_rw ---------------------------------
+
+ template <typename Target> struct gf_h5_ops<block<Target>> { 
+
+  template<typename DataType, typename GF> 
+   static void write(h5::group g, std::string const & s, DataType const & data, GF const & gf) {
+    auto gr =  g.create_group(s);
+    for (size_t i =0; i<gf.mesh().size(); ++i) h5_write(gr,gf.mesh().domain().names()[i],data[i]);
+   }
+
+  template<typename DataType,typename GF> 
+   static void read(h5::group g, std::string const & s, DataType & data, GF const & gf) {
+    auto gr =  g.create_group(s);
+    for (size_t i =0; i<gf.mesh().size(); ++i) h5_read(gr,gf.mesh().domain().names()[i],data[i]);
+   }
+ };
+
  /// ---------------------------  evaluator ---------------------------------
 
 

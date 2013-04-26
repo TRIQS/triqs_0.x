@@ -44,16 +44,17 @@ namespace triqs { namespace gf {
  template<typename Descriptor> struct evaluator{ static constexpr int arity = 0;};
  template<typename Descriptor, typename Enable = void> struct data_proxy;
 
+ // to put the writing the data of the function out. Will be specialized for block gf
+ template <typename Descriptor> struct gf_h5_ops { 
+  template<typename DataType, typename GF> static void write(h5::group g, std::string const & s, DataType const & data, GF const &) { h5_write(g,"data",data); }
+  template<typename DataType, typename GF> static void read (h5::group g, std::string const & s, DataType & data, GF const &) { h5_read(g,"data",data);}
+ };
+
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
 
  // ---------------------- implementation --------------------------------
 
- // detects if the descriptor has a special h5 read/write method
- template<typename D, typename Enable=void> struct has_special_h5_read_write                    : std::false_type {};
- template<typename D> struct has_special_h5_read_write<D, typename D::has_special_h5_read_write_tag>: std::true_type {};
-
- //------------------------------------------------------------------------
  /// A common implementation class. Idiom : ValueView
  template<typename Descriptor,bool IsView> class gf_impl : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), Descriptor::tag {
   public :
@@ -81,11 +82,14 @@ namespace triqs { namespace gf {
 
    mesh_t const & mesh() const            { return _mesh;}
    domain_t const & domain() const        { return _mesh.domain();}
+
+   // NOT NICE TO CALL IT VIEW ...
+   // unify notation and call is data(), because it may not be a view.
+   // SAME FOR singularity ....
    data_t &  data_view()                  { return data;}
    data_t const & data_view() const       { return data;}
    singularity_t & singularity_view()     { return singularity;}
    singularity_t const & singularity_view() const { return singularity;}
-
    symmetry_t const & symmetry() const { return _symmetry;}
    evaluator_t const & _evaluator() const { return evaluator_;}
 
@@ -96,9 +100,6 @@ namespace triqs { namespace gf {
    symmetry_t _symmetry;
    evaluator_t evaluator_;
    data_proxy_t data_proxy_;
-  public:
-   std::integral_constant<bool, arrays::is_array_or_view<data_t>::value> storage_is_array;
-  protected:
 
    // --------------------------------Constructors -----------------------------------------------
    // protected, see gf/gf_view later for public one
@@ -125,27 +126,6 @@ namespace triqs { namespace gf {
    void operator = (gf_impl const & rhs) = delete; // done in derived class.
 
   public:
-
-   // MOVE THIS TO data_proxies ???
-   // replace data by data_proxies in all gf ? 
-   //
-   // array is true, vector is false.
-   // warning : dimension should match, no resize ??
-   template<typename RHS> void _data_assigner_no_resize (RHS && rhs, std::true_type) { data() = rhs.data_view();}
-   template<typename RHS> void _data_assigner_no_resize (RHS && rhs, std::false_type) {
-    auto r = make_vector(rhs.data_view());
-    if (data.size() !=r.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
-    for (size_t i =0; i<data.size(); ++i) data[i] = r[i];
-   }
-
-   // data can change size, we need to reset the data_proxy
-   // This is the only point where the arrays can be reshaped, hence views been invalidated !!
-   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::true_type){data = rhs.data_view();}
-   template<typename RHS> void _data_assigner_with_resize( RHS && rhs, std::false_type){data = factory<data_t>(rhs.data_view());}
-
-   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::true_type){ data() = rhs; }
-   template<typename RHS> void _data_assigner_to_scalar( RHS && rhs, std::false_type){for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
-
    // ------------- All the call operators -----------------------------
 
    // First, a simple () returns a view, like for an array...
@@ -230,41 +210,33 @@ namespace triqs { namespace gf {
 
    //----------------------------- HDF5 -----------------------------
 
-   // WHY NOT use here a specialisation of a template for block<im...> ?? simpler...
-  private : // indirection if descrptor has a special read write
-   void __h5_write (h5::group g, std::string const & s, std::false_type) const { h5_write(g,"data",data); }
-   void __h5_write (h5::group g, std::string const & s, std::true_type)  const { Descriptor::h5_data_write(g,s,*this);}
-   void __h5_read  (h5::group g, std::string const & s, std::false_type) { h5_read(g,"data",data); }
-   void __h5_read  (h5::group g, std::string const & s, std::true_type)  { Descriptor::h5_data_read(g,s,*this);}
-  public:
-
    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return descriptor_t::h5_name();}
 
    /// Write into HDF5
    friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
     auto gr =  fg.create_group(subgroup_name);
     gr.write_triqs_hdf5_data_scheme(g); 
-    g.__h5_write (gr,"data", has_special_h5_read_write<Descriptor>());
+    gf_h5_ops<Descriptor>::write(gr, "data", g.data, g);
     h5_write(gr,"singularity",g.singularity);
     h5_write(gr,"mesh",g._mesh);
     h5_write(gr,"symmetry",g._symmetry);
    }
 
    /// Read from HDF5
-   friend void h5_read  (h5::group fg, std::string subgroup_name, gf_impl & g){
+   friend void h5_read (h5::group fg, std::string subgroup_name, gf_impl & g) {
     auto gr = fg.open_group(subgroup_name);
     // Check the attribute or throw
     auto tag_file = gr.read_triqs_hdf5_data_scheme();
     auto tag_expected= get_triqs_hdf5_data_scheme(g);
     if (tag_file != tag_expected) 
      TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
-    g.__h5_read (gr,"data", has_special_h5_read_write<Descriptor>());
+    gf_h5_ops<Descriptor>::read(gr, "data", g.data, g);
     h5_read(gr,"singularity",g.singularity);
     h5_read(gr,"mesh",g._mesh);
     h5_read(gr,"symmetry",g._symmetry);
    }
 
-   //  BOOST Serialization
+   //-----------------------------  BOOST Serialization -----------------------------
    friend class boost::serialization::access;
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
@@ -291,9 +263,9 @@ namespace triqs { namespace gf {
   gf(gf_view<Descriptor> const & g): B(g){}
   template<typename GfType> gf(GfType const & x): B() { *this = x;}
 
-  template<typename DATA_VIEW_TYPE> // anything from which the factory can make the data ...
+  template<typename DataViewType> // anything from which the factory can make the data ...
    gf(typename B::mesh_t const & m,
-     DATA_VIEW_TYPE const & dat,
+     DataViewType const & dat,
      typename B::singularity_view_t const & si,
      typename B::symmetry_t const & s ,
      typename B::evaluator_t const & eval = typename B::evaluator_t ()
@@ -312,7 +284,7 @@ namespace triqs { namespace gf {
 
   template<typename RHS> void operator = (RHS && rhs) {
    this->_mesh = rhs.mesh();
-   this->_data_assigner_with_resize(std::forward<RHS>(rhs), this->storage_is_array);
+   B::data_proxy_t::assign_with_resize(this->data_view(), std::forward<RHS>(rhs).data_view()); // looks strange for &&
    //this->data = rhs.data_view();
    this->singularity = rhs.singularity_view();
    // to be implemented : there is none in the gf_expr in particular....
@@ -324,18 +296,8 @@ namespace triqs { namespace gf {
  ///The View class of GF
  template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
   typedef gf_impl<Descriptor,true> B;
-  // a little function to specialize the rebind a vector of views (false) or arrays (true)
-  void _rebinder(gf_view const &X, std::true_type)  { this->data.rebind(X.data); }
-  void _rebinder(gf_view const &X, std::false_type) { this->data.clear(); for (auto & x : X.data) this->data.push_back(x);}
   public :
-
-  void rebind( gf_view const &X) {
-   this->_mesh = X._mesh; this->_symmetry = X._symmetry; 
-   _rebinder(X, this->storage_is_array); // need to change the trait to std::integrall...
-   this->singularity.rebind(X.singularity);
-  }
-
-  gf_view(gf_view const & g): B(g){}
+   gf_view(gf_view const & g): B(g){}
   gf_view(gf_view && g): B(std::move(g)){}
 
   template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
@@ -346,6 +308,12 @@ namespace triqs { namespace gf {
      typename B::evaluator_t const &e = typename B::evaluator_t ()  ) :
     B(m,factory<typename B::data_t>(dat),t,s,e) {}
 
+  void rebind( gf_view const &X) {
+   this->_mesh = X._mesh; this->_symmetry = X._symmetry; 
+   this->data_proxy_.rebind(this->data,X); 
+   this->singularity.rebind(X.singularity);
+  }
+  
   void operator = (gf_view const & rhs)  { triqs_gf_view_assign_delegation(*this,rhs);}
 
   template<typename RHS> void operator = (RHS const & rhs) { triqs_gf_view_assign_delegation(*this,rhs);}
@@ -361,10 +329,10 @@ namespace triqs { namespace gf {
 
   private:
   template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,false>) {
-   for (auto w: this->mesh()) (*this)(w) = rhs(w);
+   for (auto const & w: this->mesh()) (*this)(w) = rhs(w);
   }
   template<typename RHS> void triqs_clef_auto_assign_impl (RHS const & rhs, std::integral_constant<bool,true>) {
-   for (auto w: this->mesh()) (*this)(w) = triqs::tuple::apply(rhs,w.components_tuple());
+   for (auto const & w: this->mesh()) (*this)(w) = triqs::tuple::apply(rhs,w.components_tuple());
    //for (auto w: this->mesh()) triqs::tuple::apply(*this,w.components_tuple()) = triqs::tuple::apply(rhs,w.components_tuple());
   }
 
@@ -372,16 +340,16 @@ namespace triqs { namespace gf {
 
  // delegate = so that I can overload it for specific RHS...
  template<typename Descriptor, typename RHS>
-  void triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, RHS && rhs) {
+  DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, RHS const & rhs) {
    if (!(g.mesh()  == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh";
    //if (!(g.shape() == rhs.shape())) TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible target shape";
-   g._data_assigner_no_resize(std::forward<RHS>(rhs), g.storage_is_array); //g.data_view() = rhs.data_view();
+   gf_view<Descriptor>::data_proxy_t::assign_no_resize(g.data_view(),rhs.data_view()); //g.data_view() = rhs.data_view();
    g.singularity_view() = rhs.singularity_view();
   }
 
  template<typename Descriptor, typename T>
   ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, T const & x) {
-   g._data_assigner_to_scalar(x, g.storage_is_array); //g.data_view() = x;
+   gf_view<Descriptor>::data_proxy_t::assign_to_scalar(g.data_view(), x); //g.data_view() = x;
    g.singularity_view() = x;
   }
 

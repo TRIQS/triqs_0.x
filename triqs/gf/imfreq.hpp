@@ -27,25 +27,29 @@
 #include "./meshes/linear.hpp"
 namespace triqs { namespace gf {
 
- struct imfreq {
+ namespace descriptors { 
 
-  /// A tag to recognize the function
-  struct tag {};
+  struct imfreq {
 
-  /// The domain
-  typedef matsubara_domain<true> domain_t;
+   /// A tag to recognize the function
+   struct tag {};
 
-  /// The Mesh
-  typedef linear_mesh<domain_t> mesh_t;
+   /// The domain
+   typedef matsubara_domain<true> domain_t;
 
-  /// The tail
-  typedef local::tail singularity_t;
+   /// The Mesh
+   typedef linear_mesh<domain_t> mesh_t;
 
-  /// Symmetry
-  typedef nothing symmetry_t;
+   /// The tail
+   typedef local::tail singularity_t;
 
-  static std::string h5_name() { return "GfImFreq";}
- };
+   /// Symmetry
+   typedef nothing symmetry_t;
+
+   static std::string h5_name() { return "GfImFreq";}
+  };
+ }
+ using descriptors::imfreq;
 
  /// ---------------------------  evaluator ---------------------------------
 

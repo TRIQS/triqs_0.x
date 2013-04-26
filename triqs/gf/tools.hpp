@@ -53,6 +53,10 @@ namespace triqs { namespace gf {
   while(std::getline(ss, item, delim)) { elems.push_back(item); }
   return elems;
  }
+ //------------------------------------------------------
+
+ template<typename T> struct closest_pt_wrap { T value; };
+ template<typename T> closest_pt_wrap<T> closest_mesh_pt(T && x) { return {std::forward<T>(x)};}
 
  //------------------------------------------------------
 
