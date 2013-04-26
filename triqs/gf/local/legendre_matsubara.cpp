@@ -41,7 +41,7 @@ void legendre_matsubara_direct(gf_view<imfreq> & gw, gf_view<legendre> const & g
     }
   }
 
-  gw.singularity_view() = get_tail(gl, gw.singularity_view().size(), gw.singularity_view().order_min());
+  gw.singularity() = get_tail(gl, gw.singularity().size(), gw.singularity().order_min());
 
 }
 
@@ -54,7 +54,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imfreq> const &
   // transformation without going through imaginary time
   long Nt = 50000;
   auto gt = triqs::gf::make_gf<imtime>(gw.domain().beta, gw.domain().statistic,
-    triqs::arrays::mini_vector<size_t,2>(gw.data_view().shape()[1],gw.data_view().shape()[2]),
+    triqs::arrays::mini_vector<size_t,2>(gw.data().shape()[1],gw.data().shape()[2]),
     Nt, triqs::gf::half_bins);
 
   // We first transform to imaginary time because it's been coded with the knowledge of the tails
@@ -76,7 +76,7 @@ void legendre_matsubara_direct (gf_view<imtime> & gt, gf_view<legendre> const & 
     }
   }
 
-  gt.singularity_view() = get_tail(gl, gt.singularity_view().size(), gt.singularity_view().order_min());
+  gt.singularity() = get_tail(gl, gt.singularity().size(), gt.singularity().order_min());
 
 }
 
@@ -92,7 +92,7 @@ void legendre_matsubara_inverse (gf_view<legendre> & gl, gf_view<imtime> const &
       gl(l) += sqrt(2*l.index()+1) * L.next() * gt(t);
     }
   }
-  gl.data_view() *= gt.mesh().delta();
+  gl.data() *= gt.mesh().delta();
 
 }
 

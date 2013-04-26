@@ -49,7 +49,7 @@ struct array_code {
  double beta =1;
  auto G =  make_gf<imfreq> (beta, Fermion, make_shape(2,2),N);
  G() =0;
- auto V = G.data_view();
+ auto V = G.data();
 
  for (int u =0; u<nl_interne; ++u)
    for (int i =0; i<N-1; ++i) V(0,0,i) = fnt(i);

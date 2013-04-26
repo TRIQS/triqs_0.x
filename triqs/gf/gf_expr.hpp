@@ -27,8 +27,8 @@ namespace triqs { namespace gf {
   template<typename S> struct scalar_wrap {
    typedef S value_type; 
    S s; scalar_wrap(S const &s_):s(s_){} 
-   S singularity_view() const { return s;}
-   S data_view() const { return s;} 
+   S singularity() const { return s;}
+   S data() const { return s;} 
    template<typename KeyType> value_type operator[](KeyType && key) const { return s;}
    template<typename ... Args> inline value_type operator()(Args && ... args) const { return s;}
    friend std::ostream &operator <<(std::ostream &sout, scalar_wrap const &expr){return sout << expr.s; }
@@ -59,8 +59,8 @@ namespace triqs { namespace gf {
   L_t l; R_t r;
   template<typename LL, typename RR> gf_expr(LL && l_, RR && r_) : l(std::forward<LL>(l_)), r(std::forward<RR>(r_)) {}
   mesh_t mesh() const  { return gf_expr_tools::combine_mesh()(l,r); } 
-  auto data_view() const ->decltype( utility::operation<Tag>()(l.data_view(), r.data_view())) {  return utility::operation<Tag>()(l.data_view(), r.data_view());}
-  const singularity_view_t singularity_view() const { return utility::operation<Tag>()(l.singularity_view() , r.singularity_view());}
+  auto data() const ->decltype( utility::operation<Tag>()(l.data(), r.data())) {  return utility::operation<Tag>()(l.data(), r.data());}
+  const singularity_view_t singularity() const { return utility::operation<Tag>()(l.singularity() , r.singularity());}
   //symmetry_t const & symmetry() const { return _symmetry;}
   template<typename KeyType> auto operator[](KeyType && key) const DECL_AND_RETURN(utility::operation<Tag>()(l[std::forward<KeyType>(key)] , r[std::forward<KeyType>(key)]));
   template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN(utility::operation<Tag>()(l(std::forward<Args>(args)...) , r(std::forward<Args>(args)...)));
@@ -78,8 +78,8 @@ namespace triqs { namespace gf {
   L_t l; 
   template<typename LL> gf_unary_m_expr(LL && l_) : l(std::forward<LL>(l_)) {}
   mesh_t mesh() const  { return l.mesh(); } 
-  auto data_view() const ->decltype( - l.data_view()) {  return - l.data_view();}
-  const singularity_view_t singularity_view() const { return l.singularity_view();}
+  auto data() const ->decltype( - l.data()) {  return - l.data();}
+  const singularity_view_t singularity() const { return l.singularity();}
   //symmetry_t const & symmetry() const { return _symmetry;}
   template<typename KeyType> auto operator[](KeyType&& key) const DECL_AND_RETURN( -l[key]); 
   template<typename ... Args> auto operator()(Args && ... args) const DECL_AND_RETURN( -l(std::forward<Args>(args)...));

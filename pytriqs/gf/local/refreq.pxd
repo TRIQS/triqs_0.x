@@ -22,8 +22,8 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         gf_refreq(mesh_refreq, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_refreq &)
         mesh_refreq mesh() 
-        array_view[dcomplex, THREE] data_view()
-        tail singularity_view() 
+        array_view[dcomplex, THREE] data()
+        tail singularity() 
 
 cdef extern from "triqs/gf/refreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_refreq &)

@@ -42,7 +42,7 @@ cdef class TailGf:
     property data : 
         """Access to the data array"""
         def __get__(self) :
-            return self._c.data_view().to_python()
+            return self._c.data().to_python()
 
     property mask:
         """Access to the mask"""

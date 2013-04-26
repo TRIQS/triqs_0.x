@@ -56,7 +56,7 @@ namespace triqs { namespace gf {
    static constexpr int arity = 1;
    template<typename G>
     arrays::matrix_view<std::complex<double> >  operator() (G const * g,double w0)  const {
-     auto & data = g->data_view();
+     auto & data = g->data();
      auto & mesh = g->mesh();
      size_t index; double w; bool in;
      std::tie(in, index, w) = windowing(mesh,w0);
@@ -65,7 +65,7 @@ namespace triqs { namespace gf {
      return res;
     }
    template<typename G>
-    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity_view();}
+    local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
   };
 
  /// ---------------------------  data access  ---------------------------------

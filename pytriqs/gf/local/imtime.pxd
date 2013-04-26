@@ -23,8 +23,8 @@ cdef extern from "triqs/gf/imtime.hpp" namespace "triqs::gf" :
         gf_imtime(mesh_imtime, array_view[double, THREE], tail, nothing) #except +
         void operator << (gf_imtime &)
         mesh_imtime mesh() 
-        array_view[double, THREE] data_view()
-        tail singularity_view() 
+        array_view[double, THREE] data()
+        tail singularity() 
 
 cdef extern from "triqs/gf/imtime.hpp"  :
     cdef void h5_write (h5_group, char *, gf_imtime &)

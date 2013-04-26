@@ -21,7 +21,7 @@ cdef extern from "triqs/gf/legendre.hpp" namespace "triqs::gf" :
         gf_legendre(mesh_legendre, array_view[double, THREE], nothing, nothing) #except +
         void operator << (gf_legendre &)
         mesh_legendre mesh() 
-        array_view[double, THREE] data_view()
+        array_view[double, THREE] data()
 
 cdef extern from "triqs/gf/legendre.hpp"  :
     cdef void h5_write (h5_group, char *, gf_legendre &)

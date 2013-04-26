@@ -46,8 +46,8 @@ void Measure_G_Legendre::accumulate(std::complex<double> signe) {
       const double x=2*delta_tau/conf.Beta-1;
       Tn.reset(x);
       const double temp=s*st*p.M();
-      for (int n=0; n<Gl.data_view().shape()[0]; n++) {
-        Gl.data_view()(n, conf.info[p.C()->Op->Number].alpha, conf.info[p.Cdagger()->Op->Number].alpha) += temp*Tn.next();
+      for (int n=0; n<Gl.data().shape()[0]; n++) {
+        Gl.data()(n, conf.info[p.C()->Op->Number].alpha, conf.info[p.Cdagger()->Op->Number].alpha) += temp*Tn.next();
       }
 
   }

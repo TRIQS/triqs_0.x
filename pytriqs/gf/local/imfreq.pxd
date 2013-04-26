@@ -21,8 +21,8 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         gf_imfreq(mesh_imfreq, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_imfreq &)
         mesh_imfreq mesh() 
-        array_view[dcomplex, THREE] data_view()
-        tail singularity_view() 
+        array_view[dcomplex, THREE] data()
+        tail singularity() 
 
 cdef extern from "triqs/gf/imfreq.hpp"  :
     cdef void h5_write (h5_group, char *, gf_imfreq &)

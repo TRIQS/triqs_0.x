@@ -109,7 +109,6 @@ namespace triqs { namespace gf {
     return make_gf(block_names,V);
    }
 
-
    /*  template<typename... Args>
        static gf_t make_gf(std::vector<std::string> const & block_names, Args&& ...args)  {
        std::vector<gf<Target>> V; V.reserve(block_names.size());

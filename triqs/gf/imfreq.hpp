@@ -57,9 +57,9 @@ namespace triqs { namespace gf {
   struct evaluator<imfreq> {
    static constexpr int arity = 1;
    template<typename G>
-    arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data_view()(n, arrays::range(), arrays::range()); }
+    arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
    template<typename G>
-    local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity_view();}
+    local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity();}
   };
 
  /// ---------------------------  data access  ---------------------------------

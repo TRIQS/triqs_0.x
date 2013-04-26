@@ -22,8 +22,8 @@ cdef extern from "triqs/gf/retime.hpp" namespace "triqs::gf" :
         gf_retime(mesh_retime, array_view[dcomplex, THREE], tail, nothing) #except +
         void operator << (gf_retime &)
         mesh_retime mesh() 
-        array_view[dcomplex, THREE] data_view()
-        tail singularity_view() 
+        array_view[dcomplex, THREE] data()
+        tail singularity() 
 
 cdef extern from "triqs/gf/retime.hpp"  :
     cdef void h5_write (h5_group, char *, gf_retime &)

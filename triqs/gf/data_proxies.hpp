@@ -45,7 +45,7 @@ namespace triqs { namespace gf {
   template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = rhs;}
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = rhs;}
   template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = rhs;}
-  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data_view()); }
+  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data()); }
  };
 
  //---------------------------- 1d array ----------------------------------
@@ -64,7 +64,7 @@ namespace triqs { namespace gf {
   template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs)           { data() = rhs;}
   template<typename S, typename RHS> static void assign_to_scalar (S & data, RHS && rhs)           { data() = rhs;}
   template<typename RHS>             static void assign_with_resize (storage_t & data, RHS && rhs) { data = rhs;}
-  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data_view()); }
+  template<typename RHS>             static void rebind (storage_view_t & data, RHS && rhs)        { data.rebind(rhs.data()); }
  };
 
  //---------------------------- vector ----------------------------------
@@ -89,7 +89,7 @@ namespace triqs { namespace gf {
   }
   template<typename S, typename RHS> static void assign_with_resize (S & data, RHS && rhs) {data = utility::factory<storage_t>(rhs);}
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
-  template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) { data.clear(); for (auto & x : rhs.data_view()) data.push_back(x);}
+  template<typename RHS> static void rebind (storage_view_t & data, RHS && rhs) { data.clear(); for (auto & x : rhs.data()) data.push_back(x);}
  };
 
 }}

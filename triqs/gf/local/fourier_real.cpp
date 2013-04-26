@@ -46,8 +46,8 @@ namespace triqs { namespace gf {
     auto ta = gt(freq_infty());
     tqa::vector<dcomplex> g_in(L), g_out(L);
 
-    for (size_t n1=0; n1<gw.data_view().shape()[1];n1++) {
-      for (size_t n2=0; n2<gw.data_view().shape()[2];n2++) {
+    for (size_t n1=0; n1<gw.data().shape()[1];n1++) {
+      for (size_t n2=0; n2<gw.data().shape()[2];n2++) {
 
         dcomplex t1 = ta(1)(n1,n2), t2= ta(2)(n1,n2);
         dcomplex a1 = (t1 - I * t2)/2, a2 = (t1 + I * t2)/2;
@@ -68,7 +68,7 @@ namespace triqs { namespace gf {
     }
 
     // set tail
-    gw.singularity_view() = gt.singularity_view();
+    gw.singularity() = gt.singularity();
 
   }
 
@@ -89,8 +89,8 @@ namespace triqs { namespace gf {
     auto ta = gw(freq_infty());
     tqa::vector<dcomplex> g_in(L), g_out(L);
 
-    for (size_t n1=0; n1<gt.data_view().shape()[1];n1++) {
-      for (size_t n2=0; n2<gt.data_view().shape()[2];n2++) {
+    for (size_t n1=0; n1<gt.data().shape()[1];n1++) {
+      for (size_t n2=0; n2<gt.data().shape()[2];n2++) {
 
         dcomplex t1 = ta(1)(n1,n2), t2 = ta(2)(n1,n2);
         dcomplex a1 = (t1 - I * t2)/2, a2 = (t1 + I * t2)/2;
@@ -111,7 +111,7 @@ namespace triqs { namespace gf {
     }
 
     // set tail
-    gt.singularity_view() = gw.singularity_view();
+    gt.singularity() = gw.singularity();
 
   }
 

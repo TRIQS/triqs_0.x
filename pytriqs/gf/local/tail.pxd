@@ -5,7 +5,7 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         tail()
         tail(array_view[dcomplex,THREE], int, array_view[long,TWO]) except +
         matrix_view[dcomplex] operator()(int) except +
-        array_view[dcomplex,THREE] data_view()
+        array_view[dcomplex,THREE] data()
         array_view[long,TWO] mask_view()
         void operator << (tail &)
         void operator << (dcomplex &)

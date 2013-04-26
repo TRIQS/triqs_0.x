@@ -66,23 +66,23 @@ namespace triqs { namespace gf { namespace local {
    typedef arrays::matrix_view<dcomplex>  const_mv_type;
    //typedef arrays::matrix_view<const dcomplex>  const_mv_type;
 
-   data_view_type data_view()             { return data;}
-   const data_view_type data_view() const { return data;}
+   data_view_type data()             { return _data;}
+   const data_view_type data() const { return _data;}
    mask_view_type mask_view()             { return mask;}
    const mask_view_type mask_view() const { return mask;}
 
    long order_min() const {return omin;}
    long order_max() const {return min_element(mask);}
-   size_t size() const {return data.shape()[0];}
+   size_t size() const {return _data.shape()[0];}
    long smallest_nonzero() const {
      long om = omin;
-     while ((om < this->order_max()) && (max_element(abs(data(om-omin,tqa::range(),tqa::range()))) < details::small)) om++;
+     while ((om < this->order_max()) && (max_element(abs(_data(om-omin,tqa::range(),tqa::range()))) < details::small)) om++;
      return om;
    }
 
    typedef tqa::mini_vector<size_t,2> shape_type;
-   shape_type shape() const { return shape_type(data.shape()[1], data.shape()[2]);}
-   size_t shape(int i) const { return data.shape()[i];}
+   shape_type shape() const { return shape_type(_data.shape()[1], _data.shape()[2]);}
+   size_t shape(int i) const { return _data.shape()[i];}
 
    bool is_decreasing_at_infinity() const { return (smallest_nonzero() >=1);}
 
@@ -90,18 +90,18 @@ namespace triqs { namespace gf { namespace local {
 
    long omin;
    mask_type mask;
-   data_type data;
+   data_type _data;
 
    // All constructors
-   tail_impl(): omin(0), mask(), data() {} // all arrays of zero size (empty)
+   tail_impl(): omin(0), mask(), _data() {} // all arrays of zero size (empty)
    tail_impl(size_t N1, size_t N2, size_t size_, long order_min):
-     omin(order_min), mask(tqa::make_shape(N1,N2)), data(tqa::make_shape(size_,N1,N2)) {
+     omin(order_min), mask(tqa::make_shape(N1,N2)), _data(tqa::make_shape(size_,N1,N2)) {
      mask() = order_min+size_-1;
-     data() = 0;
+     _data() = 0;
    }
-   tail_impl(data_type const &d, long order_min, mask_type const &om): omin(order_min), mask(om), data(d) {}
- //  tail_impl(tail_impl          const & x): omin(x.omin), mask(x.mask), data(x.data){}
-   tail_impl(tail_impl<!IsView> const & x): omin(x.omin), mask(x.mask), data(x.data){}
+   tail_impl(data_type const &d, long order_min, mask_type const &om): omin(order_min), mask(om), _data(d) {}
+ //  tail_impl(tail_impl          const & x): omin(x.omin), mask(x.mask), _data(x._data){}
+   tail_impl(tail_impl<!IsView> const & x): omin(x.omin), mask(x.mask), _data(x._data){}
  tail_impl(tail_impl const &) = default;
   tail_impl(tail_impl &&) = default;
  
@@ -111,13 +111,13 @@ namespace triqs { namespace gf { namespace local {
    mv_type operator() (int n) {
      if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
      if (n<this->order_min()) TRIQS_RUNTIME_ERROR<<" n < Min Order. n= "<<n <<", Min Order = "<<order_min() ;
-     return this->data(n-omin, tqa::range(), tqa::range());
+     return this->_data(n-omin, tqa::range(), tqa::range());
    }
 
    const_mv_type operator() (int n) const {
      if (n>this->order_max()) TRIQS_RUNTIME_ERROR<<" n > Max Order. n= "<<n <<", Max Order = "<<order_max() ;
      if (n<this->order_min())  { mv_type::non_view_type r(this->shape()); r()=0; return r;}
-     return this->data(n-omin,tqa::range(), tqa::range());
+     return this->_data(n-omin,tqa::range(), tqa::range());
    }
 
    operator freq_infty() const { return freq_infty();}
@@ -137,7 +137,7 @@ namespace triqs { namespace gf { namespace local {
     //gr.write_triqs_hdf5_data_scheme(t); 
     h5_write(gr,"omin",t.omin);
     h5_write(gr,"mask",t.mask);
-    h5_write(gr,"data",t.data);
+    h5_write(gr,"data",t._data);
    }
 
    friend void h5_read  (h5::group fg, std::string subgroup_name, tail_impl & t){
@@ -149,7 +149,7 @@ namespace triqs { namespace gf { namespace local {
     // TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
     h5_read(gr,"omin",t.omin);
     h5_read(gr,"mask",t.mask);
-    h5_read(gr,"data",t.data);
+    h5_read(gr,"data",t._data);
    }
 
    //  BOOST Serialization
@@ -158,7 +158,7 @@ namespace triqs { namespace gf { namespace local {
     void serialize(Archive & ar, const unsigned int version) {
      ar & boost::serialization::make_nvp("omin",omin);
      ar & boost::serialization::make_nvp("mask",mask);
-     ar & boost::serialization::make_nvp("data",data);
+     ar & boost::serialization::make_nvp("data",_data);
     }
 
    friend std::ostream & operator << (std::ostream & out, tail_impl const & x) {
@@ -183,7 +183,7 @@ namespace triqs { namespace gf { namespace local {
   void rebind( tail_view const &X) {
     omin = X.omin;
     mask.rebind(X.mask);
-    data.rebind(X.data);
+    _data.rebind(X._data);
   }
   inline void rebind( tail const &X);
 
@@ -192,17 +192,17 @@ namespace triqs { namespace gf { namespace local {
 
   // operator = for views
   tail_view & operator = (const tail_view & rhs) {
-    if (this->data.is_empty()) rebind(rhs);
+    if (this->_data.is_empty()) rebind(rhs);
     else {
       if (rhs.omin < omin) TRIQS_RUNTIME_ERROR<<"rhs has too small omin";
-      if ((data.shape()[1] != rhs.data.shape()[1]) || (data.shape()[2] != rhs.data.shape()[2]))
+      if ((_data.shape()[1] != rhs._data.shape()[1]) || (_data.shape()[2] != rhs._data.shape()[2]))
         TRIQS_RUNTIME_ERROR<<"rhs has different shape";
       for (size_t i=0; i<mask.shape()[0]; ++i)
         for (size_t j=0; j<mask.shape()[1]; ++j)
           mask(i,j) = std::min(rhs.mask(i,j), long(omin+size()-1));
       for (size_t n=0; n<std::min(size(), size_t(rhs.size()-omin+rhs.omin)); ++n)
-        if (n < rhs.omin-omin) data(n,tqa::range(),tqa::range()) = 0.0;
-        else data(n,tqa::range(),tqa::range()) = rhs.data(n-rhs.omin+omin,tqa::range(),tqa::range());
+        if (n < rhs.omin-omin) _data(n,tqa::range(),tqa::range()) = 0.0;
+        else _data(n,tqa::range(),tqa::range()) = rhs._data(n-rhs.omin+omin,tqa::range(),tqa::range());
     }
     return *this;
   }
@@ -210,8 +210,8 @@ namespace triqs { namespace gf { namespace local {
 
   tail_view & operator=(std::complex<double> const & x) {
     if (omin > 0) TRIQS_RUNTIME_ERROR<<"lhs has too large omin";
-    for (size_t n=0; n<size(); ++n) data(n, tqa::range(), tqa::range()) = 0.0;
-    data(-omin, tqa::range(), tqa::range()) = x;
+    for (size_t n=0; n<size(); ++n) _data(n, tqa::range(), tqa::range()) = 0.0;
+    _data(-omin, tqa::range(), tqa::range()) = x;
     mask() = omin+size()-1;
     return *this;
   }
@@ -240,13 +240,13 @@ namespace triqs { namespace gf { namespace local {
   tail & operator = (tail_view const & rhs) {
     omin = rhs.omin;
     mask = rhs.mask;
-    data = rhs.data;
+    _data = rhs._data;
     return *this;
   }
   tail & operator = (tail const & rhs) {
     omin = rhs.omin;
     mask = rhs.mask;
-    data = rhs.data;
+    _data = rhs._data;
     return *this;
   }
 
@@ -269,27 +269,27 @@ namespace triqs { namespace gf { namespace local {
   inline void tail_view::rebind( tail const &X) {
    omin = X.omin;
    mask.rebind(X.mask);
-   data.rebind(X.data);
+   _data.rebind(X._data);
  }
  inline tail_view & tail_view::operator = (const tail & rhs) {
-    if (this->data.is_empty()) rebind(rhs);
+    if (this->_data.is_empty()) rebind(rhs);
     else {
       if (rhs.omin < omin) TRIQS_RUNTIME_ERROR<<"rhs has too small omin";
-      if ((data.shape()[1] != rhs.data.shape()[1]) || (data.shape()[2] != rhs.data.shape()[2]))
+      if ((_data.shape()[1] != rhs._data.shape()[1]) || (_data.shape()[2] != rhs._data.shape()[2]))
         TRIQS_RUNTIME_ERROR<<"rhs has different shape";
       for (size_t i=0; i<mask.shape()[0]; ++i)
         for (size_t j=0; j<mask.shape()[1]; ++j)
           mask(i,j) = std::min(rhs.mask(i,j), long(omin+size()-1));
       for (size_t n=0; n<std::min(size(),size_t(rhs.size()-omin+rhs.omin)); ++n)
-        if (n < rhs.omin-omin) data(n,tqa::range(),tqa::range()) = 0.0;
-        else data(n,tqa::range(),tqa::range()) = rhs.data(n-rhs.omin+omin, tqa::range(), tqa::range());
+        if (n < rhs.omin-omin) _data(n,tqa::range(),tqa::range()) = 0.0;
+        else _data(n,tqa::range(),tqa::range()) = rhs._data(n-rhs.omin+omin, tqa::range(), tqa::range());
     }
     return *this;
   }
 
  /// Slice in orbital space
  template<bool V> tail_view slice_target(tail_impl<V> const & t, tqa::range R1, tqa::range R2) {
-  return tail_view(t.data_view()(tqa::range(),R1,R2),t.order_min(),t.mask_view()(R1,R2));
+  return tail_view(t.data()(tqa::range(),R1,R2),t.order_min(),t.mask_view()(R1,R2));
  }
 
  inline tail inverse(tail_view const & t) {
@@ -317,7 +317,7 @@ namespace triqs { namespace gf { namespace local {
   long omax1 = std::min(r.order_max()+l.smallest_nonzero(), l.order_max()+r.smallest_nonzero());
   size_t si = omax1-omin1+1;
   tail res(l.shape()[0], r.shape()[1], si, omin1);
-  res.data_view() =0;
+  res.data() =0;
   for (long n=res.order_min(); n<=res.order_max(); ++n) {
    // sum_{p}^n a_p b_{n-p}. p <= a.n_max, p >= a.n_min and n-p <=b.n_max and n-p >= b.n_min
    // hence p <= min ( a.n_max, n-b.n_min ) and p >= max ( a.n_min, n- b.n_max)
@@ -342,13 +342,13 @@ namespace triqs { namespace gf { namespace local {
    tail res(a); for (long n=res.order_min(); n<=res.order_max(); ++n) res(n)=res(n)*b; return res;
   }
 
- inline tail operator * (dcomplex a, tail_view const & r) { tail res(r); res.data_view()*=a; return res;}
+ inline tail operator * (dcomplex a, tail_view const & r) { tail res(r); res.data()*=a; return res;}
  inline tail operator * (tail_view const & r, dcomplex a) { return a*r; }
 
  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, LocalTail<T2>>)
   operator/ (T1 const & a, T2 const & b) { return a *inverse(b); }
 
- inline tail operator / (tail_view const & r, dcomplex a) { tail res(r); res.data_view() /=a; return res;}
+ inline tail operator / (tail_view const & r, dcomplex a) { tail res(r); res.data() /=a; return res;}
  inline tail operator / (dcomplex a, tail_view const & r) { return a * inverse(r); }
 
  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, LocalTail<T2>>)
