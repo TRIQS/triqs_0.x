@@ -39,14 +39,21 @@ extensions += [
        # 'inheritance_diagram',
         'numpydoc']
 
-extensions += ['autocompile']
+extensions += ['autocompile','autorun']
 
+##options for autocompile module: c++ execution
 autocompile_opts = dict(compiler = "@CMAKE_CXX_COMPILER@",
         link = "@DOC_AUTOCOMPILE_LINK@".replace(';',' '),
         ld_library_path = "@DOC_AUTOCOMPILE_LD_LIBRARY_PATH@".replace(';',' '),
         include =''.join([ " -I%s"%arg for arg in "@DOC_AUTOCOMPILE_INCLUDE@".split(';')] ),
         definitions =''.join([ " %s"%arg for arg in "@DOC_AUTOCOMPILE_DEFINITIONS@".split(';')] )
         )
+
+##options for autorun module: python execution
+autorun_languages = {}
+autorun_languages['python'] = 'python -'
+autorun_languages['python_prefix_chars'] = 0
+autorun_languages['python_show_source'] = True
 
 autoclass_content = "both"
 
@@ -233,3 +240,6 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+
+
