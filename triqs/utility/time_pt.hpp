@@ -45,6 +45,8 @@ namespace triqs { namespace utility {
   time_pt & operator = (time_pt && x) noexcept { using std::swap; swap(n,x.n); swap(beta, x.beta); swap(val, x.val); return *this;}
 #endif
 
+  time_pt & operator = (double v) { val =v; n = floor(Nmax*(v/beta)); return *this; }
+
   bool operator == (const time_pt & tp) const { return n == tp.n; }
   bool operator <  (const time_pt & tp) const { return n < tp.n; }
   bool operator >  (const time_pt & tp) const { return n > tp.n; }
