@@ -104,12 +104,29 @@ namespace triqs { namespace utility {
    ///generate help in form of a table of strings containing a list of required and optional parameters
    std::vector<std::vector<std::string>> generate_help() const{
      std::vector<std::vector<std::string>> str;
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
      str.push_back({"parameter:", "required/optional:", "default value:", "description:"});
      for (auto const &s : object_map){
        std::string key=s.first; std::ostringstream val; val << s.second;
        if(is_required(key)) str.push_back({key, "required", "-", doc(key)});
        else str.push_back({key, "optional", val.str(), doc(key)});
      }
+#else
+     std::vector<std::string> v;
+     v.push_back("parameter:"); v.push_back("required/optional:"); v.push_back("default value:"); v.push_back("description:");
+     str.push_back(v);
+     for (auto const &s : object_map){
+      std::string key=s.first; std::ostringstream val; val << s.second;
+       v.clear();
+      if(is_required(key)) {
+       v.push_back(key); v.push_back("required"); v.push_back("-"); v.push_back(doc(key));
+      }
+      else {
+       v.push_back(key); v.push_back("optional"); v.push_back(val.str()); v.push_back(doc(key));
+      }
+      str.push_back(v);
+     }
+#endif
      return str; 
    }
 

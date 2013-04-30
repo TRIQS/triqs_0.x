@@ -46,24 +46,39 @@ namespace triqs { namespace utility {
   }
 
   std::vector<std::vector<std::string>> missing;
-  std::vector<std::string> desc{"key:", "description:"};
   std::vector<std::vector<std::string>> wrong_t;
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+  std::vector<std::string> desc{"key:", "description:"};
   std::vector<std::string> tdesc{"key:", "expected type:", "actual type:"};
+#else
+  std::vector<std::string> desc; desc.push_back("key:"); desc.push_back("description:");
+  std::vector<std::string> tdesc; tdesc.push_back("key:"); tdesc.push_back("expected type:"); tdesc.push_back("actual type:");
+#endif
 
   for (auto const & pvp : pdef) {
    auto key = pvp.first;
 
    // check whether required parameters are present
    if (pdef.is_required(key) && (!this->has_key(key))){
-     // delay exception until all parameters have been checked
-     if (!missing.size()) missing.push_back(desc);
-     missing.push_back({key, pdef.doc(key)});    }
-
+    // delay exception until all parameters have been checked
+    if (!missing.size()) missing.push_back(desc);
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+    missing.push_back({key, pdef.doc(key)});    
+#else
+    { std::vector<std::string> v; v.push_back(key); v.push_back(pdef.doc(key)); missing.push_back(v);}
+#endif
+   }
    if (this->has_key(key)) { // check whether the type is correct 
     if (! have_same_type(pvp.second, (*this)[key])){
      // delay exception until all parameters have been checked
      if (!wrong_t.size()) wrong_t.push_back(tdesc);
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
      wrong_t.push_back({key, pvp.second.type_name(), (*this)[key].type_name()});
+#else
+    { std::vector<std::string> v; v.push_back(key); v.push_back(pvp.second.type_name()); v.push_back((*this)[key].type_name()); 
+     wrong_t.push_back(v);}
+#endif
+
     }
    }
    else { 
