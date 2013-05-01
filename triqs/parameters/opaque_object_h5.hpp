@@ -31,6 +31,7 @@
 #include <triqs/utility/exceptions.hpp>
 #include <triqs/utility/serialization.hpp>
 #include <triqs/arrays.hpp>
+#include <triqs/python_tools/array_interface.hpp>
 
 namespace triqs { namespace utility {
 
@@ -39,7 +40,34 @@ namespace triqs { namespace utility {
 
  // a trait to compute the type actually stored in the opaque object.
  // T except for integers, which are all stored as long 
- template<typename T> struct _object_collapse_type : std::conditional<std::is_integral<T>::value, long, typename std::decay<T>::type > {};
+ template<typename T> struct _object_collapse_type_impl : std::conditional<std::is_integral<T>::value, long, T > {};
+
+ // We store the array/matrix/vector as array_c (a view repackaged as a value) since : 
+ // in python : it allows to extract a view
+ // in C++ : it allows to extract a value (array) with a copy, or a view (array_view) without a copy
+ template<class T, int R, ull_t Opt, ull_t To> struct _object_collapse_type_impl< arrays::array<T,R,Opt,To>> { typedef arrays::array_c<T,R,Opt,To> type;};
+ template<class T, ull_t Opt, ull_t To>        struct _object_collapse_type_impl< arrays::matrix<T,Opt,To>>  { typedef arrays::array_c<T,2,Opt,To> type;};
+ template<class T, ull_t Opt>                  struct _object_collapse_type_impl< arrays::vector<T,Opt>>     { typedef arrays::array_c<T,1,Opt> type;};
+
+ //same thing for the view
+ template<class T, int R, ull_t Opt, ull_t To> struct _object_collapse_type_impl< arrays::array_view<T,R,Opt,To>> { typedef arrays::array_c<T,R,Opt,To> type;};
+ template<class T, ull_t Opt, ull_t To>        struct _object_collapse_type_impl< arrays::matrix_view<T,Opt,To>>  { typedef arrays::array_c<T,2,Opt,To> type;};
+ template<class T, ull_t Opt>                  struct _object_collapse_type_impl< arrays::vector_view<T,Opt>>     { typedef arrays::array_c<T,1,Opt> type;};
+
+ // uncomment after merge qview branch 
+ //template<class T, int R, ull_t Opt, ull_t To> struct _object_collapse_type_impl< arrays::array_qview<T,R,Opt,To>> { typedef arrays::array_c<T,R,Opt,To> type;};
+ //template<class T, ull_t Opt, ull_t To>        struct _object_collapse_type_impl< arrays::matrix_qview<T,Opt,To>>  { typedef arrays::array_c<T,2,Opt,To> type;};
+ //template<class T, ull_t Opt>                  struct _object_collapse_type_impl< arrays::vector_qview<T,Opt>>     { typedef arrays::array_c<T,1,Opt> type;};
+ 
+ template<typename T> struct _object_collapse_type: _object_collapse_type_impl <typename std::decay<T>::type> {};
+
+ // Since I used array_c to store in the dict, I need to make it h5 read/writable.
+ // write is ok, because it is a view. Read : we can not use the view (no resize)
+ // so I first build the value (an array) and rebind the array_c to it.
+ template<class T, int R, ull_t Opt, ull_t To>
+ void h5_read(h5::group const &gr, std::string const &Name, arrays::array_c<T,R,Opt,To> & a) {
+  arrays::array<T,R,Opt,To> v; h5_read(gr,Name,v); a=v();// rebinds !
+ }
 
  // --------------- the opaque object ---------------------------------------
  // _object is a value : it makes deep copies in particular ...
@@ -190,9 +218,9 @@ namespace triqs { namespace utility {
  };
 
  // special case for array, we need to fill one more table
- template<typename T, int R> struct _object::register_type<arrays::array<T,R>>{
+ template<typename T, int R> struct _object::register_type<arrays::array_c<T,R>>{
   static bool invoke() {
-   typedef arrays::array<T,R> A;
+   typedef arrays::array_c<T,R> A;
    if (is_initialised(type_code<A>())) return true;
    type_code_to_type_name[type_code<A>()] = make_type_name<A>();
    type_name_to_type_code[make_type_name<A>()]= type_code<A>();
@@ -215,11 +243,12 @@ namespace triqs { namespace utility {
  // --------------------- extraction with strict type checking for python ---------------------------------
 
   template<typename T> struct extract_strict  {
-  static bool is_possible (_object const &obj) { return obj.has_type<T>(); }
+  typedef typename _object_collapse_type<T>::type T_stored;
+  static bool is_possible (_object const &obj) { return obj.has_type<T_stored>(); }
   static T invoke(_object const &obj) {
    if (! is_possible(obj))
     TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
-   return * static_cast<const T*>(obj.get_void_ptr());
+   return T(* static_cast<const T_stored*>(obj.get_void_ptr()));
   }
  };
 
