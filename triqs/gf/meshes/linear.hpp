@@ -156,6 +156,15 @@ namespace triqs { namespace gf {
    mesh_kind meshk;
   };
 
+
+ // UNUSED 
+ /// Simple approximation of a point of the domain by a mesh point. No check  
+ template<typename D>
+  size_t get_closest_mesh_pt_index ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
+   double a = (x - mesh.x_min())/mesh.delta();
+   return std::floor(a);
+ }
+ 
  /// Approximation of a point of the domain by a mesh point  
  template<typename D>
   std::tuple<bool, size_t, double>  windowing ( linear_mesh<D> const & mesh, typename D::point_t const & x) { 
