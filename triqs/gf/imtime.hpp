@@ -52,12 +52,49 @@ namespace triqs { namespace gf {
 
  template<>
   struct evaluator<imtime> {
-   static constexpr int arity = 1;
-   //ERROR : give a double and interpolate
-   template<typename G>
-   arrays::matrix_view<double>  operator() (G const * g,long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
-   template<typename G>
-   local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
+   private:
+    mutable arrays::matrix<double> _tmp;
+   public :
+    static constexpr int arity = 1;
+    evaluator<imtime>() = default;
+    evaluator<imtime>(size_t n1, size_t n2) : _tmp(n1,n2) {}
+    // WHAT happen in resize ??
+
+    template<typename G, typename T>
+     arrays::const_matrix_view_proxy<typename G::data_t,0> operator()(G const * g, closest_pt_wrap<T> const & p) const {
+      double x = (g->mesh().kind()==half_bins ? double(p.value) :  double(p.value)+ 0.5*g->mesh().delta());
+      size_t n = std::floor(x/g->mesh().delta());
+      return arrays::const_matrix_view_proxy<typename G::data_t,0>(g->data(),n);
+     }
+
+    // NOT TESTED
+    // TEST THE SPPED when q_view are incorporated...
+    // true evaluator with interpolation ...
+    template<typename G>
+     arrays::matrix<double> const & operator()(G const * g, double tau) const {
+      // interpolate between n and n+1, with weight
+      double beta = g->mesh().domain().beta;
+      int p = std::floor(tau/beta);
+      tau -= p*beta;
+      double a = tau/g->mesh().delta();
+      long n = std::floor(a);
+      double w = a-n;
+      assert(n < g->mesh().size()-1);
+      if ((g->mesh().domain().statistic == Fermion) && (p%2==1))
+       _tmp = - w*g->data()(n, arrays::range(), arrays::range()) - (1-w)*g->data()(n+1, arrays::range(), arrays::range());
+      else
+       _tmp =   w*g->data()(n, arrays::range(), arrays::range()) + (1-w)*g->data()(n+1, arrays::range(), arrays::range());
+      //else { // Speed test to redo when incoparated qview in main branch
+      // _tmp(0,0) =   w*g->data()(n, 0,0) + (1-w)*g->data()(n+1, 0,0);
+      // _tmp(0,1) =   w*g->data()(n, 0,1) + (1-w)*g->data()(n+1, 0,1);
+      // _tmp(1,0) =   w*g->data()(n, 1,0) + (1-w)*g->data()(n+1, 1,0);
+      // _tmp(1,1) =   w*g->data()(n, 1,1) + (1-w)*g->data()(n+1, 1,1);
+      // }
+      return _tmp;
+     }
+
+    template<typename G>
+     typename G::singularity_t const & operator()(G const * g,freq_infty const &) const {return g->singularity();}
   };
 
  /// ---------------------------  data access  ---------------------------------
@@ -70,7 +107,7 @@ namespace triqs { namespace gf {
 
  // -------------------------------   Factories  --------------------------------------------------
 
- template<> struct gf_factories< imtime> : imtime { 
+ template<> struct gf_factories< imtime> : imtime {
   typedef gf<imtime> gf_t;
 
   static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk) {
@@ -78,15 +115,16 @@ namespace triqs { namespace gf {
   }
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-   return gf_t ( m, std::move(A), t, nothing() ) ;
+   //return gf_t ( m, std::move(A), t, nothing() ) ;
+   return gf_t ( m, std::move(A), t, nothing(), evaluator<imtime>(shape[0],shape[1]) ) ;
   }
   /*static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
-   return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));
-  }
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) {
-   return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
-  }
-  */
+    return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));
+    }
+    static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) {
+    return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
+    }
+    */
   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, local::tail(shape));
   }
