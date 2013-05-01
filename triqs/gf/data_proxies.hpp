@@ -83,9 +83,9 @@ namespace triqs { namespace gf {
   Tv const &  operator()(storage_view_t const & data, size_t i) const { return data[i];}
 
   template<typename S, typename RHS> static void assign_no_resize (S & data, RHS && rhs) {
-   auto r = make_vector(rhs);
-   if (data.size() !=r.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
-   for (size_t i =0; i<data.size(); ++i) data[i] = r[i];
+   //auto r = make_vector(rhs);
+   if (data.size() !=rhs.size()) TRIQS_RUNTIME_ERROR << "Size mismatch in gf assignment";
+   for (size_t i =0; i<data.size(); ++i) data[i] = rhs[i];
   }
   template<typename S, typename RHS> static void assign_with_resize (S & data, RHS && rhs) {data = utility::factory<storage_t>(rhs);}
   template<typename S, typename RHS> static void assign_to_scalar   (S & data, RHS && rhs) {for (size_t i =0; i<data.size(); ++i) data[i] = rhs;}
