@@ -145,10 +145,11 @@ namespace triqs { namespace mc_tools {
    random_generator * RNG;
    std::vector<double> Proba_Moves, Proba_Moves_Acc_Sum;
    MCSignType try_sign_ratio;
+   uint64_t debug_counter;
    public:
 
    ///
-   move_set(random_generator & R): RNG(&R) { Proba_Moves.push_back(0); }
+   move_set(random_generator & R): RNG(&R) { Proba_Moves.push_back(0); debug_counter=0;}
 
    ///
    move_set(move_set const &) = default;
@@ -161,7 +162,7 @@ namespace triqs { namespace mc_tools {
     using std::swap;
 #define SW(X) swap(X,rhs.X)
     SW(move_vec); SW(names_); SW(current); SW(current_move_number); SW(RNG);
-    SW(Proba_Moves); SW(Proba_Moves_Acc_Sum); SW(try_sign_ratio);
+    SW(Proba_Moves); SW(Proba_Moves_Acc_Sum); SW(try_sign_ratio); SW(debug_counter);
 #undef SW
     return *this;
    }
@@ -198,6 +199,7 @@ namespace triqs { namespace mc_tools {
     current =  & move_vec[current_move_number];
 #ifdef TRIQS_TOOLS_MC_DEBUG
     std::cerr << "*******************************************************"<< std::endl;
+    std::cerr << "move number : " << debug_counter++ << std::endl;
     std::cerr << "Name of the proposed move: " << name_of_currently_selected() << std::endl;
     std::cerr <<"  Proposition probability = "<<proba<<std::endl;
 #endif

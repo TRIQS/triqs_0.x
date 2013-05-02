@@ -140,12 +140,18 @@ namespace triqs { namespace mc_tools {
 
      sign_av = sum_sign_tot / double(nmeasures_tot);
 
-     report(2) << "Acceptance rate for all moves:" << std::endl << std::endl;
-     report(2) << AllMoves.get_statistics(c) << std::endl;
-     report(2) << "Simulation lasted: " << double(Timer) << " seconds" << std::endl;
-     report(2) << "Total measures: " << nmeasures_tot << " measures" << std::endl;
-     report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
-     AllMeasures.collect_results(c);
+     report(3) << "[Node "<<c.rank()<<"] Acceptance rate for all moves:" << std::endl << std::endl;
+     report(3) << "[Node "<<c.rank()<<"]"<< AllMoves.get_statistics(c) << std::endl;
+     report(3) << "[Node "<<c.rank()<<"] Simulation lasted: " << double(Timer) << " seconds" << std::endl;
+     report(3) << "[Node "<<c.rank()<<"] Number of measures: " << nmeasures  << std::endl;
+     report(3) << "[Node "<<c.rank()<<"] Average sign: " << sum_sign / double(nmeasures) << std::endl << std::endl << std::flush;
+  
+     if (c.rank()==0) {
+      report(2) << "Total number of measures: " << nmeasures_tot << std::endl;
+      report(2) << "Average sign: " << sign_av << std::endl << std::endl << std::flush;
+     }
+      
+    AllMeasures.collect_results(c);
 
     }
 
