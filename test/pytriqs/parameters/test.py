@@ -1,4 +1,4 @@
-import parameters as P
+import pytriqs.parameters.parameters as P
 p = P.Parameters()
 p['i'] = 10
 p['d'] = 2.3 
@@ -19,6 +19,9 @@ a = np.array([[1,2],[3,4]])
 p['A'] = a
 p['Ad'] = 2.5*a
 
+print " p['A'] = ", p['A'] 
+
+p['A'][0,0] *=10
 print " p['A'] = ", p['A'] 
 
 print p
