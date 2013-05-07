@@ -27,14 +27,12 @@
 
 namespace triqs { namespace utility {
 
- /// A point on a very thin grid, as ull_t
+ /// A point on a very thin grid, as uint64_t
  struct time_pt {
-
-  typedef unsigned long long ull_t;
 
   time_pt() { beta = 1; val =0; n = 0;}
   time_pt(double v, double beta_) { beta = beta_; val =v; n = floor(Nmax*(v/beta));}
-  time_pt(ull_t n_, double beta_, bool) { beta = beta_; val = beta*(double(n_)/Nmax); n = n_;}
+  time_pt(uint64_t n_, double beta_, bool) { beta = beta_; val = beta*(double(n_)/Nmax); n = n_;}
 
   time_pt (time_pt const &) = default;
   time_pt (time_pt && x) = default;
@@ -53,15 +51,18 @@ namespace triqs { namespace utility {
 
   // adding and substracting is cyclic on [0, beta]
   inline friend time_pt operator+(time_pt const & a, time_pt const & b) { return time_pt(a.n + b.n, a.beta, true); }
-  inline friend time_pt operator-(time_pt const & a, time_pt const & b) { ull_t n = (a.n>= b.n ? a.n - b.n : Nmax - (b.n - a.n)); return time_pt(n, a.beta,true); }
+  inline friend time_pt operator-(time_pt const & a, time_pt const & b) { uint64_t n = (a.n>= b.n ? a.n - b.n : Nmax - (b.n - a.n)); return time_pt(n, a.beta,true); }
+  inline friend time_pt operator-(time_pt const & a) { uint64_t n = Nmax - a.n; return time_pt(n, a.beta,true); }
   
   operator double() const {return val;} // cast to a double
 
   friend std::ostream & operator<< (std::ostream & out, time_pt const & p) { return out << p.val << " [time_pt : beta = "<< p.beta<< " n = "<< p.n<<"]" ; }
+ 
+  static time_pt epsilon(double beta) { return time_pt(1,beta,true);}
 
   private:
-  static constexpr ull_t Nmax = std::numeric_limits<ull_t>::max();
-  ull_t n;
+  static constexpr uint64_t Nmax = std::numeric_limits<uint64_t>::max();
+  uint64_t n;
   double val, beta;
  };
 
