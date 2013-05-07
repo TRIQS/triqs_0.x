@@ -31,7 +31,7 @@ namespace triqs { namespace gf {
  void pade (gf_view<refreq> &gr, gf_view<imfreq> const &gw, int n_points, double freq_offset) {
 
   // make sure the GFs have the same structure
-  assert(gw.shape() == gr.shape());
+  //assert(gw.shape() == gr.shape());
 
   // copy the tail. it doesn't need to conform to the pade approximant
   gr.singularity() = gw.singularity();

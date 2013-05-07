@@ -59,12 +59,13 @@ namespace triqs { namespace arrays { namespace numpy_interface  {
 #else
    int r = PyArray_SetBaseObject(arr,A.storage().new_ref_to_guard());
    if (r!=0) TRIQS_RUNTIME_ERROR << "Internal Error setting the guard in numpy !!!!";
-   assert( PyArray_FLAGS(arr) == PyArray_FLAGS(arr) & ~NPY_ARRAY_OWNDATA);
+   assert( PyArray_FLAGS(arr) == (PyArray_FLAGS(arr) & ~NPY_ARRAY_OWNDATA));
 #endif
    if (copy)  { 
     PyObject * na = PyObject_CallMethod(res,(char*)"copy",NULL);
     Py_DECREF(res);
-    assert(((PyArrayObject *)na)->base ==NULL);
+    // POrt this for 1.7
+    //assert(((PyArrayObject *)na)->base ==NULL);
     res = na;
    }
    return res;

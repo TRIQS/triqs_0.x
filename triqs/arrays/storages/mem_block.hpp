@@ -101,12 +101,14 @@ namespace triqs { namespace arrays { namespace storages { namespace details {
 #endif
      else { // if the X.py_obj is not contiguous, first let numpy copy it properly
       PyObject * na = PyObject_CallMethod(X.py_obj,(char *)"copy",NULL);
-      assert(na); assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
+      assert(na); 
 #ifdef TRIQS_NUMPY_VERSION_LT_17
+      assert( ( PyArray_ISFORTRAN(na)) || (PyArray_ISCONTIGUOUS(na)));
       memcpy (p,PyArray_DATA(na),size_ * sizeof(ValueType));
 #else
       if (!PyArray_Check(na)) TRIQS_RUNTIME_ERROR<<"Internal error : is not an array";
       PyArrayObject * arr = (PyArrayObject *)(na);
+      assert( ( PyArray_ISFORTRAN(arr)) || (PyArray_ISCONTIGUOUS(arr)));
       memcpy (p,PyArray_DATA(arr),size_ * sizeof(ValueType));
 #endif
       Py_DECREF(na);

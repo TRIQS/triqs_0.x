@@ -68,7 +68,7 @@ namespace triqs { namespace lattice_tools {
 
    protected:
    inline double dot_product(K_view_type const & a, typename F::arg_type const & b) const {
-    assert(b.size()>= this->bz().lattice().dim()); 
+    assert(b.size()>= this->bz_.lattice().dim()); 
     double r=0; for (size_t i=0; i< this->bz_.lattice().dim();++i) r += a(i) * b[i];
     return r;
    }
