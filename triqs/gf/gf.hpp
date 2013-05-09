@@ -168,12 +168,12 @@ namespace triqs { namespace gf {
    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
     operator() (Arg0 const & arg0, Args const & ... args)
-    { return _data_proxy(data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
 
    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
     operator() (Arg0 const & arg0, Args const & ... args) const
-    { return _data_proxy(data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
 
    /// A direct access to the grid point
    template<typename... Args>
