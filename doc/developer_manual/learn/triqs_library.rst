@@ -46,7 +46,6 @@ start by writing some sources:
 OK, our project will be just one :file:`main.cpp` file, e.g.::
 
   #include <triqs/arrays/array.hpp>
-  #include <triqs/arrays/proto/array_algebra.hpp>
 
   namespace tqa = triqs::arrays;
 

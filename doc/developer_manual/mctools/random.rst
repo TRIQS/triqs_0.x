@@ -91,6 +91,6 @@ Now, you can use ``SpinMC`` to have a random number generator::
 Typically, this generator will be passed as a argument to your
 implementation of a move::
 
-  SpinMC.add_move(new mymove(config, SpinMC.RandomGenerator, ...), "my move")
+  SpinMC.add_move(mymove(config, SpinMC.RandomGenerator, ...), "my move")
 
 
