@@ -50,6 +50,8 @@ cdef class Parameters:
         elif isinstance(rhs, str) : inserter_in_map[parameters,std_string](self._c)(key, rhs)
         elif isinstance(rhs, Parameters) : inserter_in_map[parameters,parameters](self._c)(key, (<Parameters>rhs)._c)
         elif isinstance(rhs, dict) : self[key] = Parameters().update(rhs)
+        elif isinstance(rhs, list) or isinstance(rhs,tuple) : 
+            raise TypeError, "List and tuple are not supported by Parameters. Please use numpy arrays"
         elif isinstance(rhs, np.ndarray) :
             try : inserter_in_map[parameters,array_view[long,ONE]](self._c)(key, array_view[long,ONE](rhs))
             except : pass
