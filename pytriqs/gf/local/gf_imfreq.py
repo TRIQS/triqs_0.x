@@ -74,7 +74,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
         d = self.data
         t = self.tail
         for n, om in enumerate(self.mesh) :
-            if n >= start : d[:,:,n] = t(om)
+            if n >= start : d[n,:,:] = t(om)
 
     def fit_tail(self, fixed_coef, order_max, fit_start, fit_stop, replace_tail = True):
        """
@@ -124,7 +124,7 @@ class GfImFreq ( GfGeneric, GfImFreq_cython ) :
              y_fct = 1.0*f_known
              for order in range(len_param):
                y_fct += p[order]*omegas**(1-len(known_coef[n1][n2])-order)
-             y_fct -= values[n1,n2,:]
+             y_fct -= values[:,n1,n2]
              return abs(y_fct)
 
            # Now call the minimizing function
