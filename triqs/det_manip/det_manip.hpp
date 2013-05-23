@@ -684,8 +684,8 @@ namespace triqs { namespace det_manip {
     //------------------------------------------------------------------------------------------
    private: 
 
-    bool check_mat_inv (double precision) const { 
-     if (N==0) return true;
+    void check_mat_inv (double precision_warning=1.e-8, double precision_error=1.e-5) { 
+     if (N==0) return;
      const bool relative = true;
      matrix_type res(N,N);
      for (size_t i=0; i<N;i++)
@@ -699,9 +699,21 @@ namespace triqs { namespace det_manip {
      //#define TRIQS_DET_MANIP_VERBOSE_CHECK
 #ifdef TRIQS_DET_MANIP_VERBOSE_CHECK
      std::cout  << "----------------"<<std::endl 
-      << "check " << "N = "<< N <<"  " <<"r,r2 =   "<< r << "  "<< r2 << std::endl;  
+      << "check " << "N = "<< N <<"  " <<"r,r2 =   "<< r << "  "<< r2 << " "<< std::endl;  
 #endif
-     return ( r <  (relative ? precision * r2 : precision));
+     bool err =  !( r <  (relative ? precision_error * r2 : precision_error));
+     bool war =  !( r <  (relative ? precision_warning * r2 : precision_warning));
+     if (err || war) {
+       std::cerr << "matrix  = " <<matrix() <<std::endl;
+       std::cerr << "inverse_matrix = "<< inverse_matrix()<< std::endl;
+     }
+     if (war) std::cerr << "Warning : det_manip deviation above warning threshold " 
+      << "check " << "N = "<< N <<"  " <<"\n   max(abs(M^-1 - M^-1_true)) = "<< r 
+      << "\n   precision*max(abs(M^-1 + M^-1_true)) = "<< (relative ? precision_warning * r2 : precision_warning)<< " "<< std::endl;
+     if (err) TRIQS_RUNTIME_ERROR << "Error : det_manip deviation above critical threshold !! " ;
+
+     // since we have the proper inverse, replace the matrix 
+     mat_inv(range(0,N),range(0,N)) = res;
     }
 
     //------------------------------------------------------------------------------------------
@@ -740,11 +752,7 @@ namespace triqs { namespace det_manip {
      sign = newsign;
      last_try =0;
      ++n_opts;
-     if (n_opts > n_opts_max_before_check) { 
-      if (!check_mat_inv(1.e-10))
-       TRIQS_RUNTIME_ERROR << "Deviation too large ";
-      n_opts=0;
-     }
+     if (n_opts > n_opts_max_before_check) { check_mat_inv(); n_opts=0;}
     }
 
     ///
