@@ -41,6 +41,8 @@ cdef class Parameters:
         if extract_strict[array_view[double,ONE]]().is_possible(_o) : return extract_strict[array_view[double,ONE]]().invoke(_o).to_python()
         if extract_strict[array_view[double,TWO]]().is_possible(_o) : return extract_strict[array_view[double,TWO]]().invoke(_o).to_python()
         if extract_strict[array_view[double,THREE]]().is_possible(_o) : return extract_strict[array_view[double,THREE]]().invoke(_o).to_python()
+       
+        if extract_strict[vector[std_string]]().is_possible(_o) : return extract_strict[vector[std_string]]().invoke(_o)
         
         raise ValueError, "Can not extract the key %s"%key
 
@@ -50,8 +52,11 @@ cdef class Parameters:
         elif isinstance(rhs, str) : inserter_in_map[parameters,std_string](self._c)(key, rhs)
         elif isinstance(rhs, Parameters) : inserter_in_map[parameters,parameters](self._c)(key, (<Parameters>rhs)._c)
         elif isinstance(rhs, dict) : self[key] = Parameters().update(rhs)
-        elif isinstance(rhs, list) or isinstance(rhs,tuple) : 
-            raise TypeError, "List and tuple are not supported by Parameters. Please use numpy arrays"
+        elif isinstance(rhs, list) or isinstance(rhs,tuple) :
+            if set([type(x) for x in rhs]) == set([type('')]) : # list or tuple of string
+                inserter_in_map[parameters,vector[std_string]](self._c)(key, rhs)
+            else : 
+                raise TypeError, "List and tuple are not supported by Parameters. Please use numpy arrays"
         elif isinstance(rhs, np.ndarray) :
             try : inserter_in_map[parameters,array_view[long,ONE]](self._c)(key, array_view[long,ONE](rhs))
             except : pass

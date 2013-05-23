@@ -35,6 +35,12 @@
 
 namespace triqs { namespace utility {
 
+ template<typename T> 
+ std::ostream & operator<<(std::ostream & out, std::vector<T> const & v) { 
+  out << "["; int c = 0; for (auto const & x : v) out << ( c++==0 ? ", " :" ") << x;
+  return out << "]";
+ }
+
  // All the predefined cast of _object
 #define TRIQS_UTIL_OPAQUE_OBJECT_PREDEFINED_CAST (int)(long)(long long)(unsigned int)(unsigned long)(unsigned long long)(double)(bool)(std::string)
 
