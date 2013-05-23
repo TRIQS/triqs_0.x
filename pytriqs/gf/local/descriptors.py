@@ -76,7 +76,8 @@ class Function (Base):
         try:
             for n,om in enumerate(G.mesh): res[n,:,:] = self.function(om)
         except:
-            raise RuntimeError, "The given function has a problem..."
+            print "The given function has a problem..."
+            raise
         if self.tail: G.tail.copy_from(self.tail)
         return G
 

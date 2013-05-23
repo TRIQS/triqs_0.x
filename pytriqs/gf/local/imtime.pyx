@@ -50,6 +50,11 @@ cdef make_GfImTime (gf_imtime x, indices_pack = [], name = "g"):
     data = x.data().to_python()
     if indices_pack == []:
       indices_pack = [range(data.shape[1]), range(data.shape[2])]
+    else :
+        # check that the dimensions are ok
+        assert len(indices_pack)==2
+        assert len(indices_pack[0]) == data.shape[1]
+        assert len(indices_pack[1]) == data.shape[2]
     return GfImTime( 
             mesh = make_MeshImTime (x.mesh()), 
             data = data,
