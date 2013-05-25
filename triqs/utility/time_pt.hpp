@@ -31,8 +31,21 @@ namespace triqs { namespace utility {
  struct time_pt {
 
   time_pt() { beta = 1; val =0; n = 0;}
+  explicit time_pt(double b) { beta = b; val =0; n = 0;}
+
+  private : 
+  // too dangerous because of rounding to be left public
   time_pt(double v, double beta_) { beta = beta_; val =v; n = floor(Nmax*(v/beta));}
   time_pt(uint64_t n_, double beta_, bool) { beta = beta_; val = beta*(double(n_)/Nmax); n = n_;}
+
+  public : 
+
+  static time_pt make_beta(double beta_) { time_pt r; r.beta = beta_; r.n = Nmax; r.val = beta_; return r;}
+  //static time_pt make_zero(double beta_) { time_pt r; r.beta = beta_; r.n = 0; r.val = 0; return r;}
+
+  // random case : to be improved, using rng only for integer for reproducibility....
+  template<typename RNG>
+  static time_pt random(RNG & rng, double l, double beta_) { return time_pt(rng(l), beta_);}
 
   time_pt (time_pt const &) = default;
   time_pt (time_pt && x) = default;
@@ -43,6 +56,7 @@ namespace triqs { namespace utility {
   time_pt & operator = (time_pt && x) noexcept { using std::swap; swap(n,x.n); swap(beta, x.beta); swap(val, x.val); return *this;}
 #endif
 
+  //this is also dangerous for reproducibility
   time_pt & operator = (double v) { val =v; n = floor(Nmax*(v/beta)); return *this; }
 
   bool operator == (const time_pt & tp) const { return n == tp.n; }

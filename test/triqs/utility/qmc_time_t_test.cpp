@@ -8,10 +8,12 @@ void print_me (double x) { std::cout  << " print " << x<< std::endl ;}
 
 int main(int argc, char **argv)
 {
-    time_pt zero(0.0, 40.0);
-    time_pt beta(40.0, 40.0);
+    time_pt zero (40);
+    time_pt beta = time_pt::make_beta(40);
 
-    time_pt t1(10.0, beta), t2(30.0, beta);
+    //time_pt t1(10.0, beta), t2(30.0, beta);
+    time_pt t1(beta), t2(beta);
+    t1 = 10; t2 =30;
 
     std::cout << "zero: " << zero << std::endl;
     std::cout << "beta: " << beta << std::endl;
@@ -30,8 +32,8 @@ int main(int argc, char **argv)
     std::cout << "t1 / t2: " << t1/t2 << "" << std::endl;
     std::cout << "t1 / t2 - (as double) : " << t1/t2 - (double(t1) / double(t2)) << "" << std::endl;
 
-    std::cout << "t1 + beta: " << t1 + time_pt(beta,beta) << "" << std::endl;
-    std::cout << "t1 - beta: " << t1 - time_pt(beta,beta) << "" << std::endl;
+    std::cout << "t1 + beta: " << t1 + beta << "" << std::endl;
+    std::cout << "t1 - beta: " << t1 - beta << "" << std::endl;
 
     print_me(t1);// to check cast
 
