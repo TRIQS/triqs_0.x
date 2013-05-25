@@ -41,8 +41,8 @@ namespace triqs {
   std::string serial_str;
   boost::iostreams::back_insert_device<std::string> inserter(serial_str);
   boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
-  boost::archive::binary_oarchive oa(s);
-  //boost::archive::text_oarchive oa(s);
+  //boost::archive::binary_oarchive oa(s);
+  boost::archive::text_oarchive oa(s);
   oa << obj;
   s.flush();
   return serial_str;
@@ -53,8 +53,8 @@ namespace triqs {
   // wrap buffer inside a stream and deserialize serial_str into obj
   boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
   boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-  boost::archive::binary_iarchive ia(s);
-  //boost::archive::text_iarchive ia(s);
+  //boost::archive::binary_iarchive ia(s);
+  boost::archive::text_iarchive ia(s);
   ia >> obj;
   return obj;
  }
@@ -64,8 +64,8 @@ namespace triqs {
   // wrap buffer inside a stream and deserialize serial_str into obj
   boost::iostreams::basic_array_source<char> device(serial_str.data(), serial_str.size());
   boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s(device);
-  //boost::archive::text_iarchive ia(s);
-  boost::archive::binary_iarchive ia(s);
+  boost::archive::text_iarchive ia(s);
+  //boost::archive::binary_iarchive ia(s);
   ia >> obj;
   x= typename view_type_if_exists_else_type<T>::type (obj);
  }

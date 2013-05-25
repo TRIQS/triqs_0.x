@@ -44,7 +44,7 @@ namespace triqs { namespace h5 {
    }
    ///  Write the triqs tag of the group if it is an object.
    template<typename T>  void write_triqs_hdf5_data_scheme (T const & obj) {  
-     write_string_attribute( &_g, "TRIQS_HDF5_data_scheme" , get_triqs_hdf5_data_scheme(obj).c_str() ) ;
+    h5::write_string_attribute( &_g, "TRIQS_HDF5_data_scheme" , get_triqs_hdf5_data_scheme(obj).c_str() ) ;
     }   
    /// Read the triqs tag of the group if it is an object. Returns"" if attribute is not present
    std::string read_triqs_hdf5_data_scheme() const { return read_string_attribute(&_g, "TRIQS_HDF5_data_scheme") ; }   
@@ -97,6 +97,12 @@ namespace triqs { namespace h5 {
 
    /// Returns all names of dataset of key in G
    std::vector<std::string> get_all_dataset_names(std::string const & key) const;
+
+   void write_string_attribute (std::string const & obj_name, std::string const & attr_name, std::string const & value){ 
+    herr_t err =  H5LTset_attribute_string(_g.getId(),obj_name.c_str(),attr_name.c_str(), value.c_str() ) ;
+    if (err<0) TRIQS_RUNTIME_ERROR << "Error in setting attribute of "<< obj_name<<" named "<< attr_name << " to " << value; 
+   }
+
  };
 }}
 #endif

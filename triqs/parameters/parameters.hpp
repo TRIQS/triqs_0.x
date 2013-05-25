@@ -75,6 +75,8 @@ namespace triqs { namespace utility {
     return it->second;
    }
 
+   friend std::string get_triqs_hdf5_data_scheme(parameters const&) { return "";}
+   
    ///write contents to an hdf5 archive
    friend void h5_write ( h5::group F, std::string const & subgroup_name, parameters const & p){
     auto gr = F.create_group(subgroup_name);

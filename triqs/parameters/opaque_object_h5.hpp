@@ -104,7 +104,9 @@ namespace triqs { namespace utility {
    type_code_ = type_code<T>();
    clone_ =  [obj]() { return _object( *obj, true);} ;
    //clone_     = [this,obj]() { return _object::factory( *obj);} ; //clone_ =  [obj]() { return _object( *obj, "");} ;
-   h5_w       = [obj](h5::group const &F, std::string const &Name)->void { h5_write(F,Name, *obj);};
+   //h5_w       = [obj](h5::group const &F, std::string const &Name)->void { h5_write(F,Name, *obj);};
+   h5_w       = h5::make_h5_write(obj);// either call h5_write or synthetize one into a string using boost serialization
+   //static_assert(h5::has_h5_write<T>::value, "oops");
    serialize_ = [obj](){ return triqs::serialize(*obj);};
    print_     = [obj](std::ostream & out ){out << *obj;};
    // CHECK if std::bind would lead to less code bloat ??
@@ -157,6 +159,7 @@ namespace triqs { namespace utility {
   friend std::ostream & operator << (std::ostream & out, _object const & p) { if (p.is_empty()) p.print_(out); else out<< "empty"; return out;}
   friend void h5_write ( h5::group F, std::string const & Name, _object const & obj){ obj.h5_w(F,Name); };
   friend void h5_read ( h5::group F, std::string const & Name, _object & obj);
+  friend std::string get_triqs_hdf5_data_scheme(_object const&) { return "";}
 
   std::string type_name() const { return type_code_to_type_name[type_code_];}
 
@@ -215,7 +218,8 @@ namespace triqs { namespace utility {
    type_code_to_type_name[code] = make_type_name<T>();
    type_name_to_type_code[make_type_name<T>()]= code;
    code_to_deserialization_fnts[code] = [](std::string const &s) { return _object( triqs::deserialize<T>(s),true);};
-   code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5_read(f,s,n); return _object(std::move(n),true);};
+   code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5::make_h5_read(&n)(f,s); return _object(std::move(n),true);};
+   //code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5_read(f,s,n); return _object(std::move(n),true);};
    auto h5_scheme = get_triqs_hdf5_data_scheme(T());
    if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = code;
    //std::cerr  << " registering " << type_code_to_type_name[code] << "h5 scheme "<< h5_scheme<< std::endl ;
@@ -227,12 +231,16 @@ namespace triqs { namespace utility {
  template<typename T, int R> struct _object::register_type<arrays::array_c<T,R>>{
   static bool invoke() {
    typedef arrays::array_c<T,R> A;
+   typedef arrays::array<T,R> Aa;
    if (is_initialised(type_code<A>())) return true;
    type_code_to_type_name[type_code<A>()] = make_type_name<A>();
    type_name_to_type_code[make_type_name<A>()]= type_code<A>();
    code_to_deserialization_fnts[type_code<A>()] = [](std::string const &s) { return _object( triqs::deserialize<A>(s),true);};
-   code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { A n; h5_read(f,s,n); return _object(std::move(n),true);};
+   //code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { A n; h5_read(f,s,n); return _object(std::move(n),true);};
+   code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { Aa a; h5::make_h5_read(&a)(f,s); return _object(A(a),true);};
    code_element_rank_to_code_array[std::make_pair(type_code<T>(), R)] = type_code<A>();
+   auto h5_scheme = get_triqs_hdf5_data_scheme(Aa());
+   if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = type_code<A>();
    return false;
   }
  };

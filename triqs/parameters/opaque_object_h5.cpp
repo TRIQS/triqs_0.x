@@ -35,7 +35,8 @@ namespace triqs { namespace utility {
    hid_t dtype = H5Dget_type(ds.getId());
    hid_t native_type=H5Tget_native_type(dtype, H5T_DIR_DEFAULT);
    if (H5Tget_class(dtype) == H5T_STRING ) { // it is a string
-    type_hash = _object::type_code<std::string>();
+    auto triqs_data_scheme = h5::read_string_attribute(&ds,"TRIQS_HDF5_data_scheme");
+    type_hash = (triqs_data_scheme == "") ?  _object::type_code<std::string>() : _object::h5_scheme_to_code[triqs_data_scheme];
    }
    else if ((H5Tget_class(dtype) == H5T_INTEGER ) || ((H5Tget_class(dtype) == H5T_FLOAT ) )) {
     int rank = ds.getSpace().getSimpleExtentNdims();

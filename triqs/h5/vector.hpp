@@ -24,9 +24,12 @@
 #include "./string.hpp"
 #include <vector>
 
-namespace triqs { namespace h5 {
+namespace triqs {
 
  // to be done : vector of something else....
+ inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
+
+ namespace h5 {
 
  // special case of vector of string
  inline void h5_write (group f, std::string const & name, std::vector<std::string> const & V) {

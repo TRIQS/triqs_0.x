@@ -22,7 +22,11 @@
 #define TRIQS_H5_STRING_H
 #include "./group.hpp"
 #include <cstring>
-namespace triqs { namespace h5 {
+namespace triqs { 
+ 
+ inline std::string get_triqs_hdf5_data_scheme(std::string const & ) { return "";}
+ 
+ namespace h5 {
 
  /**
   * \brief Write a string  into an hdf5 file

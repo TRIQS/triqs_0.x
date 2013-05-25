@@ -28,7 +28,17 @@
 
 namespace triqs { 
 
- template<typename T> inline std::string get_triqs_hdf5_data_scheme(T const & ) { return "";}
+  inline std::string get_triqs_hdf5_data_scheme(bool)                 { return "bool";}
+  inline std::string get_triqs_hdf5_data_scheme(int)                  { return "int";}
+  inline std::string get_triqs_hdf5_data_scheme(long)                 { return "long";}
+  inline std::string get_triqs_hdf5_data_scheme(long long)            { return "long long";}
+  inline std::string get_triqs_hdf5_data_scheme(unsigned int)         { return "int";}
+  inline std::string get_triqs_hdf5_data_scheme(unsigned long)        { return "unsigned long";}
+  inline std::string get_triqs_hdf5_data_scheme(unsigned long long)   { return "unsigned long long";}
+  inline std::string get_triqs_hdf5_data_scheme(float)                { return "float";}
+  inline std::string get_triqs_hdf5_data_scheme(double)               { return "double";}
+  inline std::string get_triqs_hdf5_data_scheme(long double)          { return "long double";}
+  inline std::string get_triqs_hdf5_data_scheme(std::complex<double>) { return "complex";}
 
  namespace h5 { 
 
@@ -142,10 +152,6 @@ namespace triqs {
    myatt_in.write(strdatatype, (void *)(value.c_str()));
   } 
 
-  /*inline void write_attribute2 ( H5::H5Object const & grp, std::string obj_name, std::string attr_name, std::string value ) { 
-    herr_t err =  H5LTset_attribute_string(grp.getId(),obj_name.c_str(),attr_name.c_str(), , value.c_str() ) ;
-    if (err<0) TRIQS_RUNTIME_ERROR << "Error in setting attribute "<< name << " to " << value; }
-    */
 
   /****************** Read string attribute *********************************************/
 

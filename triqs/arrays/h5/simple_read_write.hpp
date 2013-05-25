@@ -149,6 +149,19 @@ namespace triqs { namespace arrays {
  //template<typename ArrayType> struct is_amv_value_or_view_class_no_string :
  // boost::mpl::and_<is_amv_value_or_view_class<ArrayType>, boost::mpl::not_<boost::is_base_of<std::string, typename ArrayType::value_type> > > {};
 
+ template<typename A, typename Enable=void> struct has_scalar_or_string_value_type : std::false_type{};
+ template<typename A> struct has_scalar_or_string_value_type<A, decltype(nop(std::declval<typename A::value_type>()))> :
+  boost::mpl::or_<is_scalar<typename A::value_type>,std::is_base_of<std::string,typename A::value_type>>{}; 
+
+ template <typename ArrayType>
+  TYPE_ENABLE_IFC(std::string,is_amv_value_or_view_class<ArrayType>::value)
+  get_triqs_hdf5_data_scheme(ArrayType const&) { 
+   using triqs::get_triqs_hdf5_data_scheme;// for the basic types, not found by ADL
+   std::stringstream fs; 
+   fs<<"array<"<<get_triqs_hdf5_data_scheme(typename ArrayType::value_type())<<","<<ArrayType::rank<<">";
+   return fs.str();
+  } 
+
  /**
   * \brief Read an array or a view from an hdf5 file
   * \tparam ArrayType The type of the array/matrix/vector, etc..
@@ -158,7 +171,8 @@ namespace triqs { namespace arrays {
   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  template <typename ArrayType>
-  ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
+  //ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
+  ENABLE_IFC(is_amv_value_or_view_class<ArrayType>::value && has_scalar_or_string_value_type<ArrayType>::value) 
   h5_read (h5::group fg, std::string const & name,  ArrayType & A) { h5_impl::read_array(fg,name, A);}
 
  /**
@@ -170,7 +184,8 @@ namespace triqs { namespace arrays {
   * \exception The HDF5 exceptions will be caught and rethrown as TRIQS_RUNTIME_ERROR (with a full stackstrace, cf triqs doc).
   */
  template <typename ArrayType>
-  ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
+  //ENABLE_IF(is_amv_value_or_view_class<ArrayType>)
+  ENABLE_IFC(is_amv_value_or_view_class<ArrayType>::value && has_scalar_or_string_value_type<ArrayType>::value) 
   h5_write (h5::group fg, std::string const & name,  ArrayType const & A) { h5_impl::write_array(fg,name, array_view<typename ArrayType::value_type, ArrayType::rank>(A));}
 
 }}
