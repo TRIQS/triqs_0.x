@@ -73,7 +73,7 @@ namespace triqs { namespace arrays { namespace blas {
   * a transcription from netlib zdotu
   */
  template< bool Star, typename VTX, typename VTY>
-  typename std::enable_if< (!std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value),
+  typename std::enable_if< !(std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value),
 	   decltype(std::declval<VTX>()(0)* std::declval<VTY>()(0)) >::type
 	   //decltype(std::declval<typename VTX::value_type>()* std::declval<typename VTY::value_type>()) >::type
   dot (VTX const & X, VTY const & Y) {
