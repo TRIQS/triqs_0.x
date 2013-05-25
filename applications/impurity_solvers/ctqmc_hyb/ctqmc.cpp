@@ -85,23 +85,23 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
  double p_mv = params["prob_move"];
 
  typedef triqs::mc_tools::move_set<SignType> move_set_type;
- move_set_type AllInserts(QMC.RandomGenerator);
- move_set_type AllRemoves(QMC.RandomGenerator);
+ move_set_type AllInserts(QMC.rng());
+ move_set_type AllRemoves(QMC.rng());
  for (int a =0; a<Config.Na;++a) { 
 
   if (UseSegmentPicture) {
-   AllInserts.add( Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves.add( Remove_Cdag_C_Delta_SegmentPicture ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts.add( Insert_Cdag_C_Delta_SegmentPicture ( a, Config, Histograms, QMC.rng()), make_string("Insert",a), 1.0);
+   AllRemoves.add( Remove_Cdag_C_Delta_SegmentPicture ( a, Config, QMC.rng()), make_string("Remove",a), 1.0);
   }  
   else {  
-   AllInserts.add(Insert_Cdag_C_Delta ( a, Config, Histograms, QMC.RandomGenerator), make_string("Insert",a), 1.0);
-   AllRemoves.add(Remove_Cdag_C_Delta ( a, Config, QMC.RandomGenerator), make_string("Remove",a), 1.0);
+   AllInserts.add(Insert_Cdag_C_Delta ( a, Config, Histograms, QMC.rng()), make_string("Insert",a), 1.0);
+   AllRemoves.add(Remove_Cdag_C_Delta ( a, Config, QMC.rng()), make_string("Remove",a), 1.0);
   }
  }
 
  QMC.add_move(std::move(AllInserts), "INSERT", p_ir);
  QMC.add_move(std::move(AllRemoves), "REMOVE", p_ir);
- QMC.add_move(Move_C_Delta(Config, QMC.RandomGenerator), "Move C Delta", p_mv);
+ QMC.add_move(Move_C_Delta(Config, QMC.rng()), "Move C Delta", p_mv);
 
  // Register the Global moves
  python::list GM_List = python::extract<python::list>(params.dict()["global_moves_mapping_list"]);
@@ -114,7 +114,7 @@ ctqmc_hyb::ctqmc_hyb(boost::python::object p, Hloc * hloc,
    //cout<< "MAP" << Config.H[p->key].Number<< "  "<<mapping[Config.H[p->key].Number]->Number<<endl<<
    //      Config.H[p->key].name<< "  "<<mapping[Config.H[p->key].Number]->name<<endl;
   }
-  QMC.add_move(Global_Move(g->x3 , Config, QMC.RandomGenerator, mapping), "Global move", g->x1);
+  QMC.add_move(Global_Move(g->x3 , Config, QMC.rng(), mapping), "Global move", g->x1);
  }
 
  /*************

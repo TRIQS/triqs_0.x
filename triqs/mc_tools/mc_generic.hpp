@@ -99,7 +99,7 @@ namespace triqs { namespace mc_tools {
     uint64_t percent() const { return done_percent; }
 
     // An access to the random number generator
-    random_generator RandomGenerator;
+    random_generator & rng(){ return RandomGenerator;}
 
     /// Start the Monte Carlo
     bool start(MCSignType sign_init, std::function<bool ()> const & stop_callback) {
@@ -191,6 +191,7 @@ namespace triqs { namespace mc_tools {
     }
 
    private:
+    random_generator RandomGenerator;
     move_set<MCSignType> AllMoves;
     measure_set<MCSignType> AllMeasures;
     utility::report_stream report;
