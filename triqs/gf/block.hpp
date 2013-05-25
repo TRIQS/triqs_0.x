@@ -124,6 +124,9 @@ namespace triqs { namespace gf {
 
   };
 
+ // a simple function to get the number of blocks
+ template<typename T> size_t n_blocks (gf<block<T>> const & g)      { return g.mesh().size();}
+ template<typename T> size_t n_blocks (gf_view<block<T>> const & g) { return g.mesh().size();}
 
  // A trait to identify objects that have the concept ImmutableGfMatsubaraFreq
  template<typename G> struct ImmutableBlockGf : boost::is_base_of<block_tag,G> {};
