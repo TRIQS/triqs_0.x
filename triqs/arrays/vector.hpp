@@ -119,11 +119,6 @@ namespace triqs { namespace arrays {
     template<typename Arg>
     vector(size_t dim, Arg && arg):IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(dim))) { (*this)() = std::forward<Arg>(arg);}
 
-#ifdef TRIQS_WITH_PYTHON_SUPPORT
-    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
-    explicit vector (PyObject * X): IMPL_TYPE(X, true, "vector "){}
-#endif
-
     /** Makes a true (deep) copy of the data. */
     vector(const vector & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
@@ -137,6 +132,19 @@ namespace triqs { namespace arrays {
      //vector(const T & X, typename boost::enable_if< ImmutableArray<T> >::type *dummy =0):
      vector(const T & X, TYPE_ENABLE_IF(memory_layout<1>, ImmutableArray<T>) ml = memory_layout<1>(IMPL_TYPE::indexmap_type::traversal_order)):
       IMPL_TYPE(indexmap_type(X.domain(),ml)) { triqs_arrays_assign_delegation(*this,X); }
+
+#ifdef TRIQS_WITH_PYTHON_SUPPORT
+    ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
+    explicit vector (PyObject * X): IMPL_TYPE(X, true, "vector "){}
+#endif
+
+    // build from a init_list
+    template<typename T> 
+     vector(std::initializer_list<T> const & l): 
+      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout<1>(IMPL_TYPE::indexmap_type::traversal_order))) {
+       size_t i=0;
+       for (auto const & x : l) (*this)(i++) = x;
+      }
 
     /**
      * Resizes the vector. NB : all references to the storage is invalidated.

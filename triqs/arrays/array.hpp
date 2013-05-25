@@ -113,8 +113,8 @@ namespace triqs { namespace arrays {
 #undef IMPL
 #endif
 
-     // Makes a true (deep) copy of the data. 
-     array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
+    // Makes a true (deep) copy of the data. 
+    array(const array & X): IMPL_TYPE(X.indexmap(),X.storage().clone()) {}
 
     // Move
     explicit array(array && X) { this->swap_me(X); } 
@@ -132,6 +132,26 @@ namespace triqs { namespace arrays {
     ///Build from a numpy.array X (or any object from which numpy can make a numpy.array). Makes a copy.
     explicit array (PyObject * X): IMPL_TYPE(X, true, "array "){}
 #endif
+
+    // build from a init_list
+    template<typename T, int R=Rank>
+     array(std::initializer_list<T> const & l, typename std::enable_if<R==1>::type * dummy =0):
+      IMPL_TYPE(indexmap_type(mini_vector<size_t,1>(l.size()),memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order))) {
+       size_t i=0;
+       for (auto const & x : l) (*this)(i++) = x;
+      }
+
+    template<typename T, int R=Rank>
+     array (std::initializer_list<std::initializer_list<T>> const & l, typename std::enable_if<R==2>::type * dummy =0):
+      IMPL_TYPE(memory_layout<Rank>(IMPL_TYPE::indexmap_type::traversal_order)) {
+       size_t i=0,j=0; int s=-1;
+       for (auto const & l1 : l) { if (s==-1) s= l1.size(); else if (s != l1.size()) TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";}
+       IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(l.size(),s)));
+       for (auto const & l1 : l) {
+	for (auto const & x : l1) { (*this)(i,j++) = x;}
+	j=0; ++i;
+       }
+      }
 
     /** 
      * Resizes the array. NB : all references to the storage is invalidated.

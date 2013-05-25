@@ -139,6 +139,19 @@ namespace triqs { namespace arrays {
     explicit matrix (PyObject * X): IMPL_TYPE(X, true, "matrix "){}
 #endif
 
+    // build from a init_list
+    template<typename T>
+     matrix (std::initializer_list<std::initializer_list<T>> const & l):
+      IMPL_TYPE(memory_layout<2>(IMPL_TYPE::indexmap_type::traversal_order)) {
+       size_t i=0,j=0; int s=-1;
+       for (auto const & l1 : l) { if (s==-1) s= l1.size(); else if (s != l1.size()) TRIQS_RUNTIME_ERROR << "initializer list not rectangular !";}
+       IMPL_TYPE::resize(typename IMPL_TYPE::domain_type (mini_vector<size_t,2>(l.size(),s)));
+       for (auto const & l1 : l) {
+	for (auto const & x : l1) { (*this)(i,j++) = x;}
+	j=0; ++i;
+       }
+      }
+
     /** 
      * Resizes the matrix. NB : all references to the storage is invalidated.
      * Does not initialize the matrix by default
