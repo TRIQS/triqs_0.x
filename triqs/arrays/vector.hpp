@@ -25,6 +25,7 @@
 #include "impl/indexmap_storage_pair.hpp"
 #include "impl/assignment.hpp"
 #include "impl/flags.hpp"
+#include <algorithm>
 
 namespace triqs { namespace arrays {
 
@@ -204,6 +205,15 @@ namespace triqs { namespace arrays {
 #include "./blas_lapack/axpy.hpp"
 namespace triqs { namespace arrays {
 
+ // lexicographical comparison operators
+ template<typename V1, typename V2>
+  typename std::enable_if< ImmutableVector<V1>::value &&  ImmutableVector<V2>::value , bool>::type
+  operator < (V1 const & a, V2 const & b) { return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());}
+
+ template<typename V1, typename V2>
+  typename std::enable_if< ImmutableVector<V1>::value &&  ImmutableVector<V2>::value , bool>::type
+  operator > (V1 const & a, V2 const & b) { return (b<a); }
+
  template<typename RHS, typename T, ull_t Opt>
   typename boost::enable_if< is_vector_or_view <RHS > >::type
   triqs_arrays_assign_delegation (vector<T,Opt> & lhs, RHS const & rhs) { blas::copy(rhs,lhs); }
@@ -260,10 +270,10 @@ namespace triqs { namespace arrays {
    T a = 1/rhs; blas::scal(a,lhs);
   }
 
-  template<typename T>
+ template<typename T>
   void triqs_arrays_assign_delegation(vector_view<T> & av, std::vector<T> const& vec) {
-    std::size_t size = vec.size();
-    for(std::size_t n = 0; n < size; ++n) av(n) = vec[n];
+   std::size_t size = vec.size();
+   for(std::size_t n = 0; n < size; ++n) av(n) = vec[n];
   }
 
  // swapping 2 vector
