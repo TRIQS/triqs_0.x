@@ -42,6 +42,10 @@ namespace triqs { namespace arrays {
     if (!(x1 == x2)) TRIQS_RUNTIME_ERROR << "Test assert_equal : failed";
   }
 
+ void assert_close(double x1, double x2 ) { 
+  if (std::abs(x1-x2) > 1.e-13) TRIQS_RUNTIME_ERROR << "Test assert_equal : failed";
+ }
+
  // Put here a macro, to print the expression, the line, etc...
  void assert_is_true( bool b) {
   if (!b) TRIQS_RUNTIME_ERROR << "Test assert_is_true : failed";

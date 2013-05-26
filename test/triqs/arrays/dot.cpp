@@ -25,15 +25,37 @@
 #include "./src/vector.hpp"
 #include "./src/matrix.hpp"
 #include "./src/blas_lapack/dot.hpp"
+#include "./src/asserts.hpp"
 
 using namespace triqs::arrays;
 
+template<typename Vd, typename Vi> 
+void test() {
+ Vd a(2),aa(2),c(2) ;a()=2.0; c() = 1;
+ Vi b(2);b()=3;
+ std::cout << blas::dot<false>(a,b) << std::endl;
+
+ aa = 2*a;
+
+ assert_close( dot(a,b), 12);
+ assert_close( dot(aa,a), 16);
+ assert_close( dot(aa,b), 24);
+ assert_close( dot(aa-a,b), 12);
+
+ std::cerr  << dot(aa,a) << std::endl ;
+ std::cerr  << dot(aa,b) << std::endl ;
+ std::cerr  << dot(aa-a, b) << std::endl;
+ std::cerr<< "---------------------"<<std::endl;
+}
+
 int main(int argc, char **argv) {
 
-triqs::arrays::vector<double> a(2);a()=2.0;
-triqs::arrays::vector<int> b(2);b()=3;
-std::cout << blas::dot<false>(a,b) << std::endl;
+ test<vector<double> , vector<int> >();
  
+ // does not work for array just because of .size() vs .len(0)...
+ //test<array<double,1> , array<int,1> >();
+ //test<array<double,1> , vector<int> >();
+ //test<vector<double> , array<int,1>  >();
 
 }
 

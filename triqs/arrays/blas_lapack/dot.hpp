@@ -42,16 +42,25 @@ namespace triqs { namespace arrays { namespace blas {
 
  }
 
+ template <typename VTX, typename VTY>
+  struct dispatch {
+   static constexpr bool are_both_value_view = is_amv_value_or_view_class<VTX>::value && is_amv_value_or_view_class<VTY>::value;
+   static constexpr bool are_both_double     = std::is_same<typename VTX::value_type,double>::value && std::is_same<typename VTY::value_type,double>::value;
+   static constexpr int value = (are_both_value_view ? (are_both_double ? 0 : 1) : 2);
+   typedef decltype(std::declval<VTX>()(0)* std::declval<VTY>()(0)) result_type;
+  };
+
  /**
   * Calls dot product of 2 vectors.
   * Takes care of making temporary copies if necessary
   */
  template<bool Star, typename VTX, typename VTY>
-  typename std::enable_if< std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value, typename VTX::value_type >::type
+  typename std::enable_if< dispatch<VTX,VTY>::value==0, typename dispatch<VTX,VTY>::result_type>::type
   dot (VTX const & X, VTY const & Y) { 
+   //std::cerr  << "dot : blas call"<< std::endl ;
    static_assert( is_amv_value_or_view_class<VTX>::value, "blas1 bindings only take vector and vector_view");
    static_assert( is_amv_value_or_view_class<VTY>::value, "blas1 bindings only take vector and vector_view");
-   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot : X : "<<X().shape()<<" and Y : "<<Y().shape();
+   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot size are : X : "<<X.size()<<" and Y : "<<Y.size();
    //const_qcache<VTX> Cx(X); // mettre la condition a la main
    //const_qcache<VTY> Cy(Y); // mettre la condition a la main
    return f77::dot(X.size(), X.data_start(), X.stride(), Y.data_start(), Y.stride());
@@ -73,11 +82,10 @@ namespace triqs { namespace arrays { namespace blas {
   * a transcription from netlib zdotu
   */
  template< bool Star, typename VTX, typename VTY>
-  typename std::enable_if< !(std::is_same<typename VTX::value_type,double>::value && have_same_value_type< VTX, VTY>::value),
-	   decltype(std::declval<VTX>()(0)* std::declval<VTY>()(0)) >::type
-	   //decltype(std::declval<typename VTX::value_type>()* std::declval<typename VTY::value_type>()) >::type
+  typename std::enable_if< dispatch<VTX,VTY>::value==1, typename dispatch<VTX,VTY>::result_type>::type
   dot (VTX const & X, VTY const & Y) {
-   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot : X : "<<X().shape()<<" and Y : "<<Y().shape();
+   //std::cerr  << "dot: transcription of blas for non uniform type with restrict"<< std::endl ;
+   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot size are : X : "<<X.size()<<" and Y : "<<Y.size();
    //const_qcache<VTX> Cx(X); // mettre la condition a la main
    //const_qcache<VTY> Cy(Y); // mettre la condition a la main
    size_t N= X.size(), incx = X.stride(), incy = Y.stride();
@@ -91,10 +99,24 @@ namespace triqs { namespace arrays { namespace blas {
    else { // code for unequal increments or equal increments  not equal to 1
     for (size_t i=0, ix=0, iy=0; i<N; ++i, ix += incx, iy +=incy) {res += _conj<Star>(X_[ix]) * Y_[iy]; }
    }
-   // general code for the concept. Is it really slower ?
-   //for (size_t i=0; i<N; ++i) res += _conj<Star>(X(i)) * Y(i);
+   // general code for the concept. Is it really slower ?  cf below
    return res;
   }
+
+ /**
+  * Generic case 
+  */
+ template< bool Star, typename VTX, typename VTY>
+  typename std::enable_if< dispatch<VTX,VTY>::value==2, typename dispatch<VTX,VTY>::result_type>::type
+  dot (VTX const & X, VTY const & Y) {
+   //std::cerr << "dot : generic case"<< std::endl ;
+   if (( X.size() != Y.size()) ) TRIQS_RUNTIME_ERROR << "Dimension mismatch in dot size are : X : "<<X.size()<<" and Y : "<<Y.size();
+   size_t N= X.size();
+   decltype(X(0)*Y(0)) res = 0;
+   for (size_t i=0; i<N; ++i) res += _conj<Star>(X(i)) * Y(i);
+   return res;
+  }
+
 }
 
 template <typename VTX,typename VTY> auto dot  (VTX const & X, VTY const & Y) DECL_AND_RETURN( blas::dot<false>(X,Y));
