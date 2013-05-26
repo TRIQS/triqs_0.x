@@ -50,6 +50,11 @@ namespace triqs { namespace arrays {
  void assert_is_true( bool b) {
   if (!b) TRIQS_RUNTIME_ERROR << "Test assert_is_true : failed";
  }
+
+ void assert_is_false( bool b) {
+  if (b) TRIQS_RUNTIME_ERROR << "Test assert_is_false : failed";
+ }
+
 }}
 #endif
 

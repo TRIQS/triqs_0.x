@@ -35,7 +35,7 @@ namespace triqs { namespace arrays {
  template<typename A, typename B> class matmul_lazy : TRIQS_MODEL_CONCEPT(ImmutableMatrix) {  
     typedef typename boost::remove_const<typename A::value_type>::type V1;
     typedef typename boost::remove_const<typename B::value_type>::type V2;
-    static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
+    //static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
 
     public:
     typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type; // what is the result of multiplying a V1 by a V2 ?
