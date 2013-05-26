@@ -41,7 +41,7 @@ namespace triqs { namespace arrays {
 
    typedef typename MT::value_type V1;
    typedef typename VT::value_type V2;
-   static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
+   //static_assert((boost::is_same<V1,V2>::value),"Different values : not implemented");
 
    public:
    typedef BOOST_TYPEOF_TPL( V1() * V2()) value_type;

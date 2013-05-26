@@ -67,6 +67,7 @@ namespace triqs { namespace arrays {
 
     template<typename K0, typename K1> value_type operator() (K0 const & k0, K1 const & k1) const { activate();  return _id->R(k0,k1); }
 
+    // TO BE REMOVED because of the aliasing question
     // Optimized implementation of =, +=, -=
     template<typename LHS> 
     friend void triqs_arrays_assign_delegation (LHS & lhs, matmul_lazy const & rhs)  {

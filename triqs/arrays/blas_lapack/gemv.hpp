@@ -48,13 +48,23 @@ namespace triqs { namespace arrays { namespace blas {
   }
  }
 
+ template<typename MT, typename VT, typename VTOut> 
+  struct use_blas_gemv { 
+   static_assert(is_amv_value_or_view_class<VTOut>::value, "output of matrix product must be a matrix or matrix_view");
+   //static constexpr bool are_both_value_view = is_amv_value_or_view_class<MT>::value && is_amv_value_or_view_class<VT>::value;
+   //static constexpr bool value = are_both_value_view && is_blas_lapack_type<typename MT::value_type>::value && have_same_value_type< MT, VT, VTOut>::value;
+   static constexpr bool value = is_blas_lapack_type<typename MT::value_type>::value && have_same_value_type< MT, VT, VTOut>::value;
+   // cf gemm comment
+  };
+
  /**
   * Calls gemv
   * Takes care of making temporary copies if necessary
   */
  template<typename MT, typename VT, typename VTOut> 
-  typename std::enable_if< is_blas_lapack_type<typename MT::value_type>::value && have_same_value_type< MT, VT, VTOut>::value >::type 
+  typename std::enable_if< use_blas_gemv<MT,VT,VTOut>::value >::type
   gemv (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & Y) { 
+   //std::cerr  << "gemm: blas call "<< std::endl ;
    resize_or_check_if_view(Y,make_shape(A.dim0()));// first resize if necessary and possible 
    const_qcache<MT> Ca(A);
    const_qcache<VT> Cx(X); // mettre la condition a la main
@@ -63,6 +73,27 @@ namespace triqs { namespace arrays { namespace blas {
    int m1 = get_n_rows(Ca()), m2 = get_n_cols(Ca());
    int lda = get_ld(Ca());
    f77::gemv(&trans_a,m1,m2,alpha, Ca().data_start(), lda, Cx().data_start(), Cx().stride(), beta, Y.data_start(), Y.stride());
+  }
+
+ // make the generic version for non lapack types or more complex types
+ // largely suboptimal 
+ template<typename MT, typename VT, typename VTOut> 
+  void gemv_generic (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & C) { 
+   //std::cerr  << "gemm: generic call "<< std::endl ;
+   // first resize if necessary and possible 
+   resize_or_check_if_view(C,make_shape(A.dim0()));
+   if (A.dim1() != X.size()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< A.dim1() << " vs " << X.size();
+   C() = 0;
+   for (int i=0; i<A.dim0(); ++i)
+    for (int k=0; k<A.dim1(); ++k)
+     C(i) += A(i,k)*X(k);
+  }
+
+ // generic version for non lapack 
+ template<typename MT, typename VT, typename VTOut> 
+  typename std::enable_if< !use_blas_gemv<MT,VT,VTOut>::value >::type
+  gemv (typename MT::value_type alpha, MT const & A, VT const & X, typename MT::value_type beta, VTOut & Y) { 
+   gemv_generic(alpha,A,X,beta,Y);
   }
 
 }}}// namespace

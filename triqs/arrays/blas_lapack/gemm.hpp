@@ -48,14 +48,23 @@ namespace triqs { namespace arrays { namespace blas {
   }
  }
 
+ template<typename MT1, typename MT2, typename MTOut> 
+ struct use_blas_gemm { 
+  static_assert(is_amv_value_or_view_class<MTOut>::value, "output of matrix product must be a matrix or matrix_view");
+  //static constexpr bool are_both_value_view = is_amv_value_or_view_class<MT1>::value && is_amv_value_or_view_class<MT2>::value;
+  //static constexpr bool value = are_both_value_view && is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value;
+  static constexpr bool value = is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value;
+  // if inverse_lazy e.g. it is ok, we will use a cache anyway....
+ };
+
  /**
   * Calls gemm on a matrix or view
   * Takes care of making temporary copies if necessary
   */
  template<typename MT1, typename MT2, typename MTOut> 
-  typename std::enable_if< is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value >::type 
+  typename std::enable_if< use_blas_gemm<MT1,MT2,MTOut>::value >::type
   gemm (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
-
+   //std::cerr  << "gemm: blas call "<< std::endl ;
    // first resize if necessary and possible 
    resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
 
@@ -102,6 +111,7 @@ namespace triqs { namespace arrays { namespace blas {
  // largely suboptimal 
  template<typename MT1, typename MT2, typename MTOut> 
   void gemm_generic  (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
+   //std::cerr  << "gemm: generic call "<< std::endl ;
    // first resize if necessary and possible 
    resize_or_check_if_view(C,make_shape(A.dim0(),B.dim1()));
    if (A.dim1() != B.dim0()) TRIQS_RUNTIME_ERROR << "gemm generic : dimension mismatch "<< A.shape() << B.shape();
@@ -114,7 +124,7 @@ namespace triqs { namespace arrays { namespace blas {
 
  // generic version for non lapack 
  template<typename MT1, typename MT2, typename MTOut> 
-  typename std::enable_if< !(is_blas_lapack_type<typename MT1::value_type>::value && have_same_value_type< MT1, MT2, MTOut>::value) >::type 
+  typename std::enable_if< !use_blas_gemm<MT1,MT2,MTOut>::value >::type
   gemm (typename MT1::value_type alpha, MT1 const & A, MT2 const & B, typename MT1::value_type beta, MTOut & C) { 
    gemm_generic(alpha,A,B,beta,C);
   }
