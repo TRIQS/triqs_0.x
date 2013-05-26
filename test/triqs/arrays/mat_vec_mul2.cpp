@@ -35,15 +35,19 @@ int main(int argc, char **argv) {
 
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
  
+ matrix<int>  Ai= {{ 1,2}, {3,4}}; 
  matrix<double>  A= {{ 1,2}, {3,4}}; 
- vector<int> C, B= {1,1}; 
- vector<double> Bd= {1,1}; 
+ vector<int> Ci, B= {1,1}; 
+ vector<double> Cd, Bd= {1,1}; 
  
- C = A*B;
+ Cd = A*B;
+ std::cout  << Cd<< std::endl ;
+
+ Ci = Ai*B;
+ std::cout  << Ci<< std::endl ;
 
  assert_all_close(A*B, A*Bd, 1.e-13);
 
- std::cout  << C<< std::endl ;
  return 0;
 
 #endif

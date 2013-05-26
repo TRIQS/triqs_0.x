@@ -21,6 +21,7 @@
 #include "./common.hpp"
 #include "./src/array.hpp"
 #include "./src/matrix.hpp"
+#include "./src/vector.hpp"
 #include <iostream>
 
 using namespace triqs::arrays;
@@ -37,6 +38,10 @@ int main(int argc, char **argv) {
 
  array<double,2> B(A);
  std::cerr << "B = " << B <<std::endl ;
+
+ vector<int> Vi(3); Vi() = 3;
+ vector<double> Vd(Vi);
+ std::cerr  << "V = "<< Vd << std::endl;
 
  std::vector<array<long,2> > V(3, A);
 
