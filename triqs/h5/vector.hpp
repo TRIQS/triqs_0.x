@@ -29,18 +29,26 @@ namespace triqs {
  // to be done : vector of something else....
  inline std::string get_triqs_hdf5_data_scheme(std::vector<std::string> const & ) { return "vector<string>";}
 
+ template <typename T>
+  std::string get_triqs_hdf5_data_scheme(std::vector<T> const&) { 
+   using triqs::get_triqs_hdf5_data_scheme;// for the basic types, not found by ADL
+   std::stringstream fs; 
+   fs<<"std::vector<"<<get_triqs_hdf5_data_scheme(T())<<">";
+   return fs.str();
+  } 
+
  namespace h5 {
 
- // special case of vector of string
- inline void h5_write (group f, std::string const & name, std::vector<std::string> const & V) {
-  detail::write_1darray_vector_of_string_impl(f,name,V);
- }
+  // special case of vector of string
+  inline void h5_write (group f, std::string const & name, std::vector<std::string> const & V) {
+   detail::write_1darray_vector_of_string_impl(f,name,V);
+  }
 
- inline void h5_read (group f, std::string const & name, std::vector<std::string> & V) {
-  detail::read_1darray_vector_of_string_impl(f,name,V);
- }
+  inline void h5_read (group f, std::string const & name, std::vector<std::string> & V) {
+   detail::read_1darray_vector_of_string_impl(f,name,V);
+  }
 
-}} 
+ }} 
 #endif
 
 
