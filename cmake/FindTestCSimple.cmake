@@ -26,3 +26,20 @@ macro(add_test_C_simple testname )
 endmacro(add_test_C_simple)
 
 
+macro(add_test_C_hdf testname)
+ enable_testing()
+ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+ set(h5diff_objects ${ARGN}) # grab additionnal arguments !
+ add_test(${testname}
+   ${CMAKE_COMMAND}
+   -Dname=${testname}${ARGN}
+   -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
+   -DoutputName=${testname}.output.h5
+   -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output.h5
+   -DH5_DIFF_EXECUTABLE=${HDF5_DIFF_EXECUTABLE}
+   -DH5_DIFF_OPTIONS=${h5diff_options}
+   -DH5_DIFF_OBJECTS=${h5diff_objects}
+   -P ${TRIQS_SOURCE_DIR}/cmake/run_test_simple.cmake
+   )
+endmacro(add_test_C_hdf)
+

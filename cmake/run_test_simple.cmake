@@ -1,6 +1,13 @@
 set (output_new  ${CMAKE_CURRENT_BINARY_DIR}/${name}_output) 
 
-set (COM  ${CMAKE_COMMAND} -E compare_files ${output_new} ${reference})  
+if (H5_DIFF_EXECUTABLE)
+ separate_arguments(H5_DIFF_OPTIONS)
+ separate_arguments(H5_DIFF_OBJECTS)
+ set (COM  ${H5_DIFF_EXECUTABLE} ${H5_DIFF_EXCLUDE}  ${H5_DIFF_OPTIONS} ${outputName}  ${reference} ${H5_DIFF_OBJECTS})
+else(H5_DIFF_EXECUTABLE)
+ set (COM  ${CMAKE_COMMAND} -E compare_files ${output_new} ${reference})
+endif (H5_DIFF_EXECUTABLE)
+
 MESSAGE(" about to run ${cmd}")
 
 execute_process(
