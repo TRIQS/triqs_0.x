@@ -377,11 +377,11 @@ namespace triqs { namespace gf { namespace local {
 
  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<is_scalar_or_element<T1>, LocalTail<T2>>)
   operator + (T1 const & a, T2 const & t) {
-   tail res(t.shape(), t.size(), std::min(long(0), t.smallest_nonzero()));
-   for (long i = res.order_min(); i<=res.order_max(); ++i) res(i) = t(i);
+   tail res(t);
    res(0) += a;
    return res;
   }
+
 
  template<typename T1, typename T2> TYPE_ENABLE_IF(tail,mpl::and_<LocalTail<T1>, is_scalar_or_element<T2>>)
   operator + (T1 const & t, T2 const & a) { return a+t;}
