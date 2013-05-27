@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
  std::cout  << C<< std::endl ;
 
  // check A*B is indeed in double...
- static_assert( std::is_same<decltype(A*B)::value_type, double>::value, "oops");
+ //static_assert( std::is_same<decltype(A*B), matrix<double>>::value, "oops");
 
  assert_all_close(A*B, A*Bd, 1.e-13);
 
