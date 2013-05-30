@@ -113,18 +113,20 @@ namespace triqs { namespace gf {
   static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins) {
    return mesh_t(domain_t(beta,S), 0, beta, n_time_slices, mk);
   }
-  static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-   gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-   //return gf_t ( m, std::move(A), t, nothing() ) ;
-   return gf_t ( m, std::move(A), t, nothing(), evaluator<imtime>(shape[0],shape[1]) ) ;
-  }
+
+  template<typename MeshType>
+   static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+    //return gf_t ( m, std::move(A), t, nothing() ) ;
+    return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime>(shape[0],shape[1]) ) ;
+   }
   /*static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
     return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));
     }
     static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) {
     return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
     }
-    */
+   */
   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, local::tail(shape));
   }

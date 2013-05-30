@@ -85,11 +85,11 @@ namespace triqs { namespace gf {
    return mesh_t(domain_t(), wmin, wmax, n_freq, mk);
   }
 
-  static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-   gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-   return gf_t ( m, std::move(A), t, nothing() ) ;
-  }
-
+  template<typename MeshType>
+   static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+    return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+   }
 
   static gf_t make_gf(double wmin, double wmax, size_t n_freq, tqa::mini_vector<size_t,2> shape) {
    gf_t::data_non_view_t A(shape.front_append(n_freq)); A() =0;

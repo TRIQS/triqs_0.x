@@ -40,6 +40,8 @@ namespace triqs { namespace gf {
  template <typename Descriptor> struct gf_factories;
  template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
  template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
+ 
+ template <typename Descriptor, typename ... U> typename gf<Descriptor>::mesh_t make_gf_mesh(U && ... x) { return gf_factories<Descriptor>::make_mesh(std::forward<U>(x)...);}
 
  // evaluator regroup functions to evaluate the function. Cf descriptors
  template<typename Descriptor> struct evaluator{ static constexpr int arity = 0;};
