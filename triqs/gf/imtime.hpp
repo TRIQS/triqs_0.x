@@ -110,7 +110,7 @@ namespace triqs { namespace gf {
  template<> struct gf_factories< imtime> : imtime {
   typedef gf<imtime> gf_t;
 
-  static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk) {
+  static mesh_t make_mesh(double beta, statistic_enum S, size_t n_time_slices, mesh_kind mk=half_bins) {
    return mesh_t(domain_t(beta,S), 0, beta, n_time_slices, mk);
   }
   static gf_t make_gf(mesh_t && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
