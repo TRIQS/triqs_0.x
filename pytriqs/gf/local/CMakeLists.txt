@@ -23,3 +23,5 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf/local)
 cython_module( GF3 gf gf/local )
 cython_module( MS matrix_stack gf/local )
 
+FILE(GLOB all_pxd_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.pxd )
+install (FILES ${all_pxd_files} DESTINATION "include/pytriqs/gf/local")

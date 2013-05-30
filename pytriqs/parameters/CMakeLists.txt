@@ -6,4 +6,5 @@ install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/parameters
 
 cython_module(Parameters parameters  parameters )
 
-
+FILE(GLOB all_pxd_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.pxd )
+install (FILES ${all_pxd_files} DESTINATION "include/pytriqs/parameters")
