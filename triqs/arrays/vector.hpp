@@ -292,5 +292,8 @@ namespace triqs { namespace arrays {
 namespace std {
  template <typename V, triqs::ull_t S> void swap( triqs::arrays::vector_view<V,S> & a , triqs::arrays::vector_view<V,S> & b)= delete;
 }
+
+#include "./expression_template/vector_algebra.hpp"
+
 #endif
 

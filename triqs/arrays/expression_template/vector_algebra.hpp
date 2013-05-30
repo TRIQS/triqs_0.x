@@ -67,8 +67,14 @@ namespace triqs { namespace arrays {
  template<typename A1, typename A2>\
  typename std::enable_if<TRAIT1<A1>::value && TRAIT2 <A2>::value, vector_expr<tags::TAG, A1,A2>>::type\
  operator OP (A1 const & a1, A2 const & a2) { return vector_expr<tags::TAG, A1,A2>(a1,a2);} 
+#define DELETE_OPERATOR(TAG, OP, TRAIT1, TRAIT2) \
+ template<typename A1, typename A2>\
+ typename std::enable_if<TRAIT1<A1>::value && TRAIT2 <A2>::value, vector_expr<tags::TAG, A1,A2>>::type\
+ operator OP (A1 const & a1, A2 const & a2) = delete;
  DEFINE_OPERATOR(plus,       +, ImmutableVector,ImmutableVector);
  DEFINE_OPERATOR(minus,      -, ImmutableVector,ImmutableVector);
+ DELETE_OPERATOR(multiplies, *, ImmutableVector,ImmutableVector);
+ DELETE_OPERATOR(divides,    /, ImmutableVector,ImmutableVector);
  DEFINE_OPERATOR(multiplies, *, is_in_ZRC,ImmutableVector);
  DEFINE_OPERATOR(multiplies, *, ImmutableVector,is_in_ZRC);
  DEFINE_OPERATOR(divides,    /, ImmutableVector,is_in_ZRC);
