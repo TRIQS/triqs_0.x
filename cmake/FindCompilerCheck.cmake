@@ -62,7 +62,7 @@ endif(compiler_version VERSION_LESS ${compiler_version_min} )
 # on OS X : for clang, add the infamous -stdlib=libc++
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  if (CMAKE_COMPILER_IS_CLANG) 
-  #add_definitions( -stdlib=libc++ )
+  #triqs_add_definitions( -stdlib=libc++ )
   SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ ")
   MESSAGE(STATUS " Adding compilation flags -stdlib=libc++ ")
  else (CMAKE_COMPILER_IS_CLANG) 
@@ -73,8 +73,8 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # for icc, add the very infamous flags or calculation of boost::math bessel function are wrong !!
 # tested on boost 1.53
 IF(CMAKE_COMPILER_IS_ICC)
- add_definitions( -DTRIQS_WORKAROUND_INTEL_COMPILER_BUGS)
- add_definitions( -DBOOST_MATH_DISABLE_STD_FPCLASSIFY)
+ triqs_add_definitions( -DTRIQS_WORKAROUND_INTEL_COMPILER_BUGS)
+ triqs_add_definitions( -DBOOST_MATH_DISABLE_STD_FPCLASSIFY)
  MESSAGE(STATUS " Adding compilation flags -DTRIQS_WORKAROUND_INTEL_COMPILER_BUGS -DBOOST_MATH_DISABLE_STD_FPCLASSIFY")
 ENDIF(CMAKE_COMPILER_IS_ICC)
 

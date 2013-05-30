@@ -149,7 +149,7 @@ endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
 IF(HDF5_FOUND)
  SET(HAVE_LIBHDF5 1)  
  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})
- add_definitions(${HDF5_DEFINTIONS})
+ triqs_add_definitions(${HDF5_DEFINTIONS})
  SET(ALPS_HAVE_HDF5 1)
 ELSE(HDF5_FOUND)
  MESSAGE(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
@@ -183,7 +183,7 @@ ENDIF (PYTHONLIBS_FOUND AND ALPS_BUILD_PYTHON)
 set(ALPS_PYTHON_SITE_PKG ${PYTHON_SITE_PKG})
 
 if (BIND_FORTRAN_LOWERCASE)
- add_definitions(-DBIND_FORTRAN_LOWERCASE)
+ triqs_add_definitions(-DBIND_FORTRAN_LOWERCASE)
 endif (BIND_FORTRAN_LOWERCASE)
 
 # Compute various variables
@@ -284,7 +284,7 @@ endif(APPLE)
 
 # MPI. 
 if (MPI_FOUND)
- add_definitions( -DHAVE_MPI )
+ triqs_add_definitions( -DHAVE_MPI )
 else(MPI_FOUND)
  MESSAGE(FATAL_ERROR "This code requires MPI")
 endif(MPI_FOUND)

@@ -47,7 +47,14 @@ install(TARGETS triqs DESTINATION lib)
 install(TARGETS triqs_utility DESTINATION lib)
 
 # TRIQS cmake file
-configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake)
+get_property(ALL_DEFS GLOBAL PROPERTY TRIQS_COMPIL_DEFINITIONS)
+IF(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
+else()
+ configure_file(../cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY )
+ EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))", ConfigFile)
+endif()
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
 
 # all .hpp files...
