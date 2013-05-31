@@ -105,12 +105,12 @@ namespace triqs { namespace gf {
 
    /// Write into HDF5
    struct _auxh5w {
-    h5::group & gr; _auxh5w( h5::group gr_) : gr(gr_) {} //icc has yet another bug on new initialization form with {}...
-    template<typename P, typename M> size_t operator()(M const & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_write(gr,fs.str(), m); return N+1; }
+    h5::group gr; _auxh5w( h5::group gr_) : gr(gr_) {} //icc has yet another bug on new initialization form with {}...
+    template<typename M> size_t operator()(M const & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_write(gr,fs.str(), m); return N+1; }
    };
    friend void h5_write (h5::group fg, std::string subgroup_name, mesh_product const & m) {
     h5::group gr =  fg.create_group(subgroup_name);
-    h5_write(gr,"domain",m.domain());
+    //h5_write(gr,"domain",m.domain());
     triqs::tuple::fold(_auxh5w(gr), m.components(), size_t(0));
    }
 
@@ -121,7 +121,7 @@ namespace triqs { namespace gf {
    };
    friend void h5_read  (h5::group fg, std::string subgroup_name, mesh_product & m){
     h5::group gr = fg.open_group(subgroup_name);
-    h5_read(gr,"domain",m._dom);
+    //h5_read(gr,"domain",m._dom);
     triqs::tuple::fold(_auxh5r(gr), m.components(), size_t(0));
    }
 
