@@ -57,7 +57,8 @@ namespace triqs { namespace gf {
   using namespace impl_local_matsubara;
   for (size_t n1=0; n1<gw.data().shape()[1];n1++)
    for (size_t n2=0; n2<gw.data().shape()[2];n2++) {
-    dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
+    dcomplex d= ta(1)(n1,n2), A= ta.get_or_zero(2)(n1,n2),B = ta.get_or_zero(3)(n1,n2);
+    //dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
     double b1, b2, b3;
     dcomplex a1, a2, a3;
     if (gw.domain().statistic == Fermion){ b1 = 0; b2 =1; b3 =-1; a1 = d-B; a2 = (A+B)/2; a3 = (B-A)/2; }
@@ -114,7 +115,8 @@ namespace triqs { namespace gf {
   using namespace impl_local_matsubara;
   for (size_t n1=0; n1<gt.data().shape()[1];n1++)
    for (size_t n2=0; n2<gt.data().shape()[2];n2++) {
-    dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
+    dcomplex d= ta(1)(n1,n2), A= ta.get_or_zero(2)(n1,n2),B = ta.get_or_zero(3)(n1,n2);
+    //dcomplex d= ta(1)(n1,n2), A= ta(2)(n1,n2),B = ta(3)(n1,n2);
 
     double b1, b2, b3;
     dcomplex a1, a2, a3;

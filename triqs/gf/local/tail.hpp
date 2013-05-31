@@ -120,6 +120,12 @@ namespace triqs { namespace gf { namespace local {
      return this->_data(n-omin,tqa::range(), tqa::range());
    }
 
+   /// same as (), but if n is too large, then returns 0 instead of raising an exception
+   const_mv_type get_or_zero (int n) const {
+    if ( (n>this->order_max()) || (n<this->order_min()) ) { mv_type::non_view_type r(this->shape()); r()=0; return r;}
+    return this->_data(n-omin,tqa::range(), tqa::range());
+   }
+
    operator freq_infty() const { return freq_infty();}
 
    /// Save in txt file : doc the format  ? ---> prefer serialization or hdf5 !

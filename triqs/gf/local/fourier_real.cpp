@@ -49,7 +49,7 @@ namespace triqs { namespace gf {
     for (size_t n1=0; n1<gw.data().shape()[1];n1++) {
       for (size_t n2=0; n2<gw.data().shape()[2];n2++) {
 
-        dcomplex t1 = ta(1)(n1,n2), t2= ta(2)(n1,n2);
+        dcomplex t1 = ta(1)(n1,n2), t2= ta.get_or_zero(2)(n1,n2);
         dcomplex a1 = (t1 - I * t2)/2, a2 = (t1 + I * t2)/2;
 
         g_in() = 0;
@@ -92,7 +92,7 @@ namespace triqs { namespace gf {
     for (size_t n1=0; n1<gt.data().shape()[1];n1++) {
       for (size_t n2=0; n2<gt.data().shape()[2];n2++) {
 
-        dcomplex t1 = ta(1)(n1,n2), t2 = ta(2)(n1,n2);
+        dcomplex t1 = ta(1)(n1,n2), t2 = ta.get_or_zero(2)(n1,n2);
         dcomplex a1 = (t1 - I * t2)/2, a2 = (t1 + I * t2)/2;
         g_in() = 0;
 
