@@ -71,7 +71,7 @@ namespace triqs { namespace utility {
    ///
    _object const & operator[](std::string const & key) const {
     auto it = object_map.find(key);
-    if ( it== object_map.end()) TRIQS_RUNTIME_ERROR<<"Key : "<< key<< " not found";
+    if ( it== object_map.end()) TRIQS_RUNTIME_ERROR<<"Parameters : the key : "<< key<< " does not exists";
     return it->second;
    }
 
