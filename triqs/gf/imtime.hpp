@@ -48,6 +48,21 @@ namespace triqs { namespace gf {
   static std::string h5_name() { return "GfImTime";}
  };
 
+
+ /// ---------------------------  closest mesh point on the grid ---------------------------------
+
+ template<>
+  struct get_closest_point <imtime> {
+   // index_t is size_t
+   template<typename G, typename T>
+    static size_t invoke(G const * g, closest_pt_wrap<T> const & p) {
+     double x = (g->mesh().kind()==half_bins ? double(p.value) :  double(p.value)+ 0.5*g->mesh().delta());
+     size_t n = std::floor(x/g->mesh().delta());
+     return n;
+    }
+  };
+
+
  /// ---------------------------  evaluator ---------------------------------
 
  template<>
@@ -60,13 +75,14 @@ namespace triqs { namespace gf {
     evaluator<imtime>(size_t n1, size_t n2) : _tmp(n1,n2) {}
     // WHAT happen in resize ??
 
+    /*
     template<typename G, typename T>
      arrays::const_matrix_view_proxy<typename G::data_t,0> operator()(G const * g, closest_pt_wrap<T> const & p) const {
       double x = (g->mesh().kind()==half_bins ? double(p.value) :  double(p.value)+ 0.5*g->mesh().delta());
       size_t n = std::floor(x/g->mesh().delta());
       return arrays::const_matrix_view_proxy<typename G::data_t,0>(g->data(),n);
      }
-
+*/
     // NOT TESTED
     // TEST THE SPPED when q_view are incorporated...
     // true evaluator with interpolation ...
@@ -126,7 +142,7 @@ namespace triqs { namespace gf {
     static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax) {
     return make_gf(make_mesh(beta,S,Nmax,half_bins), shape, local::tail(shape));
     }
-   */
+    */
   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax=1025, mesh_kind mk= half_bins) {
    return make_gf(make_mesh(beta,S,Nmax,mk), shape, local::tail(shape));
   }

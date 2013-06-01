@@ -45,6 +45,7 @@ namespace triqs { namespace gf {
 
  // evaluator regroup functions to evaluate the function. Cf descriptors
  template<typename Descriptor> struct evaluator{ static constexpr int arity = 0;};
+ template<typename Descriptor> struct get_closest_point;
 
  // data_proxy contains function to manipulate the data array, but no data itself.
  // this is used to specialize this part of the code to array of dim 3 (matrix gf), dim 1 (scalar gf) and vector (e.g. block gf, ...)
@@ -164,6 +165,11 @@ namespace triqs { namespace gf {
 
    r_type  operator() (mesh_point_t const & x)       { return _data_proxy(_data, x.linear_index());}
    cr_type operator() (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
+
+   template<typename ... U>
+    r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( get_closest_point<Descriptor>::invoke(this,p)));}
+   template<typename ... U>
+    cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( get_closest_point<Descriptor>::invoke(this,p)));}
 
    // on mesh component for composite meshes
    // enable iif the first arg is a mesh_point_t for the first component of the mesh_t

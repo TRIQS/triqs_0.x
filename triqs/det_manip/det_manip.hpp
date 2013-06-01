@@ -276,11 +276,11 @@ namespace triqs { namespace det_manip {
     // Order of iteration is NOT fixed, it is optimised (for memory traversal)
     template<typename LambdaType>
     friend void foreach(det_manip const & d, LambdaType const & f) {
-     //for (size_t i=0; i<N;i++)
-      //for (size_t j=0; j<N;j++)
-       //f(get_x(i), get_y(j), mat_inv(j,i));
-      // f(x_values[i], y_values[j], mat_inv(j,i));
-     foreach(d.mat_inv, [&f,&d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j,i));});
+     //for (size_t i=0; i<d.N;i++)
+      //for (size_t j=0; j<d.N;j++)
+      // f(d.x_values[i], d.y_values[j], d.mat_inv(j,i));
+     range R(0,d.N);
+     foreach(d.mat_inv(R,R), [&f,&d](int i, int j) { return f(d.x_values[i], d.y_values[j], d.mat_inv(j,i));});
     }
 
     // ------------------------- OPERATIONS -----------------------------------------------

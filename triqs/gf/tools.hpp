@@ -55,8 +55,16 @@ namespace triqs { namespace gf {
  }
  //------------------------------------------------------
 
- template<typename T> struct closest_pt_wrap { T value; template<typename T2> explicit closest_pt_wrap(T2&&x): value(std::forward<T2>(x)){}  };
- template<typename T> closest_pt_wrap<T> closest_mesh_pt(T && x) { return closest_pt_wrap<T> (std::forward<T>(x));}
+ template<typename ... T> struct closest_pt_wrap;
+ 
+ template<typename T> struct closest_pt_wrap<T> : tag::mesh_point { T value; template<typename U> explicit closest_pt_wrap(U&&x): value(std::forward<U>(x)){}  };
+
+ template<typename T1, typename T2, typename ...Ts > struct closest_pt_wrap<T1,T2,Ts...> : tag::mesh_point { 
+  std::tuple<T1,T2,Ts...> value_tuple; 
+  template<typename ... U> explicit closest_pt_wrap(U&&  ... x): value_tuple (std::forward<U>(x) ... ){}  
+ };
+ 
+ template<typename ... T> closest_pt_wrap<T...> closest_mesh_pt(T && ... x) { return closest_pt_wrap<T...> (std::forward<T>(x)...);}
 
  //------------------------------------------------------
 
