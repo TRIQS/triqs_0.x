@@ -85,6 +85,7 @@ namespace triqs { namespace utility {
   std::function<void(h5::group const &, std::string const &)> h5_w; // the function to write in h5
   std::function<std::string()> serialize_; // for boost serialization ...
   std::function<void(std::ostream&)> print_;
+  std::string name_;
 
   public :
 
@@ -95,14 +96,14 @@ namespace triqs { namespace utility {
 
   // pass a const & or a && (in which case a move will be used, provided that T has a move constructor)
   template<typename T>
-   //static _object factory( T && obj){ _object res; res.delegate_constructor( new typename std::remove_reference<T>::type(std::forward<T>(obj))); return res;}
-   _object ( T && obj,bool){ delegate_constructor( new typename std::remove_cv<typename std::remove_reference<T>::type>::type(std::forward<T>(obj)));}
+   _object ( T && obj, std::string const & name){ delegate_constructor( new typename std::remove_cv<typename std::remove_reference<T>::type>::type(std::forward<T>(obj)), name); }
 
   private:
-  template<typename T> void delegate_constructor( T * obj) {
+  template<typename T> void delegate_constructor( T * obj, std::string const & name) {
    p = std::shared_ptr<void> (obj);
    type_code_ = type_code<T>();
-   clone_ =  [obj]() { return _object( *obj, true);} ;
+   name_ = name;
+   clone_ =  [obj,name]() { return _object( *obj, name);} ;
    //clone_     = [this,obj]() { return _object::factory( *obj);} ; //clone_ =  [obj]() { return _object( *obj, "");} ;
    //h5_w       = [obj](h5::group const &F, std::string const &Name)->void { h5_write(F,Name, *obj);};
    h5_w       = h5::make_h5_write(obj);// either call h5_write or synthetize one into a string using boost serialization
@@ -120,7 +121,7 @@ namespace triqs { namespace utility {
 
   friend void swap (_object & a, _object & b) {
 #define SWAP(A)   swap(a.A,b.A)
-   SWAP(p); std::SWAP(type_code_); SWAP(clone_); SWAP(h5_w); SWAP(serialize_); SWAP(print_);
+   SWAP(p); std::SWAP(type_code_); SWAP(clone_); SWAP(h5_w); SWAP(serialize_); SWAP(print_); SWAP(name_);
 #undef SWAP
   }
 
@@ -132,8 +133,7 @@ namespace triqs { namespace utility {
 
   template <typename RHS> _object & operator=(RHS && rhs) {
    typedef typename _object_collapse_type<RHS>::type storage_t;
-   *this =  _object (storage_t(std::forward<RHS>(rhs)),true); //*this =  factory (std::forward<RHS>(rhs));
-   //*this =  _object (std::forward<RHS>(rhs),true); //*this =  factory (std::forward<RHS>(rhs));
+   *this =  _object (storage_t(std::forward<RHS>(rhs)),this->name()); 
    register_type<storage_t>::invoke();
    //register_type<typename std::remove_reference<RHS>::type>::invoke();
    return *this;
@@ -144,6 +144,9 @@ namespace triqs { namespace utility {
 
   bool is_empty() const { return bool(p);}
 
+  std::string const & name() const { return name_;}
+  void set_name(std::string const & n)  { name_ = n;}
+  
   friend bool have_same_type( _object const & a, _object const & b) { return a.type_code_ == b.type_code_;}
 
   template<typename T> bool has_type() const { return type_code_ == type_code<T>();}
@@ -217,8 +220,8 @@ namespace triqs { namespace utility {
    if (is_initialised(code)) return true;
    type_code_to_type_name[code] = make_type_name<T>();
    type_name_to_type_code[make_type_name<T>()]= code;
-   code_to_deserialization_fnts[code] = [](std::string const &s) { return _object( triqs::deserialize<T>(s),true);};
-   code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5::make_h5_read(&n)(f,s); return _object(std::move(n),true);};
+   code_to_deserialization_fnts[code] = [](std::string const &s) { return _object( triqs::deserialize<T>(s),"");};
+   code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5::make_h5_read(&n)(f,s); return _object(std::move(n),"");};
    //code_to_h5_read_fnts[code] = [](h5::group const &f,std::string const &s) ->_object { T n; h5_read(f,s,n); return _object(std::move(n),true);};
    auto h5_scheme = get_triqs_hdf5_data_scheme(T());
    if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = code;
@@ -235,9 +238,9 @@ namespace triqs { namespace utility {
    if (is_initialised(type_code<A>())) return true;
    type_code_to_type_name[type_code<A>()] = make_type_name<A>();
    type_name_to_type_code[make_type_name<A>()]= type_code<A>();
-   code_to_deserialization_fnts[type_code<A>()] = [](std::string const &s) { return _object( triqs::deserialize<A>(s),true);};
-   //code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { A n; h5_read(f,s,n); return _object(std::move(n),true);};
-   code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { Aa a; h5::make_h5_read(&a)(f,s); return _object(A(a),true);};
+   code_to_deserialization_fnts[type_code<A>()] = [](std::string const &s) { return _object( triqs::deserialize<A>(s),"");};
+    //code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { A n; h5_read(f,s,n); return _object(std::move(n),true);};
+   code_to_h5_read_fnts[type_code<A>()] = [](h5::group const &f,std::string const &s) ->_object { Aa a; h5::make_h5_read(&a)(f,s); return _object(A(a),"");};
    code_element_rank_to_code_array[std::make_pair(type_code<T>(), R)] = type_code<A>();
    auto h5_scheme = get_triqs_hdf5_data_scheme(Aa());
    if (h5_scheme != "") h5_scheme_to_code[h5_scheme] = type_code<A>();
@@ -261,7 +264,7 @@ namespace triqs { namespace utility {
   static bool is_possible (_object const &obj) { return obj.has_type<T_stored>(); }
   static T invoke(_object const &obj) {
    if (! is_possible(obj))
-    TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
+    TRIQS_RUNTIME_ERROR<<"extraction of "<< obj.name() << "impossible : type mismatch. Got a "<<obj.type_name()<< " while I am supposed to extract a "<<_object::make_type_name<T>();
    return T(* static_cast<const T_stored*>(obj.get_void_ptr()));
   }
  };
@@ -282,7 +285,7 @@ namespace triqs { namespace utility {
  template<typename T> T extract1(_object const &obj, std::false_type) {
   typedef typename _object_collapse_type<T>::type coll_t;
   if (! obj.has_type<coll_t>())
-   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a "<<_object::make_type_name<T>();
+   TRIQS_RUNTIME_ERROR<<"extraction of "<< obj.name() << " impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a "<<_object::make_type_name<T>();
   return * static_cast<const coll_t*>(obj.get_void_ptr());
  }
 
@@ -311,7 +314,7 @@ namespace triqs { namespace utility {
    //TRANSFORM_TYPE(unsigned long long);
    //TRANSFORM_TYPE(float);
 #undef TRANSFORM_TYPE
-   TRIQS_RUNTIME_ERROR<<"extraction : impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a double";
+   TRIQS_RUNTIME_ERROR<<"extraction of "<< obj.name() << " impossible : type mismatch. Got "<<obj.type_name()<< ", while I am supposed to extract a double";
   }
 
 // template<> // special case to size_t

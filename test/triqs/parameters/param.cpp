@@ -74,6 +74,8 @@ int main() {
   std::cout  <<  " map = "<< P["mm"]<< std::endl ;
   std::cout  << "123 = "<<utility::extract<std::map<std::string,int>>(P["mm"])["qwe"]<< std::endl ;
 
+  // raises an error as it should ...
+  //std::cout  << utility::extract<int>(P["d"]) << std::endl;
 
   triqs::arrays::array<double,2> A(2,2); A()=0;A(0,0) = 1.3; A(1,1) = -8.2;
   triqs::arrays::array<long,1> B(3); B()=0;B(0) = 3; B(1) = -8;
@@ -109,6 +111,9 @@ int main() {
   std::cout  << zc << std::endl ; 
   std::cout  << P["a"] << std::endl ; 
   std::cout  << P["aa"] << std::endl ; 
+  std::cout  << P["s"] << std::endl ; 
+ 
+  std::string rs = P["s"];
 
   // testing that copy is a copy 
   parameters P2 = P; 

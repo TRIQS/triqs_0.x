@@ -65,7 +65,9 @@ namespace triqs { namespace utility {
    ///
    _object & operator[](std::string const & key) { 
      //std::cout << key << std::endl << std::flush;
-     return object_map[key];
+     auto & r = object_map[key];
+     if (r.name()=="") r.set_name(key); // in case the object has just been created, set its name
+     return r;
    }
 
    ///
