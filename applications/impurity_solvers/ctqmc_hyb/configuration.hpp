@@ -91,7 +91,7 @@ struct Configuration {
  std::map<std::string, O_Odag_Insertions_type > O1_K_O2_Insertions; 
 
  ///
- Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> &);
+ Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>> &);
 
  /// 
  // Configuration (const Configuration & C);
@@ -105,7 +105,7 @@ struct Configuration {
  /// puts back the time in [0,Beta]
  inline double CyclicOrientedTimeDistance(double x){ double r= fmod(x,Beta); return (r >=0 ? r : r+ Beta);}
 
- triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> Delta_tau;
+ triqs::gf::gf_view<triqs::gf::block_index, triqs::gf::gf<triqs::gf::imtime>> Delta_tau;
  const Hloc & H;
  const double Beta;
  DYNAMIC_TRACE DT;

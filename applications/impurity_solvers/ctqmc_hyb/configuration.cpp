@@ -26,11 +26,12 @@
 using namespace std;
 using namespace boost;
 using namespace ctqmc_utils;
+using triqs::gf::gf;
 using triqs::gf::gf_view;
-using triqs::gf::block;
+using triqs::gf::block_index;
 using triqs::gf::imtime;
 
-Configuration::Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, gf_view<block<imtime>> & dt):
+Configuration::Configuration(triqs::python_tools::improved_python_dict params, Hloc * hloc, gf_view<block_index,gf<imtime>> & dt):
   Delta_tau(dt),
   H(*hloc),
   Beta(dt[0].domain().beta),

@@ -38,6 +38,9 @@ namespace triqs { namespace gf {
 
  namespace tag  { struct composite{}; struct mesh_point{};} 
  
+ struct matrix {};
+ struct scalar {};
+ 
  //------------------------------------------------------
 
  typedef std::complex<double> dcomplex; 

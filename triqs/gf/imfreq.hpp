@@ -27,73 +27,62 @@
 #include "./meshes/linear.hpp"
 namespace triqs { namespace gf {
 
- namespace descriptors { 
+ struct imfreq {};
 
-  struct imfreq {
+ namespace gf_implementation { 
 
-   /// A tag to recognize the function
-   struct tag {};
+  // mesh type and its factories
+  template<typename Opt> struct mesh<imfreq,Opt>                { 
+   typedef linear_mesh<matsubara_domain<true>> type;
+   typedef typename type::domain_t domain_t;
 
-   /// The domain
-   typedef matsubara_domain<true> domain_t;
-
-   /// The Mesh
-   typedef linear_mesh<domain_t> mesh_t;
-
-   /// The tail
-   typedef local::tail singularity_t;
-
-   /// Symmetry
-   typedef nothing symmetry_t;
-
-   static std::string h5_name() { return "GfImFreq";}
-  };
- }
- using descriptors::imfreq;
-
- /// ---------------------------  evaluator ---------------------------------
-
- template<>
-  struct evaluator<imfreq> {
-   static constexpr int arity = 1;
-   template<typename G>
-    arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
-   template<typename G>
-    local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity();}
-  };
-
- /// ---------------------------  data access  ---------------------------------
-
- template<> struct data_proxy<imfreq> : data_proxy_array<std::complex<double>,3> {};
-
- // -------------------  ImmutableGfMatsubaraFreq identification trait ------------------
-
- template<typename G> struct ImmutableGfMatsubaraFreq : boost::is_base_of<typename imfreq::tag,G> {};
-
- // -------------------------------   Factories  --------------------------------------------------
-
- template<> struct gf_factories<imfreq> : imfreq { 
-  typedef gf<imfreq> gf_t;
-
-  static mesh_t make_mesh (double beta, statistic_enum S, size_t Nmax = 1025) {
-   double m1 = std::acos(-1)/beta;
-   return mesh_t( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, without_last);
-  }
-
-  template<typename MeshType>
-   static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
-    gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
-    return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+   static type make(double beta, statistic_enum S, size_t Nmax = 1025) {
+    double m1 = std::acos(-1)/beta;
+    return type( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, without_last);
    }
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
-   return make_gf(make_mesh(beta,S), shape, local::tail(shape));
-  }
-  static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
-   return make_gf(make_mesh(beta,S,Nmax), shape, local::tail(shape));
-  }
-  static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
-   return make_gf(make_mesh(beta,S,Nmax), shape, t);
-  }
- };
+  };
+
+  //singularity
+  template<typename Opt> struct singularity<imfreq,matrix,Opt>  { typedef local::tail type;};
+  
+  //h5 name
+  template<typename Opt> struct h5_name<imfreq,matrix,Opt>      { static std::string invoke(){ return "GfImFreq";}};
+
+  /// ---------------------------  evaluator ---------------------------------
+
+  template<typename Opt>
+   struct evaluator<imfreq,matrix,Opt> {
+    static constexpr int arity = 1;
+    template<typename G>
+     arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
+    template<typename G>
+     local::tail_view operator()(G const * g, freq_infty const &) const {return g->singularity();}
+   };
+
+  /// ---------------------------  data access  ---------------------------------
+
+  template<typename Opt> struct data_proxy<imfreq,matrix,Opt> : data_proxy_array<std::complex<double>,3> {};
+
+  // -------------------------------   Factories  --------------------------------------------------
+
+  template<typename Opt> struct factories<imfreq,matrix,Opt> { 
+   typedef gf<imfreq,matrix,Opt> gf_t;
+
+   template<typename MeshType>
+    static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
+     typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
+     return gf_t ( std::forward<MeshType>(m), std::move(A), t, nothing() ) ;
+    }
+   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
+    return make_gf(mesh<imfreq,Opt>::make(beta,S), shape, local::tail(shape));
+   }
+   static gf_t make_gf(double beta, statistic_enum S,  tqa::mini_vector<size_t,2> shape, size_t Nmax) {
+    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, local::tail(shape));
+   }
+   static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape, size_t Nmax, local::tail_view const & t) {
+    return make_gf(mesh<imfreq,Opt>::make(beta,S,Nmax), shape, t);
+   }
+  };
+ } // gf_implementation
 }}
 #endif

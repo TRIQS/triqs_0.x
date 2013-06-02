@@ -28,64 +28,49 @@
 
 namespace triqs { namespace gf {
 
- struct legendre {
+ struct legendre {};
 
-  /// A tag to recognize the function
-  struct tag {};
+ namespace gf_implementation { 
 
-  /// The domain
-  typedef legendre_domain domain_t;
-
-  /// The Mesh
-  typedef discrete_mesh<domain_t> mesh_t;
-
-  /// The tail
-  typedef nothing singularity_t;
-
-  /// Symmetry
-  typedef nothing symmetry_t;
-
-  /// Arity (number of argument in calling the function)
-  static const int arity =1;
-
-  static std::string h5_name() { return "GfLegendre";}
-
- };
- /// ---------------------------  evaluator ---------------------------------
-
- template<>
-  struct evaluator<legendre> {
-   static constexpr int arity = 1;
-   //ERROR : give a double and interpolate
-   template<typename G>
-   arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
-   template<typename G>
-   local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
+  // mesh type and its factories
+  template<typename Opt> struct mesh<legendre,Opt> { 
+   typedef discrete_mesh<legendre_domain> type;
+   typedef typename type::domain_t domain_t;
+   static type make(double beta, statistic_enum S, size_t n_leg) { return type(domain_t(beta,S,n_leg)); }
   };
+  
+  // h5 name
+  template<typename Opt> struct h5_name<legendre,matrix,Opt>      { static std::string invoke(){ return  "GfLegendre";}};
 
- /// ---------------------------  data access  ---------------------------------
+  /// ---------------------------  evaluator ---------------------------------
 
- template<> struct data_proxy<legendre> : data_proxy_array<double,3> {};
+  template<typename Opt>
+   struct evaluator<legendre,matrix,Opt> {
+    static constexpr int arity = 1;
+    //ERROR : give a double and interpolate
+    template<typename G>
+     arrays::matrix_view<double >  operator() (G const * g,long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
+    template<typename G>
+     local::tail_view operator()(G const * g,freq_infty const &) const {return g->singularity();}
+   };
 
- // -------------------  ImmutableGfLegendre identification trait ------------------
+  /// ---------------------------  data access  ---------------------------------
 
- template<typename G> struct ImmutableGfLegendre : boost::is_base_of<typename legendre::tag,G> {};
+  template<typename Opt> struct data_proxy<legendre,matrix,Opt> : data_proxy_array<double,3> {};
 
- // -------------------------------   Factories  --------------------------------------------------
+  // -------------------------------   Factories  --------------------------------------------------
 
- template<> struct gf_factories< legendre> : legendre { 
-  typedef gf<legendre> gf_l;
+  template<typename Opt> struct factories<legendre, matrix,Opt> {
+   typedef gf<legendre, matrix,Opt> gf_t;
+   typedef typename mesh<legendre, Opt>::type mesh_t;
 
-  static mesh_t make_mesh(double beta, statistic_enum S, size_t n_leg) {
-   return mesh_t(domain_t(beta,S,n_leg));
-  }
+   static gf_t make_gf(double beta, statistic_enum S, size_t n_leg, tqa::mini_vector<size_t,2> shape) {
+    typename gf_t::data_non_view_t A(shape.front_append(n_leg)); A() = 0;
+    return gf_t(mesh<legendre,Opt>::make(beta, S, n_leg), std::move(A), nothing(), nothing());
+   }
 
-  static gf_l make_gf(double beta, statistic_enum S, size_t n_leg, tqa::mini_vector<size_t,2> shape) {
-   gf_l::data_non_view_t A(shape.front_append(n_leg)); A() = 0;
-   return gf_l(make_mesh(beta, S, n_leg), std::move(A), nothing(), nothing());
-  }
-
- };
+  };
+ } // gf_implementation
 
 }}
 #endif

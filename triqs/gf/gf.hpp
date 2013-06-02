@@ -32,30 +32,56 @@
 namespace triqs { namespace gf {
  using utility::factory;
 
- template<typename Descriptor> class gf;         // the value class
- template<typename Descriptor> class gf_view;    // the view class
+ // GENERALISE matrxi TO DEFAULT
+ template<typename Variable, typename Target=matrix, typename Opt=void> class gf;         // the value class
+ template<typename Variable, typename Target=matrix, typename Opt=void> class gf_view;    // the view class
 
- // gf_factories regroup all factories (constructors..) for all types of gf.
+ // various implementation traits
+ namespace gf_implementation { // never use using of this... 
+  // what is the mesh
+  template<typename Variable, typename Opt> struct mesh;
+
+  // evaluator regroup functions to evaluate the function. Cf descriptors
+  template<typename Variable, typename Target, typename Opt> struct evaluator{ static constexpr int arity = 0;};
+
+  // closest_point mechanism
+  template<typename Variable, typename Target, typename Opt> struct get_closest_point;
+
+  // singularity 
+  template<typename Variable, typename Target, typename Opt> struct singularity { typedef nothing type;};
+
+  // symmetry 
+  template<typename Variable, typename Target, typename Opt> struct symmetry { typedef nothing type;};
+
+  // factories regroup all factories (constructors..) for all types of gf.
+  template <typename Variable, typename Target, typename Opt> struct factories;
+
+  // data_proxy contains function to manipulate the data array, but no data itself.
+  // this is used to specialize this part of the code to array of dim 3 (matrix gf), dim 1 (scalar gf) and vector (e.g. block gf, ...)
+  template<typename Variable, typename Target, typename Opt, typename Enable = void> struct data_proxy;
+
+  // This trait contains functions to read/write in hdf5 files. Can be specialized for some descriptor (Cf block)
+  template <typename Variable, typename Target, typename Opt> struct h5_name; // value is a const char *
+
+  template <typename Variable, typename Target, typename Opt> struct h5_ops { 
+   template<typename DataType, typename GF> static void write(h5::group g, std::string const & s, DataType const & data, GF const &) { h5_write(g,"data",data); }
+   template<typename DataType, typename GF> static void read (h5::group g, std::string const & s, DataType & data, GF const &) { h5_read(g,"data",data);}
+  };
+
+ } // gf_implementation
+
  // make_gf and make_gf_view forward any args to them
- template <typename Descriptor> struct gf_factories;
- template <typename Descriptor, typename ... U> gf<Descriptor> make_gf(U && ... x) { return gf_factories<Descriptor>::make_gf(std::forward<U>(x)...);}
- template <typename Descriptor, typename ... U> gf_view<Descriptor> make_gf_view(U && ... x) { return gf_factories<Descriptor>::make_gf_view(std::forward<U>(x)...);}
- 
- template <typename Descriptor, typename ... U> typename gf<Descriptor>::mesh_t make_gf_mesh(U && ... x) { return gf_factories<Descriptor>::make_mesh(std::forward<U>(x)...);}
+ template <typename Variable, typename Target=matrix, typename Opt=void, typename ... U> 
+  gf<Variable,Target,Opt> make_gf(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf(std::forward<U>(x)...);}
 
- // evaluator regroup functions to evaluate the function. Cf descriptors
- template<typename Descriptor> struct evaluator{ static constexpr int arity = 0;};
- template<typename Descriptor> struct get_closest_point;
+ template <typename Variable, typename Target=matrix, typename Opt=void, typename ... U> 
+  gf_view<Variable,Target,Opt> make_gf_view(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf_view(std::forward<U>(x)...);}
 
- // data_proxy contains function to manipulate the data array, but no data itself.
- // this is used to specialize this part of the code to array of dim 3 (matrix gf), dim 1 (scalar gf) and vector (e.g. block gf, ...)
- template<typename Descriptor, typename Enable = void> struct data_proxy;
+ template <typename Variable, typename Opt=void, typename ... U> 
+  typename gf_implementation::mesh<Variable,Opt>::type make_gf_mesh(U && ... x) { return gf_implementation::mesh<Variable,Opt>::make(std::forward<U>(x)...);}
 
- // This trait contains functions to read/write in hdf5 files. Can be specialized for some descriptor (Cf block)
- template <typename Descriptor> struct gf_h5_ops { 
-  template<typename DataType, typename GF> static void write(h5::group g, std::string const & s, DataType const & data, GF const &) { h5_write(g,"data",data); }
-  template<typename DataType, typename GF> static void read (h5::group g, std::string const & s, DataType & data, GF const &) { h5_read(g,"data",data);}
- };
+ template<typename Variable, typename Target, typename Opt> struct gf_desc{};
+ template<typename Descriptor> struct gf_tag{};
 
  // The trait that "marks" the Green function
  TRIQS_DEFINE_CONCEPT_AND_ASSOCIATED_TRAIT(ImmutableGreenFunction);
@@ -63,211 +89,213 @@ namespace triqs { namespace gf {
  // ---------------------- implementation --------------------------------
 
  /// A common implementation class for gf and gf_view. They will only redefine contructor and = ...
- template<typename Descriptor,bool IsView> class gf_impl : TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), Descriptor::tag {
-  public :
+ template<typename Variable, typename Target, typename Opt, bool IsView> class gf_impl : 
+  TRIQS_MODEL_CONCEPT(ImmutableGreenFunction), gf_tag<gf_desc<Variable,Target,Opt>> {
+   public :
 
-   // Pattern : ValueView
-   typedef gf_view<Descriptor> view_type;
-   typedef gf<Descriptor>      non_view_type;
+    // Pattern : ValueView
+    typedef gf_view<Variable,Target,Opt> view_type;
+    typedef gf<Variable,Target,Opt>      non_view_type;
 
-   typedef Descriptor                         descriptor_t;
-   typedef typename Descriptor::mesh_t        mesh_t;
-   typedef typename mesh_t::domain_t          domain_t;
-   typedef typename mesh_t::mesh_point_t      mesh_point_t;
-   typedef typename mesh_t::index_t           mesh_index_t;
-   typedef typename Descriptor::symmetry_t    symmetry_t;
-   typedef evaluator<Descriptor>              evaluator_t;
+    typedef gf_desc<Variable,Target,Opt>    descriptor_t;
 
-   typedef data_proxy<Descriptor>                                                 data_proxy_t;
-   typedef typename data_proxy_t::storage_t                                       data_non_view_t;
-   typedef typename data_proxy_t::storage_view_t                                  data_view_t;
-   typedef typename std::conditional<IsView, data_view_t, data_non_view_t>::type  data_t;
+    typedef typename gf_implementation::mesh<Variable,Opt>::type                                mesh_t;
+    typedef typename mesh_t::domain_t                                                           domain_t;
+    typedef typename mesh_t::mesh_point_t                                                       mesh_point_t;
+    typedef typename mesh_t::index_t                                                            mesh_index_t;
+    typedef typename gf_implementation::symmetry<Variable,Target,Opt>::type                     symmetry_t;
+    typedef gf_implementation::evaluator<Variable,Target,Opt>                                   evaluator_t;
 
-   typedef typename Descriptor::singularity_t                                                  singularity_non_view_t;
-   typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type                singularity_view_t;
-   typedef typename std::conditional<IsView, singularity_view_t, singularity_non_view_t>::type singularity_t;
+    typedef gf_implementation::data_proxy<Variable,Target,Opt>                                  data_proxy_t;
+    typedef typename data_proxy_t::storage_t                                                    data_non_view_t;
+    typedef typename data_proxy_t::storage_view_t                                               data_view_t;
+    typedef typename std::conditional<IsView, data_view_t, data_non_view_t>::type               data_t;
 
-   mesh_t const &        mesh()          const { return _mesh;}
-   domain_t const &      domain()        const { return _mesh.domain();}
-   data_t &              data()                { return _data;}
-   data_t const &        data()          const { return _data;}
-   singularity_t &       singularity()         { return _singularity;}
-   singularity_t const & singularity()   const { return _singularity;}
-   symmetry_t const &    symmetry()      const { return _symmetry;}
-   evaluator_t const &   get_evaluator() const { return _evaluator;}
+    typedef typename gf_implementation::singularity<Variable,Target,Opt>::type                  singularity_non_view_t;
+    typedef typename view_type_if_exists_else_type<singularity_non_view_t>::type                singularity_view_t;
+    typedef typename std::conditional<IsView, singularity_view_t, singularity_non_view_t>::type singularity_t;
 
-  protected:
-   mesh_t        _mesh;
-   data_t        _data;
-   singularity_t _singularity;
-   symmetry_t    _symmetry;
-   evaluator_t   _evaluator;
-   data_proxy_t  _data_proxy;
+    mesh_t const &        mesh()          const { return _mesh;}
+    domain_t const &      domain()        const { return _mesh.domain();}
+    data_t &              data()                { return _data;}
+    data_t const &        data()          const { return _data;}
+    singularity_t &       singularity()         { return _singularity;}
+    singularity_t const & singularity()   const { return _singularity;}
+    symmetry_t const &    symmetry()      const { return _symmetry;}
+    evaluator_t const &   get_evaluator() const { return _evaluator;}
 
-   // --------------------------------Constructors -----------------------------------------------
-   // all protected but one, this is an implementation class, see gf/gf_view later for public one
-   gf_impl() {} // all arrays of zero size (empty)
+   protected:
+    mesh_t        _mesh;
+    data_t        _data;
+    singularity_t _singularity;
+    symmetry_t    _symmetry;
+    evaluator_t   _evaluator;
+    data_proxy_t  _data_proxy;
 
-  public : //everyone can make a copy (for clef lib in particular, this one needs to be public)
-   
-   gf_impl(gf_impl const & x) : _mesh(x.mesh()), _data(factory<data_t>(x.data())),
-   _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x._evaluator){}
+    // --------------------------------Constructors -----------------------------------------------
+    // all protected but one, this is an implementation class, see gf/gf_view later for public one
+    gf_impl() {} // all arrays of zero size (empty)
 
-   gf_impl(gf_impl &&) = default;
+   public : //everyone can make a copy (for clef lib in particular, this one needs to be public)
 
-  protected:
-  
-   gf_impl(gf_impl<Descriptor,!IsView> const & x): _mesh(x.mesh()), _data(factory<data_t>(x.data())),
-   _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x.get_evaluator()){}
+    gf_impl(gf_impl const & x) : _mesh(x.mesh()), _data(factory<data_t>(x.data())),
+    _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x._evaluator){}
 
-   template<typename M, typename D, typename S, typename SY, typename EV> 
-   gf_impl(M && m, D && dat, S && sing, SY && sy, EV && ev) : 
-    _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _singularity(std::forward<S>(sing)),_symmetry(std::forward<SY>(sy)), _evaluator(std::forward<EV>(ev)){}
+    gf_impl(gf_impl &&) = default;
 
-   void operator = (gf_impl const & rhs) = delete; // done in derived class.
+   protected:
 
-   void swap_impl (gf_impl & b) noexcept {
-    using std::swap;
-    swap(this->_mesh, b._mesh); swap(this->_data, b._data); swap (this->_singularity,b._singularity); swap(this->_symmetry,b._symmetry); swap(this->_evaluator,b._evaluator);
-   }
+    gf_impl(gf_impl<Variable,Target,Opt,!IsView> const & x): _mesh(x.mesh()), _data(factory<data_t>(x.data())),
+    _singularity(factory<singularity_t>(x.singularity())), _symmetry(x.symmetry()), _evaluator(x.get_evaluator()){}
 
-  public:
-   // ------------- All the call operators -----------------------------
+    template<typename M, typename D, typename S, typename SY, typename EV> 
+     gf_impl(M && m, D && dat, S && sing, SY && sy, EV && ev) : 
+      _mesh(std::forward<M>(m)), _data(std::forward<D>(dat)), _singularity(std::forward<S>(sing)),_symmetry(std::forward<SY>(sy)), _evaluator(std::forward<EV>(ev)){}
 
-   // First, a simple () returns a view, like for an array...
-   view_type operator()() const { return *this;}
+    void operator = (gf_impl const & rhs) = delete; // done in derived class.
 
-   /// Calls are (perfectly) forwarded to the Descriptor::operator(), except mesh_point_t and when
-   /// there is at least one lazy argument ...
-   template<typename Arg0, typename... Args >    // match any argument list, picking out the first type : () is not permitted
-    typename std::add_const<
-    typename boost::lazy_disable_if<  // disable the template if one the following conditions it true
-    boost::mpl::or_< // starting condition [OR]
-    std::is_base_of< tag::mesh_point, typename std::remove_reference<Arg0>::type>,  // Arg0 is (a & or a &&) to a mesh_point_t
-    clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
-     , boost::mpl::bool_<(sizeof...(Args)!= evaluator_t::arity -1 ) && (evaluator_t::arity !=-1)> // if -1 : no check
-     >,                                                       // end of OR
-    std::result_of<evaluator_t(gf_impl*,Arg0, Args...)> // what is the result type of call
-     >::type     // end of lazy_disable_if
-     >::type // end of add_Const
-     operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(this,std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
-
-   // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
-   template<typename Arg0, typename ...Args>
-    typename clef::result_of::make_expr_call<view_type,Arg0, Args...>::type
-    //typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
-    operator()(Arg0 arg0, Args... args) const {
-     return clef::make_expr_call(view_type(*this),arg0, args...);
+    void swap_impl (gf_impl & b) noexcept {
+     using std::swap;
+     swap(this->_mesh, b._mesh); swap(this->_data, b._data); swap (this->_singularity,b._singularity); swap(this->_symmetry,b._symmetry); swap(this->_evaluator,b._evaluator);
     }
 
-   typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
-   typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
+   public:
+    // ------------- All the call operators -----------------------------
 
-   r_type  operator() (mesh_point_t const & x)       { return _data_proxy(_data, x.linear_index());}
-   cr_type operator() (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
+    // First, a simple () returns a view, like for an array...
+    view_type operator()() const { return *this;}
 
-   template<typename ... U>
-    r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( get_closest_point<Descriptor>::invoke(this,p)));}
-   template<typename ... U>
-    cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( get_closest_point<Descriptor>::invoke(this,p)));}
+    /// Calls are (perfectly) forwarded to the evaluator::operator(), except mesh_point_t and when
+    /// there is at least one lazy argument ...
+    template<typename Arg0, typename... Args >    // match any argument list, picking out the first type : () is not permitted
+     typename std::add_const<
+     typename boost::lazy_disable_if<  // disable the template if one the following conditions it true
+     boost::mpl::or_< // starting condition [OR]
+     std::is_base_of< tag::mesh_point, typename std::remove_reference<Arg0>::type>,  // Arg0 is (a & or a &&) to a mesh_point_t
+     clef::is_any_lazy<Arg0, Args...>                          // One of Args is a lazy expression
+      , boost::mpl::bool_<(sizeof...(Args)!= evaluator_t::arity -1 ) && (evaluator_t::arity !=-1)> // if -1 : no check
+      >,                                                       // end of OR
+     std::result_of<evaluator_t(gf_impl*,Arg0, Args...)> // what is the result type of call
+      >::type     // end of lazy_disable_if
+      >::type // end of add_Const
+      operator() (Arg0&& arg0, Args&&... args) const { return _evaluator(this,std::forward<Arg0>( arg0), std::forward<Args>(args)...); }
 
-   // on mesh component for composite meshes
-   // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
-   template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
-    operator() (Arg0 const & arg0, Args const & ... args)
-    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+    template<typename Arg0, typename ...Args>
+     typename clef::result_of::make_expr_call<view_type,Arg0, Args...>::type
+     //typename clef::result_of::make_expr_call<gf_impl,Arg0, Args...>::type
+     operator()(Arg0 arg0, Args... args) const {
+      return clef::make_expr_call(view_type(*this),arg0, args...);
+     }
 
-   template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
-    typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
-    operator() (Arg0 const & arg0, Args const & ... args) const
-    { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
+    typedef typename std::result_of<data_proxy_t(data_t       &,size_t)>::type r_type;
+    typedef typename std::result_of<data_proxy_t(data_t const &,size_t)>::type cr_type;
 
-   /// A direct access to the grid point
-   template<typename... Args>
-    r_type on_mesh (Args&&... args) { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    r_type  operator() (mesh_point_t const & x)       { return _data_proxy(_data, x.linear_index());}
+    cr_type operator() (mesh_point_t const & x) const { return _data_proxy(_data, x.linear_index());}
 
-   /// A direct access to the grid point (const version)
-   template<typename... Args>
-    cr_type on_mesh (Args&&... args) const { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
+    template<typename ... U>
+     r_type  operator() (closest_pt_wrap<U...> const & p)       { return _data_proxy(_data, _mesh.index_to_linear( gf_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
+    template<typename ... U>
+     cr_type operator() (closest_pt_wrap<U...> const & p) const { return _data_proxy(_data, _mesh.index_to_linear( gf_implementation::get_closest_point<Variable,Target,Opt>::invoke(this,p)));}
 
-  private:
-   struct _on_mesh_wrapper_const {
-    gf_impl const & f; _on_mesh_wrapper_const (gf_impl const & _f) : f(_f) {}
-    template <typename... Args> cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
-   };
-   struct _on_mesh_wrapper {
-    gf_impl & f; _on_mesh_wrapper (gf_impl & _f) : f(_f) {}
-    template <typename... Args> r_type  operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
-   };
-   _on_mesh_wrapper_const friend on_mesh(gf_impl const & f) { return f;}
-   _on_mesh_wrapper friend on_mesh(gf_impl & f) { return f;}
+    // on mesh component for composite meshes
+    // enable iif the first arg is a mesh_point_t for the first component of the mesh_t
+    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
+     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  r_type>::type
+     operator() (Arg0 const & arg0, Args const & ... args)
+     { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
 
-  public:
-   r_type  operator[] (mesh_index_t const & arg)       { return _data_proxy(_data,_mesh.index_to_linear(arg));}
-   cr_type operator[] (mesh_index_t const & arg) const { return _data_proxy(_data,_mesh.index_to_linear(arg));}
+    template<typename Arg0, typename ... Args, bool MeshIsComposite = std::is_base_of<tag::composite, mesh_t>::value >
+     typename std::enable_if< MeshIsComposite && std::is_base_of< tag::mesh_point, Arg0>::value,  cr_type>::type
+     operator() (Arg0 const & arg0, Args const & ... args) const
+     { return _data_proxy(_data, _mesh.mesh_pt_components_to_linear(arg0, args...));}
 
-   // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
-   template<typename Arg>
-    typename boost::lazy_enable_if<    // enable the template if
-    clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
-    clef::result_of::make_expr_call<view_type,Arg>
-     >::type     // end of lazy_enable_if
-     operator[](Arg && arg) const { return clef::make_expr_call(view_type(*this),std::forward<Arg>(arg));}
+    /// A direct access to the grid point
+    template<typename... Args>
+     r_type on_mesh (Args&&... args) { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
-   //----------------------------- HDF5 -----------------------------
+    /// A direct access to the grid point (const version)
+    template<typename... Args>
+     cr_type on_mesh (Args&&... args) const { return _data_proxy(_data,_mesh.index_to_linear(mesh_index_t(std::forward<Args>(args)...)));}
 
-   friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return descriptor_t::h5_name();}
+   private:
+    struct _on_mesh_wrapper_const {
+     gf_impl const & f; _on_mesh_wrapper_const (gf_impl const & _f) : f(_f) {}
+     template <typename... Args> cr_type operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
+    };
+    struct _on_mesh_wrapper {
+     gf_impl & f; _on_mesh_wrapper (gf_impl & _f) : f(_f) {}
+     template <typename... Args> r_type  operator ()(Args && ... args) const { return f.on_mesh(std::forward<Args>(args)...);}
+    };
+    _on_mesh_wrapper_const friend on_mesh(gf_impl const & f) { return f;}
+    _on_mesh_wrapper friend on_mesh(gf_impl & f) { return f;}
 
-   /// Write into HDF5
-   friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
-    auto gr =  fg.create_group(subgroup_name);
-    gr.write_triqs_hdf5_data_scheme(g); 
-    gf_h5_ops<Descriptor>::write(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
-    h5_write(gr,"singularity",g._singularity);
-    h5_write(gr,"mesh",g._mesh);
-    h5_write(gr,"symmetry",g._symmetry);
-   }
+   public:
+    r_type  operator[] (mesh_index_t const & arg)       { return _data_proxy(_data,_mesh.index_to_linear(arg));}
+    cr_type operator[] (mesh_index_t const & arg) const { return _data_proxy(_data,_mesh.index_to_linear(arg));}
 
-   /// Read from HDF5
-   friend void h5_read (h5::group fg, std::string subgroup_name, gf_impl & g) {
-    auto gr = fg.open_group(subgroup_name);
-    // Check the attribute or throw
-    auto tag_file = gr.read_triqs_hdf5_data_scheme();
-    auto tag_expected= get_triqs_hdf5_data_scheme(g);
-    if (tag_file != tag_expected) 
-     TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
-    gf_h5_ops<Descriptor>::read(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
-    h5_read(gr,"singularity",g._singularity);
-    h5_read(gr,"mesh",g._mesh);
-    h5_read(gr,"symmetry",g._symmetry);
-   }
+    // Interaction with the CLEF library : calling the gf with any clef expression as argument build a new clef expression
+    template<typename Arg>
+     typename boost::lazy_enable_if<    // enable the template if
+     clef::is_any_lazy<Arg>,  // One of Args is a lazy expression
+     clef::result_of::make_expr_call<view_type,Arg>
+      >::type     // end of lazy_enable_if
+      operator[](Arg && arg) const { return clef::make_expr_call(view_type(*this),std::forward<Arg>(arg));}
 
-   //-----------------------------  BOOST Serialization -----------------------------
-   friend class boost::serialization::access;
-   template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-     ar & boost::serialization::make_nvp("data",_data);
-     ar & boost::serialization::make_nvp("singularity",_singularity);
-     ar & boost::serialization::make_nvp("mesh",_mesh);
-     ar & boost::serialization::make_nvp("symmetry",_symmetry);
+    //----------------------------- HDF5 -----------------------------
+
+    friend std::string get_triqs_hdf5_data_scheme(gf_impl const & g) { return gf_implementation::h5_name<Variable,Target,Opt>::invoke();}
+
+    /// Write into HDF5
+    friend void h5_write (h5::group fg, std::string subgroup_name, gf_impl const & g) {
+     auto gr =  fg.create_group(subgroup_name);
+     gr.write_triqs_hdf5_data_scheme(g); 
+     gf_implementation::h5_ops<Variable,Target,Opt>::write(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
+     h5_write(gr,"singularity",g._singularity);
+     h5_write(gr,"mesh",g._mesh);
+     h5_write(gr,"symmetry",g._symmetry);
     }
 
-   /// print
-   friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
-   friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
- };
+    /// Read from HDF5
+    friend void h5_read (h5::group fg, std::string subgroup_name, gf_impl & g) {
+     auto gr = fg.open_group(subgroup_name);
+     // Check the attribute or throw
+     auto tag_file = gr.read_triqs_hdf5_data_scheme();
+     auto tag_expected= get_triqs_hdf5_data_scheme(g);
+     if (tag_file != tag_expected) 
+      TRIQS_RUNTIME_ERROR<< "h5_read : mismatch of the tag TRIQS_HDF5_data_scheme tag in the h5 group : found "<<tag_file << " while I expected "<< tag_expected; 
+     gf_implementation::h5_ops<Variable,Target,Opt>::read(gr, "data", g._data, g);//can be specialized for some descriptors (E.g. blocks)
+     h5_read(gr,"singularity",g._singularity);
+     h5_read(gr,"mesh",g._mesh);
+     h5_read(gr,"symmetry",g._symmetry);
+    }
+
+    //-----------------------------  BOOST Serialization -----------------------------
+    friend class boost::serialization::access;
+    template<class Archive>
+     void serialize(Archive & ar, const unsigned int version) {
+      ar & boost::serialization::make_nvp("data",_data);
+      ar & boost::serialization::make_nvp("singularity",_singularity);
+      ar & boost::serialization::make_nvp("mesh",_mesh);
+      ar & boost::serialization::make_nvp("symmetry",_symmetry);
+     }
+
+    /// print
+    friend std::ostream & operator << (std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
+    friend std::ostream & triqs_nvl_formal_print(std::ostream & out, gf_impl const & x) { return out<<(IsView ? "gf_view": "gf");}
+  };
 
  // ---------------------------------------------------------------------------------
  ///The regular class of GF
- template<typename Descriptor> class gf : public gf_impl<Descriptor,false> {
-  typedef gf_impl<Descriptor,false> B;
+ template<typename Variable, typename Target, typename Opt> class gf : public gf_impl<Variable,Target,Opt,false> {
+  typedef gf_impl<Variable,Target,Opt,false> B;
   public :
 
   gf():B() {}
   gf(gf const & g): B(g){}
   gf(gf && g) noexcept : B(std::move(g)){}
-  gf(gf_view<Descriptor> const & g): B(g){}
+  gf(gf_view<Variable,Target,Opt> const & g): B(g){}
   template<typename GfType> gf(GfType const & x): B() { *this = x;}
 
   template<typename DataViewType> // anything from which the factory can make the data ...
@@ -296,13 +324,13 @@ namespace triqs { namespace gf {
 
  // ---------------------------------------------------------------------------------
  ///The View class of GF
- template<typename Descriptor> class gf_view : public gf_impl<Descriptor,true> {
-  typedef gf_impl<Descriptor,true> B;
+ template<typename Variable, typename Target, typename Opt> class gf_view : public gf_impl<Variable,Target,Opt,true> {
+  typedef gf_impl<Variable,Target,Opt,true> B;
   public :
   gf_view(gf_view const & g): B(g){}
   gf_view(gf_view && g) noexcept : B(std::move(g)){}
 
-  template<bool V> gf_view(gf_impl<Descriptor,V> const & g): B(g){}
+  template<bool V> gf_view(gf_impl<Variable,Target,Opt,V> const & g): B(g){}
 
   template<typename D, typename T>
    gf_view (typename B::mesh_t const & m,
@@ -343,16 +371,16 @@ namespace triqs { namespace gf {
  }; // class gf_view
 
  // delegate = so that I can overload it for specific RHS...
- template<typename Descriptor, typename RHS>
-  DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, RHS const & rhs) {
+ template<typename Variable, typename Target, typename Opt, typename RHS>
+  DISABLE_IF(arrays::is_scalar<RHS>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> & g, RHS const & rhs) {
    if (!(g.mesh()  == rhs.mesh()))  TRIQS_RUNTIME_ERROR<<"Gf Assignment in View : incompatible mesh";
-   gf_view<Descriptor>::data_proxy_t::assign_no_resize(g.data(),rhs.data()); 
+   gf_view<Variable,Target,Opt>::data_proxy_t::assign_no_resize(g.data(),rhs.data()); 
    g.singularity() = rhs.singularity();
   }
 
- template<typename Descriptor, typename T>
-  ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Descriptor> & g, T const & x) {
-   gf_view<Descriptor>::data_proxy_t::assign_to_scalar(g.data(), x); 
+ template<typename Variable, typename Target, typename Opt, typename T>
+  ENABLE_IF(arrays::is_scalar<T>) triqs_gf_view_assign_delegation( gf_view<Variable,Target,Opt> & g, T const & x) {
+   gf_view<Variable,Target,Opt>::data_proxy_t::assign_to_scalar(g.data(), x); 
    g.singularity() = x;
   }
 
@@ -361,14 +389,14 @@ namespace triqs { namespace gf {
 
  // ---------------------------------- slicing ------------------------------------
 
- template<typename Descriptor, bool V, typename... Args>
-  gf_view<Descriptor> slice_target (gf_impl<Descriptor,V> const & g, Args... args) {
-   return gf_view<Descriptor>(g.mesh(), g.data()(tqa::range(), args... ), slice_target (g.singularity(),args...), g.symmetry());
+ template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
+  gf_view<Variable,Target,Opt> slice_target (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
+   return gf_view<Variable,Target,Opt>(g.mesh(), g.data()(tqa::range(), args... ), slice_target (g.singularity(),args...), g.symmetry());
   }
 
- template<typename Descriptor, bool V, typename... Args>
-  gf_view<Descriptor> slice_mesh (gf_impl<Descriptor,V> const & g, Args... args) {
-   return gf_view<Descriptor>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
+ template<typename Variable, typename Target, typename Opt, bool V, typename... Args>
+  gf_view<Variable,Target,Opt> slice_mesh (gf_impl<Variable,Target,Opt,V> const & g, Args... args) {
+   return gf_view<Variable,Target,Opt>(g.mesh().slice(args...), g.data()(g.mesh().slice_get_range(args...),arrays::ellipsis()), g.singularity(), g.symmetry());
   }
 
 }}
