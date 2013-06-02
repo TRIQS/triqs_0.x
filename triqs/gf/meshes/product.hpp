@@ -117,7 +117,7 @@ namespace triqs { namespace gf {
    /// Read from HDF5
    struct _auxh5r {
     h5::group gr;_auxh5r( h5::group gr_) : gr(gr_) {}
-    template<typename P, typename M> size_t operator()(M & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_read(gr,fs.str(), m); return N+1; }
+    template<typename M> size_t operator()(M & m, size_t N) { std::stringstream fs;fs <<"MeshComponent"<< N; h5_read(gr,fs.str(), m); return N+1; }
    };
    friend void h5_read  (h5::group fg, std::string subgroup_name, mesh_product & m){
     h5::group gr = fg.open_group(subgroup_name);
@@ -129,16 +129,15 @@ namespace triqs { namespace gf {
    friend class boost::serialization::access;
    template<typename Archive> struct _aux_ser {
     Archive & ar;_aux_ser( Archive & ar_) : ar(ar_) {}
-    template<typename P, typename M> size_t operator()(M & m, size_t N) {
+    template<typename M> size_t operator()(M & m, size_t N) {
      std::stringstream fs;fs <<"MeshComponent"<< N;
-     ar & boost::serialization::make_nvp(fs.str(),m);
+     ar & boost::serialization::make_nvp(fs.str().c_str(),m);
      return N+1;
     }
    };
    template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
-     ar & boost::serialization::make_nvp("domain",_dom);
-     triqs::tuple::fold(_aux_ser<Archive>(ar), components(), size_t(0));
+     triqs::tuple::fold(_aux_ser<Archive>(ar), m_tuple, size_t(0));
     }
 
  private:
