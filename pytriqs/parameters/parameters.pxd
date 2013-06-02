@@ -1,4 +1,5 @@
 from libcpp.string cimport string as std_string
+from libcpp.vector cimport vector
 cdef extern from "triqs/parameters/parameters.hpp" namespace "triqs::parameters" : 
     
     cdef cppclass _object "triqs::utility::_object":
@@ -10,6 +11,11 @@ cdef extern from "triqs/parameters/parameters.hpp" namespace "triqs::parameters"
         parameters()
         _object operator[](std_string &)
         std_string print_ "print" ()
+
+    cdef cppclass parameter_defaults "triqs::utility::parameter_defaults" :
+        parameter_defaults()
+        vector[vector[std_string]] generate_help()
+
 
 cdef class Parameters:
     cdef parameters _c

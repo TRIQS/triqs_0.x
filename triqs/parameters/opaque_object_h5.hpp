@@ -90,7 +90,8 @@ namespace triqs { namespace utility {
   public :
 
   template<typename T> static constexpr size_t type_code () { return typeid(T).hash_code();}
-  template<typename T> static std::string make_type_name () { return demangle(typeid(T).name());}
+  template<typename T> static std::string make_type_name () { return get_triqs_hdf5_data_scheme(typename _object_collapse_type<T>::type());} 
+  //template<typename T> static std::string make_type_name () { return demangle(typeid(T).name());}
 
   _object() {_init(); };
 

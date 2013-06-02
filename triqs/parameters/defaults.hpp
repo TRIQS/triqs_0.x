@@ -21,7 +21,6 @@
 #ifndef TRIQS_UTILITY_PARAMS_DEFAULT_H
 #define TRIQS_UTILITY_PARAMS_DEFAULT_H
 #include "./opaque_object_h5.hpp"
-#include <triqs/utility/formatted_output.hpp>
 namespace triqs { namespace utility {
  /**
   * Class to handle required and optional program parameters and default values for optional parameters.
@@ -36,7 +35,7 @@ namespace triqs { namespace utility {
    parameter_defaults (parameter_defaults const & other) = default;
    parameter_defaults (parameter_defaults && other) { swap(*this,other);}
    parameter_defaults & operator =  (parameter_defaults const & other)  = default;
-   parameter_defaults & operator =  (parameter_defaults && other) { swap(*this,other); return *this;}
+   parameter_defaults & operator =  (parameter_defaults && other) noexcept { swap(*this,other); return *this;}
    friend void swap(parameter_defaults & a, parameter_defaults &b) 
    { swap(a.object_map,b.object_map); swap(a.documentation, b.documentation);swap(a.is_optional, b.is_optional);  }
 
@@ -102,39 +101,10 @@ namespace triqs { namespace utility {
    }
 
    ///generate help in form of a table of strings containing a list of required and optional parameters
-   std::vector<std::vector<std::string>> generate_help() const{
-     std::vector<std::vector<std::string>> str;
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
-     str.push_back({"parameter:", "required/optional:", "default value:", "description:"});
-     for (auto const &s : object_map){
-       std::string key=s.first; std::ostringstream val; val << s.second;
-       if(is_required(key)) str.push_back({key, "required", "-", doc(key)});
-       else str.push_back({key, "optional", val.str(), doc(key)});
-     }
-#else
-     std::vector<std::string> v;
-     v.push_back("parameter:"); v.push_back("required/optional:"); v.push_back("default value:"); v.push_back("description:");
-     str.push_back(v);
-     for (auto const &s : object_map){
-      std::string key=s.first; std::ostringstream val; val << s.second;
-       v.clear();
-      if(is_required(key)) {
-       v.push_back(key); v.push_back("required"); v.push_back("-"); v.push_back(doc(key));
-      }
-      else {
-       v.push_back(key); v.push_back("optional"); v.push_back(val.str()); v.push_back(doc(key));
-      }
-      str.push_back(v);
-     }
-#endif
-     return str; 
-   }
+   std::vector<std::vector<std::string>> generate_help() const;
 
    ///print a formatted table of required and optional parameters
-   friend std::ostream & operator << (std::ostream & out, parameter_defaults const & p) {
-    out<< print_formatted(p.generate_help());
-    return out;
-   }
+   friend std::ostream & operator << (std::ostream & out, parameter_defaults const & p);
 
  };
 

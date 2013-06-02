@@ -24,7 +24,7 @@
 #include <cstring>
 namespace triqs { 
  
- inline std::string get_triqs_hdf5_data_scheme(std::string const & ) { return "";}
+ inline std::string get_triqs_hdf5_data_scheme(std::string const & ) { return "string";}
  
  namespace h5 {
 
