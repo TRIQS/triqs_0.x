@@ -32,7 +32,20 @@ namespace triqs { namespace gf {
  namespace gf_implementation { 
 
   // the mesh
-  template<typename Opt> struct mesh<two_real_times,Opt>  { typedef typename mesh<retime,Opt>::type m1; typedef mesh_product<m1,m1> type;};
+  template<typename Opt> struct mesh<two_real_times,Opt>  { 
+   typedef typename mesh<retime,Opt>::type m1_t; 
+   typedef mesh_product<m1_t,m1_t> type;
+   static type make (double tmax, double n_time_slices) { 
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS 
+    m1_t m1({},0, tmax,n_time_slices, triqs::gf::full_bins);
+    return {m1,m1};
+#else
+    m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, triqs::gf::full_bins);
+    mesh_t m(m1,m1);
+    return m; 
+#endif
+   }
+  };
   
   // h5 name
   template<typename Opt> struct h5_name<two_real_times,matrix,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
@@ -75,15 +88,9 @@ namespace triqs { namespace gf {
   template<typename Opt> struct factories<two_real_times, matrix,Opt> {
    typedef gf<two_real_times, matrix,Opt> gf_t;
    typedef typename mesh<two_real_times, Opt>::type mesh_t;
-   typedef typename mesh<retime,Opt>::type m1_t; 
 
-   static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) { 
-#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS 
-    m1_t m1({},0, tmax,n_time_slices, triqs::gf::full_bins);
-#else
-    m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, triqs::gf::full_bins);
-#endif
-    mesh_t m(m1,m1);
+   static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {
+    auto m =  mesh<two_real_times,Opt>::make(tmax, n_time_slices);
     typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
     return gf_t (m, std::move(A), nothing(), nothing() ) ;
    }
@@ -119,6 +126,12 @@ namespace triqs { namespace gf {
   */
 
  } // gf_implementation
+
+  // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
+ 
+ // Get the 1 time mesh from the 2 times cartesian product (for cython interface mainly)
+ template<typename M> 
+  auto get_1d_mesh_from_2times_mesh(M const & m) DECL_AND_RETURN(std::get<0>(m.components()));
 
 }}
 #endif

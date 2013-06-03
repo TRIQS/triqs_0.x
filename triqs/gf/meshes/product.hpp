@@ -39,6 +39,7 @@ namespace triqs { namespace gf {
 
    domain_t  const & domain()     const { return _dom;}
    m_tuple_t const & components() const { return m_tuple;}
+   m_tuple_t & components() { return m_tuple;}
 
    /// size of the mesh is the product of size
    struct _aux0 { template<typename M> size_t operator()(M const & m, size_t R) { return R*m.size();}};
