@@ -39,14 +39,10 @@ namespace triqs { namespace utility {
 
  void parameters::update (parameter_defaults const & pdef, ull_t flag ){
 
-  if ( (flag & reject_key_without_default) ) { // check that no extra parameters are present
-   for (auto const & pvp : *this) 
-    if (!pdef.has_key( pvp.first)) 
-     TRIQS_RUNTIME_ERROR << "update : parameter "<< pvp.first << " is absent from the defaults and no_parameter_without_default is ON. ";
-  }
-
   std::vector<std::vector<std::string>> missing;
   std::vector<std::vector<std::string>> wrong_t;
+  std::vector<std::vector<std::string>> no_deft;
+
 #ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
   std::vector<std::string> desc{"key:", "description:"};
   std::vector<std::string> tdesc{"key:", "expected type:", "actual type:"};
@@ -54,6 +50,19 @@ namespace triqs { namespace utility {
   std::vector<std::string> desc; desc.push_back("key:"); desc.push_back("description:");
   std::vector<std::string> tdesc; tdesc.push_back("key:"); tdesc.push_back("expected type:"); tdesc.push_back("actual type:");
 #endif
+
+  if ( (flag & reject_key_without_default) ) { // check that no extra parameters are present
+    for (auto const & pvp : *this) {
+      auto key = pvp.first; 
+      if (!pdef.has_key(key)){
+#ifndef TRIQS_WORKAROUND_INTEL_COMPILER_BUGS
+      no_deft.push_back({key});    
+#else
+      { std::vector<std::string> v; v.push_back(key); no_deft.push_back(v);}
+#endif
+      } 
+    }
+  }
 
   for (auto const & pvp : pdef) {
    auto key = pvp.first;
@@ -87,8 +96,9 @@ namespace triqs { namespace utility {
 
   }
   // raise a runtime exception if errors occured
-  if(missing.size()) TRIQS_RUNTIME_ERROR<< "update with defaults: the following keys are required but absent: \n"<< print_formatted(missing);
+  if(missing.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters are required but absent: \n"<< print_formatted(missing);
   if(wrong_t.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters have incorrect type: \n"<< print_formatted(wrong_t);
+  if(no_deft.size()) TRIQS_RUNTIME_ERROR << "update with defaults : the following parameters are absent from the defaults and no_parameter_without_default is ON: \n"<< print_formatted(no_deft);
 
  }
 
