@@ -48,12 +48,12 @@ namespace triqs { namespace gf {
   };
   
   // h5 name
-  template<typename Opt> struct h5_name<two_real_times,matrix,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
+  template<typename Opt> struct h5_name<two_real_times,matrix_valued,Opt> { static std::string invoke(){ return  "GfTwoRealTime";}};
 
   /// ---------------------------  closest mesh point on the grid ---------------------------------
 
   template<typename Opt>
-   struct get_closest_point <two_real_times,matrix,Opt> {
+   struct get_closest_point <two_real_times,matrix_valued,Opt> {
    typedef typename mesh<two_real_times, Opt>::type mesh_t;
     
    // NOT FINISHED, NOT TESTED 
@@ -69,7 +69,7 @@ namespace triqs { namespace gf {
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<two_real_times,matrix,Opt> {
+   struct evaluator<two_real_times,matrix_valued,Opt> {
     static constexpr int arity = 2;
     template<typename G>
      arrays::matrix_view<std::complex<double> > operator() (G const * g, double t0, double t1)  const {
@@ -81,12 +81,12 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<two_real_times,matrix,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<typename Opt> struct data_proxy<two_real_times,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<two_real_times, matrix,Opt> {
-   typedef gf<two_real_times, matrix,Opt> gf_t;
+  template<typename Opt> struct factories<two_real_times, matrix_valued,Opt> {
+   typedef gf<two_real_times, matrix_valued,Opt> gf_t;
    typedef typename mesh<two_real_times, Opt>::type mesh_t;
 
    static gf_t make_gf(double tmax, double n_time_slices, tqa::mini_vector<size_t,2> shape) {

@@ -38,8 +38,8 @@ namespace triqs { namespace gf {
 
  namespace tag  { struct composite{}; struct mesh_point{};} 
  
- struct matrix {};
- struct scalar {};
+ struct matrix_valued {};
+ struct scalar_valued {};
  
  //------------------------------------------------------
 

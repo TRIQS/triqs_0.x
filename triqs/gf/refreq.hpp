@@ -40,13 +40,13 @@ namespace triqs { namespace gf {
    }
   };
   
-  template<typename Opt> struct singularity<refreq,matrix,Opt>  { typedef local::tail type;};
-  template<typename Opt> struct h5_name<refreq,matrix,Opt>      { static std::string invoke(){ return "GfReFreq";}};
+  template<typename Opt> struct singularity<refreq,matrix_valued,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct h5_name<refreq,matrix_valued,Opt>      { static std::string invoke(){ return "GfReFreq";}};
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<refreq,matrix,Opt> {
+   struct evaluator<refreq,matrix_valued,Opt> {
     static constexpr int arity = 1;
     template<typename G>
      arrays::matrix_view<std::complex<double> >  operator() (G const * g,double w0)  const {
@@ -64,11 +64,11 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<refreq,matrix,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<typename Opt> struct data_proxy<refreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<refreq, matrix,Opt> {
+  template<typename Opt> struct factories<refreq, matrix_valued,Opt> {
    typedef gf<refreq> gf_t;
 
    template<typename MeshType>

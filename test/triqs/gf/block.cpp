@@ -15,6 +15,7 @@ using triqs::gf::Fermion;
 using triqs::gf::imfreq;
 using triqs::gf::imtime;
 using triqs::gf::make_gf;
+using triqs::gf::make_block_gf;
 using triqs::gf::make_gf_view;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
@@ -26,6 +27,9 @@ int main() {
  auto G1 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
  auto G2 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
  auto G3 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
+
+ //auto BBB = make_block_gf<imfreq> ({G1,G2,G2});
+ //auto BBB2 = make_gf<block_index, gf<imfreq>> ({G1,G2,G2});
 
  std::vector<gf<imfreq> >  V ;
  V.push_back(G1); V.push_back(G2); V.push_back(G3); 

@@ -42,15 +42,15 @@ namespace triqs { namespace gf {
   };
  
   // singularity 
-  template<typename Opt> struct singularity<imtime,matrix,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct singularity<imtime,matrix_valued,Opt>  { typedef local::tail type;};
   
   // h5 name
-  template<typename Opt> struct h5_name<imtime,matrix,Opt>      { static std::string invoke(){ return  "GfImTime";}};
+  template<typename Opt> struct h5_name<imtime,matrix_valued,Opt>      { static std::string invoke(){ return  "GfImTime";}};
 
   /// ---------------------------  closest mesh point on the grid ---------------------------------
 
   template<typename Opt>
-   struct get_closest_point <imtime,matrix,Opt> {
+   struct get_closest_point <imtime,matrix_valued,Opt> {
     // index_t is size_t
     template<typename G, typename T>
      static size_t invoke(G const * g, closest_pt_wrap<T> const & p) {
@@ -64,7 +64,7 @@ namespace triqs { namespace gf {
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<imtime,matrix,Opt> {
+   struct evaluator<imtime,matrix_valued,Opt> {
     private:
      mutable arrays::matrix<double> _tmp;
     public :
@@ -105,18 +105,18 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<imtime,matrix,Opt> : data_proxy_array<double,3> {};
+  template<typename Opt> struct data_proxy<imtime,matrix_valued,Opt> : data_proxy_array<double,3> {};
  
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<imtime,matrix,Opt> { 
-   typedef gf<imtime,matrix,Opt> gf_t;
+  template<typename Opt> struct factories<imtime,matrix_valued,Opt> { 
+   typedef gf<imtime,matrix_valued,Opt> gf_t;
 
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {
      typename gf_t::data_non_view_t A(shape.front_append(m.size())); A() =0;
      //return gf_t ( m, std::move(A), t, nothing() ) ;
-     return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix,Opt>(shape[0],shape[1]) ) ;
+     return gf_t (std::forward<MeshType>(m), std::move(A), t, nothing(), evaluator<imtime,matrix_valued,Opt>(shape[0],shape[1]) ) ;
     }
    /*static gf_t make_gf(double beta, statistic_enum S, tqa::mini_vector<size_t,2> shape) {
      return make_gf(make_mesh(beta,S,1025,half_bins), shape, local::tail(shape));

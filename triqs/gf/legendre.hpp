@@ -40,12 +40,12 @@ namespace triqs { namespace gf {
   };
   
   // h5 name
-  template<typename Opt> struct h5_name<legendre,matrix,Opt>      { static std::string invoke(){ return  "GfLegendre";}};
+  template<typename Opt> struct h5_name<legendre,matrix_valued,Opt>      { static std::string invoke(){ return  "GfLegendre";}};
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<legendre,matrix,Opt> {
+   struct evaluator<legendre,matrix_valued,Opt> {
     static constexpr int arity = 1;
     //ERROR : give a double and interpolate
     template<typename G>
@@ -56,12 +56,12 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<legendre,matrix,Opt> : data_proxy_array<double,3> {};
+  template<typename Opt> struct data_proxy<legendre,matrix_valued,Opt> : data_proxy_array<double,3> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<legendre, matrix,Opt> {
-   typedef gf<legendre, matrix,Opt> gf_t;
+  template<typename Opt> struct factories<legendre, matrix_valued,Opt> {
+   typedef gf<legendre, matrix_valued,Opt> gf_t;
    typedef typename mesh<legendre, Opt>::type mesh_t;
 
    static gf_t make_gf(double beta, statistic_enum S, size_t n_leg, tqa::mini_vector<size_t,2> shape) {

@@ -43,15 +43,15 @@ namespace triqs { namespace gf {
   };
 
   //singularity
-  template<typename Opt> struct singularity<imfreq,matrix,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct singularity<imfreq,matrix_valued,Opt>  { typedef local::tail type;};
   
   //h5 name
-  template<typename Opt> struct h5_name<imfreq,matrix,Opt>      { static std::string invoke(){ return "GfImFreq";}};
+  template<typename Opt> struct h5_name<imfreq,matrix_valued,Opt>      { static std::string invoke(){ return "GfImFreq";}};
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<imfreq,matrix,Opt> {
+   struct evaluator<imfreq,matrix_valued,Opt> {
     static constexpr int arity = 1;
     template<typename G>
      arrays::matrix_view<std::complex<double> >  operator() (G const * g, long n)  const {return g->data()(n, arrays::range(), arrays::range()); }
@@ -61,12 +61,12 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<imfreq,matrix,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<typename Opt> struct data_proxy<imfreq,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<imfreq,matrix,Opt> { 
-   typedef gf<imfreq,matrix,Opt> gf_t;
+  template<typename Opt> struct factories<imfreq,matrix_valued,Opt> { 
+   typedef gf<imfreq,matrix_valued,Opt> gf_t;
 
    template<typename MeshType>
     static gf_t make_gf(MeshType && m, tqa::mini_vector<size_t,2> shape, local::tail_view const & t) {

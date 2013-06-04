@@ -33,8 +33,8 @@ namespace triqs { namespace gf {
  using utility::factory;
 
  // GENERALISE matrxi TO DEFAULT
- template<typename Variable, typename Target=matrix, typename Opt=void> class gf;         // the value class
- template<typename Variable, typename Target=matrix, typename Opt=void> class gf_view;    // the view class
+ template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf;         // the value class
+ template<typename Variable, typename Target=matrix_valued, typename Opt=void> class gf_view;    // the view class
 
  // various implementation traits
  namespace gf_implementation { // never use using of this... 
@@ -71,10 +71,10 @@ namespace triqs { namespace gf {
  } // gf_implementation
 
  // make_gf and make_gf_view forward any args to them
- template <typename Variable, typename Target=matrix, typename Opt=void, typename ... U> 
+ template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
   gf<Variable,Target,Opt> make_gf(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf(std::forward<U>(x)...);}
 
- template <typename Variable, typename Target=matrix, typename Opt=void, typename ... U> 
+ template <typename Variable, typename Target=matrix_valued, typename Opt=void, typename ... U> 
   gf_view<Variable,Target,Opt> make_gf_view(U && ... x) { return gf_implementation::factories<Variable,Target,Opt>::make_gf_view(std::forward<U>(x)...);}
 
  template <typename Variable, typename Opt=void, typename ... U> 

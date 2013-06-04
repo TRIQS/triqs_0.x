@@ -41,13 +41,13 @@ namespace triqs { namespace gf {
    }
   };
   
-  template<typename Opt> struct singularity<retime,matrix,Opt>  { typedef local::tail type;};
-  template<typename Opt> struct h5_name<retime,matrix,Opt>      { static std::string invoke(){ return  "GfReTime";}};
+  template<typename Opt> struct singularity<retime,matrix_valued,Opt>  { typedef local::tail type;};
+  template<typename Opt> struct h5_name<retime,matrix_valued,Opt>      { static std::string invoke(){ return  "GfReTime";}};
 
   /// ---------------------------  evaluator ---------------------------------
 
   template<typename Opt>
-   struct evaluator<retime,matrix,Opt> {
+   struct evaluator<retime,matrix_valued,Opt> {
     static constexpr int arity = 1;
     template<typename G>
      arrays::matrix_view<std::complex<double> >  operator() (G const * g,double t0)  const {
@@ -65,11 +65,11 @@ namespace triqs { namespace gf {
 
   /// ---------------------------  data access  ---------------------------------
 
-  template<typename Opt> struct data_proxy<retime,matrix,Opt> : data_proxy_array<std::complex<double>,3> {};
+  template<typename Opt> struct data_proxy<retime,matrix_valued,Opt> : data_proxy_array<std::complex<double>,3> {};
 
   // -------------------------------   Factories  --------------------------------------------------
 
-  template<typename Opt> struct factories<retime, matrix,Opt> {
+  template<typename Opt> struct factories<retime, matrix_valued,Opt> {
    typedef gf<retime> gf_t;
 
    static gf_t make_gf(double tmin, double tmax, size_t n_points, tqa::mini_vector<size_t,2> shape) {

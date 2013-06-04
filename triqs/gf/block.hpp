@@ -76,6 +76,11 @@ namespace triqs { namespace gf {
      return gf_t(mesh_t(block_names), std::move(V), nothing(), nothing() );
     }
 
+   /* static gf_t make_gf(std::initializer_list<Target> const & l) { 
+      auto v = std::vector<Target> {l};
+      return make_gf(v);
+    }
+*/
     /* template<typename... Args>
        static gf_t make_gf(size_t N, Args&& ...args)  {
        std::vector<Target> V; V.reserve(N);
@@ -109,15 +114,23 @@ namespace triqs { namespace gf {
      static gf_view_t make_gf_view(std::vector<GF> && V)      { return gf_view_t ( mesh_t(V.size()), std::move(V), nothing(), nothing() ) ; }
 
    };
-
-  // -------------------------------   Free function   --------------------------------------------------
-
-  // a simple function to get the number of blocks
-  template<typename T> size_t n_blocks (gf<block_index,T> const & g)      { return g.mesh().size();}
-  template<typename T> size_t n_blocks (gf_view<block_index,T> const & g) { return g.mesh().size();}
-
-
+ 
  } // gf_implementation
+
+ // -------------------------------   Free function   --------------------------------------------------
+
+ // a simple function to get the number of blocks
+ template<typename T> size_t n_blocks (gf<block_index,T> const & g)      { return g.mesh().size();}
+ template<typename T> size_t n_blocks (gf_view<block_index,T> const & g) { return g.mesh().size();}
+
+
+ // template alias
+ //template<typename T> using block_gf = gf<block_index, gf<T>>;
+
+ // experimental
+ template<typename Target,  typename ... U>
+  gf<block_index, gf<Target>> make_block_gf(U && ...u) { return gf_implementation::factories<block_index,gf<Target>,void>::make_gf(std::forward<U>(u)...);}
+
 }}
 #endif
 
