@@ -13,19 +13,19 @@ cdef extern from "triqs/gf/local/fourier_matsubara.hpp" :
 
 cdef extern from "triqs/gf/local/fourier_real.hpp" :
     gf_refreq lazy_fourier          (gf_retime & )
-    gf_retime lazy_inverse_fourier  (gf_refreq & )
-    gf_refreq fourier               (gf_retime & )
-    gf_retime inverse_fourier       (gf_refreq & )
+    gf_retime lazy_inverse_fourier  (gf_refreq & ) 
+    gf_refreq fourier               (gf_retime & ) except +
+    gf_retime inverse_fourier       (gf_refreq & ) except +
 
 ###############  Legendre  #########################
 
 cdef extern from "triqs/gf/local/legendre_matsubara.hpp" : 
-    gf_imfreq lazy_legendre_imfreq    (gf_legendre &)
+    gf_imfreq lazy_legendre_imfreq    (gf_legendre &) 
     gf_imtime lazy_legendre_imtime    (gf_legendre &)
-    gf_legendre lazy_imfreq_legendre  (gf_imfreq &)
-    gf_legendre lazy_imtime_legendre  (gf_imtime &)
+    gf_legendre lazy_imfreq_legendre  (gf_imfreq &) 
+    gf_legendre lazy_imtime_legendre  (gf_imtime &) 
 
 ###############  Pade  #########################
 
 cdef extern from "triqs/gf/local/pade.hpp":
-    void pade(gf_refreq &, gf_imfreq &, int, double)
+    void pade(gf_refreq &, gf_imfreq &, int, double) except +

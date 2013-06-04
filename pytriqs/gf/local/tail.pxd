@@ -6,13 +6,13 @@ cdef extern from "triqs/gf/local/tail.hpp" :
         tail(array_view[dcomplex,THREE], int, array_view[long,TWO]) except +
         matrix_view[dcomplex] operator()(int) except +
         array_view[dcomplex,THREE] data()
-        array_view[long,TWO] mask_view()
-        void operator << (tail &)
-        void operator << (dcomplex &)
-        long order_min()
-        long order_max()
-        size_t size() 
-        size_t shape(int) 
+        array_view[long,TWO] mask_view() except +
+        void operator << (tail &) except +
+        void operator << (dcomplex &) except +
+        long order_min() except +
+        long order_max() except +
+        size_t size()  except +
+        size_t shape(int) except +
 
     cdef tail operator +( tail &, tail &) except + 
     cdef tail operator -( tail &, tail &) except + 
