@@ -36,3 +36,16 @@ gt <<= InverseFourier(gw)
 mpi.bcast(gt)
 
 
+##
+
+gt2 = GfImTime(indices = [1], beta = 50)
+
+gt2 = mpi.bcast(gt2)
+
+print gt2.tail.order_max
+print gt2.tail.order_min
+
+gw2 = GfImFreq(indices = [1], beta = 50)
+gw2 <<= Fourier(gt2)
+
+
