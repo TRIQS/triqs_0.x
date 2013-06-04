@@ -28,11 +28,14 @@ namespace triqs { namespace gf {
  template<typename Derived, typename C> struct arith_ops_by_cast {};
 #define IMPL_OP(OP)\
  template<typename D, typename C, typename T> \
- auto operator OP(arith_ops_by_cast<D,C> const & x, T y) -> decltype( std::declval<C>() OP y) {return C(static_cast<D const& >(x)) OP y;}\
+ auto operator OP(arith_ops_by_cast<D,C> const & x, T const & y) -> decltype( std::declval<C>() OP y) {return C(static_cast<D const& >(x)) OP y;}\
  template<typename D, typename C, typename T> \
- auto operator OP(T y, arith_ops_by_cast<D,C> const & x) -> decltype (y OP std::declval<C>()) {return y OP C(static_cast<D const& >(x));}
+ auto operator OP( T const & y, arith_ops_by_cast<D,C> const & x) -> TYPE_DISABLE_IF(decltype (y OP std::declval<C>()), std::is_same<T,D>)  {return y OP C(static_cast<D const& >(x));}
  IMPL_OP(+); IMPL_OP(-); IMPL_OP(*); IMPL_OP(/);
 #undef IMPL_OP
+ 
+ //TYPE_DISABLE_IF(decltype (std::declval<T>() OP std::declval<C>()), std::is_same<T,D>)\
+ //operator OP( T const & y, arith_ops_by_cast<D,C> const & x)  {return y OP C(static_cast<D const& >(x));}
 
  //------------------------------------------------------
 
