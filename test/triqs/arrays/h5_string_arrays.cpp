@@ -59,6 +59,23 @@ int main(int argc, char **argv) {
 
  std::cerr  << A << std::endl ;
  std::cerr  << B << std::endl ;
+
+
+ //example of tqa::vector<tqa::matrix<double>>
+ tqa::matrix<double> A1(2),B1(2);
+ A1()=1.0; B1()=1.5;
+ tqa::vector<tqa::matrix<double>> v;
+ v(0)=A1; v(1)=B1;
+
+ H5::H5File file2( "test_vector_of_matrix.h5", H5F_ACC_TRUNC );
+ h5::group top2(file2);
+
+ h5_write(top2,"A1",A1);
+ h5_write(top2,"B1",B1);
+ h5_write(top2,"v",v);
+
+
+
  return 0;
 }
 
