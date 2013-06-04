@@ -11,6 +11,10 @@ cdef class GfTwoRealTime_cython:
     def __dealloc__ (self):
         pass
 
+    def slice1d(self, double t):
+        return make_GfReTime(slice1d(self._c,t))
+
+
 #----------------  Reading from h5 ---------------------------------------
 
 def h5_read_GfTwoRealTime(gr, key):

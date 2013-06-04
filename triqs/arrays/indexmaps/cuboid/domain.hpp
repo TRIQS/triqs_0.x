@@ -105,7 +105,9 @@ namespace triqs { namespace arrays { namespace indexmaps { namespace cuboid {
    }
    template<int r,class KeyType>
     bool key_check_impl (std::integral_constant<int,r>, KeyType const & key, n_uple const & L, std::stringstream & fs ) const {
+     //bool cond = (  ( size_t(key[r]) < L[r]));
      bool cond = (  ( size_t(std::get<r>(key)) < L[r]));
+     //if (!cond) fs << "key ["<<r<<"] = "<< key[r] <<" is not within [0,"<<L[r]<<"[\n";
      if (!cond) fs << "key ["<<r<<"] = "<< std::get<r>(key) <<" is not within [0,"<<L[r]<<"[\n";
      return key_check_impl(std::integral_constant<int,r+1>(), key,L,fs) && cond;
     }

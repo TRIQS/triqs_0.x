@@ -128,7 +128,23 @@ namespace triqs { namespace gf {
  } // gf_implementation
 
   // -------------------------------   Additionnal free function for this gf  --------------------------------------------------
- 
+
+  // from g(t,t') and t, return g(t-t') for any t'>t 
+ gf<retime> slice (gf_view<two_real_times> const & g, double t) { 
+  auto const & m = std::get<0> (g.mesh().components());
+  long it = get_closest_mesh_pt_index(m, t);
+  long nt = m.size() - it;
+  if (it < nt) nt = it ;
+  double dt = m.delta();
+  auto res = make_gf<retime>(0, nt*dt, nt, g(t,t).shape());
+  res() = 0;
+  auto _ = arrays::range();// everyone
+  for(long sh=0; sh<nt; sh++){
+   res.data()(sh,_,_) = g.data()(g.mesh().index_to_linear(std::make_tuple( it+sh, it-sh) ),_,_);
+  }
+  return res;
+ }
+
  // Get the 1 time mesh from the 2 times cartesian product (for cython interface mainly)
  template<typename M> 
   auto get_1d_mesh_from_2times_mesh(M const & m) DECL_AND_RETURN(std::get<0>(m.components()));

@@ -28,6 +28,8 @@ cdef extern from "triqs/gf/two_real_times.hpp" namespace "triqs::gf" :
         array_view[dcomplex, THREE] data()
         tail singularity() 
 
+    cdef gf_retime slice1d "triqs::gf::slice" (gf_two_real_times &, double t) except +
+
 cdef extern from "triqs/gf/two_real_times.hpp"  :
     cdef void h5_write (h5_group, char *, gf_two_real_times &)
 
