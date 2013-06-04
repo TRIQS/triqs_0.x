@@ -15,6 +15,12 @@ using triqs::gf::make_gf;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
 
+ // example 
+ //template<typename T> using block_gf = gf<block_index, gf<T>>;
+ // block_gf<imtime> ... 
+ // but not on gcc 4.6 !
+ //
+
 int main() {
 
  triqs::gf::freq_infty inf;
