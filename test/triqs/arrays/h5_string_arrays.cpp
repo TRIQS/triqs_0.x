@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
  h5_write(top2,"A1",A1);
  h5_write(top2,"B1",B1);
- h5_write(top2,"v",v);
+ //h5_write(top2,"v",v);
 
 
 
