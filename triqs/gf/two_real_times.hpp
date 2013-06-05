@@ -41,7 +41,7 @@ namespace triqs { namespace gf {
     return {m1,m1};
 #else
     m1_t m1(typename m1_t::domain_t(),0, tmax,n_time_slices, triqs::gf::full_bins);
-    mesh_t m(m1,m1);
+    type m(m1,m1);
     return m; 
 #endif
    }

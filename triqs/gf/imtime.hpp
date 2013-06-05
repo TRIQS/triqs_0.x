@@ -69,8 +69,8 @@ namespace triqs { namespace gf {
      mutable arrays::matrix<double> _tmp;
     public :
      static constexpr int arity = 1;
-     evaluator<imtime>() = default;
-     evaluator<imtime>(size_t n1, size_t n2) : _tmp(n1,n2) {}
+     evaluator() = default;
+     evaluator(size_t n1, size_t n2) : _tmp(n1,n2) {}
      // WHAT happen in resize ??
 
      // NOT TESTED
