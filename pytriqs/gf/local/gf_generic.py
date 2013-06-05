@@ -222,56 +222,76 @@ class GfGeneric:
 
     #--------------------  Arithmetic operations  ---------------------------------
 
-    def __iadd__(self, arg):
-        d, t = self.data, self.tail
-        if type(self) == type(arg):
+    def __add_iadd_impl (self, lhs,  arg, is_add):
+        d, t, rhs = lhs.data, lhs.tail,None
+        if type(lhs) == type(arg):
             d[:,:,:] += arg.data
             t += arg.tail
         elif isinstance(arg, numpy.ndarray): # an array considered as a constant function
-            MatrixStack(self.data).add(arg)
-            t[0][:,:] += arg
+            MatrixStack(lhs.data).add(arg)
+            rhs = arg
         elif descriptors.is_scalar(arg): # just a scalar
-            arg = arg*numpy.identity(self.N1,dtype = self.data.dtype )
-            MatrixStack(self.data).add(arg)
-            t[0][:,:] += arg
+            arg = arg*numpy.identity(lhs.N1,dtype = lhs.data.dtype )
+            MatrixStack(lhs.data).add(arg)
+            assert lhs.tail.shape[0] == lhs.tail.shape[1], "tail + scalar only valid in diagonal case"
+            rhs = numpy.identity(lhs.tail.shape[0]) *arg
         else:
             raise RuntimeError, " argument type not recognized in += for %s"%arg
-        return self
+        if rhs !=None :
+            new_tail = TailGf(shape=lhs.tail.shape, size=lhs.tail.size, order_min=min(0,lhs.tail.order_min))
+            new_tail[0][:,:] = rhs
+             # if it is add, then we CAN change the shape of the tail, and
+            # reassign it since it is a new object, just create (then use the
+            # _singularity object.
+            # otherwise we can not, since it could be view, so we use the tail
+            # and if shape is not correct, = i.e. copy_from will raise an error
+            if is_add : lhs._singularity = lhs.tail + new_tail 
+            else : lhs.tail = lhs.tail + new_tail 
+        return lhs
+ 
+    def __iadd__(self, arg):
+        return self.__add_iadd_impl(self,arg,False)
 
     def __add__(self, y):
         if descriptors.is_lazy(y): return lazy_expressions.make_lazy(self) + y
         c = self.copy()
-        c += y
-        return c
+        return self.__add_iadd_impl(c,y,True)
 
     def __radd__(self, y): return self.__add__(y)
 
-    def __isub__(self, arg):
-        d, t = self.data, self.tail
-        if type(self) == type(arg):
+    def __sub_isub_impl (self, lhs,  arg, is_sub):
+        d, t, rhs = lhs.data, lhs.tail,None
+        if type(lhs) == type(arg):
             d[:,:,:] -= arg.data
             t -= arg.tail
         elif isinstance(arg, numpy.ndarray): # an array considered as a constant function
-            MatrixStack(self.data).sub(arg)
-            t[0][:,:] -= arg
+            MatrixStack(lhs.data).sub(arg)
+            rhs = arg
         elif descriptors.is_scalar(arg): # just a scalar
-            arg = arg*numpy.identity(self.N1, dtype = self.data.dtype )
-            MatrixStack(self.data).sub(arg)
-            t[0][:,:] -= arg
+            arg = arg*numpy.identity(lhs.N1,dtype = lhs.data.dtype )
+            MatrixStack(lhs.data).sub(arg)
+            assert lhs.tail.shape[0] == lhs.tail.shape[1], "tail - scalar only valid in diagonal case"
+            rhs = numpy.identity(lhs.tail.shape[0]) *arg
         else:
             raise RuntimeError, " argument type not recognized in -= for %s"%arg
-        return self
+        if rhs !=None :
+            new_tail = TailGf(shape=lhs.tail.shape, size=lhs.tail.size, order_min=min(0,lhs.tail.order_min))
+            new_tail[0][:,:] = rhs
+            if is_sub : lhs._singularity = lhs.tail - new_tail 
+            else : lhs.tail = lhs.tail - new_tail 
+        return lhs
+ 
+    def __isub__(self, arg):
+        return self.__sub_isub_impl(self,arg,False)
 
     def __sub__(self, y):
         if descriptors.is_lazy(y): return lazy_expressions.make_lazy(self) - y
         c = self.copy()
-        c -= y
-        return c
+        return self.__sub_isub_impl(c,y,True)
 
     def __rsub__(self, y):
         c = (-1)*self.copy()
-        c += y
-        return c
+        return c + y # very important to use the as +, cf above, _singularity vs tail
 
     def __imul__(self, arg):
 

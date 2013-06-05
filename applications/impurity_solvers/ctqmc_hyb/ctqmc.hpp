@@ -46,8 +46,8 @@ protected:
 
   triqs::python_tools::improved_python_dict params;
   triqs::mc_tools::HistogramBinnedMap Histograms; 
-  triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>> G_tau, F_tau, Delta_tau, OpCorrToAverage;
-  triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre>> G_legendre;
+  triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>> G_tau, F_tau, Delta_tau, OpCorrToAverage;
+  triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::legendre>> G_legendre;
   Configuration Config;
   const bool TimeAccumulation;
   const bool LegendreAccumulation;
@@ -56,11 +56,11 @@ protected:
 public : 
 
   ctqmc_hyb(boost::python::object, Hloc *,
-            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
-            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
-            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
-            triqs::gf::gf_view<triqs::gf::block<triqs::gf::imtime>>,
-            triqs::gf::gf_view<triqs::gf::block<triqs::gf::legendre>>);
+            triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::imtime>>,
+            triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::legendre>>);
   void solve();
 
 };

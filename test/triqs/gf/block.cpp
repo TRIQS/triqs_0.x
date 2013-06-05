@@ -10,11 +10,12 @@ using tqa::range;
 using triqs::arrays::make_shape;
 using triqs::gf::gf;
 using triqs::gf::gf_view;
-using triqs::gf::block;
+using triqs::gf::block_index;
 using triqs::gf::Fermion;
 using triqs::gf::imfreq;
 using triqs::gf::imtime;
 using triqs::gf::make_gf;
+using triqs::gf::make_block_gf;
 using triqs::gf::make_gf_view;
 
 #define TEST(X) std::cout << BOOST_PP_STRINGIZE((X)) << " ---> "<< (X) <<std::endl<<std::endl;
@@ -27,17 +28,20 @@ int main() {
  auto G2 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
  auto G3 = make_gf<imfreq> (beta, Fermion, make_shape(2,2));
 
+ //auto BBB = make_block_gf<imfreq> ({G1,G2,G2});
+ //auto BBB2 = make_gf<block_index, gf<imfreq>> ({G1,G2,G2});
+
  std::vector<gf<imfreq> >  V ;
  V.push_back(G1); V.push_back(G2); V.push_back(G3); 
  std::vector<gf_view<imfreq> >  Vv; // = { G1,G2,G3};
  Vv.push_back(G1); Vv.push_back(G2); Vv.push_back(G3); 
 
  std::cout <<" Building gf_view of view"<< std::endl ;
- auto GF_v = make_gf_view<block<imfreq>> (Vv);
+ auto GF_v = make_gf_view<block_index,gf<imfreq>> (Vv);
 
  std::cout <<" Building gf_view of gf"<< std::endl ;
- auto GF =  make_gf_view<block<imfreq>> (V); //{G1,G2,G3});
- //auto GF = make_gf_view<block<imfreq>> ( std::vector<gf_view<imfreq> > {G1,G2,G3});
+ auto GF =  make_gf_view<block_index,gf<imfreq>> (V); //{G1,G2,G3});
+ //auto GF = make_gf_view<block_index,gf<imfreq>> ( std::vector<gf_view<imfreq> > {G1,G2,G3});
 
  std::cout  << "Number of blocks " << GF.mesh().size()<<std::endl ;
  auto g0 = GF[0];
@@ -60,8 +64,8 @@ int main() {
  //TEST( GF_v[0]( 0) ) ;
 
  // bug fixed for this
- gf< block< imfreq> > G9;
- G9 = make_gf<block<imfreq>> (2, make_gf<imfreq>(beta, Fermion, make_shape(2,2)));
+ gf<block_index,gf<imfreq>> G9;
+ G9 = make_gf<block_index,gf<imfreq>> (2, make_gf<imfreq>(beta, Fermion, make_shape(2,2)));
 
  // Operation
  g0.on_mesh(0) = 3.2;

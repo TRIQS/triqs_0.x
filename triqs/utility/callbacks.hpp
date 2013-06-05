@@ -22,7 +22,7 @@
 
 #ifndef TRIQS_TOOLS_MC_CALLBACKS_H
 #define TRIQS_TOOLS_MC_CALLBACKS_H
-
+#include <triqs/utility/first_include.hpp>
 #include <boost/function.hpp>
 
 namespace triqs { namespace utility { 

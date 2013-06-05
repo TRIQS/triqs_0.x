@@ -28,7 +28,7 @@
 namespace triqs { namespace gf { namespace local {
 
  namespace details {
-   static double small = 1.e-10;
+   static constexpr double small = 1.e-10;
  }
 
  namespace tqa= triqs::arrays; namespace tql= triqs::clef;  namespace mpl= boost::mpl;

@@ -74,6 +74,7 @@ cdef class TailGf:
         return self.__class__(data = self.data.copy(), order_min = self.order_min, mask = self.mask.copy())
 
     def copy_from(self, TailGf T) :
+        assert self.order_min <= T.order_min, "Copy_from error " 
         self._c << T._c
 
     def _make_slice(self, sl1, sl2):
@@ -111,18 +112,22 @@ cdef class TailGf:
         return self
 
     def __add__(self, TailGf y):
-        c = self.copy()
-        c += y
-        return c
+        cdef tail t = (<TailGf?>self)._c +  y._c
+        return make_TailGf(t)
+        #c = self.copy()
+        #c += y
+        #return c
 
     def __isub__(self, TailGf arg):
         self._c << self._c - arg._c
         return self
 
     def __sub__(self,TailGf y):
-        c = self.copy()
-        c -= y
-        return c
+        cdef tail t = (<TailGf?>self)._c -  y._c
+        return make_TailGf(t)
+        #c = self.copy()
+        #c -= y
+        #return c
 
     def __imul__(self,arg):
         n = type(arg).__name__

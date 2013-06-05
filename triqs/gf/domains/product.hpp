@@ -27,6 +27,7 @@ namespace triqs { namespace gf {
   struct domain_product { 
    typedef std::tuple<typename Domains::point_t...> point_t;
    std::tuple<Domains...> domains;
+   domain_product() = default;
    domain_product(Domains const & ... doms) : domains(doms...) {}
    friend bool operator == (domain_product const & D1, domain_product const & D2) { return D1.domains == D2.domains;}
   };

@@ -3,7 +3,8 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
     cdef cppclass refreq_domain :
         refreq_domain()
 
-    cdef cppclass mesh_refreq "triqs::gf::linear_mesh<triqs::gf::refreq::domain_t>"  :
+    #cdef cppclass mesh_refreq "triqs::gf::linear_mesh<triqs::gf::refreq::domain_t>"  :
+    cdef cppclass mesh_refreq "triqs::gf::linear_mesh<triqs::gf::R_domain>"  :
         mesh_refreq ()
         mesh_refreq (mesh_refreq &)
         refreq_domain & domain()
@@ -13,7 +14,8 @@ cdef extern from "triqs/gf/refreq.hpp" namespace "triqs::gf" :
         double kind()
         bint operator ==( mesh_refreq &)
 
-    cdef mesh_refreq make_mesh_refreq "triqs::gf::gf_factories<triqs::gf::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    cdef mesh_refreq make_mesh_refreq "triqs::gf::make_gf_mesh<triqs::gf::refreq>" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
+    #cdef mesh_refreq make_mesh_refreq "triqs::gf::gf_factories<triqs::gf::refreq>::make_mesh" (double omega_min, double omega_max, size_t n_freq, mesh_enum mk)
 
     cdef cppclass gf_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::refreq>>" :
         gf_refreq()
@@ -42,12 +44,12 @@ cdef make_GfReFreq (gf_refreq x, indices_pack=*, name=*)
 
 cdef extern from "triqs/gf/block.hpp" namespace "triqs::gf" : 
 
-    cdef cppclass gf_block_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block<triqs::gf::refreq>>>" :
+    cdef cppclass gf_block_refreq "triqs::python_tools::cython_proxy<triqs::gf::gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::refreq>>>" :
         gf_block_refreq()
         gf_refreq & operator [](int)
         discrete_mesh & mesh()
 
-    cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
+    cdef gf_block_refreq  make_gf_block_refreq "triqs::gf::make_gf_view<triqs::gf::block_index,triqs::gf::gf<triqs::gf::refreq>>" (  vector[gf_refreq] &) 
 
 cdef gf_block_refreq  as_gf_block_refreq (G) except +
 cdef make_BlockGfReFreq (gf_block_refreq G, block_indices_pack=*, name=*)
