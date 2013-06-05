@@ -10,6 +10,7 @@ cdef extern from "triqs/gf/imfreq.hpp" namespace "triqs::gf" :
         mesh_imfreq ()
         mesh_imfreq (mesh_imfreq &)
         imfreq_domain & domain()
+        double x_min()
         long size()
         bint operator ==( mesh_imfreq &)
 
