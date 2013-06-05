@@ -27,6 +27,6 @@ cdef class MeshImFreq:
         return self.__class__, (self.beta, self.statistic, len(self))
 
 # C -> Python 
-cdef inline make_MeshImFreq ( mesh_imfreq x) :
-    return MeshImFreq( x.domain().beta, 'F', x.size() )
+cdef inline make_MeshImFreq (mesh_imfreq x) :
+    return MeshImFreq( x.domain().beta, 'F' if True else 'B', x.size() ) #change True -> ? x.x_min()>0 does not work
 

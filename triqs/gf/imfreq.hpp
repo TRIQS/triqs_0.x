@@ -38,7 +38,7 @@ namespace triqs { namespace gf {
 
    static type make(double beta, statistic_enum S, size_t Nmax = 1025) {
     double m1 = std::acos(-1)/beta;
-    return type( domain_t(beta,S), m1, (2*Nmax+1)*m1, Nmax, without_last);
+    return type( domain_t(beta,S), S==Fermion?m1:0, S==Fermion?(2*Nmax+1)*m1: 2*Nmax*m1, Nmax, without_last);
    }
   };
 
