@@ -6,22 +6,24 @@
 Installation on Mac OS X [Mountain Lion]
 ==============================================
 
-Previous versions of Mac OS X are not supported.
+This installation guide may work for older versions of Mac OS X. However, previous versions of Mac OS X are not supported.
 
-On Mountain Lion, clang (llvm) is the default C++ compiler, 
-instead of the obsolete gcc 4.2 or previous version.
+NB: The installation of TRIQS under previous versions of OS X requires installing clang (via Xcode) or gcc 4.7 (via MacPorts).
+On Mountain Lion, clang (llvm) replaces gcc 4.2 as the default C++ compiler.
 
-NB: You can install triqs on previous OS X, but only if you install clang (via Apple) or gcc 4.7 (via macports).
+We strongly recommend the following installation procedure, which provides a clean way to set up all dependencies, so that all
+of them are compatible with each other. Only the installation via homebrew is supported for the Mac.
 
 Installation of the dependencies
 ________________________________
 
-The only supported solution for the mac is homebrew.
+1. Install `homebrew <http://mxcl.github.io/homebrew/>`_.
 
-#. Install homebrew 
-#. Install XCode (directly from the Mac store). In Preferences/Downloads, install "Command Line tools".
+  Run ``brew doctor`` and resolve potential conflicts before continuing.
 
-#. Install several packages which are needed :: 
+2. Install XCode (directly from the Mac store). In Preferences/Downloads, install "Command Line tools".
+
+3. Install several packages which are needed: ::
          
      brew install cmake
      brew install gfortran
@@ -33,41 +35,79 @@ The only supported solution for the mac is homebrew.
      brew install python
      brew install doxygen
 
-#. Now install a virtualenv [EXPL. NEEDED] and install python packages ::
+4. Now install virtualenv: ::
+
+    pip install virtualenv
+    virtualenv mypython
+
+Using virtualenv provides a clean way to set up a different python environment for each user.
+The first line in the instructions above installs the package and the second creates the virtual
+environment, which is created in ``$HOME/mypython``.
+Make sure to permanently add (prepend) ``$HOME/mypython/bin`` to your path by adding ::
+
+    export PATH = $HOME/mypython/bin:$PATH
+
+to your ``.bashrc file`` (assuming bash). Within a new shell, check that
+
+    which python
+    which pip
+    which easy_install
+
+yield the ones located in ``$HOME/mypython``.
+
+5. Install the required python packages: ::
     
-    pip install h5py
     pip install numpy
+    pip install h5py
     pip install scipy
     pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
     pip install tornado
     pip install pyzmq
     pip install ipython
+    pip install cython
 
-#. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax:: 
+6. If you wish to compile the documentation locally, install sphinx, its dependencies and mathjax: :: 
   
      pip install sphinx
      easy_install pyparsing==1.5.7
      git clone git://github.com/mathjax/MathJax.git MathJax
 
-   NB : you need pyparsing <1.5.7 since apparently v.2.0 works only for python 3.
+NB : you need pyparsing <=1.5.7 since apparently v.2.0 works only for python 3.
 
-#. Download the latest `sources of boost <http://www.boost.org/users/download/>`_  and untar them into a given directory ``BOOST_SRC``
+7. Download the latest `sources of boost <http://www.boost.org/users/download/>`_  and untar them into a directory ``BOOST_SRC``.
 
 
 TRIQS installation
 __________________
 
-#. Download the TRIQS sources::
+#. Download the TRIQS sources: ::
 
       git clone git@github.com:TRIQS/TRIQS.git TRIQS_src
 
-#. Generate a Makefile using cmake::
+#. Generate a Makefile using cmake: ::
 
       cmake TRIQS_src -DBOOST_SOURCE_DIR=BOOST_SRC 
 
-#. Compile TRIQS, its tests and install it into INSTALL_DIR (default) (N is the number of core of your mac)::
+#. Compile TRIQS, its tests and install it into INSTALL_DIR (default) (N is the number of cores of your mac): ::
 
       make -jN && make test && make install 
 
 #. If you use Wien2TRIQS, please complete the installation as described :ref:`here <wien2k_inst>`.
+
+Possible issues:
+________________
+
+If you encounter the following error: ::
+
+    /usr/local/include/ft2build.h:56:38: error: freetype/config/ftheader.h: No such file or directory
+
+in the installation of matplotlib, you need to pass the proper include path. Locate the freetype directory
+with the header file and pass the include path through ``CPPFLAGS``: ::
+
+    CPPFLAGS=-I/usr/X11/include/freetype2/ pip install git+https://github.com/matplotlib/matplotlib.git#egg=matplotlib-dev
+
+
+
+
+
 
