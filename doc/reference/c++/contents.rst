@@ -1,8 +1,8 @@
-Part II : C++ librairies
+Reference: C++ librairies
 ##########################
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    learn/intro
    arrays/contents

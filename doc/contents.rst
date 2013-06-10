@@ -5,4 +5,7 @@ Table of contents
    :maxdepth: 3  
 
    installation/install
+   tutorials/contents
+   reference/python/contents
+   reference/c++/contents
 

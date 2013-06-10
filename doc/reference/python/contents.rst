@@ -5,11 +5,11 @@
 
 .. _contents:
 
-Table of contents
-=================
+Reference: Python libraries
+================================
 
 .. toctree::
-   :maxdepth: 3  
+   :maxdepth: 2  
 
    introduction/introduction
    install/install
