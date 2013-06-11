@@ -1,7 +1,7 @@
 .. index:: introduction
 .. role:: red
 
-Introduction to the python modules
+Python modules
 ==================================
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)

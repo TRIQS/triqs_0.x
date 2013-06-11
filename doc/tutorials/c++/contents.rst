@@ -1,5 +1,5 @@
-C++ Tutorials
-=================
+C++ libraries
+=================================
 
 .. toctree::
    :maxdepth: 1  
