@@ -34,4 +34,5 @@ Fourier transforms are implemented for these Green functions:
    :maxdepth: 2
 
    concepts
+   fourier
    cookbook
