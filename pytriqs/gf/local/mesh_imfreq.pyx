@@ -28,6 +28,6 @@ cdef class MeshImFreq:
 
 # C -> Python 
 cdef inline make_MeshImFreq (mesh_imfreq x) :
-    return MeshImTime( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B', x.size() )
+    return MeshImFreq( x.domain().beta, 'F' if x.domain().statistic==Fermion else 'B', x.size() )
 
 
