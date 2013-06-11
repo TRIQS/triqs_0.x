@@ -31,16 +31,18 @@ def clip_array(x_array, x_min, x_max):
       it returns the slice sl such that 
         * x_array[sl] is in [x_min, x_max]
     """
+    assert x_max >= x_min, "Windowing error"
+
     try: 
         low  = (i for i,x in enumerate(x_array) if not( x < x_min)  ).next() 
     except StopIteration:
-        low = 0
+        return slice(0,0) # there is no x >= x_min
 
     try:
         high = (i for i,x in enumerate(x_array) if x > x_max ).next()
         r = slice(low,high)
     except StopIteration:
-        r = slice(low,)
+        r = slice(low,len(x_array)) # there is no x > x_max
 
     return r
 
