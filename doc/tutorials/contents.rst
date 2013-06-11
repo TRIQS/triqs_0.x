@@ -6,6 +6,6 @@ Tutorials
 
    intro
    applications/contents
-   python/contents
+   python/introduction
    c++/contents
 

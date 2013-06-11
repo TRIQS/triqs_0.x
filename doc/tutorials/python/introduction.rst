@@ -1,8 +1,8 @@
 .. index:: introduction
 .. role:: red
 
-Introduction
-============
+Introduction to the python modules
+==================================
 
 TRIQS (**T**\oolbox for **R**\esearch on **I**\nteracting **Q**\uantum **S**\ystems)
 is a free software scientific project 
