@@ -7,6 +7,7 @@ Array library
    :maxdepth: 1
    :numbered:
 
+   cookbook
    introduction.rst
    view_or_not_view
    basic_classes

@@ -35,4 +35,4 @@ Fourier transforms are implemented for these Green functions:
 
    concepts
    fourier
-   cookbook
+   cookbook/contents

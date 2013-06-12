@@ -1,47 +1,3 @@
-Cookbook
-========
-
-Create a real time Green function
----------------------------------
-
-.. compileblock:: 
-
-    #include <triqs/gf/retime.hpp>
-    #include <triqs/arrays.hpp>
-    
-    using triqs::gf::make_gf;
-    using triqs::gf::retime;
-    
-    int main() {
-      double tmin=0;
-      double tmax=10;
-      //we will have 5 points
-      size_t n_times=5;
-      //we want a Green function whose values are complex numbers
-      auto shape = triqs::arrays::make_shape(1,1);
-      // the type of GF is triqs::gf::gf<triqs::gf::retime>
-      auto GF=make_gf<retime>(tmin, tmax, n_times, shape);  
-    };
-
-Create a real frequency Green function 
---------------------------------------
-.. compileblock:: 
-
-    #include <triqs/arrays.hpp>
-    #include <triqs/gf/refreq.hpp>
-    
-    using triqs::gf::make_gf;
-    using triqs::gf::refreq;
-
-    int main() {
-      double wmin=0;
-      double wmax=10;
-      size_t n_freq=5;
-      //we want a Green function whose values are 2*2 matrices of complex numbers
-      auto shape = triqs::arrays::make_shape(2,2);
-      auto GF=make_gf<refreq>(wmin, wmax, n_freq, shape);
-    };
-
 
 Create a Matsubara frequency Green function
 -------------------------------------------
@@ -65,6 +21,23 @@ The particularity here is that the statistics influences the position of the Mat
       auto GF=make_gf<imfreq>(beta, stat, shape, n_freq);  
     };
 
+
+An alternative declaration with an explicit construction of the underlying mesh:
+
+.. compileblock:: 
+
+ 
+    #include <triqs/gf/imfreq.hpp>
+    using namespace triqs::gf;
+    int main(){
+     double beta=10;
+     int Nfreq =100;
+     auto fermionic_imfreq_mesh = make_gf_mesh<imfreq>(beta,triqs::gf::Fermion,Nfreq); 
+     auto GF = make_gf<imfreq>(fermionic_imfreq_mesh, triqs::arrays::make_shape(1,1), local::tail(1,1));
+    }
+
+
+Learn more in the full referencen, see :ref:`greenfunctions`
 
 Create a Matsubara time Green function
 --------------------------------------
