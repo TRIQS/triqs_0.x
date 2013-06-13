@@ -249,15 +249,16 @@ class HDF_Archive_group (HDF_Archive_group_basic_layer) :
               try : 
                 sch = hdf_scheme_access(hdf_data_scheme)
               except :
-                # to decide : do we want an error or a warning ??
-                #raise IOError, "The TRIQS_HDF5_data_scheme %s is not recognized"%hdf_data_scheme
                 print "Warning : The TRIQS_HDF5_data_scheme %s is not recognized. Returning as a group"%hdf_data_scheme
                 return SUB
               r_class_name  = sch.classname
               r_module_name = sch.modulename
             except:  # for backward compatibility
-              r_class_name  = SUB.read_attr("PythonClass") 
-              r_module_name = SUB.read_attr("PythonModule")
+              try:
+                r_class_name  = SUB.read_attr("PythonClass") 
+                r_module_name = SUB.read_attr("PythonModule")
+              except :
+                return SUB
             #print  "%s  : python object of type %s.%s "%(path2,r_module_name,r_class_name)
             if not (r_class_name and r_module_name) : return SUB
             try :
