@@ -9,4 +9,4 @@ Table of contents
    tutorials/contents
    reference/python/contents
    reference/c++/contents
-
+   reference/applications/contents

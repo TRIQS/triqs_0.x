@@ -36,7 +36,7 @@ occupation of the impurity level (the average of the operator :math:`n_\uparrow
 + n_\downarrow`). Let us plot the Green's function and print the value of the
 average:
 
-.. plot:: tutorials/applications/solvers/aim_plot.py
+.. plot:: reference/applications/solvers/aim_plot.py
    :include-source:
    :scale: 70
 
