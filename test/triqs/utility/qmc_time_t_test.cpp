@@ -11,9 +11,7 @@ int main(int argc, char **argv)
     time_pt zero (40);
     time_pt beta = time_pt::make_beta(40);
 
-    //time_pt t1(10.0, beta), t2(30.0, beta);
-    time_pt t1(beta), t2(beta);
-    //t1 = 10; t2 =30;//no longer works: operator= suppressed
+    auto t1 = time_pt::make_from_double(10,40), t2 = time_pt::make_from_double(30,40);
 
     std::cout << "zero: " << zero << std::endl;
     std::cout << "beta: " << beta << std::endl;
@@ -29,9 +27,8 @@ int main(int argc, char **argv)
     std::cout << "t1 * t2: " << t1*t2 << "" << std::endl;
     std::cout << "t1 * t2 - (as double) : " << t1*t2 - (double(t1) * double(t2)) << "" << std::endl;
 
-    //no longer allowed
-    //std::cout << "t1 / t2: " << t1/t2 << "" << std::endl;
-    //std::cout << "t1 / t2 - (as double) : " << t1/t2 - (double(t1) / double(t2)) << "" << std::endl;
+    std::cout << "t1 / t2: " << t1/t2 << "" << std::endl;
+    std::cout << "t1 / t2 - (as double) : " << t1/t2 - (double(t1) / double(t2)) << "" << std::endl;
 
     std::cout << "t1 + beta: " << t1 + beta << "" << std::endl;
     std::cout << "t1 - beta: " << t1 - beta << "" << std::endl;
