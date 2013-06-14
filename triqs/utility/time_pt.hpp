@@ -44,8 +44,8 @@ namespace triqs { namespace utility {
   //static time_pt make_zero(double beta_) { time_pt r; r.beta = beta_; r.n = 0; r.val = 0; return r;}
 
   // random case : to be improved, using rng only for integer for reproducibility....
-  template<typename RNG>
-  static time_pt random(RNG & rng, double l, double beta_) { return time_pt(rng(l), beta_);}
+  template<typename RNG, typename T1, typename T2> static time_pt random(RNG & rng, T1 l, T2 beta_) { return time_pt(rng(double(l)), double(beta_));}
+  //template<typename RNG> static time_pt random(RNG & rng, time_pt const & l, time_pt const & beta_) { return random(rng, double(l), double(beta_));}
 
   time_pt (time_pt const &) = default;
   time_pt (time_pt && x) = default;
@@ -57,22 +57,36 @@ namespace triqs { namespace utility {
 #endif
 
   //this is also dangerous for reproducibility
-  time_pt & operator = (double v) { val =v; n = floor(Nmax*(v/beta)); return *this; }
+  //time_pt & operator = (double v) { val =v; n = floor(Nmax*(v/beta)); return *this; }
 
   bool operator == (const time_pt & tp) const { return n == tp.n; }
+  bool operator != (const time_pt & tp) const { return n != tp.n; }
   bool operator <  (const time_pt & tp) const { return n < tp.n; }
+  bool operator <= (const time_pt & tp) const { return n <= tp.n; }
   bool operator >  (const time_pt & tp) const { return n > tp.n; }
+  bool operator >= (const time_pt & tp) const { return n >= tp.n; }
 
   // adding and substracting is cyclic on [0, beta]
   inline friend time_pt operator+(time_pt const & a, time_pt const & b) { return time_pt(a.n + b.n, a.beta, true); }
   inline friend time_pt operator-(time_pt const & a, time_pt const & b) { uint64_t n = (a.n>= b.n ? a.n - b.n : Nmax - (b.n - a.n)); return time_pt(n, a.beta,true); }
   inline friend time_pt operator-(time_pt const & a) { uint64_t n = Nmax - a.n; return time_pt(n, a.beta,true); }
-  
-  operator double() const {return val;} // cast to a double
+  inline friend time_pt div_by_int(time_pt const & a, size_t b) { return time_pt(a.n/ b, a.beta, true); }
+  inline friend size_t floor_div(time_pt const & a, time_pt const & b){return a.n/b.n;}
+
+  inline friend double operator*(time_pt const & a, time_pt const & b) { return double(a)*double(b); }
+#define IMPL_OP(OP) \
+  inline friend double operator OP(time_pt const & x, double y) {return static_cast<double>(x) OP y;} \
+  inline friend double operator OP(double y, time_pt const & x) {return y OP static_cast<double>(x);} 
+  IMPL_OP(+); IMPL_OP(-); IMPL_OP(*); IMPL_OP(/);
+#undef IMPL_OP
+
+
+  explicit operator double() const {return val;} // cast to a double
 
   friend std::ostream & operator<< (std::ostream & out, time_pt const & p) { return out << p.val << " [time_pt : beta = "<< p.beta<< " n = "<< p.n<<"]" ; }
  
   static time_pt epsilon(double beta) { return time_pt(1,beta,true);}
+  static time_pt epsilon(time_pt const & beta) { return time_pt(1,beta.beta,true);}
 
   private:
   static constexpr uint64_t Nmax = std::numeric_limits<uint64_t>::max();
@@ -80,12 +94,13 @@ namespace triqs { namespace utility {
   double val, beta;
  };
 
+
   // all other operations : first cast into a double and do the operation
-#define IMPL_OP(OP) \
+/*#define IMPL_OP(OP) \
   template<typename T> auto operator OP(time_pt const & x, T y) -> decltype(double(0) OP y) {return static_cast<double>(x) OP y;} \
   template<typename T> auto operator OP(T y, time_pt const & x) -> decltype(y OP double(0)) {return y OP static_cast<double>(x);} \
   IMPL_OP(+); IMPL_OP(-); IMPL_OP(*); IMPL_OP(/);
-#undef IMPL_OP
+#undef IMPL_OP*/
 
 }}
 #endif

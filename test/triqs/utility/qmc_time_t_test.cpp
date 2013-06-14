@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
     //time_pt t1(10.0, beta), t2(30.0, beta);
     time_pt t1(beta), t2(beta);
-    t1 = 10; t2 =30;
+    //t1 = 10; t2 =30;//no longer works: operator= suppressed
 
     std::cout << "zero: " << zero << std::endl;
     std::cout << "beta: " << beta << std::endl;
@@ -29,13 +29,14 @@ int main(int argc, char **argv)
     std::cout << "t1 * t2: " << t1*t2 << "" << std::endl;
     std::cout << "t1 * t2 - (as double) : " << t1*t2 - (double(t1) * double(t2)) << "" << std::endl;
 
-    std::cout << "t1 / t2: " << t1/t2 << "" << std::endl;
-    std::cout << "t1 / t2 - (as double) : " << t1/t2 - (double(t1) / double(t2)) << "" << std::endl;
+    //no longer allowed
+    //std::cout << "t1 / t2: " << t1/t2 << "" << std::endl;
+    //std::cout << "t1 / t2 - (as double) : " << t1/t2 - (double(t1) / double(t2)) << "" << std::endl;
 
     std::cout << "t1 + beta: " << t1 + beta << "" << std::endl;
     std::cout << "t1 - beta: " << t1 - beta << "" << std::endl;
 
-    print_me(t1);// to check cast
+    print_me(double(t1));// to check explicit cast
 
     std::cout << " -t1: " << - t1 << "" << std::endl;
     
