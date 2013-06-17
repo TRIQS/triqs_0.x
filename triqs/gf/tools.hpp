@@ -94,10 +94,10 @@ namespace triqs { namespace gf {
  template<typename T> nothing operator-(nothing, T const &) { return nothing();}
  template<typename T> nothing operator*(nothing, T const &) { return nothing();}
  template<typename T> nothing operator/(nothing, T const &) { return nothing();}
- template<typename T> nothing operator+(T const &, nothing) { return nothing();}
- template<typename T> nothing operator-(T const &, nothing) { return nothing();}
- template<typename T> nothing operator*(T const &, nothing) { return nothing();}
- template<typename T> nothing operator/(T const &, nothing) { return nothing();}
+ template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator+(T const &, nothing) { return nothing();}
+ template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator-(T const &, nothing) { return nothing();}
+ template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator*(T const &, nothing) { return nothing();}
+ template<typename T> TYPE_DISABLE_IF(nothing, std::is_same<T,nothing>) operator/(T const &, nothing) { return nothing();}
   
  //------------------------------------------------------
 
