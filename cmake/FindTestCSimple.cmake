@@ -26,10 +26,9 @@ macro(add_test_C_simple testname )
 endmacro(add_test_C_simple)
 
 
-macro(add_test_C_hdf testname)
- enable_testing()
- file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output.h5 DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+macro(add_test_C_hdf testname h5diff_options)
  set(h5diff_objects ${ARGN}) # grab additionnal arguments !
+ enable_testing()
  add_test(${testname}
    ${CMAKE_COMMAND}
    -Dname=${testname}${ARGN}
