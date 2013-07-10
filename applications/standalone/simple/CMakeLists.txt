@@ -6,8 +6,5 @@ set(CMAKE_BUILD_TYPE Release)
 find_package(TRIQS)
 
 add_executable(hdf5 hdf5.cpp)
-
-MESSAGE ( "${TRIQS_INCLUDE_ALL}") 
-
 include_directories(${TRIQS_INCLUDE_ALL})
 target_link_libraries(hdf5 ${TRIQS_LIBRARY_ALL})
