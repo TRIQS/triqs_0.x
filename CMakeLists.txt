@@ -46,6 +46,16 @@ else (TRIQS_BUILD_STATIC)
  MESSAGE(STATUS "DYNAMIC Built ")
 endif (TRIQS_BUILD_STATIC) 
 
+# RPATH setting (before compiling boost)
+if(APPLE)
+ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+else(APPLE)
+ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_SKIP_BUILD_RPATH FALSE)
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif(APPLE)
+
 # #################################
 # Python support 
 # #################################
@@ -256,16 +266,6 @@ endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
-
-# RPATH setting
-if(APPLE)
- set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-else(APPLE)
- set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
- set(CMAKE_SKIP_BUILD_RPATH FALSE)
- set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
- set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-endif(APPLE)
 
 # 64 bits machine ?
 #if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
