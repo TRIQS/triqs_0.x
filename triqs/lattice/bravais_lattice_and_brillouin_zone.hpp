@@ -20,13 +20,13 @@
  ******************************************************************************/
 #ifndef TRIQS_LATTICE_BRAVAIS_LATTICE_H
 #define TRIQS_LATTICE_BRAVAIS_LATTICE_H
-#include <unordered_map>
 #include <triqs/arrays/array.hpp>
 #include <triqs/arrays/matrix.hpp>
 #include <triqs/arrays/vector.hpp>
 #include <triqs/utility/exceptions.hpp>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 namespace triqs { namespace lattice_tools { 
 

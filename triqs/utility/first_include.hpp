@@ -21,6 +21,12 @@
 #ifndef TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 #define TRIQS_ARRAYS_FIRST_INCLUDE_PYTHON_H
 
+#ifdef TRIQS_BUILDING_LIBRARY
+#include <triqs_config.h>
+#else
+#include <triqs/triqs_config.h>
+#endif
+
 // FOR DEBUG ONLY : detection of the version of numpy is automatic.
 // Uncomment to use the old API ANYWAY
 //#define TRIQS_NUMPY_VERSION_LT_17

@@ -6,7 +6,7 @@ SET( link_libs ${LAPACK_LIBS}  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES})
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-link_libraries( ${link_libs} triqs_utility )
+link_libraries( ${link_libs} triqs)
 
 if (CMAKE_COMPILER_IS_CLANG) 
  #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -Wunused-variable")

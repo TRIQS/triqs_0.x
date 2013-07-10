@@ -27,12 +27,6 @@ project (AllPrograms C CXX Fortran)
 # Make sure the rpath is set fine after installation
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# a propertie to accumulate the definitions for the TRIQSConfig
-macro(triqs_add_definitions ${ARGN})
- add_definitions( ${ARGN})
- set_property(GLOBAL APPEND PROPERTY TRIQS_COMPIL_DEFINITIONS  ${ARGN})
-endmacro()
-
 # First check the C++ compiler
 find_package(CompilerCheck)
 
@@ -42,7 +36,7 @@ find_package(TriqsMacros)
 # find the basic libraries from which TRIQS depends and add the def, include and link
 find_package(TRIQS_dep_libs)
 # Add macro definitions needed to use ALPS and dependent libraries
-triqs_add_definitions(${ALPS_EXTRA_DEFINITIONS} ) 
+add_definitions(${ALPS_EXTRA_DEFINITIONS} ) 
 # Add include directories needed to use ALPS and dependent libraries
 include_directories(${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS})
 # Add link directories needed to use ALPS and dependent libraries
@@ -106,28 +100,26 @@ if (GIT_FOUND)
  GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")
  MESSAGE(STATUS "Git hash ${GIT_HASH}")
  MESSAGE(STATUS "Git branches : \n  ${GIT_BRANCHES}")
- triqs_add_definitions( -DGIT_HASH="${GIT_HASH}") # for all compilations
 endif (GIT_FOUND)
 
 # Compute WhoAmI and hostname
 # Change this : make a version module
 EXECUTE_PROCESS(COMMAND hostname OUTPUT_VARIABLE myHostName RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE) 
 EXECUTE_PROCESS(COMMAND id -un OUTPUT_VARIABLE WhoAmI RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
-triqs_add_definitions( -D__HOSTNAME__=${myHostName})
-triqs_add_definitions( -D__COMPILEDBY__=${WhoAmI})
-
-# Adding 
-triqs_add_definitions( -DBOOST_PP_VARIADICS=1 )
+SET(TRIQS_HOSTNAME ${myHostName})
+SET(TRIQS_COMPILEDBY ${WhoAmI})
 
 # Python support ?
 #FIRST VERSION : if OFF, we should not try to detect the python at all....
 # TEST AND DEBUG THE OFF OPTION
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
- triqs_add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
+ set(TRIQS_WITH_PYTHON_SUPPORT 1)
+ #add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
  # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
  if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
-  triqs_add_definitions (-DTRIQS_NUMPY_VERSION_LT_17)
+  SET(TRIQS_NUMPY_VERSION_LT_17 1)
+  #add_definitions (-DTRIQS_NUMPY_VERSION_LT_17)
  endif()
 endif (PythonSupport)
 
@@ -137,7 +129,7 @@ enable_testing()
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
  MESSAGE( STATUS "64 bit machine : Adding -fpic ")
  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic" )
- triqs_add_definitions( -fpic)
+ add_definitions( -fpic)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 #------------------------
@@ -150,7 +142,7 @@ option(Build_PDF_Documentation "Build the pdf documentation ?" OFF)
 # check for clang compiler ?? on gcc, os X snow leopard, it MUST be set 
 # since _REENTRANT is mysteriously set and this leads to random stalling of the code....
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- triqs_add_definitions( -pthread )
+ add_definitions( -pthread )
 ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # General include header
@@ -174,7 +166,7 @@ SET(TRIQS_LINK_LIBS
 #------------------------
 
 MESSAGE(STATUS "BOOST_LIB IS ${BOOST_LIBRARY}")
-
+add_definitions ( -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/triqs/Config)
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
