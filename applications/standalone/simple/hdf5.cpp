@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     }
 
  Af = A;
-
+ 
  std::cout<<" A= "<<A<<std::endl;
  std::cout<<" D= "<<D<<std::endl;
  std::cout<<" C= "<<C<<std::endl;
@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
 
  } 
  catch( const char * err) { std::cout<<err<<std::endl;}
+
 
  return 0;
 }

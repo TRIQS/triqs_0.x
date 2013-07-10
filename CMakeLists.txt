@@ -48,6 +48,44 @@ else (TRIQS_BUILD_STATIC)
 endif (TRIQS_BUILD_STATIC) 
 
 # #################################
+# Python support 
+# #################################
+# TEST AND DEBUG THE OFF OPTION
+option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
+if (PythonSupport)
+
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
+
+ find_package(Python REQUIRED)
+ IF (NOT PYTHONLIBS_FOUND)
+  MESSAGE (FATAL_ERROR "Can not find python")
+ ENDIF()
+
+ include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+ link_libraries( ${PYTHON_LIBRARY})
+
+ MESSAGE (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
+
+ # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
+ if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
+  SET(TRIQS_NUMPY_VERSION_LT_17 1)
+ endif()
+
+ SET (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
+ # check : not a flag
+ SET (TRIQS_INCLUDE_PYTHON ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
+
+ # Installation : Final destination of the python modules
+ string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_SITE_PKG} ) 
+ SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
+ MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
+
+ # build pytriqs main or make the script
+ add_subdirectory(shells bin)
+
+endif (PythonSupport)
+
+# #################################
 # BOOST !
 # #################################
 
@@ -85,7 +123,11 @@ else(BOOST_SOURCE_DIR)
  else()
   SET(BOOST_VERSION 1.46)
  endif()
- FIND_PACKAGE(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization ) #filesystem  )
+ if (PythonSupport)
+  FIND_PACKAGE(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi python serialization ) #filesystem  )
+ Else()
+  FIND_PACKAGE(Boost ${BOOST_VERSION} REQUIRED COMPONENTS mpi serialization ) #filesystem  )
+ endif()
  if (NOT Boost_FOUND)
   MESSAGE(FATAL_ERROR "Boost not found")
  endif()
@@ -98,42 +140,10 @@ else(BOOST_SOURCE_DIR)
  set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 endif(BOOST_SOURCE_DIR)
 
-# #################################
-# Python support 
-# #################################
-# TEST AND DEBUG THE OFF OPTION
-option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
+#------------------------
+# copy boost into pytriqs/boost
+#------------------------
 if (PythonSupport)
-
- set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
-
- find_package(Python REQUIRED)
- IF (NOT PYTHONLIBS_FOUND)
-  MESSAGE (FATAL_ERROR "Can not find python")
- ENDIF()
-
- include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
- link_libraries( ${PYTHON_LIBRARY})
-
- MESSAGE (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
-
- # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
- if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
-  SET(TRIQS_NUMPY_VERSION_LT_17 1)
- endif()
-
- SET (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
- # check : not a flag
- SET (TRIQS_INCLUDE_PYTHON ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
-
- # Installation : Final destination of the python modules
- string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_SITE_PKG} ) 
- SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
- MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
-
- #------------------------
- # copy boost into pytriqs/boost
- #------------------------
  if(NOT BOOST_SOURCE_DIR)
   if(NOT BOOST_MODULE_DIR)
    EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
@@ -189,7 +199,7 @@ IF (REQUIRE_PTHREAD)
  SET(LAPACK_LIBRARIES "${LAPACK_LIBRARIES};${PTHREAD_LIBRARY}")
 ENDIF (REQUIRE_PTHREAD)
 
-SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE STRING "Flags to link Lapack and Blas (default = ALPS values)")
+SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE STRING "Flags to link Lapack and Blas")
 
 SET(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
@@ -339,12 +349,6 @@ endif (PythonSupport)
 # tests
 #------------------------
 add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
-
-#------------------------
-# build pytriqs main or make the script
-#------------------------
-
-add_subdirectory(shells bin)
 
 #------------------------
 # Documentation
