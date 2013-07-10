@@ -203,6 +203,8 @@ if (PythonSupport)
   if(NOT BOOST_MODULE_DIR)
    EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
   endif(NOT BOOST_MODULE_DIR)
+  # first create the dir, since pytriqs will be configured later
+  execute_process(COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/ )
   execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/)
   install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
  endif(NOT BOOST_SOURCE_DIR)
