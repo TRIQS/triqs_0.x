@@ -24,7 +24,6 @@ cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project (AllPrograms C CXX Fortran) 
 
-
 ## C & C++ Headers
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
@@ -125,7 +124,7 @@ if(BOOST_SOURCE_DIR)
  SET(ALPS_HAVE_MPI 1)
  SET(ALPS_HAVE_BOOST_MPI 1)
  set(BUILD_BOOST_MPI TRUE)
-
+ set(BUILD_BOOST_PYTHON TRUE)
  add_subdirectory(foreignlibs/boost)
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
