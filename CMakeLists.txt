@@ -48,11 +48,6 @@ Message(STATUS " Adding include  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS}
 Message(STATUS " Adding libs ${ALPS_EXTRA_LIBRARIES} " )
 Message(STATUS " Adding library dir ${ALPS_LIBRARY_DIRS} " )
 
-# Final destination of the python modules
-string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${ALPS_PYTHON_SITE_PKG} ) 
-SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
-MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
-
 # Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
@@ -109,18 +104,41 @@ EXECUTE_PROCESS(COMMAND id -un OUTPUT_VARIABLE WhoAmI RESULT_VARIABLE returncode
 SET(TRIQS_HOSTNAME ${myHostName})
 SET(TRIQS_COMPILEDBY ${WhoAmI})
 
-# Python support ?
-#FIRST VERSION : if OFF, we should not try to detect the python at all....
+# #################################
+# Python support 
+# #################################
 # TEST AND DEBUG THE OFF OPTION
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
- set(TRIQS_WITH_PYTHON_SUPPORT 1)
- #add_definitions (-DTRIQS_WITH_PYTHON_SUPPORT)
+ 
+ set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
+
+ find_package(Python REQUIRED)
+ IF (NOT PYTHONLIBS_FOUND)
+  MESSAGE (FATAL_ERROR "Can not find python")
+ ENDIF()
+
+ include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+ link_libraries( ${PYTHON_LIBRARY})
+ 
+ MESSAGE (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
+
  # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
  if (PYTHON_NUMPY_VERSION VERSION_LESS "1.7.0")
   SET(TRIQS_NUMPY_VERSION_LT_17 1)
-  #add_definitions (-DTRIQS_NUMPY_VERSION_LT_17)
  endif()
+
+ SET (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY})
+ # check : not a flag
+ SET (TRIQS_INCLUDE_PYTHON ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
+
+ # Installation : Final destination of the python modules
+ string(REGEX REPLACE ".*/lib" "lib" TRIQS_PYTHON_LIB_DEST_ROOT ${PYTHON_SITE_PKG} ) 
+ SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
+ MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
+
+ #link_libraries(${PYTHON_LIBRARY})
+ #include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 endif (PythonSupport)
 
 enable_testing()
@@ -132,7 +150,50 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
  add_definitions( -fpic)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-#------------------------
+# GMP
+find_package(GMP)
+
+# FFTW
+find_package(FFTW)
+
+# #################################
+# HDF5
+# #################################
+# on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
+if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
+ find_package(HDF5 REQUIRED C CXX )
+else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
+ find_package(HDF5 REQUIRED C CXX HL )
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
+IF(NOT HDF5_FOUND)
+ MESSAGE(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
+ENDIF()
+IF(HDF5_IS_PARALLEL)
+ MESSAGE(FATAL "parallel(MPI) hdf5 is detected. The standard version is preferred.")
+ENDIF(HDF5_IS_PARALLEL)
+add_definitions (${HDF5_DEFINITIONS})
+include_directories (${HDF5_INCLUDE_DIR})
+link_libraries (${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
+MESSAGE( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
+
+#
+## Remove the test from the build ?
+option(Build_Triqs_General_Tools_Test "Build the test of the general tool ? ( array class , ... ) " ON)
+
+# TRIQS cmake file and config.h
+get_property(ALL_DEFS GLOBAL PROPERTY TRIQS_COMPIL_DEFINITIONS)
+configure_file(./cmake/triqs_config.h.in Config/triqs_config.h @ONLY)
+IF(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig.cmake @ONLY)
+else()
+ configure_file(./cmake/TRIQSConfig.cmake.in Config/TRIQSConfig1.cmake @ONLY )
+ EXEC_PYTHON_SCRIPT( "import re;open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake','w').write(re.sub(r';*\\s*-framework\\s+([a-zA-Z_][a-zA-Z_0-9]*)',r' \"-framework \\1\"',open('${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig1.cmake').read()))", ConfigFile)
+endif()
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
+
+##------------------------
 # Documentation
 ##------------------------
 option(Build_Documentation "Build the documentation ?" OFF)
@@ -159,6 +220,7 @@ SET(TRIQS_LINK_LIBS
  ${FFTW_LIBRARIES}
  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}
  ${LAPACK_LIBS}
+ ${GMP_LIBRARIES} ${GMPXX_LIBRARIES}
  )
 
 #------------------------
@@ -166,7 +228,7 @@ SET(TRIQS_LINK_LIBS
 #------------------------
 
 MESSAGE(STATUS "BOOST_LIB IS ${BOOST_LIBRARY}")
-add_definitions ( -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/triqs/Config)
+add_definitions ( -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

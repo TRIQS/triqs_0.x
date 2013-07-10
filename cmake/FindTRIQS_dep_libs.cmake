@@ -1,11 +1,3 @@
-#  Copyright Olivier Parcollet 2011
-#  Adapted from the alps cmakelist
-#
-#  Copyright Synge Todo and Matthias Troyer 2009 - 2010.
-#  Distributed under the Boost Software License, Version 1.0.
-#      (See accompanying file LICENSE_1_0.txt or copy at
-#          http://www.boost.org/LICENSE_1_0.txt)
-
 # strange lower case compare to other options... changing this
 if (NOT Boost_ROOT_DIR_found)
  SET( Boost_ROOT_DIR ${BOOST_ROOT_DIR})
@@ -93,26 +85,6 @@ else (ALPS_ENABLE_MPI)
     set(BUILD_BOOST_MPI FALSE)
 endif(ALPS_ENABLE_MPI)
 
-# OpenMP
-option(ALPS_ENABLE_OPENMP "Enable OpenMP parallelization" OFF)
-option(ALPS_ENABLE_OPENMP_WORKER "Enable OpenMP worker support" OFF)
-mark_as_advanced(ALPS_ENABLE_OPENMP)
-mark_as_advanced(ALPS_ENABLE_OPENMP_WORKER)
-if(ALPS_ENABLE_OPENMP)
-  find_package(OpenMP)
-  if(OPENMP_FOUND)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    # Almost always OpenMP flags are same both for C and for Fortran.
-    if(ALPS_BUILD_FORTRAN)
-      set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${OpenMP_C_FLAGS}")
-    endif(ALPS_BUILD_FORTRAN)
-    if(ALPS_ENABLE_OPENMP_WORKER)
-      # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DALPS_ENABLE_OPENMP_WORKER")
-    endif(ALPS_ENABLE_OPENMP_WORKER)
-  endif(OPENMP_FOUND)
-endif(ALPS_ENABLE_OPENMP)
-
 # Lapack
 if (NOT LAPACK_FOUND)
  find_package(Lapack)
@@ -136,51 +108,6 @@ endif(MAC_VECLIB)
 set(LAPACK_LINKER_FLAGS ${LAPACK_LDFLAGS})
 SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE STRING "Flags to link Lapack and Blas (default = ALPS values)")
 
-# FFTW
-find_package(FFTW)
-
-# HDF5
-# on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
-if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
- find_package(HDF5 REQUIRED C CXX )
-else(${CMAKE_VERSION} VERSION_LESS "2.8.6")
- find_package(HDF5 REQUIRED C CXX HL )
-endif(${CMAKE_VERSION} VERSION_LESS "2.8.6")
-IF(HDF5_FOUND)
- SET(HAVE_LIBHDF5 1)  
- INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})
- add_definitions(${HDF5_DEFINTIONS})
- SET(ALPS_HAVE_HDF5 1)
-ELSE(HDF5_FOUND)
- MESSAGE(FATAL_ERROR "Require hdf5 1.8.2 or higher. Set HDF5_HOME")
-ENDIF(HDF5_FOUND)
-
-IF(HDF5_IS_PARALLEL)
- SET(ALPS_HAVE_HDF5_PARALLEL 1)
- MESSAGE(WARNING "parallel(MPI) hdf5 is detected. We will compile but ALPS does not use parallel HDF5. The standard version is preferred.")
- IF(NOT MPI_FOUND)
-  MESSAGE(FATAL_ERROR "parallel(MPI) hdf5 needs MPI. Enable MPI or install serial HDF5 libraries.")
- ENDIF(NOT MPI_FOUND)
- INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
-ENDIF(HDF5_IS_PARALLEL)
-
-# python
-set(ALPS_BUILD_PYTHON ON)
-set(PYTHON_SCRIPTDIR "${CMAKE_INSTALL_PREFIX}/lib/python")
-find_package(Python)
-
-IF (PYTHONLIBS_FOUND AND ALPS_BUILD_PYTHON)
- include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
- MESSAGE (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
- SET(ALPS_HAVE_PYTHON ON)
- INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
- set(BUILD_BOOST_PYTHON TRUE)
-ELSE (PYTHONLIBS_FOUND AND ALPS_BUILD_PYTHON)
- set(BUILD_BOOST_PYTHON OFF)
- SET(ALPS_HAVE_PYTHON OFF)
-ENDIF (PYTHONLIBS_FOUND AND ALPS_BUILD_PYTHON)
-
-set(ALPS_PYTHON_SITE_PKG ${PYTHON_SITE_PKG})
 
 if (BIND_FORTRAN_LOWERCASE)
  add_definitions(-DBIND_FORTRAN_LOWERCASE)
@@ -194,9 +121,6 @@ endif(MPI_DEFINITIONS)
 if(LAPACK_DEFINITIONS)
  set(ALPS_EXTRA_DEFINITIONS "${ALPS_EXTRA_DEFINITIONS} ${LAPACK_DEFINITIONS}")
 endif(LAPACK_DEFINITIONS)
-if(HDF5_DEFINITIONS)
- set(ALPS_EXTRA_DEFINITIONS "${ALPS_EXTRA_DEFINITIONS} ${HDF5_DEFINITIONS}")
-endif(HDF5_DEFINITIONS)
 
 if(MPI_INCLUDE_DIR)
  list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${MPI_INCLUDE_DIR})
@@ -207,15 +131,6 @@ endif(MPI_INCLUDE_DIR)
 #if(SQLite_INCLUDE_DIR)
 #  list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${SQLite_INCLUDE_DIR})
 #endif(SQLite_INCLUDE_DIR)
-if(HDF5_INCLUDE_DIR)
- list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
-endif(HDF5_INCLUDE_DIR)
-if(PYTHON_INCLUDE_DIRS)
- list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
-endif(PYTHON_INCLUDE_DIRS)
-if(PYTHON_NUMPY_INCLUDE_DIR)
- list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${PYTHON_NUMPY_INCLUDE_DIR})
-endif(PYTHON_NUMPY_INCLUDE_DIR)
 if(Boost_ROOT_DIR)
  list(APPEND ALPS_EXTRA_INCLUDE_DIRS ${Boost_ROOT_DIR})
 endif(Boost_ROOT_DIR)
@@ -244,33 +159,8 @@ endif(LAPACK_LIBRARIES)
 #MESSAGE( " HDF5_C_LIBRARIES = ${HDF5_C_LIBRARIES} ")
 MESSAGE( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
 
-if(HDF5_LIBRARIES)
- list(APPEND ALPS_EXTRA_LIBRARIES ${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
-endif(HDF5_LIBRARIES)
-if(PYTHON_LIBRARY)
- list(APPEND ALPS_EXTRA_LIBRARIES ${PYTHON_LIBRARY})
-endif(PYTHON_LIBRARY)
-
-set (HDF5_LIBS "")
-foreach (l ${HDF5_LIBRARIES})
- set (HDF5_LIBS "${HDF5_LIBS} ${l}")
- if (${l} STREQUAL "debug")
-  set (HDF5_LIBS "")
- endif()
- if (${l} STREQUAL "optimized")
-  set (HDF5_LIBS "")
- endif()
-endforeach(l)
-
-if(PYTHON_FOUND)
- set(PYTHON_CPP_FLAGS "-I${PYTHON_INCLUDE_DIRS}")
-endif(PYTHON_FOUND)
-
-set (HDF5_LIBRARIES ${HDF5_LIBRARIES_SAVE})
-
 # alps configuration files
 set (BIND_FORTRAN_INTEGER_8 ${LAPACK_64_BIT})
-
 
 # RPATH setting
 if(APPLE)
