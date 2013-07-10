@@ -24,6 +24,7 @@
 #include <triqs/utility/first_include.hpp>
 #include <limits>
 #include <iostream>
+#include <cmath>
 
 namespace triqs { namespace utility {
 
@@ -35,7 +36,7 @@ namespace triqs { namespace utility {
 
   private : 
   // too dangerous because of rounding to be left public
-  time_pt(double v, double beta_) { beta = beta_; val =v; n = floor(Nmax*(v/beta));}
+  time_pt(double v, double beta_) { beta = beta_; val =v; n = std::floor(Nmax*(v/beta));}
   time_pt(uint64_t n_, double beta_, bool) { beta = beta_; val = beta*(double(n_)/Nmax); n = n_;}
 
   public : 
