@@ -8,16 +8,19 @@
 # It sets up : 
 #    HERE MAKE THE LIST ! 
 # 
+find_package(PackageHandleStandardArgs)
 
 SET(TRIAL_PATHS
- $ENV{TRIQS_PATH}/include
- ${TRIQS_PATH}/include
- /usr/include
- /usr/local/include
- /opt/local/include
- /sw/include
+ $ENV{TRIQS_PATH}/include/triqs
+ ${TRIQS_PATH}/include/triqs
+ /usr/include/triqs
+ /usr/local/include/triqs
+ /opt/local/include/triqs
+ /sw/include/triqs
  )
 FIND_PATH(TRIQS_INCLUDE_DIR triqs_config.h ${TRIAL_PATHS} DOC "Include triqs")
+
+MESSAGE( "${TRIQS_PATH}/include/triqs")
 
 SET(TRIAL_LIBRARY_PATHS
  /usr/lib 
@@ -45,8 +48,15 @@ FIND_PATH(TRIQS_CONFIG_FILE TRIQSConfig.cmake ${TRIAL_PATHS} DOC "TRIQS configur
 mark_as_advanced(TRIQS_INCLUDE_DIR)
 mark_as_advanced(TRIQS_LIBRARIES)
 
-# include prepare variables 
-include(${TRIQS_CONFIG_FILE})
+if (NOT TRIQS_CONFIG_FILE)
+ MESSAGE(FATAL_ERROR " ${TRIQS_PATH} $ENV{TRIQS_PATH}")
+ MESSAGE(FATAL_ERROR " Can not find the TRIQS config file")
+endif()
+# include prepare variables
+MESSAGE( " TRIQS_CONFIG_FILE ${TRIQS_CONFIG_FILE}")
+
+include(${TRIQS_CONFIG_FILE}/TRIQSConfig.cmake )
+MESSAGE( " TRIQS_LIBRARY_PYTHON ${TRIQS_LIBRARY_PYTHON}")
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(TRIQS DEFAULT_MSG TRIQS_LIBRARIES TRIQS_INCLUDE_DIR)
 
