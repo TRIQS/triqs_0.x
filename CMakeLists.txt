@@ -24,7 +24,8 @@ cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project (AllPrograms C CXX Fortran) 
 
-# C & C++ Headers
+
+## C & C++ Headers
 include(CheckIncludeFile)
 include(CheckIncludeFileCXX)
 
@@ -94,22 +95,8 @@ else(BOOST_SOURCE_DIR)
  include_directories(${Boost_INCLUDE_DIRS})
  #include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
  set(BOOST_LIBRARY ${Boost_LIBRARIES}) #${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
-
+ set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 endif(BOOST_SOURCE_DIR)
-
-Find_package(Git3) # our local version of FindGit...
-if (GIT_FOUND)
- GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")
- MESSAGE(STATUS "Git hash ${GIT_HASH}")
- MESSAGE(STATUS "Git branches : \n  ${GIT_BRANCHES}")
-endif (GIT_FOUND)
-
-# Compute WhoAmI and hostname
-# Change this : make a version module
-EXECUTE_PROCESS(COMMAND hostname OUTPUT_VARIABLE myHostName RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE) 
-EXECUTE_PROCESS(COMMAND id -un OUTPUT_VARIABLE WhoAmI RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
-SET(TRIQS_HOSTNAME ${myHostName})
-SET(TRIQS_COMPILEDBY ${WhoAmI})
 
 # #################################
 # Python support 
@@ -135,7 +122,7 @@ if (PythonSupport)
   SET(TRIQS_NUMPY_VERSION_LT_17 1)
  endif()
 
- SET (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY})
+ SET (TRIQS_LIBRARY_PYTHON ${PYTHON_LIBRARY} ${PYTHON_EXTRA_LIBS})
  # check : not a flag
  SET (TRIQS_INCLUDE_PYTHON ${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
 
@@ -144,11 +131,19 @@ if (PythonSupport)
  SET( TRIQS_PYTHON_LIB_DEST ${TRIQS_PYTHON_LIB_DEST_ROOT}/pytriqs ) 
  MESSAGE(STATUS "Python modules will be installed in ${CMAKE_INSTALL_PREFIX}/${TRIQS_PYTHON_LIB_DEST}")
 
- #link_libraries(${PYTHON_LIBRARY})
- #include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_NUMPY_INCLUDE_DIR})
+ #------------------------
+ # copy boost into pytriqs/boost
+ #------------------------
+ if(NOT BOOST_SOURCE_DIR)
+  if(NOT BOOST_MODULE_DIR)
+   EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
+  endif(NOT BOOST_MODULE_DIR)
+  execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/)
+  install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
+ endif(NOT BOOST_SOURCE_DIR)
+
 endif (PythonSupport)
 
-enable_testing()
 
 # on 64 bit machines
 if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
@@ -180,7 +175,6 @@ include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
 link_libraries( ${MPI_CXX_LIBRARIES})
 SET(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
 SET(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
-
 
 # #################################
 # Lapack
@@ -257,8 +251,8 @@ endif(APPLE)
 
 # is it useful ?
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
-  mark_as_advanced(CMAKE_BUILD_TYPE)
+ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
+ mark_as_advanced(CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
@@ -268,6 +262,24 @@ mark_as_advanced(BIND_FORTRAN_LOWERCASE)
 if (BIND_FORTRAN_LOWERCASE)
  SET(TRIQS_BIND_FORTRAN_LOWERCASE OFF )
 endif (BIND_FORTRAN_LOWERCASE)
+
+# git
+Find_package(Git3) # our local version of FindGit...
+if (GIT_FOUND)
+ GIT_TREE_INFO ( ${CMAKE_SOURCE_DIR} "GIT")
+ MESSAGE(STATUS "Git hash ${GIT_HASH}")
+ MESSAGE(STATUS "Git branches : \n  ${GIT_BRANCHES}")
+endif (GIT_FOUND)
+
+# Compute WhoAmI and hostname
+# Change this : make a version module
+EXECUTE_PROCESS(COMMAND hostname OUTPUT_VARIABLE myHostName RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE) 
+EXECUTE_PROCESS(COMMAND id -un OUTPUT_VARIABLE WhoAmI RESULT_VARIABLE returncode OUTPUT_STRIP_TRAILING_WHITESPACE)
+SET(TRIQS_HOSTNAME ${myHostName})
+SET(TRIQS_COMPILEDBY ${WhoAmI})
+
+#
+enable_testing()
 
 ##------------------------
 # Documentation
@@ -303,7 +315,6 @@ SET(TRIQS_LINK_LIBS
 # General triqs libraries
 #------------------------
 
-MESSAGE(STATUS "BOOST_LIB IS ${BOOST_LIBRARY}")
 add_definitions ( -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config)
 add_subdirectory(${TRIQS_SOURCE_DIR}/triqs triqs)  
 
@@ -315,7 +326,7 @@ ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 # Applications
 #------------------------
 
-add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
+#add_subdirectory(${TRIQS_SOURCE_DIR}/applications )
 
 #------------------------
 # pytriqs modules
@@ -328,17 +339,6 @@ endif (PythonSupport)
 # tests
 #------------------------
 add_subdirectory(${TRIQS_SOURCE_DIR}/test ) 
-
-#------------------------
-# copy boost into pytriqs/boost
-#------------------------
-if(NOT BOOST_SOURCE_DIR)
- if(NOT BOOST_MODULE_DIR)
-  EXEC_PYTHON_SCRIPT ("import boost; print boost.__path__[0]" BOOST_MODULE_DIR)
- endif(NOT BOOST_MODULE_DIR)
- execute_process(COMMAND ln -fs ${BOOST_MODULE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/)
- install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pytriqs/boost DESTINATION ${TRIQS_PYTHON_LIB_DEST})
-endif(NOT BOOST_SOURCE_DIR)
 
 #------------------------
 # build pytriqs main or make the script
@@ -355,6 +355,12 @@ if (Build_Documentation)
  add_subdirectory (${TRIQS_SOURCE_DIR}/doc )
  #add_dependencies(docs_sphinx py_sources)
 endif (Build_Documentation)
+
+#------------------------
+# FindTRIQS
+#------------------------
+
+install (FILES ${CMAKE_SOURCE_DIR}/cmake/FindTRIQS.cmake DESTINATION share/triqs/cmake)
 
 #------------------------
 # Packaging
