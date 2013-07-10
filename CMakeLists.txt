@@ -24,6 +24,10 @@ cmake_policy(SET CMP0003 NEW) #cmake --help-policy CMP0003
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 project (AllPrograms C CXX Fortran) 
 
+# C & C++ Headers
+include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
+
 # Make sure the rpath is set fine after installation
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -33,20 +37,18 @@ find_package(CompilerCheck)
 # Include TRIQS cmake macros
 find_package(TriqsMacros)
 
-# find the basic libraries from which TRIQS depends and add the def, include and link
-find_package(TRIQS_dep_libs)
-# Add macro definitions needed to use ALPS and dependent libraries
-add_definitions(${ALPS_EXTRA_DEFINITIONS} ) 
-# Add include directories needed to use ALPS and dependent libraries
-include_directories(${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS})
-# Add link directories needed to use ALPS and dependent libraries
-link_directories(${ALPS_LIBRARY_DIRS})
-# reporting
-Message(STATUS " Triqs general lib detection ( but boost ) ")
-Message(STATUS " Adding definitions ${ALPS_EXTRA_DEFINITIONS}" )
-Message(STATUS " Adding include  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS} ")
-Message(STATUS " Adding libs ${ALPS_EXTRA_LIBRARIES} " )
-Message(STATUS " Adding library dir ${ALPS_LIBRARY_DIRS} " )
+# Static built ? TO BE RECHECKED ...
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+string(COMPARE EQUAL ${BUILD_SHARED_LIBS}  "OFF" TRIQS_BUILD_STATIC)
+if (TRIQS_BUILD_STATIC)
+ MESSAGE(STATUS "STATIC Built  ")
+else (TRIQS_BUILD_STATIC) 
+ MESSAGE(STATUS "DYNAMIC Built ")
+endif (TRIQS_BUILD_STATIC) 
+
+# #################################
+# BOOST !
+# #################################
 
 # Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
@@ -59,11 +61,16 @@ if(BOOST_SOURCE_DIR)
  ENDIF(TILDE)
 
  # compile boost if necessary
+ set(ALPS_BOOST_LIBRARY_NAME "boost_for_triqs" ) 
  add_subdirectory(foreignlibs/boost)
  MESSAGE(STATUS  "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
 else(BOOST_SOURCE_DIR)
+
+ if (NOT Boost_ROOT_DIR_found)
+  SET( Boost_ROOT_DIR ${BOOST_ROOT_DIR})
+ endif (NOT Boost_ROOT_DIR_found)
 
  # if static build, request static lib
  IF(TRIQS_BUILD_STATIC)
@@ -110,7 +117,7 @@ SET(TRIQS_COMPILEDBY ${WhoAmI})
 # TEST AND DEBUG THE OFF OPTION
 option(PythonSupport "Build with Python support (i.e. pytriqs, etc..) : OFF NOT TESTED ?" ON)
 if (PythonSupport)
- 
+
  set(TRIQS_WITH_PYTHON_SUPPORT 1) # for the triqs_config.h file configuration
 
  find_package(Python REQUIRED)
@@ -120,7 +127,7 @@ if (PythonSupport)
 
  include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
  link_libraries( ${PYTHON_LIBRARY})
- 
+
  MESSAGE (STATUS "Numpy include in ${PYTHON_NUMPY_INCLUDE_DIR}")
 
  # The C API of numpy has changed with 1.7.0, the macro is a version switch in a few files of the libs.
@@ -155,6 +162,46 @@ find_package(GMP)
 
 # FFTW
 find_package(FFTW)
+
+# #################################
+# MPI
+# #################################
+find_package(MPI)
+if (NOT MPI_CXX_FOUND)
+ MESSAGE(FATAL_ERROR "TRIQS requires MPI")
+endif()
+message (STATUS "MPI CXX compiler was ${MPI_CXX_COMPILER}")
+
+MESSAGE( " MPI_COMPILE_FLAGS = ${MPI_CXX_COMPILE_FLAGS}")
+MESSAGE( " MPI_CXX_INCLUDE_PATH = ${MPI_CXX_INCLUDE_PATH}")
+add_definitions( ${MPI_CXX_COMPILE_FLAGS})
+add_definitions( ${MPI_C_COMPILE_FLAGS})
+include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
+link_libraries( ${MPI_CXX_LIBRARIES})
+SET(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
+SET(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
+
+
+# #################################
+# Lapack
+# #################################
+#option(LAPACK_64_BIT "Use 64-bit version of LAPACK" OFF)
+#set (BIND_FORTRAN_INTEGER_8 ${LAPACK_64_BIT})
+if (NOT LAPACK_FOUND)
+ find_package(Lapack)
+endif (NOT LAPACK_FOUND)
+IF (REQUIRE_PTHREAD)
+ SET(LAPACK_LIBRARY "${LAPACK_LIBRARY};${PTHREAD_LIBRARY}")
+ SET(LAPACK_LIBRARIES "${LAPACK_LIBRARIES};${PTHREAD_LIBRARY}")
+ENDIF (REQUIRE_PTHREAD)
+
+SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE STRING "Flags to link Lapack and Blas (default = ALPS values)")
+
+SET(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
+if(MAC_VECLIB)
+ set(TRIQS_LIBRARY_LAPACK "${TRIQS_LIBRARY_LAPACK} -framework vecLib")
+endif(MAC_VECLIB) 
+link_libraries(${TRIQS_LIBRARY_LAPACK})
 
 # #################################
 # HDF5
@@ -192,6 +239,35 @@ endif()
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
+
+# RPATH setting
+if(APPLE)
+ set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+else(APPLE)
+ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+ set(CMAKE_SKIP_BUILD_RPATH FALSE)
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif(APPLE)
+
+# 64 bits machine ?
+#if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
+#  set (ALPS_64BIT ON)
+#endif(CMAKE_SIZEOF_VOID_P EQUAL 8 OR CMAKE_GENERATOR MATCHES Win64)
+
+# is it useful ?
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
+  mark_as_advanced(CMAKE_BUILD_TYPE)
+endif(NOT CMAKE_BUILD_TYPE)
+message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
+# Fortran bindings
+option(BIND_FORTRAN_LOWERCASE "FORTRAN functions are compiled WITHOUT a trailing underscore" OFF)
+mark_as_advanced(BIND_FORTRAN_LOWERCASE)
+if (BIND_FORTRAN_LOWERCASE)
+ SET(TRIQS_BIND_FORTRAN_LOWERCASE OFF )
+endif (BIND_FORTRAN_LOWERCASE)
 
 ##------------------------
 # Documentation

@@ -21,5 +21,9 @@
  ******************************************************************************/
 
 // Compiler independant call to Fortran names
+#ifndef TRIQS_BIND_FORTRAN_LOWERCASE
 #define TRIQS_FORTRAN_MANGLING( id ) id##_
-
+#else
+#error "I do not know what to do with this fortran mangling !"
+ // ???
+#endif
