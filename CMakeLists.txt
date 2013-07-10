@@ -86,9 +86,30 @@ if (PythonSupport)
 endif (PythonSupport)
 
 # #################################
-# BOOST !
+# MPI
+# #################################
+MESSAGE( STATUS "-------- MPI detection -------------")
+find_package(MPI)
+if (NOT MPI_CXX_FOUND)
+ MESSAGE(FATAL_ERROR "TRIQS requires MPI")
+endif()
+message (STATUS "MPI CXX compiler : ${MPI_CXX_COMPILER}")
+
+MESSAGE( STATUS "MPI_COMPILE_FLAGS : ${MPI_CXX_COMPILE_FLAGS}")
+MESSAGE( STATUS "MPI_CXX_INCLUDE_PATH : ${MPI_CXX_INCLUDE_PATH}")
+add_definitions( ${MPI_CXX_COMPILE_FLAGS})
+add_definitions( ${MPI_C_COMPILE_FLAGS})
+include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
+link_libraries( ${MPI_CXX_LIBRARIES})
+SET(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
+SET(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
+
+
+# #################################
+# Boost detection
 # #################################
 
+MESSAGE( STATUS "-------- Boost detection -------------")
 # Check user input for BOOST_SOURCE_DIR
 if(BOOST_SOURCE_DIR)
  if(NOT IS_ABSOLUTE ${BOOST_SOURCE_DIR})
@@ -101,8 +122,11 @@ if(BOOST_SOURCE_DIR)
 
  # compile boost if necessary
  set(ALPS_BOOST_LIBRARY_NAME "boost_for_triqs" ) 
+ SET(ALPS_HAVE_MPI 1)
+ SET(ALPS_HAVE_BOOST_MPI 1)
+ set(BUILD_BOOST_MPI TRUE)
+
  add_subdirectory(foreignlibs/boost)
- MESSAGE(STATUS  "BOOST_INCLUDE_DIR = ${BOOST_INCLUDE_DIR}")
  include_directories(SYSTEM ${BOOST_INCLUDE_DIR})
 
 else(BOOST_SOURCE_DIR)
@@ -132,13 +156,14 @@ else(BOOST_SOURCE_DIR)
   MESSAGE(FATAL_ERROR "Boost not found")
  endif()
  MESSAGE(STATUS "BOOST has been detected")
- MESSAGE(STATUS "BOOST include dir ${Boost_INCLUDE_DIRS}")
- MESSAGE(STATUS "BOOST LIBRARY ${Boost_LIBRARIES}")
  include_directories(${Boost_INCLUDE_DIRS})
  #include_directories(${BOOST_INSTALL_ROOT_DIR}/include)
  set(BOOST_LIBRARY ${Boost_LIBRARIES}) #${BOOST_PYTHON_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_MPI_LIB})
  set(BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 endif(BOOST_SOURCE_DIR)
+
+MESSAGE(STATUS  "Boost include dir : ${BOOST_INCLUDE_DIR}")
+MESSAGE(STATUS  "Boost libraries : ${BOOST_LIBRARY}")
 
 #------------------------
 # copy boost into pytriqs/boost
@@ -162,33 +187,10 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8) # for 64 bits machines
  add_definitions( -fpic)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-# GMP
-find_package(GMP)
-
-# FFTW
-find_package(FFTW)
-
-# #################################
-# MPI
-# #################################
-find_package(MPI)
-if (NOT MPI_CXX_FOUND)
- MESSAGE(FATAL_ERROR "TRIQS requires MPI")
-endif()
-message (STATUS "MPI CXX compiler was ${MPI_CXX_COMPILER}")
-
-MESSAGE( " MPI_COMPILE_FLAGS = ${MPI_CXX_COMPILE_FLAGS}")
-MESSAGE( " MPI_CXX_INCLUDE_PATH = ${MPI_CXX_INCLUDE_PATH}")
-add_definitions( ${MPI_CXX_COMPILE_FLAGS})
-add_definitions( ${MPI_C_COMPILE_FLAGS})
-include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
-link_libraries( ${MPI_CXX_LIBRARIES})
-SET(TRIQS_LIBRARY_MPI ${MPI_CXX_LIBRARIES})
-SET(TRIQS_INCLUDE_MPI ${MPI_CXX_INCLUDE_PATH})
-
 # #################################
 # Lapack
 # #################################
+MESSAGE( STATUS "-------- Lapack detection -------------")
 #option(LAPACK_64_BIT "Use 64-bit version of LAPACK" OFF)
 #set (BIND_FORTRAN_INTEGER_8 ${LAPACK_64_BIT})
 if (NOT LAPACK_FOUND)
@@ -203,13 +205,15 @@ SET(LAPACK_LIBS ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${LAPACK_LINKER_FLAGS} CACHE S
 
 SET(TRIQS_LIBRARY_LAPACK ${LAPACK_LIBS})
 if(MAC_VECLIB)
- set(TRIQS_LIBRARY_LAPACK "${TRIQS_LIBRARY_LAPACK} -framework vecLib")
+    set(TRIQS_LIBRARY_LAPACK "-framework vecLib ${TRIQS_LIBRARY_LAPACK}")
 endif(MAC_VECLIB) 
+MESSAGE(STATUS "Lapack libraries : ${TRIQS_LIBRARY_LAPACK}")
 link_libraries(${TRIQS_LIBRARY_LAPACK})
 
 # #################################
 # HDF5
 # #################################
+MESSAGE( STATUS "-------- HDF5 detection -------------")
 # on weiss, it is 2.8.2 and we should not put HL, on 12.04 we need to put it...
 if ( ${CMAKE_VERSION} VERSION_LESS "2.8.6") # CHECK THIS BOUND, where are the cmake changelogs ??
  find_package(HDF5 REQUIRED C CXX )
@@ -226,6 +230,16 @@ add_definitions (${HDF5_DEFINITIONS})
 include_directories (${HDF5_INCLUDE_DIR})
 link_libraries (${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
 MESSAGE( STATUS " HDF5_LIBRARIES = ${HDF5_LIBRARIES} ")
+
+# #################################
+# Other libs
+# #################################
+# GMP
+find_package(GMP)
+
+# FFTW
+find_package(FFTW)
+
 
 #
 ## Remove the test from the build ?
