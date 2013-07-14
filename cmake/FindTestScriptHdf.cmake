@@ -1,9 +1,10 @@
 
 SET(RUN_TEST ${CMAKE_BINARY_DIR}/run_pytriqs_for_test.sh ) 
-if (TRIQS_BUILD_STATIC)
- FILE(WRITE ${RUN_TEST} "PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH  ${CMAKE_BINARY_DIR}/bin/pytriqs $1")
- execute_process( COMMAND chmod u+x ${RUN_TEST} )
-endif (TRIQS_BUILD_STATIC)
+#if (TRIQS_BUILD_STATIC)
+# FILE(WRITE ${RUN_TEST} "PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH  ${PYTHON_INTERPRETER} $1")
+# #FILE(WRITE ${RUN_TEST} "PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH  ${CMAKE_BINARY_DIR}/bin/pytriqs $1")
+# execute_process( COMMAND chmod u+x ${RUN_TEST} )
+#endif (TRIQS_BUILD_STATIC)
 
 SET(ExecutableNameForTest ${RUN_TEST})
  
@@ -24,7 +25,6 @@ macro(add_triqs_test_txt testname )
   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
   )
 endmacro(add_triqs_test_txt)
-
 
 # - runs python_with_DMFT script 
 # - compares the file named testname_output.h5 

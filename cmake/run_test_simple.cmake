@@ -1,3 +1,6 @@
+
+## Useless, use run_test and suppress this
+
 set (output_new  ${CMAKE_CURRENT_BINARY_DIR}/${name}_output) 
 
 if (H5_DIFF_EXECUTABLE)
@@ -8,26 +11,41 @@ else(H5_DIFF_EXECUTABLE)
  set (COM  ${CMAKE_COMMAND} -E compare_files ${output_new} ${reference})
 endif (H5_DIFF_EXECUTABLE)
 
-MESSAGE(" about to run ${cmd}")
+message(" command for the test ${cmd} ${input}")
 
+if (input) 
+execute_process(
+ COMMAND ${cmd}
+ RESULT_VARIABLE not_successful
+ INPUT_FILE ${input}
+ OUTPUT_FILE ${output_new}
+ ERROR_FILE ${output_new}.err
+ ERROR_VARIABLE err
+ TIMEOUT 600
+ )
+else()
 execute_process(
  COMMAND ${cmd}
  RESULT_VARIABLE not_successful
  OUTPUT_FILE ${output_new}
  ERROR_FILE ${output_new}.err
+ ERROR_VARIABLE err
  TIMEOUT 600
  )
+endif()
 
 if(not_successful)
- message(SEND_ERROR "error runing test '${name}': ${err}; commande ${cmd}  ${reference} : shell output: ${not_successful}!")
+ message(SEND_ERROR "error runing test '${name}': ${err}; command ${cmd}  : shell output: ${not_successful}!")
 endif(not_successful)
 
-MESSAGE( "ABOUT TO compare with ${COM}")
+MESSAGE( "About to compare with ${COM}")
 
-# Little fix to turn -0 into 0 (--0 is not replaced)
-FILE(READ ${output_new} temp)
-STRING(REGEX REPLACE "([^-])-0([^.])" "\\10\\2" temp_after "${temp}")
-FILE(WRITE ${output_new} ${temp_after})
+if (NOT H5_DIFF_EXECUTABLE)
+ # Little fix to turn -0 into 0 (--0 is not replaced)
+ FILE(READ ${output_new} temp)
+ STRING(REGEX REPLACE "([^-])-0([^.])" "\\10\\2" temp_after "${temp}")
+ FILE(WRITE ${output_new} ${temp_after})
+endif()
 
 execute_process(
  COMMAND ${COM}

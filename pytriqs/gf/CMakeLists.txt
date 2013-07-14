@@ -4,6 +4,7 @@ SET(PYTHON_SOURCES
   )
 
 install (FILES ${PYTHON_SOURCES} DESTINATION ${TRIQS_PYTHON_LIB_DEST}/gf)
+install (FILES ${CMAKE_SOURCE_DIR}/pytriqs/__init__.py.template DESTINATION "include/pytriqs/gf" RENAME __init__.py)
 
 add_subdirectory(local)
 

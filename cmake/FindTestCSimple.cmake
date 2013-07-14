@@ -16,7 +16,7 @@ macro(add_test_C_simple testname )
    -Dname=${testname}${ARGN}
    -Dcmd=${CMAKE_CURRENT_BINARY_DIR}/${testname}${ARGN}
    -Dreference=${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output
-   -P ${TRIQS_SOURCE_DIR}/cmake/run_test_simple.cmake
+   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
    )
 
  else (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${testname}.output)
@@ -38,7 +38,7 @@ macro(add_test_C_hdf testname h5diff_options)
    -DH5_DIFF_EXECUTABLE=${HDF5_DIFF_EXECUTABLE}
    -DH5_DIFF_OPTIONS=${h5diff_options}
    -DH5_DIFF_OBJECTS=${h5diff_objects}
-   -P ${TRIQS_SOURCE_DIR}/cmake/run_test_simple.cmake
+   -P ${TRIQS_SOURCE_DIR}/cmake/run_test.cmake
    )
 endmacro(add_test_C_hdf)
 

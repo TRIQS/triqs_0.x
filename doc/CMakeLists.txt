@@ -2,15 +2,15 @@
 # Should we use MathJax....
 find_package(MathJax)
 if (MATHJAX_PATH) 
- MESSAGE(STATUS "Detected MathJax at ${MATHJAX_PATH}")
+ message(STATUS "Detected MathJax at ${MATHJAX_PATH}")
 else()
- MESSAGE(STATUS "MathJax not found automatically")
+ message(STATUS "MathJax not found automatically")
  option(Sphinx_Math_Generator_MathJax " " OFF)
  if (Sphinx_Math_Generator_MathJax)
-  SET(SPHINX_MATH_GENERATOR "mathjax")
-  SET(MATHJAX_PATH "MathJax" CACHE STRING "Path to the MathJax directory") 
+  set(SPHINX_MATH_GENERATOR "mathjax")
+  set(MATHJAX_PATH "MathJax" CACHE STRING "Path to the MathJax directory") 
  else (Sphinx_Math_Generator_MathJax)
-  SET(SPHINX_MATH_GENERATOR "pngmath")
+  set(SPHINX_MATH_GENERATOR "pngmath")
  endif (Sphinx_Math_Generator_MathJax)
 endif()
 
@@ -18,43 +18,53 @@ endif()
 file(COPY ../foreignlibs/breathe ../foreignlibs/doxylink ../foreignlibs/mpl ../foreignlibs/autocompile DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # The compiler flags for autocompile
-SET( link_libs "${LAPACK_LIBS}  ${BOOST_LIBRARY} ${ALPS_EXTRA_LIBRARIES}")
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+set(TRIQS_LIBRARY_ALL ${TRIQS_LIBRARY_BOOST} ${TRIQS_LIBRARY_PYTHON} ${TRIQS_LIBRARY_MPI} ${TRIQS_LIBRARY_HDF5} ${TRIQS_LIBRARY_LAPACK} ${TRIQS_LIBRARY_FFTW} ${TRIQS_LIBRARY_GMP} ${TRIQS_LIBRARY_GSL} )
+set(TRIQS_INCLUDE_ALL ${TRIQS_INCLUDE_BOOST} ${TRIQS_INCLUDE_PYTHON} ${TRIQS_INCLUDE_MPI} ${TRIQS_INCLUDE_HDF5} ${TRIQS_INCLUDE_LAPACK} ${TRIQS_INCLUDE_FFTW} ${TRIQS_INCLUDE_GMP} ${TRIQS_INCLUDE_GSL} )
+
+set( link_libs " ${TRIQS_LIBRARY_ALL}")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
  list (REMOVE_DUPLICATES link_libs)
-ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+endif( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 string(REPLACE "boost_for_triqs" " " TMP "${link_libs}")
 string(REPLACE "debug" " " TMP "${TMP}")
 string(REPLACE "optimized" " " TMP "${TMP}")
 
 if(BOOST_SOURCE_DIR)
- SET(  link_boost_for_triqs "-lboost_for_triqs")
+ set(  link_boost_for_triqs "-lboost_for_triqs")
  EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/foreignlibs/boost/libboost_for_triqs.so ${CMAKE_CURRENT_BINARY_DIR}")
 else(BOOST_SOURCE_DIR)
- SET(  link_boost_for_triqs " ")
+ set(  link_boost_for_triqs " ")
 endif(BOOST_SOURCE_DIR)
-SET(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR}  ${ALPS_INCLUDE_DIRS} ${ALPS_EXTRA_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/foreignlibs  )
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
- SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs_utility ${TMP} ")
- SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
+
+
+set(DOC_AUTOCOMPILE_INCLUDE ${BOOST_SOURCE_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/foreignlibs ${TRIQS_INCLUDE_ALL}  )
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+ set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} ")
+ set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 -stdlib=libc++ -I/System/Library/Frameworks/vecLib.framework/Versions/A/Headers)
 else()
- SET(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs -L ${CMAKE_BINARY_DIR}/triqs -ltriqs_utility ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
- SET(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
+ set(DOC_AUTOCOMPILE_LINK "-L ${CMAKE_BINARY_DIR}/foreignlibs/boost ${link_boost_for_triqs} -L ${CMAKE_BINARY_DIR}/triqs -ltriqs  ${TMP} -Wl,-rpath=${CMAKE_CURRENT_BINARY_DIR} ")
+ set(DOC_AUTOCOMPILE_DEFINITIONS -std=c++0x -DBOOST_PP_VARIADICS=1 )
 endif()
-SET(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
+set(DOC_AUTOCOMPILE_LD_LIBRARY_PATH " ${CMAKE_BINARY_DIR}/foreignlibs/boost/:${CMAKE_BINARY_DIR}/triqs ")
+# to find the triqs_config.h
+set(DOC_AUTOCOMPILE_DEFINITIONS ${DOC_AUTOCOMPILE_DEFINITIONS} -DTRIQS_BUILDING_LIBRARY -I ${CMAKE_BINARY_DIR}/Config )
+
+# debug
+#message( " Link libs ${DOC_AUTOCOMPILE_LINK}")
 
 EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs.so ${CMAKE_CURRENT_BINARY_DIR}")
-EXECUTE_PROCESS(COMMAND sh -c "ln -sf ${CMAKE_BINARY_DIR}/triqs/libtriqs_utility.so ${CMAKE_CURRENT_BINARY_DIR}")
 
 # Dive and find the doxygen sources
 add_subdirectory(reference/c++)
 
 # Build the doxygen 
-SET(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
+set(DOXYGEN_HTML_OUTPUT ./html/doxy_triqs)
 find_package(Doxygen REQUIRED)
 
+# debug 
 get_property(DOXYGEN_SOURCES GLOBAL PROPERTY DOXYGEN_SOURCES)
 string(REPLACE ";" "  " DOXYGEN_SOURCES_LIST "${DOXYGEN_SOURCES}")
-message(STATUS "Doxygen sources are ${DOXYGEN_SOURCES}") 
+#message(STATUS "Doxygen sources are ${DOXYGEN_SOURCES}") 
 
 # Prepare the Doxyfile
 configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
@@ -63,7 +73,7 @@ configure_file(${TRIQS_SOURCE_DIR}/cmake/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}
 FILE(GLOB_RECURSE SOURCES *.rst)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in ${CMAKE_CURRENT_BINARY_DIR}/conf.py)
 EXECUTE_PROCESS(COMMAND sh -c "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/html")
-SET(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
+set(DOC_SOURCE ${CMAKE_CURRENT_SOURCE_DIR})
 include(${TRIQS_SOURCE_DIR}/cmake/BuildSphinx.cmake)
 
 # Set dependencies
@@ -71,7 +81,7 @@ GET_PROPERTY(PYTHON_DYNAMIC_MODULES_LIST GLOBAL PROPERTY PYTHON_DYNAMIC_MODULES_
 foreach (mod ${PYTHON_DYNAMIC_MODULES_LIST})
  add_dependencies(docs_sphinx ${mod})
 endforeach (mod ${PYTHON_DYNAMIC_MODULES_LIST})
-SET(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
+set(doxy_top ${CMAKE_CURRENT_BINARY_DIR}/doxy.log)
 add_custom_command (OUTPUT ${doxy_top} DEPENDS ${DOXYGEN_SOURCES} COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile > ${doxy_top} )
 add_custom_target(docs_doxy ALL DEPENDS ${doxy_top})
 add_dependencies(docs_sphinx docs_doxy) # we must first have doxygen process the sources to link to them
