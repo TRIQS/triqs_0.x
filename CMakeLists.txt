@@ -269,6 +269,7 @@ link_libraries (${HDF5_LIBRARIES} ) #${HDF5_CXX_LIBRARIES} )
 set(TRIQS_LIBRARY_HDF5  ${HDF5_LIBRARIES})
 set(TRIQS_INCLUDE_HDF5 ${HDF5_INCLUDE_DIR})
 set(TRIQS_CXX_DEFINITIONS ${TRIQS_CXX_DEFINITIONS} ${HDF5_DEFINITIONS})
+set(TRIQS_HDF5_DIFF_EXECUTABLE ${HDF5_DIFF_EXECUTABLE})
 
 # #################################
 # Other libs
@@ -350,6 +351,10 @@ endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/TRIQSConfig.cmake DESTINATION share/triqs/cmake)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/triqs_config.h DESTINATION include/triqs)
 install(FILES ${CMAKE_SOURCE_DIR}/cmake/FindTriqs.cmake DESTINATION share/triqs/cmake)
+
+configure_file(./cmake/FindTriqsTest.cmake.in Config//FindTriqsTest.cmake @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Config/FindTriqsTest.cmake DESTINATION share/triqs/cmake)
+install(FILES ${CMAKE_SOURCE_DIR}/cmake/run_test.cmake DESTINATION share/triqs/cmake)
 
 #
 enable_testing()
