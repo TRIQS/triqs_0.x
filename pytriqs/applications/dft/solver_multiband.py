@@ -84,10 +84,10 @@ class SolverMultiBand(Solver):
         for nm in self.map:
             bl_names = self.map[nm]
             block = []
-            for a,al in gf_struct:
+            for a,al in self.gf_struct:
                 if a in bl_names: block.append(al)
                         
-            self.map_ind[nm] = range(n_orb)
+            self.map_ind[nm] = range(self.n_orb)
             i = 0
             for al in block:
                 cnt = 0
@@ -107,11 +107,11 @@ class SolverMultiBand(Solver):
                 Hamiltonian = self.__set_full_hamiltonian_kanamori(J_hund = J_hund)
 
         # set the Quantum numbers
-        Quantum_Numbers = self.__set_quantum_numbers(gf_struct)
+        Quantum_Numbers = self.__set_quantum_numbers(self.gf_struct)
     
         # Determine if there are only blocs of size 1:
         self.blocssizeone = True
-        for ib in gf_struct:
+        for ib in self.gf_struct:
             if (len(ib[1])>1): self.blocssizeone = False
 
         nc = params.pop("n_cycles",10000)
@@ -121,7 +121,7 @@ class SolverMultiBand(Solver):
             use_seg = False
         #gm = self.set_global_moves(deg_orbs)
 
-        Solver.solve(H_local = Hamiltonian, quantum_numbers = Quantum_Numbers, n_cycles = nc, use_segment_picture = use_seg, **params)
+        Solver.solve(self,H_local = Hamiltonian, quantum_numbers = Quantum_Numbers, n_cycles = nc, use_segment_picture = use_seg, **params)
 
 
     def set_global_moves(self, deg_orbs, factor=0.05):
