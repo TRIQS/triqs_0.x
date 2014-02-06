@@ -1,13 +1,6 @@
  
-The TRIQS website is under http://ipht.cea.fr/triqs. Start there
-to learn about TRIQS.
+This is for archival purpose only.
+This branch is no longer developed.
 
-To install TRIQS, follow the installation steps given under
-http://ipht.cea.fr/triqs/doc/user_manual/install/install.html
-
-Before you proceed, make sure you have read the LICENSE.txt file.
-
-Enjoy!
-
-The TRIQS team
+Please use the triqs repository instead.
 
