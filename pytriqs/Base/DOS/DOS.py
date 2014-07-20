@@ -98,12 +98,7 @@ Name : string
         except:
             ind = self.eps.shape[0]
 
-        de = self.eps[1]-self.eps[0]
-        #for e,r in itertools.izip(self.eps[0:ind],self.rho[0:ind]):
-        #    dens += r
-        dens = (sum(self.rho[0:ind]) - self.rho[0]/2.0 - self.rho[ind-1]/2.0) * de
-        #dens2 = dens + (self.rho[ind-1]/2.0 + self.rho[ind]/2.0) * de
-        if (ind<self.eps.shape[0]): dens += (mu-self.eps[ind-1]) * (self.rho[ind-1] + self.rho[ind])/2.0
+        dens = numpy.trapz( x = self.eps[0:ind], y = self.rho[0:ind] )
         return dens 
 
 ##########################################################################
